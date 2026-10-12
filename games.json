@@ -2,3416 +2,2928 @@
  {
   "slug": "001",
   "name": "Whack-a-mole",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 54.0
  },
  {
   "slug": "002",
   "name": "\ud83d\udc38 Frog Pond",
-  "producer": "Professional",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 24.7
  },
  {
   "slug": "003",
   "name": "Jumper",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 50.0
  },
  {
   "slug": "004",
   "name": "Shooter",
-  "producer": "Professional",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 30.0
  },
  {
   "slug": "005",
   "name": "Cross the lanes",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 2.0
  },
  {
   "slug": "006",
   "name": "SNAKE",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 72.0
  },
  {
   "slug": "007",
   "name": "STAR BLASTER",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "008",
   "name": "Bounce Basketball",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 7.0
  },
  {
   "slug": "009",
   "name": "Shooter",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "010",
   "name": "\ud83d\udc39 Mole Trouble \ud83c\udf31",
-  "producer": "Professional",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 36.0
  },
  {
   "slug": "011",
   "name": "Paddle ball",
-  "producer": "Professional",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 10.0
  },
  {
   "slug": "012",
   "name": "Alien Road Trip",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 37.0
  },
  {
   "slug": "013",
   "name": "Color Pop",
-  "producer": "Professional",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 43.5
  },
  {
   "slug": "014",
   "name": "\ud83c\udfaa Circus Elephant Bounce \ud83c\udfaa",
-  "producer": "Professional",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 25.0
  },
  {
   "slug": "015",
   "name": "Falling blocks",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 50.0
  },
  {
   "slug": "016",
   "name": "Falling blocks",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 14.0
  },
  {
   "slug": "017",
   "name": "Neon Blocos",
-  "producer": "Professional",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 10.3
  },
  {
   "slug": "018",
   "name": "Golden Chain Snake",
-  "producer": "Professional",
   "basic_game": "Snake",
   "consumer_wtp_cents": 42.5
  },
  {
   "slug": "019",
   "name": "Coin Dash",
-  "producer": "Professional",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 85.0
  },
  {
   "slug": "020",
   "name": "NEON BLASTER",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 100.0
  },
  {
   "slug": "021",
   "name": "Paddle ball",
-  "producer": "Professional",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 0.5
  },
  {
   "slug": "022",
   "name": "Falling blocks",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 85.0
  },
  {
   "slug": "023",
   "name": "Jumper",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 20.0
  },
  {
   "slug": "024",
   "name": "Star Shooter",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 25.0
  },
  {
   "slug": "025",
   "name": "Snake",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 77.0
  },
  {
   "slug": "026",
   "name": "\ud83d\udd4a\ufe0f Sky Bird Shooter",
-  "producer": "Professional",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 8.3
  },
  {
   "slug": "027",
   "name": "Cross the lanes",
-  "producer": "Amateur",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 100.0
  },
  {
   "slug": "028",
   "name": "\ud83d\udc0d Feast Frenzy",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 24.0
  },
  {
   "slug": "029",
   "name": "NEON RUNNER",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 67.0
  },
  {
   "slug": "030",
   "name": "Paddle ball",
-  "producer": "Professional",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "031",
   "name": "\ud83d\udc39 Whack-a-Mole \ud83d\udd28",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 88.0
  },
  {
   "slug": "032",
   "name": "\ud83d\ude80 Balloon Blaster",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 65.0
  },
  {
   "slug": "033",
   "name": "Shooter",
-  "producer": "Professional",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 100.0
  },
  {
   "slug": "034",
   "name": "Snake",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 48.0
  },
  {
   "slug": "035",
   "name": "\ud83e\udd52 Pickleball Rally",
-  "producer": "Professional",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 43.5
  },
  {
   "slug": "036",
   "name": "\u25c8 NEBULA RAIDER \u25c8",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 93.0
  },
  {
   "slug": "037",
   "name": "Wizard Circuit Blocks",
-  "producer": "Professional",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 65.5
  },
  {
   "slug": "038",
   "name": "Paddle ball",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 100.0
  },
  {
   "slug": "039",
   "name": "Jumper",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 23.0
  },
  {
   "slug": "040",
   "name": "\ud83d\udc38 Frog Crossing",
-  "producer": "Amateur",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 76.0
  },
  {
   "slug": "041",
   "name": "Kangaroo Hop",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 39.0
  },
  {
   "slug": "042",
   "name": "NEON VOID SURVIVOR",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 65.0
  },
  {
   "slug": "043",
   "name": "Snake",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "044",
   "name": "NEON DROP",
-  "producer": "Professional",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 37.5
  },
  {
   "slug": "045",
   "name": "\ud83d\udc0d Snake",
-  "producer": "Professional",
   "basic_game": "Snake",
   "consumer_wtp_cents": 53.0
  },
  {
   "slug": "046",
   "name": "Shooter",
-  "producer": "Professional",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "047",
   "name": "Paddle ball",
-  "producer": "Professional",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 5.0
  },
  {
   "slug": "048",
   "name": "Paddle ball",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 100.0
  },
  {
   "slug": "049",
   "name": "NEON DROP",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 2.0
  },
  {
   "slug": "050",
   "name": "\ud83c\udfaf Carnival Shooting Gallery \ud83c\udfaf",
-  "producer": "Professional",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 6.0
  },
  {
   "slug": "051",
   "name": "Cross the lanes",
-  "producer": "Amateur",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 72.0
  },
  {
   "slug": "052",
   "name": "Falling blocks",
-  "producer": "Professional",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "053",
   "name": "Whack-a-mole",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "054",
   "name": "Shooter",
-  "producer": "Professional",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "055",
   "name": "Paddle ball",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 10.0
  },
  {
   "slug": "056",
   "name": "\u269c Corral the Horse \u269c",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 1.0
  },
  {
   "slug": "057",
   "name": "Falling blocks",
-  "producer": "Professional",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 92.0
  },
  {
   "slug": "058",
   "name": "Falling blocks",
-  "producer": "Professional",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 19.0
  },
  {
   "slug": "059",
   "name": "\u2728 Rainbow Drop \u2728",
-  "producer": "Professional",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 25.0
  },
  {
   "slug": "060",
   "name": "Cross the lanes",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 50.5
  },
  {
   "slug": "061",
   "name": "\u26cf\ufe0f Whack-a-Mole \u26cf\ufe0f",
-  "producer": "Professional",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 42.0
  },
  {
   "slug": "062",
   "name": "Shooter",
-  "producer": "Professional",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "063",
   "name": "Falling blocks",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 68.0
  },
  {
   "slug": "064",
   "name": "Pong Duel",
-  "producer": "Professional",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 100.0
  },
  {
   "slug": "065",
   "name": "Jumper",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 100.0
  },
  {
   "slug": "066",
   "name": "Color Drop",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 50.0
  },
  {
   "slug": "067",
   "name": "\u2694\ufe0f ORB DUNGEON \u2694\ufe0f",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 38.0
  },
  {
   "slug": "068",
   "name": "\ud83d\udc38 City Frog Crossing",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 5.0
  },
  {
   "slug": "069",
   "name": "Snake",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 27.0
  },
  {
   "slug": "070",
   "name": "Falling blocks",
-  "producer": "Professional",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 39.0
  },
  {
   "slug": "071",
   "name": "Snake",
-  "producer": "Professional",
   "basic_game": "Snake",
   "consumer_wtp_cents": 45.0
  },
  {
   "slug": "072",
   "name": "Neon Paddle Ball",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 18.0
  },
  {
   "slug": "073",
   "name": "\ud83d\udc0d Snake",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "074",
   "name": "ARMORED TRAIN \u2014 NEON DEFENSE",
-  "producer": "Professional",
   "basic_game": "Snake",
   "consumer_wtp_cents": 16.5
  },
  {
   "slug": "075",
   "name": "Whack-a-mole",
-  "producer": "Professional",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 25.0
  },
  {
   "slug": "076",
   "name": "Paddle ball",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 11.0
  },
  {
   "slug": "077",
   "name": "Paddle ball",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 38.0
  },
  {
   "slug": "078",
   "name": "Floating Squares",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 75.0
  },
  {
   "slug": "079",
   "name": "Block Builder",
-  "producer": "Professional",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 10.0
  },
  {
   "slug": "080",
   "name": "NEON STRIKER",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "081",
   "name": "Double Snake Duel",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 87.0
  },
  {
   "slug": "082",
   "name": "Jumper",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 63.0
  },
  {
   "slug": "083",
   "name": "NEON BREAKER",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 68.0
  },
  {
   "slug": "084",
   "name": "Falling blocks",
-  "producer": "Professional",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 25.0
  },
  {
   "slug": "085",
   "name": "Soldier Jumper",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 50.0
  },
  {
   "slug": "086",
   "name": "\ud83d\udc0d Jungle Snake",
-  "producer": "Professional",
   "basic_game": "Snake",
   "consumer_wtp_cents": 40.0
  },
  {
   "slug": "087",
   "name": "Rainbow Paddle",
-  "producer": "Professional",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 16.5
  },
  {
   "slug": "088",
   "name": "Cross the lanes",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 24.5
  },
  {
   "slug": "089",
   "name": "Cross the lanes",
-  "producer": "Amateur",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 100.0
  },
  {
   "slug": "090",
   "name": "\ud83d\udc38 Travessia do Sapo",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "091",
   "name": "Dragon Jumper",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 100.0
  },
  {
   "slug": "092",
   "name": "Cross the lanes",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 28.5
  },
  {
   "slug": "093",
   "name": "Fruit Highway",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 5.0
  },
  {
   "slug": "094",
   "name": "Jumper",
-  "producer": "Professional",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 64.7
  },
  {
   "slug": "095",
   "name": "Whack-a-mole",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 50.0
  },
  {
   "slug": "096",
   "name": "Color Jumper",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 50.0
  },
  {
   "slug": "097",
   "name": "Dragon Brick Breaker",
-  "producer": "Professional",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 10.0
  },
  {
   "slug": "098",
   "name": "\u2605 STAR DODGER \u2605",
-  "producer": "Professional",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 8.3
  },
  {
   "slug": "099",
   "name": "\ud83e\uddab Beaver Crossing",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 79.0
  },
  {
   "slug": "100",
   "name": "Zone Runner",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 25.0
  },
  {
   "slug": "101",
   "name": "\ud83d\udc09 Dragon Fire",
-  "producer": "Professional",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 32.5
  },
  {
   "slug": "102",
   "name": "NEON BREAKER",
-  "producer": "Professional",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 50.0
  },
  {
   "slug": "103",
   "name": "Red, White & Blue Whack",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 25.0
  },
  {
   "slug": "104",
   "name": "\u2726 Star Catcher \u2726",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "105",
   "name": "\ud83c\udf3f Jumper",
-  "producer": "Professional",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 1.0
  },
  {
   "slug": "106",
   "name": "Neon Snake",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 75.0
  },
  {
   "slug": "107",
   "name": "Snake",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 1.0
  },
  {
   "slug": "108",
   "name": "\ud83c\udf69 SNACK ESCAPE \ud83d\udc79",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 80.0
  },
  {
   "slug": "109",
   "name": "\u26a1 Coin Runner",
-  "producer": "Amateur",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 10.0
  },
  {
   "slug": "110",
   "name": "Paddle ball",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "111",
   "name": "Snake",
-  "producer": "Professional",
   "basic_game": "Snake",
   "consumer_wtp_cents": 58.0
  },
  {
   "slug": "112",
   "name": "Alligator Moat",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 24.5
  },
  {
   "slug": "113",
   "name": "Asteroid Blaster",
-  "producer": "Professional",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 27.0
  },
  {
   "slug": "114",
   "name": "Whack-a-mole",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 38.0
  },
  {
   "slug": "115",
   "name": "Paddle ball",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 50.0
  },
  {
   "slug": "116",
   "name": "Cross the lanes",
-  "producer": "Amateur",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 60.0
  },
  {
   "slug": "117",
   "name": "Snake",
-  "producer": "Professional",
   "basic_game": "Snake",
   "consumer_wtp_cents": 10.0
  },
  {
   "slug": "118",
   "name": "Jumper",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 21.0
  },
  {
   "slug": "119",
   "name": "Whack-a-mole",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 70.0
  },
  {
   "slug": "120",
   "name": "Mole Mayhem",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "121",
   "name": "\ud83d\udc79 DEMON SNAKE \ud83d\udc79",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 34.0
  },
  {
   "slug": "122",
   "name": "Paddle ball",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 6.0
  },
  {
   "slug": "123",
   "name": "\u2728 Falling Blocks \u2728",
-  "producer": "Professional",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 14.5
  },
  {
   "slug": "124",
   "name": "Jumper",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 10.0
  },
  {
   "slug": "125",
   "name": "Jumper",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 59.0
  },
  {
   "slug": "126",
   "name": "Cross the lanes",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 31.3
  },
  {
   "slug": "127",
   "name": "Bumper Ball",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 90.0
  },
  {
   "slug": "128",
   "name": "\u2694 DRAGON'S GAUNTLET \u2694",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 50.0
  },
  {
   "slug": "129",
   "name": "NEON PADDLE",
-  "producer": "Professional",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 23.0
  },
  {
   "slug": "130",
   "name": "\u2605 STAR SIEGE \u2605",
-  "producer": "Professional",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 30.0
  },
  {
   "slug": "131",
   "name": "Snake",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 45.0
  },
  {
   "slug": "132",
   "name": "Falling blocks",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 31.0
  },
  {
   "slug": "133",
   "name": "Paddle ball",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "134",
   "name": "\u2728 Whack-a-mole \u2728",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 35.0
  },
  {
   "slug": "135",
   "name": "Cross the lanes",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 42.0
  },
  {
   "slug": "136",
   "name": "Snake",
-  "producer": "Professional",
   "basic_game": "Snake",
   "consumer_wtp_cents": 37.5
  },
  {
   "slug": "137",
   "name": "Cannon Blast",
-  "producer": "Professional",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 76.0
  },
  {
   "slug": "138",
   "name": "\u2728 CRITTER SMASH \u2728",
-  "producer": "Professional",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 55.0
  },
  {
   "slug": "139",
   "name": "Cross the lanes",
-  "producer": "Amateur",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "140",
   "name": "Whack-a-Mole",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 24.0
  },
  {
   "slug": "141",
   "name": "FROGGER QUEST",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 45.7
  },
  {
   "slug": "142",
   "name": "Crystal Defender",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 74.0
  },
  {
   "slug": "143",
   "name": "Whack-a-mole",
-  "producer": "Professional",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 24.0
  },
  {
   "slug": "144",
   "name": "\ud83d\udc38 Frog Crossing",
-  "producer": "Amateur",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "145",
   "name": "Snake",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 91.0
  },
  {
   "slug": "146",
   "name": "Cross the lanes",
-  "producer": "Amateur",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "147",
   "name": "\ud83d\udc38 Coin Dash Crossing",
-  "producer": "Amateur",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 63.0
  },
  {
   "slug": "148",
   "name": "Paddle ball",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 71.0
  },
  {
   "slug": "149",
   "name": "\ud83e\udd86 Duck Hunt",
-  "producer": "Professional",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 27.5
  },
  {
   "slug": "150",
   "name": "\ud83d\ude97 Balloon Dash",
-  "producer": "Professional",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 75.0
  },
  {
   "slug": "151",
   "name": "Cross the lanes",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 5.0
  },
  {
   "slug": "152",
   "name": "Ship Duel",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 40.0
  },
  {
   "slug": "153",
   "name": "Catch-a-ball",
-  "producer": "Professional",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "154",
   "name": "\ud83c\udf88 Space Balloon Pop \ud83c\udf88",
-  "producer": "Professional",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 40.0
  },
  {
   "slug": "155",
   "name": "Jumper Ant",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 20.0
  },
  {
   "slug": "156",
   "name": "Eyeball Batter",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 25.0
  },
  {
   "slug": "157",
   "name": "\ud83d\udc36 Dog Trampoline",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 100.0
  },
  {
   "slug": "158",
   "name": "Blobby Bounce",
-  "producer": "Professional",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 88.0
  },
  {
   "slug": "159",
   "name": "Kitten Curve Jumper",
-  "producer": "Professional",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 8.3
  },
  {
   "slug": "160",
   "name": "Critter Catch",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 2.0
  },
  {
   "slug": "161",
   "name": "\ud83e\udd92 Jungle Jumper",
-  "producer": "Professional",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 17.5
  },
  {
   "slug": "162",
   "name": "\ud83e\udd51 Guac-the-Avo",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 75.0
  },
  {
   "slug": "163",
   "name": "GUNDAM ZERO",
-  "producer": "Professional",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 75.0
  },
  {
   "slug": "164",
   "name": "Golden Goose Tetris",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 71.0
  },
  {
   "slug": "165",
   "name": "Snake",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 75.0
  },
  {
   "slug": "166",
   "name": "Jumper",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 26.0
  },
  {
   "slug": "167",
   "name": "\ud83e\ude82 Sky Climb",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 25.0
  },
  {
   "slug": "168",
   "name": "Falling blocks",
-  "producer": "Professional",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 50.0
  },
  {
   "slug": "169",
   "name": "Cross the lanes",
-  "producer": "Amateur",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 34.0
  },
  {
   "slug": "170",
   "name": "Paddle ball",
-  "producer": "Professional",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 62.5
  },
  {
   "slug": "171",
   "name": "Falling blocks",
-  "producer": "Professional",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 60.0
  },
  {
   "slug": "172",
   "name": "NEON SNAKE",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 75.0
  },
  {
   "slug": "173",
   "name": "\u26be Night Slugger",
-  "producer": "Professional",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 80.0
  },
  {
   "slug": "174",
   "name": "Snake: Power-Up Quest",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 43.0
  },
  {
   "slug": "175",
   "name": "Shooter",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 90.0
  },
  {
   "slug": "176",
   "name": "\ud83d\udc30 Carrot Hop",
-  "producer": "Professional",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 2.5
  },
  {
   "slug": "177",
   "name": "Snake",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 44.0
  },
  {
   "slug": "178",
   "name": "Jumper",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 5.0
  },
  {
   "slug": "179",
   "name": "\ud83c\udf32 Forest Maze Escape \ud83c\udf32",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 75.0
  },
  {
   "slug": "180",
   "name": "Falling blocks",
-  "producer": "Professional",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 62.5
  },
  {
   "slug": "181",
   "name": "Brainstorm Blitz \ud83d\udca1",
-  "producer": "Professional",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 5.0
  },
  {
   "slug": "182",
   "name": "\ud83d\udc36 Puppy Snake",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 8.0
  },
  {
   "slug": "183",
   "name": "Cross the lanes",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 55.5
  },
  {
   "slug": "184",
   "name": "\ud83d\ude80 STAR BLASTER",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 57.0
  },
  {
   "slug": "185",
   "name": "\u2726 METEOR BLASTER \u2726",
-  "producer": "Professional",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 28.0
  },
  {
   "slug": "186",
   "name": "Target Rush",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 16.0
  },
  {
   "slug": "187",
   "name": "Rainbow Paddle Ball",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 18.0
  },
  {
   "slug": "188",
   "name": "Baby Overboard!",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 79.0
  },
  {
   "slug": "189",
   "name": "NEON SERPENT \u2014 VERSUS",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 17.0
  },
  {
   "slug": "190",
   "name": "\ud83d\udc0d Snake",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 50.0
  },
  {
   "slug": "191",
   "name": "COSMIC SERPENT",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 74.0
  },
  {
   "slug": "192",
   "name": "\u25ae NEON BLASTER \u25ae",
-  "producer": "Professional",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 43.5
  },
  {
   "slug": "193",
   "name": "\ud83c\udfaf Catch The Mole",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 51.0
  },
  {
   "slug": "194",
   "name": "NEON SMASH",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 62.0
  },
  {
   "slug": "195",
   "name": "NEON DROP",
-  "producer": "Professional",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 42.5
  },
  {
   "slug": "196",
   "name": "Cross the lanes",
-  "producer": "Amateur",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 55.0
  },
  {
   "slug": "197",
   "name": "Jumper",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 71.0
  },
  {
   "slug": "198",
   "name": "NEON SNAKE",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 75.0
  },
  {
   "slug": "199",
   "name": "Alien Jumper",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 17.0
  },
  {
   "slug": "200",
   "name": "Jumper",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 36.0
  },
  {
   "slug": "201",
   "name": "Cross the lanes",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 1.0
  },
  {
   "slug": "202",
   "name": "Neon Paddle",
-  "producer": "Professional",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 8.0
  },
  {
   "slug": "203",
   "name": "Rhythm Jumper",
-  "producer": "Professional",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 59.0
  },
  {
   "slug": "204",
   "name": "Paddle ball",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 80.0
  },
  {
   "slug": "205",
   "name": "\ud83d\udc0d Snake",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "206",
   "name": "Cross the lanes",
-  "producer": "Amateur",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 10.0
  },
  {
   "slug": "207",
   "name": "\u2728 Slide Quest",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "208",
   "name": "\ud83c\udfaf Critter Bash",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 67.0
  },
  {
   "slug": "209",
   "name": "Paddle ball",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 5.0
  },
  {
   "slug": "210",
   "name": "Critter Blocks \ud83d\udc3e",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 35.0
  },
  {
   "slug": "211",
   "name": "\ud83c\udfa7 Neon DJ Pony \ud83e\udd84",
-  "producer": "Professional",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "212",
   "name": "Bazooka Squad",
-  "producer": "Professional",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 12.5
  },
  {
   "slug": "213",
   "name": "\ud83d\udc1f Pike Feast",
-  "producer": "Professional",
   "basic_game": "Snake",
   "consumer_wtp_cents": 1.0
  },
  {
   "slug": "214",
   "name": "Tetris",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "215",
   "name": "Paddle ball",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 21.0
  },
  {
   "slug": "216",
   "name": "Cross the traffic",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 8.0
  },
  {
   "slug": "217",
   "name": "Rabbit Jumper",
-  "producer": "Professional",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 63.7
  },
  {
   "slug": "218",
   "name": "Gem Cascade",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 69.0
  },
  {
   "slug": "219",
   "name": "\u2693 Navy Battle",
-  "producer": "Professional",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 15.0
  },
  {
   "slug": "220",
   "name": "Snake Feast",
-  "producer": "Professional",
   "basic_game": "Snake",
   "consumer_wtp_cents": 45.3
  },
  {
   "slug": "221",
   "name": "Shooter",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 4.0
  },
  {
   "slug": "222",
   "name": "\ud83c\udfd3 Pickleball Rally",
-  "producer": "Professional",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 50.0
  },
  {
   "slug": "223",
   "name": "Jumper",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 78.0
  },
  {
   "slug": "224",
   "name": "Snake vs. Enemies",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "225",
   "name": "\ud83d\ude80 Bubble Blaster",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 68.0
  },
  {
   "slug": "226",
   "name": "NEON FROGGER 2088",
-  "producer": "Amateur",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 90.0
  },
  {
   "slug": "227",
   "name": "Porcupine Ball",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 25.0
  },
  {
   "slug": "228",
   "name": "Jumper",
-  "producer": "Professional",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 25.0
  },
  {
   "slug": "229",
   "name": "NEON DRAGON",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 75.0
  },
  {
   "slug": "230",
   "name": "Split Whack",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "231",
   "name": "ROCKET RUN",
-  "producer": "Professional",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 100.0
  },
  {
   "slug": "232",
   "name": "\ud83d\ude80 Meteor Devourer",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 50.0
  },
  {
   "slug": "233",
   "name": "\ud83d\ude80 Space Invaders",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 50.0
  },
  {
   "slug": "234",
   "name": "Cross the Lanes",
-  "producer": "Amateur",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 3.0
  },
  {
   "slug": "235",
   "name": "Color Chain Escape",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "236",
   "name": "Whack-a-mole",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "237",
   "name": "Falling blocks",
-  "producer": "Professional",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 32.5
  },
  {
   "slug": "238",
   "name": "NEON WHACK \u2014 STYLISH!",
-  "producer": "Professional",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "239",
   "name": "\u2694\ufe0f Medieval Ghost Busters \ud83d\udc7b",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 50.0
  },
  {
   "slug": "240",
   "name": "Brick breaker",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 71.0
  },
  {
   "slug": "241",
   "name": "Falling blocks",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 100.0
  },
  {
   "slug": "242",
   "name": "Paddle ball",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "243",
   "name": "Cross the lanes",
-  "producer": "Amateur",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 50.0
  },
  {
   "slug": "244",
   "name": "Endless Hopper",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 16.0
  },
  {
   "slug": "245",
   "name": "NEON DROP",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "246",
   "name": "Color Cascade",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 61.0
  },
  {
   "slug": "247",
   "name": "\ud83d\udc0d Snake",
-  "producer": "Professional",
   "basic_game": "Snake",
   "consumer_wtp_cents": 35.0
  },
  {
   "slug": "248",
   "name": "Jumper",
-  "producer": "Professional",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 12.5
  },
  {
   "slug": "249",
   "name": "Neon Blaster",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "250",
   "name": "Jumper",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "251",
   "name": "Falling blocks",
-  "producer": "Professional",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 0.5
  },
  {
   "slug": "252",
   "name": "\u2605 SNAKE ARCADE \u2605",
-  "producer": "Professional",
   "basic_game": "Snake",
   "consumer_wtp_cents": 15.0
  },
  {
   "slug": "253",
   "name": "\u2726 Ethereal Block Buster \u2726",
-  "producer": "Professional",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 71.5
  },
  {
   "slug": "254",
   "name": "Falling blocks",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "255",
   "name": "Snake",
-  "producer": "Professional",
   "basic_game": "Snake",
   "consumer_wtp_cents": 26.7
  },
  {
   "slug": "256",
   "name": "Neon Whack",
-  "producer": "Professional",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 25.0
  },
  {
   "slug": "257",
   "name": "Floater",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 71.0
  },
  {
   "slug": "258",
   "name": "Snake",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 2.0
  },
  {
   "slug": "259",
   "name": "Color Blocks",
-  "producer": "Professional",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 79.0
  },
  {
   "slug": "260",
   "name": "Shooter",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 20.0
  },
  {
   "slug": "261",
   "name": "Dragon Shields \ud83d\udc32\ud83d\udee1\ufe0f",
-  "producer": "Professional",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 72.5
  },
  {
   "slug": "262",
   "name": "Desert Jumper",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 12.0
  },
  {
   "slug": "263",
   "name": "Neon Blocks",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 25.0
  },
  {
   "slug": "264",
   "name": "\ud83c\udf6c Don't hit me! \ud83d\udc7b",
-  "producer": "Amateur",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 89.0
  },
  {
   "slug": "265",
   "name": "Starship Shooter",
-  "producer": "Professional",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 53.7
  },
  {
   "slug": "266",
   "name": "\ud83c\udf3c Garden Whack-a-Mole \ud83c\udf3c",
-  "producer": "Professional",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 2.0
  },
  {
   "slug": "267",
   "name": "\u2728 Bloom Blocks: Enchanted Worlds \u2728",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 75.0
  },
  {
   "slug": "268",
   "name": "Whack-a-mole",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 54.0
  },
  {
   "slug": "269",
   "name": "NEON SKIES",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 68.0
  },
  {
   "slug": "270",
   "name": "Paddle ball",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 4.0
  },
  {
   "slug": "271",
   "name": "\ud83c\udf5a Build a Rice Bowl",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 7.0
  },
  {
   "slug": "272",
   "name": "Whack-a-mole",
-  "producer": "Professional",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "273",
   "name": "Whack-a-mole",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 54.0
  },
  {
   "slug": "274",
   "name": "Cross the lanes",
-  "producer": "Amateur",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 10.0
  },
  {
   "slug": "275",
   "name": "Endless lane climb",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 27.5
  },
  {
   "slug": "276",
   "name": "Fly Swatter",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 10.0
  },
  {
   "slug": "277",
   "name": "\ud83d\udc0d Focus Snake",
-  "producer": "Professional",
   "basic_game": "Snake",
   "consumer_wtp_cents": 10.0
  },
  {
   "slug": "278",
   "name": "Cross the lanes",
-  "producer": "Amateur",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 75.0
  },
  {
   "slug": "279",
   "name": "\ud83d\udc1f Fishy Leap",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 74.0
  },
  {
   "slug": "280",
   "name": "Paddle ball",
-  "producer": "Professional",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 24.5
  },
  {
   "slug": "281",
   "name": "NEON STRIKE",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 62.0
  },
  {
   "slug": "282",
   "name": "Catch the apple",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "283",
   "name": "Jumper",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 50.0
  },
  {
   "slug": "284",
   "name": "\ud83c\udf49 Whack-a-Fruit! \ud83c\udf53",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 84.0
  },
  {
   "slug": "285",
   "name": "\u2726 BRICK BREAKER \u2726",
-  "producer": "Professional",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 12.0
  },
  {
   "slug": "286",
   "name": "Snake",
-  "producer": "Professional",
   "basic_game": "Snake",
   "consumer_wtp_cents": 25.0
  },
  {
   "slug": "287",
   "name": "\ud83c\uddf0\ud83c\uddea Kenya & USA \ud83c\uddfa\ud83c\uddf8 Space Alliance",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 15.0
  },
  {
   "slug": "288",
   "name": "Cross the lanes",
-  "producer": "Amateur",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 8.0
  },
  {
   "slug": "289",
   "name": "NEON STRIKE \u25b8 Glitch Sweep",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 7.0
  },
  {
   "slug": "290",
   "name": "NEON BLOCKS: TURBO VIBRATIONS",
-  "producer": "Professional",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 50.0
  },
  {
   "slug": "291",
   "name": "Paddle ball",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 53.0
  },
  {
   "slug": "292",
   "name": "\ud83d\udc0d Snake Brawl",
-  "producer": "Professional",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 10.5
  },
  {
   "slug": "293",
   "name": "TETRIS",
-  "producer": "Professional",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 87.5
  },
  {
   "slug": "294",
   "name": "NEON RALLY",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 25.0
  },
  {
   "slug": "295",
   "name": "Falling blocks",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "296",
   "name": "Gem Cascade",
-  "producer": "Professional",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 34.5
  },
  {
   "slug": "297",
   "name": "\u2728 Cosmic Shooter \u2728",
-  "producer": "Professional",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "298",
   "name": "Jumper",
-  "producer": "Professional",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 63.5
  },
  {
   "slug": "299",
   "name": "SABER RUNNER",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 100.0
  },
  {
   "slug": "300",
   "name": "\ud83d\udc0d Snake",
-  "producer": "Professional",
   "basic_game": "Snake",
   "consumer_wtp_cents": 42.5
  },
  {
   "slug": "301",
   "name": "\ud83e\udd86 Duck Crossing",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 29.0
  },
  {
   "slug": "302",
   "name": "\ud83d\ude80 Galaxy Drop",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 25.0
  },
  {
   "slug": "303",
   "name": "Jumper",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 66.0
  },
  {
   "slug": "304",
   "name": "Ninja Crossing \u5fcd\u8005\u6a2a\u65ad",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 18.0
  },
  {
   "slug": "305",
   "name": "\ud83d\udc0d REAL SNAKE \ud83d\udc0d",
-  "producer": "Professional",
   "basic_game": "Snake",
   "consumer_wtp_cents": 37.5
  },
  {
   "slug": "306",
   "name": "Tickle the Toes",
-  "producer": "Professional",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 10.0
  },
  {
   "slug": "307",
   "name": "Cross the highway",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 26.5
  },
  {
   "slug": "308",
   "name": "Whack-a-mole",
-  "producer": "Professional",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 1.5
  },
  {
   "slug": "309",
   "name": "Leaf Catcher \ud83c\udf42",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "310",
   "name": "Snake",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 3.0
  },
  {
   "slug": "311",
   "name": "\ud83d\udc39 Critter Whack \ud83d\udca3",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 75.0
  },
  {
   "slug": "312",
   "name": "Jumper",
-  "producer": "Professional",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 25.0
  },
  {
   "slug": "313",
   "name": "Double Jumper",
-  "producer": "Professional",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 5.0
  },
  {
   "slug": "314",
   "name": "Endless climb",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 1.7
  },
  {
   "slug": "315",
   "name": "Whack-a-mole",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "316",
   "name": "Falling blocks",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 7.0
  },
  {
   "slug": "317",
   "name": "\u2728 Paddle Ball \u2728",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 76.0
  },
  {
   "slug": "318",
   "name": "Cross the road!",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 15.0
  },
  {
   "slug": "319",
   "name": "Jumper",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 5.0
  },
  {
   "slug": "320",
   "name": "Falling blocks",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 65.0
  },
  {
   "slug": "321",
   "name": "Falling blocks",
-  "producer": "Professional",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 26.0
  },
  {
   "slug": "322",
   "name": "Falling blocks",
-  "producer": "Professional",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 84.0
  },
  {
   "slug": "323",
   "name": "Pickleball \ud83c\udfbe",
-  "producer": "Professional",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 16.7
  },
  {
   "slug": "324",
   "name": "Snake",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "325",
   "name": "\u2728 Bubble Pop Chain \u2728",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "326",
   "name": "Sky Hopper",
-  "producer": "Professional",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 19.7
  },
  {
   "slug": "327",
   "name": "\u2726 Cosmic Blaster \u2726",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 91.0
  },
  {
   "slug": "328",
   "name": "Jumper",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 25.0
  },
  {
   "slug": "329",
   "name": "Whack-a-mole",
-  "producer": "Professional",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 25.0
  },
  {
   "slug": "330",
   "name": "\ud83d\udc3a Wolf Pup Breakout",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 80.0
  },
  {
   "slug": "331",
   "name": "\u26bd Keepy-Uppy",
-  "producer": "Professional",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 49.0
  },
  {
   "slug": "332",
   "name": "Shooter",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 60.0
  },
  {
   "slug": "333",
   "name": "BEAT HOPPER",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "334",
   "name": "Falling blocks",
-  "producer": "Professional",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 26.0
  },
  {
   "slug": "335",
   "name": "Falling blocks",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 55.0
  },
  {
   "slug": "336",
   "name": "Critter Bedtime",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 75.0
  },
  {
   "slug": "337",
   "name": "\ud83e\udddc\u200d\u2640\ufe0f Mermiranda to the Rescue!",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "338",
   "name": "Jumper",
-  "producer": "Professional",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 17.3
  },
  {
   "slug": "339",
   "name": "Banana Snake",
-  "producer": "Professional",
   "basic_game": "Snake",
   "consumer_wtp_cents": 5.5
  },
  {
   "slug": "340",
   "name": "Shooter",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 28.0
  },
  {
   "slug": "341",
   "name": "Jumper",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 5.0
  },
  {
   "slug": "342",
   "name": "\ud83c\udf6c Candy Drop \ud83c\udf6d",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 62.0
  },
  {
   "slug": "343",
   "name": "Paddle ball",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 10.0
  },
  {
   "slug": "344",
   "name": "Whack-a-mole",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "345",
   "name": "Jumper",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 42.0
  },
  {
   "slug": "346",
   "name": "Cross the lanes",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 57.0
  },
  {
   "slug": "347",
   "name": "Falling blocks",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 50.0
  },
  {
   "slug": "348",
   "name": "Jumper",
-  "producer": "Professional",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 42.5
  },
  {
   "slug": "349",
   "name": "Whack-a-Pirate",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 60.0
  },
  {
   "slug": "350",
   "name": "NEON BOUNCE: CAMPAIGN",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 64.0
  },
  {
   "slug": "351",
   "name": "Lunar Lander Blocks",
-  "producer": "Professional",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 12.5
  },
  {
   "slug": "352",
   "name": "\ud83c\udf08 Rainbow Snake",
-  "producer": "Professional",
   "basic_game": "Snake",
   "consumer_wtp_cents": 51.0
  },
  {
   "slug": "353",
   "name": "\ud83d\udc0d Snake Duel",
-  "producer": "Professional",
   "basic_game": "Snake",
   "consumer_wtp_cents": 27.0
  },
  {
   "slug": "354",
   "name": "Cat Crossing",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 45.0
  },
  {
   "slug": "355",
   "name": "AIR STRIKE",
-  "producer": "Professional",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 57.0
  },
  {
   "slug": "356",
   "name": "NEON ASCENT",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 71.0
  },
  {
   "slug": "357",
   "name": "Multi-ball catch",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 9.0
  },
  {
   "slug": "358",
   "name": "\ud83d\ude80 Defend the Starship \ud83d\udc7e",
-  "producer": "Professional",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 15.0
  },
  {
   "slug": "359",
   "name": "Frog Leap",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 23.0
  },
  {
   "slug": "360",
   "name": "Shooter",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 59.0
  },
  {
   "slug": "361",
   "name": "Paddle ball",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 67.0
  },
  {
   "slug": "362",
   "name": "\ud83d\ude80 STAR CHOMPERS",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 40.0
  },
  {
   "slug": "363",
   "name": "\ud83d\udc38 Froggy Quest",
-  "producer": "Amateur",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 51.0
  },
  {
   "slug": "364",
   "name": "Falling blocks",
-  "producer": "Professional",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "365",
   "name": "HIGHWAY DODGE",
-  "producer": "Professional",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "366",
   "name": "Shooter",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 5.0
  },
  {
   "slug": "367",
   "name": "\ud83d\udc36 Puppy Dash",
-  "producer": "Professional",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 74.0
  },
  {
   "slug": "368",
   "name": "\u2726 Rocket Rush \u2726",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 12.0
  },
  {
   "slug": "369",
   "name": "\ud83d\udc39 Whack-a-Mole!",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 100.0
  },
  {
   "slug": "370",
   "name": "Fruit Catch",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 70.0
  },
  {
   "slug": "371",
   "name": "Snake",
-  "producer": "Professional",
   "basic_game": "Snake",
   "consumer_wtp_cents": 85.5
  },
  {
   "slug": "372",
   "name": "Paddle Duel",
-  "producer": "Professional",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 54.0
  },
  {
   "slug": "373",
   "name": "Snake",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 50.0
  },
  {
   "slug": "374",
   "name": "PROMETHEAN OVERRIDE",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 54.0
  },
  {
   "slug": "375",
   "name": "\ud83d\udc0d Rainbow Snake",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 76.0
  },
  {
   "slug": "376",
   "name": "Whack-a-ball",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 2.0
  },
  {
   "slug": "377",
   "name": "Shooter",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 17.0
  },
  {
   "slug": "378",
   "name": "Color Rush",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 24.0
  },
  {
   "slug": "379",
   "name": "Battleship",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 48.0
  },
  {
   "slug": "380",
   "name": "Falling blocks",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 35.0
  },
  {
   "slug": "381",
   "name": "Brick Breaker",
-  "producer": "Professional",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 80.0
  },
  {
   "slug": "382",
   "name": "\ud83e\udeb1 Garden Burrower",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 35.0
  },
  {
   "slug": "383",
   "name": "Paddle ball",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 7.0
  },
  {
   "slug": "384",
   "name": "SCENIC PADDLE",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 50.0
  },
  {
   "slug": "385",
   "name": "Color Blocks",
-  "producer": "Professional",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 10.0
  },
  {
   "slug": "386",
   "name": "Paddle ball",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "387",
   "name": "Shooter",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 84.0
  },
  {
   "slug": "388",
   "name": "Shooter",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 68.0
  },
  {
   "slug": "389",
   "name": "\ud83d\udc38 Froggy Crossing",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 30.0
  },
  {
   "slug": "390",
   "name": "Whack-a-mole",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 7.0
  },
  {
   "slug": "391",
   "name": "\ud83c\udf83 Pumpkin Dash \ud83c\udf83",
-  "producer": "Professional",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 50.0
  },
  {
   "slug": "392",
   "name": "Paddle ball",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 5.0
  },
  {
   "slug": "393",
   "name": "\ud83d\ude80 Home Planet Run",
-  "producer": "Professional",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "394",
   "name": "NEON BOUNCE",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 74.0
  },
  {
   "slug": "395",
   "name": "Whack-a-mole",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 20.0
  },
  {
   "slug": "396",
   "name": "NEON SNAKE",
-  "producer": "Professional",
   "basic_game": "Snake",
   "consumer_wtp_cents": 14.5
  },
  {
   "slug": "397",
   "name": "NEON STRIKE: MOLE MAYHEM",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 5.0
  },
  {
   "slug": "398",
   "name": "Paddle ball",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 27.0
  },
  {
   "slug": "399",
   "name": "STAR HUNTER",
-  "producer": "Professional",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 87.5
  },
  {
   "slug": "400",
   "name": "Cross the lanes",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 26.5
  },
  {
   "slug": "401",
   "name": "Shooter",
-  "producer": "Professional",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 12.5
  },
  {
   "slug": "402",
   "name": "Capybara Hop",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "403",
   "name": "Serpent Odyssey",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 56.0
  },
  {
   "slug": "404",
   "name": "Block builder",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 44.0
  },
  {
   "slug": "405",
   "name": "WALL BREAKER",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 6.0
  },
  {
   "slug": "406",
   "name": "\ud83d\udc31 Cat Crossing",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "407",
   "name": "Runner Duel \ud83c\udfc3 vs \ud83c\udfc3",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 35.0
  },
  {
   "slug": "408",
   "name": "Falling blocks",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 88.0
  },
  {
   "slug": "409",
   "name": "\ud83d\ude80 Star Blaster",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 1.0
  },
  {
   "slug": "410",
   "name": "Whack-a-mole",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 55.0
  },
  {
   "slug": "411",
   "name": "Neon blocks",
-  "producer": "Professional",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 44.7
  },
  {
   "slug": "412",
   "name": "Combo Blocks",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 1.0
  },
  {
   "slug": "413",
   "name": "\ud83c\udf53 Fruit & Critter Drop \ud83d\udc38",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 20.0
  },
  {
   "slug": "414",
   "name": "\u2605 SPACE BATTLE: CO-OP \u2605",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "415",
   "name": "Snake 3D",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 24.0
  },
  {
   "slug": "416",
   "name": "Snake",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "417",
   "name": "\ud83c\udfc3 Sidewalk Sprint",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 44.0
  },
  {
   "slug": "418",
   "name": "Falling blocks",
-  "producer": "Professional",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 13.5
  },
  {
   "slug": "419",
   "name": "Pixel Sailor Jumper",
-  "producer": "Professional",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 5.0
  },
  {
   "slug": "420",
   "name": "Shooter",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "421",
   "name": "Forest Crossing",
-  "producer": "Amateur",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "422",
   "name": "\ud83d\udc31 Hungry Cat",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "423",
   "name": "Shooter",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 22.0
  },
  {
   "slug": "424",
   "name": "Whack-a-mole",
-  "producer": "Professional",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 13.0
  },
  {
   "slug": "425",
   "name": "\ud83d\udc20 Coral Drop",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 10.0
  },
  {
   "slug": "426",
   "name": "\ud83d\udc0d Snake",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 15.0
  },
  {
   "slug": "427",
   "name": "Sky Hopper",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 75.0
  },
  {
   "slug": "428",
   "name": "\ud83e\uddf8 Whack-a-Teddy",
-  "producer": "Professional",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 76.7
  },
  {
   "slug": "429",
   "name": "Falling blocks",
-  "producer": "Professional",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 100.0
  },
  {
   "slug": "430",
   "name": "Snake",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 5.0
  },
  {
   "slug": "431",
   "name": "Falling blocks",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 14.0
  },
  {
   "slug": "432",
   "name": "Cross the lanes",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 24.0
  },
  {
   "slug": "433",
   "name": "Falling blocks",
-  "producer": "Professional",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 62.5
  },
  {
   "slug": "434",
   "name": "\ud83c\udfaa Carnival Critter Whack \ud83c\udfaa",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 100.0
  },
  {
   "slug": "435",
   "name": "Snake",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 12.0
  },
  {
   "slug": "436",
   "name": "\ud83e\udd98 Kangaroo Hop: Hell Run",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 58.0
  },
  {
   "slug": "437",
   "name": "\ud83c\udf81 Prize Block Drop \ud83c\udf81",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 50.0
  },
  {
   "slug": "438",
   "name": "\u26a1 Paddle Ball \u26a1",
-  "producer": "Professional",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 87.0
  },
  {
   "slug": "439",
   "name": "Ball Splash",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 11.0
  },
  {
   "slug": "440",
   "name": "Shooter",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 59.0
  },
  {
   "slug": "441",
   "name": "Whack-a-mole",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 25.0
  },
  {
   "slug": "442",
   "name": "\ud83d\udc19 Sea Monster Rising",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 12.0
  },
  {
   "slug": "443",
   "name": "Plumber Dash",
-  "producer": "Professional",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "444",
   "name": "\ud83d\udc04 Cow Jump Farm",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 60.0
  },
  {
   "slug": "445",
   "name": "Pebble Ball: Melody Demolition",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 18.0
  },
  {
   "slug": "446",
   "name": "\ud83e\udd8a Kitsune Spirit Run",
-  "producer": "Professional",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 43.3
  },
  {
   "slug": "447",
   "name": "\ud83c\udfce\ufe0f Highway Dash",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 11.0
  },
  {
   "slug": "448",
   "name": "WHACK WARS",
-  "producer": "Professional",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 90.0
  },
  {
   "slug": "449",
   "name": "\u2728 Cross the Lanes \u2728",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 28.0
  },
  {
   "slug": "450",
   "name": "Neon Runner",
-  "producer": "Professional",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 61.7
  },
  {
   "slug": "451",
   "name": "\ud83d\udc14 Chicken Crossing Catastrophe",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 12.0
  },
  {
   "slug": "452",
   "name": "Aurora Blocks",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 88.0
  },
  {
   "slug": "453",
   "name": "Hoop bounce",
-  "producer": "Professional",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 26.0
  },
  {
   "slug": "454",
   "name": "Cross the lanes",
-  "producer": "Amateur",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "455",
   "name": "\ud83d\udc21 Puffer Crossing",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 18.0
  },
  {
   "slug": "456",
   "name": "Snake",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 65.0
  },
  {
   "slug": "457",
   "name": "Star Shooter",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "458",
   "name": "Snake",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 30.0
  },
  {
   "slug": "459",
   "name": "Shooter",
-  "producer": "Professional",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 11.5
  },
  {
   "slug": "460",
   "name": "Hungry Ball",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 10.0
  },
  {
   "slug": "461",
   "name": "LASER PADDLE",
-  "producer": "Amateur",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 1.0
  },
  {
   "slug": "462",
   "name": "Whack-a-mole",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 51.0
  },
  {
   "slug": "463",
   "name": "DINO DASH",
-  "producer": "Professional",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 39.0
  },
  {
   "slug": "464",
   "name": "Star Blaster",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 15.0
  },
  {
   "slug": "465",
   "name": "\ud83d\udc0d Snake",
-  "producer": "Professional",
   "basic_game": "Snake",
   "consumer_wtp_cents": 48.3
  },
  {
   "slug": "466",
   "name": "\ud83d\udea6 Highway Crossing",
-  "producer": "Amateur",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 69.0
  },
  {
   "slug": "467",
   "name": "Whack-a-mole",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 54.0
  },
  {
   "slug": "468",
   "name": "Snake",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 25.0
  },
  {
   "slug": "469",
   "name": "Bunny Hearts \ud83d\udc95",
-  "producer": "Professional",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 79.0
  },
  {
   "slug": "470",
   "name": "FOXRUN",
-  "producer": "Professional",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 25.0
  },
  {
   "slug": "471",
   "name": "Falling blocks",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 20.0
  },
  {
   "slug": "472",
   "name": "Falling blocks",
-  "producer": "Amateur",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 37.0
  },
  {
   "slug": "473",
   "name": "\ud83c\udf08 Rainbow Snake",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 77.0
  },
  {
   "slug": "474",
   "name": "Cross the lanes",
-  "producer": "Professional",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 75.0
  },
  {
   "slug": "475",
   "name": "Jumper",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "476",
   "name": "\ud83d\udc38 Frog Dash",
-  "producer": "Amateur",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 9.0
  },
  {
   "slug": "477",
   "name": "F R O G G E R",
-  "producer": "Amateur",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 99.0
  },
  {
   "slug": "478",
   "name": "Dot Grab",
-  "producer": "Professional",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "479",
   "name": "Whack-a-mole",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 50.0
  },
  {
   "slug": "480",
   "name": "Dodge & Blast",
-  "producer": "Professional",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 20.0
  },
  {
   "slug": "481",
   "name": "Shooter",
-  "producer": "Professional",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 60.5
  },
  {
   "slug": "482",
   "name": "NEON GRID RUNNER",
-  "producer": "Amateur",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 73.0
  },
  {
   "slug": "483",
   "name": "Star Tap",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 10.0
  },
  {
   "slug": "484",
   "name": "Snake Duel",
-  "producer": "Amateur",
   "basic_game": "Snake",
   "consumer_wtp_cents": 50.0
  },
  {
   "slug": "485",
   "name": "\ud83d\ude80 SPACE DEFENDER",
-  "producer": "Amateur",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 65.0
  },
  {
   "slug": "486",
   "name": "NEON RAIDERS",
-  "producer": "Professional",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 29.0
  },
  {
   "slug": "487",
   "name": "Whack-a-mole",
-  "producer": "Amateur",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 0.0
  },
  {
   "slug": "488",
   "name": "\ud83d\udc38 Froggy Crossing",
-  "producer": "Amateur",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 70.0
  }
