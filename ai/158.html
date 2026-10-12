@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GALACTIC BREAKOUT</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html#ai">&larr; All games</a> &middot; <b>GALACTIC BREAKOUT</b></div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;style&gt;
+  html, body { height: 100%; margin: 0; padding: 0; }
+  body { font-family: system-ui, -apple-system, sans-serif; background: #05010f; color: #e8e8ff; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 8px 10px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  h1 { margin: 2px 0 0; font-size: 26px; font-weight: 800; letter-spacing: 1px;
+       background: linear-gradient(90deg,#ff4fd8,#8a5bff,#38e8ff); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: 0 0 18px rgba(138,91,255,.4); }
+  .instructions { font-size: 16px; color: #a9a9d6; max-width: 620px; margin: 0; line-height: 1.35; text-align: center; }
+  .hud { width: 620px; display: flex; justify-content: space-between; align-items: center; font-size: 18px; color: #cfcfff; }
+  .hud .lives { letter-spacing: 3px; }
+  #wrap { position: relative; width: 620px; height: 460px; }
+  canvas { display: block; border-radius: 10px; background: #05010f; box-shadow: 0 0 30px rgba(138,91,255,.25) inset, 0 0 20px rgba(56,232,255,.15); }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;GALACTIC BREAKOUT&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Move your mouse left and right to steer the glowing ship and bounce the plasma ball into the alien bricks. Break bricks quickly without hitting a wall to build combos — use the Start/Restart button below.&lt;/p&gt;
+  &lt;div class=&quot;hud&quot;&gt;
+    &lt;div&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;lives&quot; id=&quot;lives&quot;&gt;🚀 🚀 🚀&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div id=&quot;wrap&quot;&gt;
+    &lt;canvas id=&quot;cv&quot; width=&quot;620&quot; height=&quot;460&quot;&gt;&lt;/canvas&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+[&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+  window.addEventListener(t, function(e) {
+    try {
+      window.parent.postMessage({ type: &#x27;game_input&#x27;, kind: t, key: e.key || null }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+});
+
+var cv = document.getElementById(&#x27;cv&#x27;), ctx = cv.getContext(&#x27;2d&#x27;);
+var W = 620, H = 460;
+var scoreEl = document.getElementById(&#x27;score&#x27;), livesEl = document.getElementById(&#x27;lives&#x27;);
+
+var running = false, animId = null;
+var score = 0, lives = 3, gameOver = false;
+
+// paddle
+var padW = 100, padH = 14, padX = (W - padW) / 2, padY = H - 30;
+
+// ball
+var ball = { x: W/2, y: H/2, vx: 3, vy: -3, r: 7 };
+var baseSpeed = 4.2, speed = baseSpeed;
+
+// combo
+var combo = 1, comboTimer = 0, comboFlash = 0;
+
+// trail
+var trail = [];
+
+// particles
+var parts = [];
+
+// stars
+var stars = [];
+for (var i = 0; i &lt; 90; i++) {
+  stars.push({ x: Math.random()*W, y: Math.random()*H, s: Math.random()*1.8+0.3, sp: Math.random()*0.4+0.1 });
+}
+
+// bricks
+var bricks = [];
+var COLS = 10, ROWS = 5;
+var bMarginX = 8, bTop = 40, bGap = 4;
+var bW = (W - bMarginX*2 - bGap*(COLS-1)) / COLS;
+var bH = 20;
+
+function tierFor(row) {
+  // rows 0,1 = neon pink (3), rows 2,3 = gold (2), row 4 = silver (1)
+  if (row &lt;= 1) return { pts: 3, color: &#x27;#ff4fd8&#x27;, glow: &#x27;rgba(255,79,216,0.9)&#x27;, pulse: true };
+  if (row &lt;= 3) return { pts: 2, color: &#x27;#ffd24a&#x27;, glow: &#x27;rgba(255,210,74,0.9)&#x27;, pulse: false };
+  return { pts: 1, color: &#x27;#cfd6e6&#x27;, glow: &#x27;rgba(207,214,230,0.9)&#x27;, pulse: false };
+}
+
+function buildBricks() {
+  bricks = [];
+  for (var r = 0; r &lt; ROWS; r++) {
+    for (var c = 0; c &lt; COLS; c++) {
+      var t = tierFor(r);
+      bricks.push({
+        x: bMarginX + c*(bW+bGap),
+        y: bTop + r*(bH+bGap),
+        w: bW, h: bH,
+        alive: true, pts: t.pts, color: t.color, glow: t.glow, pulse: t.pulse
+      });
+    }
+  }
+}
+
+function resetBall() {
+  ball.x = W/2; ball.y = H/2 + 40;
+  var ang = (Math.random()*0.6 - 0.3);
+  ball.vx = Math.sin(ang) * speed;
+  ball.vy = -Math.abs(Math.cos(ang) * speed);
+  trail = [];
+  combo = 1; comboTimer = 0;
+}
+
+function spawnBurst(x, y, color) {
+  for (var i = 0; i &lt; 12; i++) {
+    var a = Math.random()*Math.PI*2, sp = Math.random()*3+1;
+    parts.push({ x:x, y:y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp, life:1, color:color });
+  }
+}
+
+function startGame() {
+  if (running) return;
+  score = 0; lives = 3; gameOver = false;
+  speed = baseSpeed; combo = 1; comboFlash = 0;
+  parts = []; trail = [];
+  scoreEl.textContent = &#x27;0&#x27;;
+  livesEl.textContent = &#x27;🚀 🚀 🚀&#x27;;
+  buildBricks();
+  resetBall();
+  running = true;
+  animId = requestAnimationFrame(loop);
+}
+function stopGame() {
+  running = false;
+  if (animId) { cancelAnimationFrame(animId); animId = null; }
+}
+
+function updateSpeed() {
+  speed = baseSpeed + Math.min(score / 40, 4.5);
+}
+
+function step() {
+  // stars scroll
+  for (var i = 0; i &lt; stars.length; i++) {
+    stars[i].y += stars[i].sp;
+    if (stars[i].y &gt; H) { stars[i].y = 0; stars[i].x = Math.random()*W; }
+  }
+
+  if (!gameOver) {
+    // maintain speed magnitude
+    var mag = Math.hypot(ball.vx, ball.vy) || 1;
+    ball.vx = ball.vx / mag * speed;
+    ball.vy = ball.vy / mag * speed;
+
+    ball.x += ball.vx; ball.y += ball.vy;
+
+    // trail
+    trail.push({ x: ball.x, y: ball.y });
+    if (trail.length &gt; 16) trail.shift();
+
+    // walls
+    if (ball.x - ball.r &lt;= 0) { ball.x = ball.r; ball.vx = -ball.vx; combo = 1; comboTimer = 0; }
+    if (ball.x + ball.r &gt;= W) { ball.x = W - ball.r; ball.vx = -ball.vx; combo = 1; comboTimer = 0; }
+    if (ball.y - ball.r &lt;= 0) { ball.y = ball.r; ball.vy = -ball.vy; combo = 1; comboTimer = 0; }
+
+    // paddle
+    if (ball.vy &gt; 0 &amp;&amp; ball.y + ball.r &gt;= padY &amp;&amp; ball.y + ball.r &lt;= padY + padH + 8 &amp;&amp;
+        ball.x &gt;= padX &amp;&amp; ball.x &lt;= padX + padW) {
+      ball.y = padY - ball.r;
+      var hit = (ball.x - (padX + padW/2)) / (padW/2); // -1..1
+      ball.vx = hit * speed * 0.9;
+      ball.vy = -Math.abs(speed);
+      combo = 1; comboTimer = 0;
+    }
+
+    // bricks
+    for (var b = 0; b &lt; bricks.length; b++) {
+      var br = bricks[b];
+      if (!br.alive) continue;
+      if (ball.x + ball.r &gt;= br.x &amp;&amp; ball.x - ball.r &lt;= br.x + br.w &amp;&amp;
+          ball.y + ball.r &gt;= br.y &amp;&amp; ball.y - ball.r &lt;= br.y + br.h) {
+        br.alive = false;
+        // bounce: pick axis by overlap
+        var overlapX = Math.min(ball.x + ball.r - br.x, br.x + br.w - (ball.x - ball.r));
+        var overlapY = Math.min(ball.y + ball.r - br.y, br.y + br.h - (ball.y - ball.r));
+        if (overlapX &lt; overlapY) ball.vx = -ball.vx; else ball.vy = -ball.vy;
+        spawnBurst(br.x + br.w/2, br.y + br.h/2, br.color);
+        // combo
+        comboTimer = 90;
+        combo = Math.min(combo + 1, 5);
+        var gained = br.pts * combo;
+        score += gained;
+        scoreEl.textContent = score;
+        if (combo &gt;= 2) comboFlash = 40;
+        updateSpeed();
+        break;
+      }
+    }
+
+    // combo decay
+    if (comboTimer &gt; 0) { comboTimer--; if (comboTimer === 0) combo = 1; }
+
+    // rebuild bricks if cleared
+    var anyAlive = false;
+    for (var q = 0; q &lt; bricks.length; q++) if (bricks[q].alive) { anyAlive = true; break; }
+    if (!anyAlive) buildBricks();
+
+    // fell below
+    if (ball.y - ball.r &gt; H) {
+      lives--;
+      var s = &#x27;&#x27;;
+      for (var l = 0; l &lt; 3; l++) s += (l &lt; lives ? &#x27;🚀 &#x27; : &#x27;💥 &#x27;);
+      livesEl.textContent = s.trim();
+      if (lives &lt;= 0) { gameOver = true; }
+      else resetBall();
+    }
+  } else {
+    // game over: ball keeps drifting for &quot;alive&quot; feel
+    ball.x += ball.vx * 0.5; ball.y += ball.vy * 0.5;
+    if (ball.x &lt; ball.r || ball.x &gt; W - ball.r) ball.vx = -ball.vx;
+    if (ball.y &lt; ball.r || ball.y &gt; H - ball.r) ball.vy = -ball.vy;
+    trail.push({ x: ball.x, y: ball.y });
+    if (trail.length &gt; 16) trail.shift();
+  }
+
+  // particles
+  for (var p = parts.length - 1; p &gt;= 0; p--) {
+    var pt = parts[p];
+    pt.x += pt.vx; pt.y += pt.vy; pt.vy += 0.05; pt.life -= 0.03;
+    if (pt.life &lt;= 0) parts.splice(p, 1);
+  }
+  if (comboFlash &gt; 0) comboFlash--;
+}
+
+var rainbow = [&#x27;#ff4fd8&#x27;,&#x27;#ff8a4a&#x27;,&#x27;#ffd24a&#x27;,&#x27;#5bff8a&#x27;,&#x27;#38e8ff&#x27;,&#x27;#8a5bff&#x27;];
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  // bg
+  ctx.fillStyle = &#x27;#05010f&#x27;;
+  ctx.fillRect(0, 0, W, H);
+  // stars
+  for (var i = 0; i &lt; stars.length; i++) {
+    var st = stars[i];
+    ctx.globalAlpha = 0.5 + st.s/2.2;
+    ctx.fillStyle = &#x27;#cfe3ff&#x27;;
+    ctx.fillRect(st.x, st.y, st.s, st.s);
+  }
+  ctx.globalAlpha = 1;
+
+  // bricks
+  var t = Date.now() / 300;
+  for (var b = 0; b &lt; bricks.length; b++) {
+    var br = bricks[b];
+    if (!br.alive) continue;
+    var glowStr = 10;
+    if (br.pulse) glowStr = 8 + Math.sin(t + b) * 6;
+    ctx.save();
+    ctx.shadowColor = br.glow;
+    ctx.shadowBlur = glowStr;
+    ctx.fillStyle = br.color;
+    roundRect(br.x, br.y, br.w, br.h, 4);
+    ctx.fill();
+    ctx.restore();
+    // inner shine
+    ctx.fillStyle = &#x27;rgba(255,255,255,0.18)&#x27;;
+    roundRect(br.x+2, br.y+2, br.w-4, br.h/2-2, 3);
+    ctx.fill();
+  }
+
+  // trail (rainbow)
+  for (var tr = 0; tr &lt; trail.length; tr++) {
+    var seg = trail[tr];
+    var a = tr / trail.length;
+    ctx.globalAlpha = a * 0.6;
+    ctx.fillStyle = rainbow[tr % rainbow.length];
+    var rr = ball.r * a;
+    ctx.beginPath();
+    ctx.arc(seg.x, seg.y, Math.max(1, rr), 0, Math.PI*2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
+  // particles
+  for (var p = 0; p &lt; parts.length; p++) {
+    var pt = parts[p];
+    ctx.globalAlpha = Math.max(0, pt.life);
+    ctx.fillStyle = pt.color;
+    ctx.fillRect(pt.x, pt.y, 3, 3);
+  }
+  ctx.globalAlpha = 1;
+
+  // ball
+  ctx.save();
+  ctx.shadowColor = &#x27;#38e8ff&#x27;;
+  ctx.shadowBlur = 18;
+  var grad = ctx.createRadialGradient(ball.x, ball.y, 1, ball.x, ball.y, ball.r);
+  grad.addColorStop(0, &#x27;#ffffff&#x27;);
+  grad.addColorStop(1, &#x27;#38e8ff&#x27;);
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI*2);
+  ctx.fill();
+  ctx.restore();
+
+  // paddle (glowing ship)
+  ctx.save();
+  ctx.shadowColor = &#x27;rgba(138,91,255,0.9)&#x27;;
+  ctx.shadowBlur = 16;
+  var pg = ctx.createLinearGradient(padX, 0, padX+padW, 0);
+  pg.addColorStop(0, &#x27;#8a5bff&#x27;);
+  pg.addColorStop(0.5, &#x27;#38e8ff&#x27;);
+  pg.addColorStop(1, &#x27;#8a5bff&#x27;);
+  ctx.fillStyle = pg;
+  ctx.beginPath();
+  // ship shape
+  ctx.moveTo(padX, padY + padH);
+  ctx.lineTo(padX + 14, padY);
+  ctx.lineTo(padX + padW - 14, padY);
+  ctx.lineTo(padX + padW, padY + padH);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+
+  // combo flash
+  if (comboFlash &gt; 0 &amp;&amp; combo &gt;= 2) {
+    ctx.globalAlpha = Math.min(1, comboFlash / 20);
+    ctx.font = &#x27;bold 40px system-ui, sans-serif&#x27;;
+    ctx.textAlign = &#x27;center&#x27;;
+    ctx.fillStyle = combo &gt;= 4 ? &#x27;#ff4fd8&#x27; : &#x27;#ffd24a&#x27;;
+    ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = 20;
+    ctx.fillText(&#x27;COMBO x&#x27; + combo, W/2, H/2 - 20);
+    ctx.shadowBlur = 0;
+    ctx.globalAlpha = 1;
+    ctx.textAlign = &#x27;left&#x27;;
+  }
+
+  // game over overlay
+  if (gameOver) {
+    ctx.fillStyle = &#x27;rgba(5,1,15,0.6)&#x27;;
+    ctx.fillRect(0, 0, W, H);
+    ctx.textAlign = &#x27;center&#x27;;
+    ctx.fillStyle = &#x27;#ff4fd8&#x27;;
+    ctx.shadowColor = &#x27;#ff4fd8&#x27;; ctx.shadowBlur = 25;
+    ctx.font = &#x27;bold 46px system-ui, sans-serif&#x27;;
+    ctx.fillText(&#x27;GAME OVER&#x27;, W/2, H/2 - 10);
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = &#x27;#e8e8ff&#x27;;
+    ctx.font = &#x27;bold 24px system-ui, sans-serif&#x27;;
+    ctx.fillText(&#x27;Final Score: &#x27; + score, W/2, H/2 + 30);
+    ctx.font = &#x27;16px system-ui, sans-serif&#x27;;
+    ctx.fillStyle = &#x27;#a9a9d6&#x27;;
+    ctx.fillText(&#x27;Press Restart below to play again&#x27;, W/2, H/2 + 62);
+    ctx.textAlign = &#x27;left&#x27;;
+  }
+}
+
+function roundRect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.arcTo(x+w, y, x+w, y+h, r);
+  ctx.arcTo(x+w, y+h, x, y+h, r);
+  ctx.arcTo(x, y+h, x, y, r);
+  ctx.arcTo(x, y, x+w, y, r);
+  ctx.closePath();
+}
+
+function loop() {
+  if (!running) return;
+  step();
+  draw();
+  animId = requestAnimationFrame(loop);
+}
+
+// mouse / touch control
+function movePaddle(clientX) {
+  var rect = cv.getBoundingClientRect();
+  var x = (clientX - rect.left) * (W / rect.width);
+  padX = x - padW/2;
+  padX = Math.max(0, Math.min(W - padW, padX));
+}
+cv.addEventListener(&#x27;mousemove&#x27;, function(e){ movePaddle(e.clientX); });
+cv.addEventListener(&#x27;touchmove&#x27;, function(e){ if(e.touches[0]){ movePaddle(e.touches[0].clientX); e.preventDefault(); } }, {passive:false});
+
+window.addEventListener(&#x27;message&#x27;, function (e) {
+  if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+  if (e.data.type === &#x27;wd_start&#x27;) startGame();
+  else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+});
+
+// initial static frame
+buildBricks();
+draw();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  // Suppress in-iframe scrollbars. The parent fits the iframe layout
+  // box to match the content size, so internal scroll is redundant —
+  // and if the LLM&#x27;s CSS sets body overflow: auto, the scrollbar shows
+  // briefly before the fit lands. Force hidden so it never appears.
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  // Iframe-internal JS error capture. window.onerror inside a sandboxed
+  // iframe can&#x27;t post to /api/js_error directly, so we relay to the
+  // parent via postMessage; parent&#x27;s error_logger.js forwards to the
+  // server. Catches LLM-emitted broken HTML (invalid hex, undefined
+  // variables, etc.) that would otherwise fail silently inside the
+  // iframe.
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      // Debounce: don&#x27;t fire more than ~10× per second. ResizeObserver
+      // fires repeatedly during layout/font load; we only need the latest.
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      // Clamp: reject obviously bogus dimensions. Any browser-game viewport
+      // is well under 4000×4000 logical px; readings beyond that are layout
+      // noise during load/visibility transitions.
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  // Parent posts wd_remeasure when it makes the iframe visible (the body&#x27;s
+  // ResizeObserver doesn&#x27;t fire on display:none→block of an outer ancestor
+  // because the iframe document didn&#x27;t actually resize). Wait a frame for
+  // layout to settle before measuring.
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

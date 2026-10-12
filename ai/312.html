@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🍉 Fruit Drop 🍓</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html#ai">&larr; All games</a> &middot; <b>🍉 Fruit Drop 🍓</b></div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #0a0e27; color: #fff; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 10px 14px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: 1px;
+    background: linear-gradient(90deg,#ff5e62,#ffca3a,#8ac926,#4cc9f0); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .instructions { font-size: 16px; color: #b8c0e0; max-width: 620px; margin: 0; line-height: 1.35; text-align: center; }
+  .stats { display: flex; gap: 14px; font-size: 17px; font-weight: 700; }
+  .stat { background: #161c40; padding: 5px 12px; border-radius: 8px; text-align: center; }
+  .stat small { display: block; font-size: 11px; font-weight: 600; color: #7f88b8; letter-spacing: .5px; }
+  .stat span { font-size: 19px; }
+  .fieldwrap { position: relative; }
+  canvas { display: block; border-radius: 8px; box-shadow: 0 8px 30px rgba(0,0,0,.5); }
+  .combo { position: absolute; top: 44%; left: 0; right: 0; text-align: center; font-size: 46px; font-weight: 900;
+    color: #fff; text-shadow: 0 0 18px #ffca3a, 0 3px 6px #000; pointer-events: none; opacity: 0; }
+  .combo.show { animation: pop .9s ease-out; }
+  @keyframes pop { 0%{opacity:0;transform:scale(.3) rotate(-8deg);} 30%{opacity:1;transform:scale(1.25) rotate(4deg);} 60%{transform:scale(1) rotate(0);} 100%{opacity:0;transform:scale(1.1);} }
+  .over { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center;
+    background: rgba(10,14,39,.85); border-radius: 8px; font-size: 30px; font-weight: 800; gap: 8px; }
+  .over small { font-size: 16px; color: #b8c0e0; font-weight: 600; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;🍉 Fruit Drop 🍓&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Move fruit with ← / →, rotate with ↑, soft-drop with ↓, and hard-drop with Space (or swipe on touch). Clear full rows to score — line up combos for big bonus points!&lt;/p&gt;
+  &lt;div class=&quot;stats&quot;&gt;
+    &lt;div class=&quot;stat&quot;&gt;&lt;small&gt;SCORE&lt;/small&gt;&lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;stat&quot;&gt;&lt;small&gt;BEST&lt;/small&gt;&lt;span id=&quot;best&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;stat&quot;&gt;&lt;small&gt;LEVEL&lt;/small&gt;&lt;span id=&quot;level&quot;&gt;1&lt;/span&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;fieldwrap&quot;&gt;
+    &lt;canvas id=&quot;cv&quot; width=&quot;264&quot; height=&quot;480&quot;&gt;&lt;/canvas&gt;
+    &lt;div class=&quot;combo&quot; id=&quot;combo&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;over&quot; id=&quot;over&quot;&gt;&lt;div&gt;Game Over&lt;/div&gt;&lt;small id=&quot;oversub&quot;&gt;&lt;/small&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var CELL = 24, COLS = 11, ROWS = 20;
+  var cv = document.getElementById(&#x27;cv&#x27;), ctx = cv.getContext(&#x27;2d&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;), bestEl = document.getElementById(&#x27;best&#x27;),
+      levelEl = document.getElementById(&#x27;level&#x27;), comboEl = document.getElementById(&#x27;combo&#x27;),
+      overEl = document.getElementById(&#x27;over&#x27;), overSub = document.getElementById(&#x27;oversub&#x27;);
+
+  var SHAPES = {
+    I: { cells: [[0,1],[1,1],[2,1],[3,1]], color:&#x27;#4cc9f0&#x27;, fruit:&#x27;🍋&#x27; },
+    O: { cells: [[1,0],[2,0],[1,1],[2,1]], color:&#x27;#ffca3a&#x27;, fruit:&#x27;🍊&#x27; },
+    T: { cells: [[1,0],[0,1],[1,1],[2,1]], color:&#x27;#c77dff&#x27;, fruit:&#x27;🍇&#x27; },
+    S: { cells: [[1,0],[2,0],[0,1],[1,1]], color:&#x27;#8ac926&#x27;, fruit:&#x27;🍏&#x27; },
+    Z: { cells: [[0,0],[1,0],[1,1],[2,1]], color:&#x27;#ff5e62&#x27;, fruit:&#x27;🍓&#x27; },
+    J: { cells: [[0,0],[0,1],[1,1],[2,1]], color:&#x27;#4361ee&#x27;, fruit:&#x27;🫐&#x27; },
+    L: { cells: [[2,0],[0,1],[1,1],[2,1]], color:&#x27;#f15bb5&#x27;, fruit:&#x27;🍉&#x27; }
+  };
+  var KEYS = Object.keys(SHAPES);
+
+  var grid, piece, score, best = 0, level, dropMs, dropId = null, running = false, gameOver = false;
+
+  function newGrid(){ grid=[]; for(var r=0;r&lt;ROWS;r++){var row=[];for(var c=0;c&lt;COLS;c++)row.push(null);grid.push(row);} }
+
+  function randPiece(){
+    var k = KEYS[Math.floor(Math.random()*KEYS.length)];
+    var s = SHAPES[k];
+    return { type:k, cells: s.cells.map(function(c){return c.slice();}), color:s.color, fruit:s.fruit,
+             x: Math.floor((COLS-4)/2), y:-1 };
+  }
+
+  function cellsAt(p, cells){ cells = cells||p.cells; return cells.map(function(c){return [c[0]+p.x, c[1]+p.y];}); }
+
+  function collides(p, cells){
+    var cs = cellsAt(p, cells);
+    for(var i=0;i&lt;cs.length;i++){
+      var x=cs[i][0], y=cs[i][1];
+      if(x&lt;0||x&gt;=COLS||y&gt;=ROWS) return true;
+      if(y&gt;=0 &amp;&amp; grid[y][x]) return true;
+    }
+    return false;
+  }
+
+  function rotate(p){
+    if(p.type===&#x27;O&#x27;) return p.cells;
+    // rotate around center of a 4-wide bounding, use pivot-based rotation
+    return p.cells.map(function(c){ return [ -(c[1]-1.5)+1.5, (c[0]-1.5)+1.5 ]; })
+                  .map(function(c){ return [Math.round(c[0]), Math.round(c[1])]; });
+  }
+
+  function tryRotate(){
+    if(!piece) return;
+    var nc = rotate(piece);
+    var kicks = [0,-1,1,-2,2];
+    for(var i=0;i&lt;kicks.length;i++){
+      var test={x:piece.x+kicks[i],y:piece.y,cells:nc};
+      if(!collides(test,nc)){ piece.cells=nc; piece.x+=kicks[i]; draw(); return; }
+    }
+  }
+
+  function ghostY(){
+    var gy = piece.y;
+    while(!collides({x:piece.x,y:gy+1,cells:piece.cells},piece.cells)) gy++;
+    return gy;
+  }
+
+  function lock(){
+    var cs = cellsAt(piece);
+    for(var i=0;i&lt;cs.length;i++){ var x=cs[i][0],y=cs[i][1]; if(y&gt;=0) grid[y][x]={color:piece.color,fruit:piece.fruit}; }
+    clearLines();
+  }
+
+  function clearLines(){
+    var full=[];
+    for(var r=0;r&lt;ROWS;r++){ var f=true; for(var c=0;c&lt;COLS;c++) if(!grid[r][c]){f=false;break;} if(f) full.push(r); }
+    if(full.length===0){ spawn(); return; }
+    // flash white then remove
+    for(var i=0;i&lt;full.length;i++) for(var c=0;c&lt;COLS;c++) grid[full[i]][c]={flash:true};
+    draw();
+    beep(full.length);
+    var pts = full.length===1?100 : full.length===2?200 : full.length===3?500 : 1000;
+    score += pts;
+    if(full.length&gt;=2){ showCombo(full.length, pts); }
+    var newLevel = Math.floor(score/300)+1;
+    if(newLevel&gt;level){ level=newLevel; dropMs=Math.max(90, 500-(level-1)*45); restartTimer(); }
+    scoreEl.textContent=score; levelEl.textContent=level;
+    if(score&gt;best){ best=score; bestEl.textContent=best; }
+    setTimeout(function(){
+      for(var i=0;i&lt;full.length;i++){ grid.splice(full[i],1); var e=[]; for(var c=0;c&lt;COLS;c++)e.push(null); grid.unshift(e); }
+      spawn();
+    },140);
+  }
+
+  function showCombo(n,pts){
+    var labels={2:&#x27;DOUBLE!&#x27;,3:&#x27;TRIPLE!&#x27;,4:&#x27;FRUIT-TASTIC!&#x27;};
+    comboEl.textContent=(labels[n]||&#x27;COMBO!&#x27;)+&#x27; +&#x27;+pts;
+    comboEl.classList.remove(&#x27;show&#x27;); void comboEl.offsetWidth; comboEl.classList.add(&#x27;show&#x27;);
+  }
+
+  function spawn(){
+    piece = randPiece();
+    if(collides(piece)){ endGame(); return; }
+    draw();
+  }
+
+  function step(){
+    if(!piece) return;
+    var n={x:piece.x,y:piece.y+1,cells:piece.cells};
+    if(collides(n,piece.cells)){ lock(); }
+    else { piece.y++; draw(); }
+  }
+
+  function move(dx){ if(!running||!piece) return; var n={x:piece.x+dx,y:piece.y,cells:piece.cells}; if(!collides(n,piece.cells)){piece.x+=dx;draw();} }
+  function hardDrop(){ if(!running||!piece) return; var gy=ghostY(); piece.y=gy; draw(); lock(); }
+
+  function draw(){
+    // background
+    ctx.fillStyle=&#x27;#0d1339&#x27;; ctx.fillRect(0,0,cv.width,cv.height);
+    ctx.strokeStyle=&#x27;rgba(255,255,255,.05)&#x27;; ctx.lineWidth=1;
+    for(var c=0;c&lt;=COLS;c++){ ctx.beginPath(); ctx.moveTo(c*CELL,0); ctx.lineTo(c*CELL,ROWS*CELL); ctx.stroke(); }
+    for(var r=0;r&lt;=ROWS;r++){ ctx.beginPath(); ctx.moveTo(0,r*CELL); ctx.lineTo(COLS*CELL,r*CELL); ctx.stroke(); }
+    // locked
+    for(var r=0;r&lt;ROWS;r++) for(var c=0;c&lt;COLS;c++){ var g=grid[r][c]; if(g){ if(g.flash) drawFlash(c,r); else drawTile(c,r,g.color,g.fruit); } }
+    // ghost
+    if(piece){
+      var gy=ghostY(), cs=cellsAt({x:piece.x,y:gy,cells:piece.cells});
+      ctx.save(); ctx.globalAlpha=.28;
+      for(var i=0;i&lt;cs.length;i++){ if(cs[i][1]&gt;=0) drawTile(cs[i][0],cs[i][1],piece.color,piece.fruit,true); }
+      ctx.restore();
+      var pc=cellsAt(piece);
+      for(var i=0;i&lt;pc.length;i++){ if(pc[i][1]&gt;=0) drawTile(pc[i][0],pc[i][1],piece.color,piece.fruit); }
+    }
+  }
+
+  function drawTile(cx,cy,color,fruit,ghost){
+    var x=cx*CELL, y=cy*CELL;
+    ctx.fillStyle=color;
+    roundRect(x+1.5,y+1.5,CELL-3,CELL-3,5); ctx.fill();
+    ctx.fillStyle=&#x27;rgba(255,255,255,.22)&#x27;; roundRect(x+3,y+3,CELL-6,7,4); ctx.fill();
+    ctx.font=&#x27;16px system-ui&#x27;; ctx.textAlign=&#x27;center&#x27;; ctx.textBaseline=&#x27;middle&#x27;;
+    ctx.fillText(fruit, x+CELL/2, y+CELL/2+1);
+  }
+  function drawFlash(cx,cy){ var x=cx*CELL,y=cy*CELL; ctx.fillStyle=&#x27;#fff&#x27;; roundRect(x+1.5,y+1.5,CELL-3,CELL-3,5); ctx.fill(); }
+  function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+
+  var actx=null;
+  function beep(n){
+    try{
+      if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)();
+      var o=actx.createOscillator(), g=actx.createGain();
+      o.type=&#x27;triangle&#x27;; o.frequency.value=300+n*120;
+      g.gain.value=.12; o.connect(g); g.connect(actx.destination);
+      o.start(); g.gain.exponentialRampToValueAtTime(.001, actx.currentTime+.2); o.stop(actx.currentTime+.2);
+    }catch(_){}
+  }
+
+  function restartTimer(){ if(dropId) clearInterval(dropId); if(running) dropId=setInterval(step,dropMs); }
+
+  function startGame(){
+    gameOver=false; overEl.style.display=&#x27;none&#x27;;
+    score=0; level=1; dropMs=500;
+    scoreEl.textContent=&#x27;0&#x27;; levelEl.textContent=&#x27;1&#x27;; bestEl.textContent=best;
+    newGrid(); running=true; spawn(); restartTimer();
+  }
+  function stopGame(){ running=false; if(dropId){clearInterval(dropId);dropId=null;} }
+  function endGame(){
+    running=false; gameOver=true; if(dropId){clearInterval(dropId);dropId=null;}
+    piece=null; draw();
+    overSub.textContent=&#x27;Score &#x27;+score+&#x27;  •  Best &#x27;+best;
+    overEl.style.display=&#x27;flex&#x27;;
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function(e){
+    if(!running) return;
+    if(e.key===&#x27;ArrowLeft&#x27;){ move(-1); e.preventDefault(); }
+    else if(e.key===&#x27;ArrowRight&#x27;){ move(1); e.preventDefault(); }
+    else if(e.key===&#x27;ArrowDown&#x27;){ step(); e.preventDefault(); }
+    else if(e.key===&#x27;ArrowUp&#x27;){ tryRotate(); e.preventDefault(); }
+    else if(e.key===&#x27; &#x27;){ hardDrop(); e.preventDefault(); }
+  });
+
+  // touch/swipe
+  var tx=0,ty=0,tt=0;
+  cv.addEventListener(&#x27;touchstart&#x27;,function(e){ var t=e.changedTouches[0]; tx=t.clientX;ty=t.clientY;tt=Date.now(); },{passive:true});
+  cv.addEventListener(&#x27;touchend&#x27;,function(e){
+    if(!running) return;
+    var t=e.changedTouches[0], dx=t.clientX-tx, dy=t.clientY-ty;
+    if(Math.abs(dx)&lt;20&amp;&amp;Math.abs(dy)&lt;20&amp;&amp;Date.now()-tt&lt;300){ tryRotate(); return; }
+    if(Math.abs(dx)&gt;Math.abs(dy)){ move(dx&gt;0?1:-1); }
+    else { if(dy&gt;0) hardDrop(); else tryRotate(); }
+  },{passive:true});
+
+  window.addEventListener(&#x27;message&#x27;, function(e){
+    if(!e.data||typeof e.data!==&#x27;object&#x27;) return;
+    if(e.data.type===&#x27;wd_start&#x27;) startGame();
+    else if(e.data.type===&#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;,&#x27;mousedown&#x27;,&#x27;touchstart&#x27;].forEach(function(t){
+    window.addEventListener(t,function(e){
+      try{ window.parent.postMessage({type:&#x27;game_input&#x27;,kind:t,key:e.key||null},&#x27;*&#x27;); }catch(_){}
+    },true);
+  });
+
+  // initial preview
+  newGrid(); piece=randPiece(); piece.y=1; draw();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  // Suppress in-iframe scrollbars. The parent fits the iframe layout
+  // box to match the content size, so internal scroll is redundant —
+  // and if the LLM&#x27;s CSS sets body overflow: auto, the scrollbar shows
+  // briefly before the fit lands. Force hidden so it never appears.
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  // Iframe-internal JS error capture. window.onerror inside a sandboxed
+  // iframe can&#x27;t post to /api/js_error directly, so we relay to the
+  // parent via postMessage; parent&#x27;s error_logger.js forwards to the
+  // server. Catches LLM-emitted broken HTML (invalid hex, undefined
+  // variables, etc.) that would otherwise fail silently inside the
+  // iframe.
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      // Debounce: don&#x27;t fire more than ~10× per second. ResizeObserver
+      // fires repeatedly during layout/font load; we only need the latest.
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      // Clamp: reject obviously bogus dimensions. Any browser-game viewport
+      // is well under 4000×4000 logical px; readings beyond that are layout
+      // noise during load/visibility transitions.
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  // Parent posts wd_remeasure when it makes the iframe visible (the body&#x27;s
+  // ResizeObserver doesn&#x27;t fire on display:none→block of an outer ancestor
+  // because the iframe document didn&#x27;t actually resize). Wait a frame for
+  // layout to settle before measuring.
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🌻 Garden Whack-a-Mole 🌻</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html#ai">&larr; All games</a> &middot; <b>🌻 Garden Whack-a-Mole 🌻</b></div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; margin: 0; }
+  body { font-family: system-ui, -apple-system, sans-serif; background: #7ec8e3; color: #222; overflow: hidden; }
+  .game { width: 720px; height: 640px; margin: 0 auto; box-sizing: border-box; padding: 8px 12px;
+    background: linear-gradient(#87ceeb 0%, #a6dbef 40%, #8bc34a 40%, #6aae3a 100%);
+    text-align: center; display: flex; flex-direction: column; align-items: center; }
+  h1 { margin: 2px 0; font-size: 26px; font-weight: 800; color: #fff; text-shadow: 2px 2px 0 #4a7a20; }
+  .instructions { font-size: 16px; color: #2b4d0f; max-width: 640px; margin: 2px 0 4px; line-height: 1.3; font-weight: 600; }
+  .hud { display: flex; align-items: center; justify-content: center; gap: 24px; margin: 2px 0; }
+  .score { font-size: 34px; font-weight: 900; color: #fff; text-shadow: 2px 2px 0 #4a7a20; }
+  .combo { font-size: 20px; font-weight: 800; color: #fff; min-height: 26px; transition: transform .1s; }
+  .combo.hot { color: #ffc107; text-shadow: 0 0 8px #ff5722, 2px 2px 0 #b34700; }
+  .board { position: relative; width: 600px; height: 400px; margin: 6px auto 0;
+    display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr);
+    gap: 10px; }
+  .hole { position: relative; overflow: hidden; }
+  .dirt { position: absolute; left: 50%; bottom: 6px; transform: translateX(-50%);
+    width: 150px; height: 56px; background: radial-gradient(ellipse at center 30%, #6b4423 0%, #4a2f18 75%, #3a2410 100%);
+    border-radius: 50%; box-shadow: inset 0 6px 10px rgba(0,0,0,.5); }
+  .grass { position: absolute; left: 50%; bottom: 44px; transform: translateX(-50%); font-size: 22px;
+    color: #4a7a20; pointer-events: none; transform-origin: bottom center; }
+  .grass.sway { animation: sway 2.4s ease-in-out infinite; }
+  @keyframes sway { 0%,100%{ transform: translateX(-50%) rotate(-6deg);} 50%{ transform: translateX(-50%) rotate(6deg);} }
+  .mole { position: absolute; left: 50%; bottom: 4px; width: 74px; height: 74px; margin-left: -37px;
+    cursor: pointer; transform: translateY(90px); transition: none; z-index: 2; }
+  .mole.up { animation: pop .18s cubic-bezier(.34,1.56,.64,1) forwards; }
+  .mole.down { animation: sink .22s ease-in forwards; }
+  @keyframes pop { 0%{transform: translateY(90px);} 70%{transform: translateY(-8px);} 100%{transform: translateY(0);} }
+  @keyframes sink { 0%{transform: translateY(0);} 100%{transform: translateY(90px);} }
+  .mole svg { width: 100%; height: 100%; display: block; pointer-events: none; }
+  .splat { position: absolute; left: 50%; bottom: 30px; transform: translate(-50%,-50%) scale(0);
+    font-size: 40px; pointer-events: none; z-index: 5; }
+  .splat.go { animation: splat .5s ease-out forwards; }
+  @keyframes splat { 0%{transform: translate(-50%,-50%) scale(0) rotate(0);opacity:1;}
+    60%{transform: translate(-50%,-50%) scale(1.3) rotate(20deg);opacity:1;}
+    100%{transform: translate(-50%,-50%) scale(1.6) rotate(40deg);opacity:0;} }
+  #flash { position: fixed; inset: 0; background: rgba(255,0,0,.5); opacity: 0; pointer-events: none; z-index: 50; }
+  #flash.go { animation: flash .35s ease-out; }
+  @keyframes flash { 0%{opacity:.6;} 100%{opacity:0;} }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;🌻 Garden Whack-a-Mole 🌻&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Whack the brown moles for 1 point and the fast golden moles for 3 — but never hit the bombs! Chain quick hits for a flaming combo bonus, and use the Start/Restart button below.&lt;/p&gt;
+  &lt;div class=&quot;hud&quot;&gt;
+    &lt;div class=&quot;combo&quot; id=&quot;combo&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;score&quot;&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;board&quot; id=&quot;board&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id=&quot;flash&quot;&gt;&lt;/div&gt;
+&lt;script&gt;
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage({ type: &#x27;game_input&#x27;, kind: t, key: e.key || null }, &#x27;*&#x27;);
+      } catch (_) {}
+    }, true);
+  });
+
+  var board = document.getElementById(&#x27;board&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var comboEl = document.getElementById(&#x27;combo&#x27;);
+  var flashEl = document.getElementById(&#x27;flash&#x27;);
+  var HOLES = 9;
+  var holes = [];
+  var running = false;
+  var score = 0;
+  var combo = 0;
+  var comboTimer = null;
+  var spawnTimer = null;
+  var audioCtx = null;
+
+  // Build holes
+  for (var i = 0; i &lt; HOLES; i++) {
+    var hole = document.createElement(&#x27;div&#x27;);
+    hole.className = &#x27;hole&#x27;;
+    var dirt = document.createElement(&#x27;div&#x27;); dirt.className = &#x27;dirt&#x27;;
+    var grass = document.createElement(&#x27;div&#x27;); grass.className = &#x27;grass sway&#x27;; grass.textContent = &#x27;🌱&#x27;;
+    hole.appendChild(dirt); hole.appendChild(grass);
+    board.appendChild(hole);
+    holes.push({ el: hole, grass: grass, active: false, mole: null, sinkTimer: null });
+  }
+
+  function ensureAudio() {
+    if (!audioCtx) {
+      try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (_) { audioCtx = null; }
+    }
+    if (audioCtx &amp;&amp; audioCtx.state === &#x27;suspended&#x27;) audioCtx.resume();
+  }
+
+  function thwack() {
+    if (!audioCtx) return;
+    var t = audioCtx.currentTime;
+    var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = &#x27;square&#x27;; o.frequency.setValueAtTime(220, t); o.frequency.exponentialRampToValueAtTime(70, t + 0.12);
+    g.gain.setValueAtTime(0.25, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+    o.connect(g); g.connect(audioCtx.destination); o.start(t); o.stop(t + 0.16);
+  }
+
+  function goldSound() {
+    if (!audioCtx) return;
+    var t = audioCtx.currentTime;
+    [0,0.08,0.16].forEach(function(d, i){
+      var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = &#x27;triangle&#x27;; o.frequency.setValueAtTime(600 + i*250, t+d);
+      g.gain.setValueAtTime(0.2, t+d); g.gain.exponentialRampToValueAtTime(0.001, t+d+0.12);
+      o.connect(g); g.connect(audioCtx.destination); o.start(t+d); o.stop(t+d+0.13);
+    });
+  }
+
+  function bombSound() {
+    if (!audioCtx) return;
+    var t = audioCtx.currentTime;
+    var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = &#x27;sawtooth&#x27;; o.frequency.setValueAtTime(120, t); o.frequency.exponentialRampToValueAtTime(30, t + 0.4);
+    g.gain.setValueAtTime(0.35, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+    o.connect(g); g.connect(audioCtx.destination); o.start(t); o.stop(t + 0.42);
+  }
+
+  function moleSVG(type, stars) {
+    var face, body, extra = &#x27;&#x27;;
+    if (type === &#x27;gold&#x27;) { body = &#x27;#f4c430&#x27;; face = &#x27;#ffe680&#x27;; }
+    else if (type === &#x27;bomb&#x27;) { body = &#x27;#333&#x27;; face = &#x27;#555&#x27;; }
+    else { body = &#x27;#8b5a2b&#x27;; face = &#x27;#c68b59&#x27;; }
+    if (type === &#x27;bomb&#x27;) {
+      return &#x27;&lt;svg viewBox=&quot;0 0 74 74&quot;&gt;&lt;line x1=&quot;37&quot; y1=&quot;10&quot; x2=&quot;46&quot; y2=&quot;0&quot; stroke=&quot;#a06000&quot; stroke-width=&quot;3&quot;/&gt;&#x27;
+        + &#x27;&lt;circle cx=&quot;49&quot; cy=&quot;-1&quot; r=&quot;4&quot; fill=&quot;#ff9800&quot;/&gt;&#x27;
+        + &#x27;&lt;circle cx=&quot;37&quot; cy=&quot;42&quot; r=&quot;26&quot; fill=&quot;#222&quot;/&gt;&lt;circle cx=&quot;30&quot; cy=&quot;35&quot; r=&quot;7&quot; fill=&quot;#666&quot;/&gt;&#x27;
+        + &#x27;&lt;text x=&quot;37&quot; y=&quot;52&quot; font-size=&quot;20&quot; text-anchor=&quot;middle&quot;&gt;💣&lt;/text&gt;&lt;/svg&gt;&#x27;;
+    }
+    var eyes = stars
+      ? &#x27;&lt;text x=&quot;26&quot; y=&quot;34&quot; font-size=&quot;14&quot;&gt;✨&lt;/text&gt;&lt;text x=&quot;42&quot; y=&quot;34&quot; font-size=&quot;14&quot;&gt;✨&lt;/text&gt;&#x27;
+      : &#x27;&lt;circle cx=&quot;28&quot; cy=&quot;34&quot; r=&quot;4&quot; fill=&quot;#222&quot;/&gt;&lt;circle cx=&quot;46&quot; cy=&quot;34&quot; r=&quot;4&quot; fill=&quot;#222&quot;/&gt;&#x27;;
+    return &#x27;&lt;svg viewBox=&quot;0 0 74 74&quot;&gt;&#x27;
+      + &#x27;&lt;ellipse cx=&quot;37&quot; cy=&quot;66&quot; rx=&quot;30&quot; ry=&quot;12&quot; fill=&quot;&#x27;+body+&#x27;&quot;/&gt;&#x27;
+      + &#x27;&lt;ellipse cx=&quot;37&quot; cy=&quot;44&quot; rx=&quot;26&quot; ry=&quot;28&quot; fill=&quot;&#x27;+body+&#x27;&quot;/&gt;&#x27;
+      + &#x27;&lt;ellipse cx=&quot;37&quot; cy=&quot;46&quot; rx=&quot;18&quot; ry=&quot;18&quot; fill=&quot;&#x27;+face+&#x27;&quot;/&gt;&#x27;
+      + eyes
+      + &#x27;&lt;ellipse cx=&quot;37&quot; cy=&quot;46&quot; rx=&quot;6&quot; ry=&quot;4.5&quot; fill=&quot;#e07b7b&quot;/&gt;&#x27;
+      + &#x27;&lt;path d=&quot;M31 52 q6 6 12 0&quot; stroke=&quot;#7a3b3b&quot; stroke-width=&quot;2&quot; fill=&quot;none&quot;/&gt;&#x27;
+      + &#x27;&lt;/svg&gt;&#x27;;
+  }
+
+  function difficulty() {
+    // returns { life, gap } based on score
+    var life = Math.max(500, 1200 - score * 18);
+    var gap = Math.max(350, 850 - score * 12);
+    return { life: life, gap: gap };
+  }
+
+  function bumpCombo() {
+    combo++;
+    if (comboTimer) clearTimeout(comboTimer);
+    comboTimer = setTimeout(function(){ combo = 0; renderCombo(); }, 1500);
+    renderCombo();
+  }
+  function renderCombo() {
+    if (combo &gt;= 2) {
+      comboEl.textContent = &#x27;🔥 Combo x&#x27; + combo;
+      comboEl.classList.add(&#x27;hot&#x27;);
+      comboEl.style.transform = &#x27;scale(1.2)&#x27;;
+      setTimeout(function(){ comboEl.style.transform = &#x27;scale(1)&#x27;; }, 100);
+    } else {
+      comboEl.textContent = &#x27;&#x27;;
+      comboEl.classList.remove(&#x27;hot&#x27;);
+    }
+  }
+  function resetCombo() { combo = 0; renderCombo(); }
+
+  function showSplat(hole, emoji) {
+    var s = document.createElement(&#x27;div&#x27;);
+    s.className = &#x27;splat&#x27;; s.textContent = emoji;
+    hole.el.appendChild(s);
+    void s.offsetWidth;
+    s.classList.add(&#x27;go&#x27;);
+    setTimeout(function(){ if (s.parentNode) s.parentNode.removeChild(s); }, 520);
+  }
+
+  function removeMole(hole) {
+    if (hole.sinkTimer) { clearTimeout(hole.sinkTimer); hole.sinkTimer = null; }
+    if (hole.mole &amp;&amp; hole.mole.parentNode) {
+      var m = hole.mole;
+      m.classList.remove(&#x27;up&#x27;); m.classList.add(&#x27;down&#x27;);
+      setTimeout(function(){ if (m.parentNode) m.parentNode.removeChild(m); }, 220);
+    }
+    hole.mole = null;
+    hole.active = false;
+    hole.grass.classList.add(&#x27;sway&#x27;);
+  }
+
+  function spawnMole() {
+    if (!running) return;
+    var free = holes.filter(function(h){ return !h.active; });
+    if (free.length === 0) { scheduleNext(); return; }
+    var hole = free[Math.floor(Math.random() * free.length)];
+    var r = Math.random();
+    var type = &#x27;normal&#x27;;
+    if (r &lt; 0.12) type = &#x27;bomb&#x27;;
+    else if (r &lt; 0.24) type = &#x27;gold&#x27;;
+
+    var diff = difficulty();
+    var life = diff.life;
+    if (type === &#x27;gold&#x27;) life = Math.min(life, 550);
+
+    hole.active = true;
+    hole.grass.classList.remove(&#x27;sway&#x27;);
+    var mole = document.createElement(&#x27;div&#x27;);
+    mole.className = &#x27;mole up&#x27;;
+    mole.innerHTML = moleSVG(type);
+    hole.el.appendChild(mole);
+    hole.mole = mole;
+    var handled = false;
+
+    mole.addEventListener(&#x27;mousedown&#x27;, function(e){
+      e.stopPropagation();
+      if (handled || !running) return;
+      handled = true;
+      ensureAudio();
+      if (type === &#x27;bomb&#x27;) {
+        score -= 2; if (score &lt; 0) score = 0;
+        scoreEl.textContent = score;
+        bombSound();
+        flashEl.classList.remove(&#x27;go&#x27;); void flashEl.offsetWidth; flashEl.classList.add(&#x27;go&#x27;);
+        resetCombo();
+        showSplat(hole, &#x27;💥&#x27;);
+        removeMole(hole);
+        return;
+      }
+      // normal or gold hit
+      mole.innerHTML = moleSVG(type, true); // sees stars
+      var pts = type === &#x27;gold&#x27; ? 3 : 1;
+      bumpCombo();
+      var bonus = combo &gt;= 3 ? Math.floor(combo / 3) : 0;
+      score += pts + bonus;
+      scoreEl.textContent = score;
+      if (type === &#x27;gold&#x27;) goldSound(); else thwack();
+      showSplat(hole, type === &#x27;gold&#x27; ? &#x27;⭐&#x27; : &#x27;💫&#x27;);
+      setTimeout(function(){ removeMole(hole); }, 120);
+    });
+
+    hole.sinkTimer = setTimeout(function(){
+      if (!handled) { resetCombo(); removeMole(hole); }
+    }, life);
+
+    scheduleNext();
+  }
+
+  function scheduleNext() {
+    if (!running) return;
+    if (spawnTimer) clearTimeout(spawnTimer);
+    var gap = difficulty().gap * (0.6 + Math.random() * 0.6);
+    spawnTimer = setTimeout(spawnMole, gap);
+  }
+
+  function startGame() {
+    if (running) return;
+    running = true;
+    score = 0; scoreEl.textContent = &#x27;0&#x27;;
+    resetCombo();
+    ensureAudio();
+    holes.forEach(function(h){ removeMole(h); });
+    spawnMole();
+  }
+
+  function stopGame() {
+    running = false;
+    if (spawnTimer) { clearTimeout(spawnTimer); spawnTimer = null; }
+    if (comboTimer) { clearTimeout(comboTimer); comboTimer = null; }
+    holes.forEach(function(h){
+      if (h.sinkTimer) { clearTimeout(h.sinkTimer); h.sinkTimer = null; }
+      if (h.mole &amp;&amp; h.mole.parentNode) h.mole.parentNode.removeChild(h.mole);
+      h.mole = null; h.active = false; h.grass.classList.add(&#x27;sway&#x27;);
+    });
+  }
+
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  // Suppress in-iframe scrollbars. The parent fits the iframe layout
+  // box to match the content size, so internal scroll is redundant —
+  // and if the LLM&#x27;s CSS sets body overflow: auto, the scrollbar shows
+  // briefly before the fit lands. Force hidden so it never appears.
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  // Iframe-internal JS error capture. window.onerror inside a sandboxed
+  // iframe can&#x27;t post to /api/js_error directly, so we relay to the
+  // parent via postMessage; parent&#x27;s error_logger.js forwards to the
+  // server. Catches LLM-emitted broken HTML (invalid hex, undefined
+  // variables, etc.) that would otherwise fail silently inside the
+  // iframe.
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      // Debounce: don&#x27;t fire more than ~10× per second. ResizeObserver
+      // fires repeatedly during layout/font load; we only need the latest.
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      // Clamp: reject obviously bogus dimensions. Any browser-game viewport
+      // is well under 4000×4000 logical px; readings beyond that are layout
+      // noise during load/visibility transitions.
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  // Parent posts wd_remeasure when it makes the iframe visible (the body&#x27;s
+  // ResizeObserver doesn&#x27;t fire on display:none→block of an outer ancestor
+  // because the iframe document didn&#x27;t actually resize). Wait a frame for
+  // layout to settle before measuring.
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

@@ -1,2930 +1,6890 @@
 [
  {
+  "set": "participants",
   "slug": "001",
+  "page": "g/001.html",
+  "thumb": "thumbs/001.jpg",
   "name": "Whack-a-mole",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 54.0
  },
  {
+  "set": "participants",
   "slug": "002",
+  "page": "g/002.html",
+  "thumb": "thumbs/002.jpg",
   "name": "\ud83d\udc38 Frog Pond",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 24.7
  },
  {
+  "set": "participants",
   "slug": "003",
+  "page": "g/003.html",
+  "thumb": "thumbs/003.jpg",
   "name": "Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 50.0
  },
  {
+  "set": "participants",
   "slug": "004",
+  "page": "g/004.html",
+  "thumb": "thumbs/004.jpg",
   "name": "Shooter",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 30.0
  },
  {
+  "set": "participants",
   "slug": "005",
+  "page": "g/005.html",
+  "thumb": "thumbs/005.jpg",
   "name": "Cross the lanes",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 2.0
  },
  {
+  "set": "participants",
   "slug": "006",
+  "page": "g/006.html",
+  "thumb": "thumbs/006.jpg",
   "name": "SNAKE",
   "basic_game": "Snake",
   "consumer_wtp_cents": 72.0
  },
  {
+  "set": "participants",
   "slug": "007",
+  "page": "g/007.html",
+  "thumb": "thumbs/007.jpg",
   "name": "STAR BLASTER",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "008",
+  "page": "g/008.html",
+  "thumb": "thumbs/008.jpg",
   "name": "Bounce Basketball",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 7.0
  },
  {
+  "set": "participants",
   "slug": "009",
+  "page": "g/009.html",
+  "thumb": "thumbs/009.jpg",
   "name": "Shooter",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "010",
+  "page": "g/010.html",
+  "thumb": "thumbs/010.jpg",
   "name": "\ud83d\udc39 Mole Trouble \ud83c\udf31",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 36.0
  },
  {
+  "set": "participants",
   "slug": "011",
+  "page": "g/011.html",
+  "thumb": "thumbs/011.jpg",
   "name": "Paddle ball",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 10.0
  },
  {
+  "set": "participants",
   "slug": "012",
+  "page": "g/012.html",
+  "thumb": "thumbs/012.jpg",
   "name": "Alien Road Trip",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 37.0
  },
  {
+  "set": "participants",
   "slug": "013",
+  "page": "g/013.html",
+  "thumb": "thumbs/013.jpg",
   "name": "Color Pop",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 43.5
  },
  {
+  "set": "participants",
   "slug": "014",
+  "page": "g/014.html",
+  "thumb": "thumbs/014.jpg",
   "name": "\ud83c\udfaa Circus Elephant Bounce \ud83c\udfaa",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 25.0
  },
  {
+  "set": "participants",
   "slug": "015",
+  "page": "g/015.html",
+  "thumb": "thumbs/015.jpg",
   "name": "Falling blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 50.0
  },
  {
+  "set": "participants",
   "slug": "016",
+  "page": "g/016.html",
+  "thumb": "thumbs/016.jpg",
   "name": "Falling blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 14.0
  },
  {
+  "set": "participants",
   "slug": "017",
+  "page": "g/017.html",
+  "thumb": "thumbs/017.jpg",
   "name": "Neon Blocos",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 10.3
  },
  {
+  "set": "participants",
   "slug": "018",
+  "page": "g/018.html",
+  "thumb": "thumbs/018.jpg",
   "name": "Golden Chain Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 42.5
  },
  {
+  "set": "participants",
   "slug": "019",
+  "page": "g/019.html",
+  "thumb": "thumbs/019.jpg",
   "name": "Coin Dash",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 85.0
  },
  {
+  "set": "participants",
   "slug": "020",
+  "page": "g/020.html",
+  "thumb": "thumbs/020.jpg",
   "name": "NEON BLASTER",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 100.0
  },
  {
+  "set": "participants",
   "slug": "021",
+  "page": "g/021.html",
+  "thumb": "thumbs/021.jpg",
   "name": "Paddle ball",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 0.5
  },
  {
+  "set": "participants",
   "slug": "022",
+  "page": "g/022.html",
+  "thumb": "thumbs/022.jpg",
   "name": "Falling blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 85.0
  },
  {
+  "set": "participants",
   "slug": "023",
+  "page": "g/023.html",
+  "thumb": "thumbs/023.jpg",
   "name": "Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 20.0
  },
  {
+  "set": "participants",
   "slug": "024",
+  "page": "g/024.html",
+  "thumb": "thumbs/024.jpg",
   "name": "Star Shooter",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 25.0
  },
  {
+  "set": "participants",
   "slug": "025",
+  "page": "g/025.html",
+  "thumb": "thumbs/025.jpg",
   "name": "Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 77.0
  },
  {
+  "set": "participants",
   "slug": "026",
+  "page": "g/026.html",
+  "thumb": "thumbs/026.jpg",
   "name": "\ud83d\udd4a\ufe0f Sky Bird Shooter",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 8.3
  },
  {
+  "set": "participants",
   "slug": "027",
+  "page": "g/027.html",
+  "thumb": "thumbs/027.jpg",
   "name": "Cross the lanes",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 100.0
  },
  {
+  "set": "participants",
   "slug": "028",
+  "page": "g/028.html",
+  "thumb": "thumbs/028.jpg",
   "name": "\ud83d\udc0d Feast Frenzy",
   "basic_game": "Snake",
   "consumer_wtp_cents": 24.0
  },
  {
+  "set": "participants",
   "slug": "029",
+  "page": "g/029.html",
+  "thumb": "thumbs/029.jpg",
   "name": "NEON RUNNER",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 67.0
  },
  {
+  "set": "participants",
   "slug": "030",
+  "page": "g/030.html",
+  "thumb": "thumbs/030.jpg",
   "name": "Paddle ball",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "031",
+  "page": "g/031.html",
+  "thumb": "thumbs/031.jpg",
   "name": "\ud83d\udc39 Whack-a-Mole \ud83d\udd28",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 88.0
  },
  {
+  "set": "participants",
   "slug": "032",
+  "page": "g/032.html",
+  "thumb": "thumbs/032.jpg",
   "name": "\ud83d\ude80 Balloon Blaster",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 65.0
  },
  {
+  "set": "participants",
   "slug": "033",
+  "page": "g/033.html",
+  "thumb": "thumbs/033.jpg",
   "name": "Shooter",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 100.0
  },
  {
+  "set": "participants",
   "slug": "034",
+  "page": "g/034.html",
+  "thumb": "thumbs/034.jpg",
   "name": "Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 48.0
  },
  {
+  "set": "participants",
   "slug": "035",
+  "page": "g/035.html",
+  "thumb": "thumbs/035.jpg",
   "name": "\ud83e\udd52 Pickleball Rally",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 43.5
  },
  {
+  "set": "participants",
   "slug": "036",
+  "page": "g/036.html",
+  "thumb": "thumbs/036.jpg",
   "name": "\u25c8 NEBULA RAIDER \u25c8",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 93.0
  },
  {
+  "set": "participants",
   "slug": "037",
+  "page": "g/037.html",
+  "thumb": "thumbs/037.jpg",
   "name": "Wizard Circuit Blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 65.5
  },
  {
+  "set": "participants",
   "slug": "038",
+  "page": "g/038.html",
+  "thumb": "thumbs/038.jpg",
   "name": "Paddle ball",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 100.0
  },
  {
+  "set": "participants",
   "slug": "039",
+  "page": "g/039.html",
+  "thumb": "thumbs/039.jpg",
   "name": "Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 23.0
  },
  {
+  "set": "participants",
   "slug": "040",
+  "page": "g/040.html",
+  "thumb": "thumbs/040.jpg",
   "name": "\ud83d\udc38 Frog Crossing",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 76.0
  },
  {
+  "set": "participants",
   "slug": "041",
+  "page": "g/041.html",
+  "thumb": "thumbs/041.jpg",
   "name": "Kangaroo Hop",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 39.0
  },
  {
+  "set": "participants",
   "slug": "042",
+  "page": "g/042.html",
+  "thumb": "thumbs/042.jpg",
   "name": "NEON VOID SURVIVOR",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 65.0
  },
  {
+  "set": "participants",
   "slug": "043",
+  "page": "g/043.html",
+  "thumb": "thumbs/043.jpg",
   "name": "Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "044",
+  "page": "g/044.html",
+  "thumb": "thumbs/044.jpg",
   "name": "NEON DROP",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 37.5
  },
  {
+  "set": "participants",
   "slug": "045",
+  "page": "g/045.html",
+  "thumb": "thumbs/045.jpg",
   "name": "\ud83d\udc0d Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 53.0
  },
  {
+  "set": "participants",
   "slug": "046",
+  "page": "g/046.html",
+  "thumb": "thumbs/046.jpg",
   "name": "Shooter",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "047",
+  "page": "g/047.html",
+  "thumb": "thumbs/047.jpg",
   "name": "Paddle ball",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 5.0
  },
  {
+  "set": "participants",
   "slug": "048",
+  "page": "g/048.html",
+  "thumb": "thumbs/048.jpg",
   "name": "Paddle ball",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 100.0
  },
  {
+  "set": "participants",
   "slug": "049",
+  "page": "g/049.html",
+  "thumb": "thumbs/049.jpg",
   "name": "NEON DROP",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 2.0
  },
  {
+  "set": "participants",
   "slug": "050",
+  "page": "g/050.html",
+  "thumb": "thumbs/050.jpg",
   "name": "\ud83c\udfaf Carnival Shooting Gallery \ud83c\udfaf",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 6.0
  },
  {
+  "set": "participants",
   "slug": "051",
+  "page": "g/051.html",
+  "thumb": "thumbs/051.jpg",
   "name": "Cross the lanes",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 72.0
  },
  {
+  "set": "participants",
   "slug": "052",
+  "page": "g/052.html",
+  "thumb": "thumbs/052.jpg",
   "name": "Falling blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "053",
+  "page": "g/053.html",
+  "thumb": "thumbs/053.jpg",
   "name": "Whack-a-mole",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "054",
+  "page": "g/054.html",
+  "thumb": "thumbs/054.jpg",
   "name": "Shooter",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "055",
+  "page": "g/055.html",
+  "thumb": "thumbs/055.jpg",
   "name": "Paddle ball",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 10.0
  },
  {
+  "set": "participants",
   "slug": "056",
+  "page": "g/056.html",
+  "thumb": "thumbs/056.jpg",
   "name": "\u269c Corral the Horse \u269c",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 1.0
  },
  {
+  "set": "participants",
   "slug": "057",
+  "page": "g/057.html",
+  "thumb": "thumbs/057.jpg",
   "name": "Falling blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 92.0
  },
  {
+  "set": "participants",
   "slug": "058",
+  "page": "g/058.html",
+  "thumb": "thumbs/058.jpg",
   "name": "Falling blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 19.0
  },
  {
+  "set": "participants",
   "slug": "059",
+  "page": "g/059.html",
+  "thumb": "thumbs/059.jpg",
   "name": "\u2728 Rainbow Drop \u2728",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 25.0
  },
  {
+  "set": "participants",
   "slug": "060",
+  "page": "g/060.html",
+  "thumb": "thumbs/060.jpg",
   "name": "Cross the lanes",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 50.5
  },
  {
+  "set": "participants",
   "slug": "061",
+  "page": "g/061.html",
+  "thumb": "thumbs/061.jpg",
   "name": "\u26cf\ufe0f Whack-a-Mole \u26cf\ufe0f",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 42.0
  },
  {
+  "set": "participants",
   "slug": "062",
+  "page": "g/062.html",
+  "thumb": "thumbs/062.jpg",
   "name": "Shooter",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "063",
+  "page": "g/063.html",
+  "thumb": "thumbs/063.jpg",
   "name": "Falling blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 68.0
  },
  {
+  "set": "participants",
   "slug": "064",
+  "page": "g/064.html",
+  "thumb": "thumbs/064.jpg",
   "name": "Pong Duel",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 100.0
  },
  {
+  "set": "participants",
   "slug": "065",
+  "page": "g/065.html",
+  "thumb": "thumbs/065.jpg",
   "name": "Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 100.0
  },
  {
+  "set": "participants",
   "slug": "066",
+  "page": "g/066.html",
+  "thumb": "thumbs/066.jpg",
   "name": "Color Drop",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 50.0
  },
  {
+  "set": "participants",
   "slug": "067",
+  "page": "g/067.html",
+  "thumb": "thumbs/067.jpg",
   "name": "\u2694\ufe0f ORB DUNGEON \u2694\ufe0f",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 38.0
  },
  {
+  "set": "participants",
   "slug": "068",
+  "page": "g/068.html",
+  "thumb": "thumbs/068.jpg",
   "name": "\ud83d\udc38 City Frog Crossing",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 5.0
  },
  {
+  "set": "participants",
   "slug": "069",
+  "page": "g/069.html",
+  "thumb": "thumbs/069.jpg",
   "name": "Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 27.0
  },
  {
+  "set": "participants",
   "slug": "070",
+  "page": "g/070.html",
+  "thumb": "thumbs/070.jpg",
   "name": "Falling blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 39.0
  },
  {
+  "set": "participants",
   "slug": "071",
+  "page": "g/071.html",
+  "thumb": "thumbs/071.jpg",
   "name": "Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 45.0
  },
  {
+  "set": "participants",
   "slug": "072",
+  "page": "g/072.html",
+  "thumb": "thumbs/072.jpg",
   "name": "Neon Paddle Ball",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 18.0
  },
  {
+  "set": "participants",
   "slug": "073",
+  "page": "g/073.html",
+  "thumb": "thumbs/073.jpg",
   "name": "\ud83d\udc0d Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "074",
+  "page": "g/074.html",
+  "thumb": "thumbs/074.jpg",
   "name": "ARMORED TRAIN \u2014 NEON DEFENSE",
   "basic_game": "Snake",
   "consumer_wtp_cents": 16.5
  },
  {
+  "set": "participants",
   "slug": "075",
+  "page": "g/075.html",
+  "thumb": "thumbs/075.jpg",
   "name": "Whack-a-mole",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 25.0
  },
  {
+  "set": "participants",
   "slug": "076",
+  "page": "g/076.html",
+  "thumb": "thumbs/076.jpg",
   "name": "Paddle ball",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 11.0
  },
  {
+  "set": "participants",
   "slug": "077",
+  "page": "g/077.html",
+  "thumb": "thumbs/077.jpg",
   "name": "Paddle ball",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 38.0
  },
  {
+  "set": "participants",
   "slug": "078",
+  "page": "g/078.html",
+  "thumb": "thumbs/078.jpg",
   "name": "Floating Squares",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 75.0
  },
  {
+  "set": "participants",
   "slug": "079",
+  "page": "g/079.html",
+  "thumb": "thumbs/079.jpg",
   "name": "Block Builder",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 10.0
  },
  {
+  "set": "participants",
   "slug": "080",
+  "page": "g/080.html",
+  "thumb": "thumbs/080.jpg",
   "name": "NEON STRIKER",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "081",
+  "page": "g/081.html",
+  "thumb": "thumbs/081.jpg",
   "name": "Double Snake Duel",
   "basic_game": "Snake",
   "consumer_wtp_cents": 87.0
  },
  {
+  "set": "participants",
   "slug": "082",
+  "page": "g/082.html",
+  "thumb": "thumbs/082.jpg",
   "name": "Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 63.0
  },
  {
+  "set": "participants",
   "slug": "083",
+  "page": "g/083.html",
+  "thumb": "thumbs/083.jpg",
   "name": "NEON BREAKER",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 68.0
  },
  {
+  "set": "participants",
   "slug": "084",
+  "page": "g/084.html",
+  "thumb": "thumbs/084.jpg",
   "name": "Falling blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 25.0
  },
  {
+  "set": "participants",
   "slug": "085",
+  "page": "g/085.html",
+  "thumb": "thumbs/085.jpg",
   "name": "Soldier Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 50.0
  },
  {
+  "set": "participants",
   "slug": "086",
+  "page": "g/086.html",
+  "thumb": "thumbs/086.jpg",
   "name": "\ud83d\udc0d Jungle Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 40.0
  },
  {
+  "set": "participants",
   "slug": "087",
+  "page": "g/087.html",
+  "thumb": "thumbs/087.jpg",
   "name": "Rainbow Paddle",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 16.5
  },
  {
+  "set": "participants",
   "slug": "088",
+  "page": "g/088.html",
+  "thumb": "thumbs/088.jpg",
   "name": "Cross the lanes",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 24.5
  },
  {
+  "set": "participants",
   "slug": "089",
+  "page": "g/089.html",
+  "thumb": "thumbs/089.jpg",
   "name": "Cross the lanes",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 100.0
  },
  {
+  "set": "participants",
   "slug": "090",
+  "page": "g/090.html",
+  "thumb": "thumbs/090.jpg",
   "name": "\ud83d\udc38 Travessia do Sapo",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "091",
+  "page": "g/091.html",
+  "thumb": "thumbs/091.jpg",
   "name": "Dragon Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 100.0
  },
  {
+  "set": "participants",
   "slug": "092",
+  "page": "g/092.html",
+  "thumb": "thumbs/092.jpg",
   "name": "Cross the lanes",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 28.5
  },
  {
+  "set": "participants",
   "slug": "093",
+  "page": "g/093.html",
+  "thumb": "thumbs/093.jpg",
   "name": "Fruit Highway",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 5.0
  },
  {
+  "set": "participants",
   "slug": "094",
+  "page": "g/094.html",
+  "thumb": "thumbs/094.jpg",
   "name": "Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 64.7
  },
  {
+  "set": "participants",
   "slug": "095",
+  "page": "g/095.html",
+  "thumb": "thumbs/095.jpg",
   "name": "Whack-a-mole",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 50.0
  },
  {
+  "set": "participants",
   "slug": "096",
+  "page": "g/096.html",
+  "thumb": "thumbs/096.jpg",
   "name": "Color Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 50.0
  },
  {
+  "set": "participants",
   "slug": "097",
+  "page": "g/097.html",
+  "thumb": "thumbs/097.jpg",
   "name": "Dragon Brick Breaker",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 10.0
  },
  {
+  "set": "participants",
   "slug": "098",
+  "page": "g/098.html",
+  "thumb": "thumbs/098.jpg",
   "name": "\u2605 STAR DODGER \u2605",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 8.3
  },
  {
+  "set": "participants",
   "slug": "099",
+  "page": "g/099.html",
+  "thumb": "thumbs/099.jpg",
   "name": "\ud83e\uddab Beaver Crossing",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 79.0
  },
  {
+  "set": "participants",
   "slug": "100",
+  "page": "g/100.html",
+  "thumb": "thumbs/100.jpg",
   "name": "Zone Runner",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 25.0
  },
  {
+  "set": "participants",
   "slug": "101",
+  "page": "g/101.html",
+  "thumb": "thumbs/101.jpg",
   "name": "\ud83d\udc09 Dragon Fire",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 32.5
  },
  {
+  "set": "participants",
   "slug": "102",
+  "page": "g/102.html",
+  "thumb": "thumbs/102.jpg",
   "name": "NEON BREAKER",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 50.0
  },
  {
+  "set": "participants",
   "slug": "103",
+  "page": "g/103.html",
+  "thumb": "thumbs/103.jpg",
   "name": "Red, White & Blue Whack",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 25.0
  },
  {
+  "set": "participants",
   "slug": "104",
+  "page": "g/104.html",
+  "thumb": "thumbs/104.jpg",
   "name": "\u2726 Star Catcher \u2726",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "105",
+  "page": "g/105.html",
+  "thumb": "thumbs/105.jpg",
   "name": "\ud83c\udf3f Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 1.0
  },
  {
+  "set": "participants",
   "slug": "106",
+  "page": "g/106.html",
+  "thumb": "thumbs/106.jpg",
   "name": "Neon Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 75.0
  },
  {
+  "set": "participants",
   "slug": "107",
+  "page": "g/107.html",
+  "thumb": "thumbs/107.jpg",
   "name": "Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 1.0
  },
  {
+  "set": "participants",
   "slug": "108",
+  "page": "g/108.html",
+  "thumb": "thumbs/108.jpg",
   "name": "\ud83c\udf69 SNACK ESCAPE \ud83d\udc79",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 80.0
  },
  {
+  "set": "participants",
   "slug": "109",
+  "page": "g/109.html",
+  "thumb": "thumbs/109.jpg",
   "name": "\u26a1 Coin Runner",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 10.0
  },
  {
+  "set": "participants",
   "slug": "110",
+  "page": "g/110.html",
+  "thumb": "thumbs/110.jpg",
   "name": "Paddle ball",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "111",
+  "page": "g/111.html",
+  "thumb": "thumbs/111.jpg",
   "name": "Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 58.0
  },
  {
+  "set": "participants",
   "slug": "112",
+  "page": "g/112.html",
+  "thumb": "thumbs/112.jpg",
   "name": "Alligator Moat",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 24.5
  },
  {
+  "set": "participants",
   "slug": "113",
+  "page": "g/113.html",
+  "thumb": "thumbs/113.jpg",
   "name": "Asteroid Blaster",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 27.0
  },
  {
+  "set": "participants",
   "slug": "114",
+  "page": "g/114.html",
+  "thumb": "thumbs/114.jpg",
   "name": "Whack-a-mole",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 38.0
  },
  {
+  "set": "participants",
   "slug": "115",
+  "page": "g/115.html",
+  "thumb": "thumbs/115.jpg",
   "name": "Paddle ball",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 50.0
  },
  {
+  "set": "participants",
   "slug": "116",
+  "page": "g/116.html",
+  "thumb": "thumbs/116.jpg",
   "name": "Cross the lanes",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 60.0
  },
  {
+  "set": "participants",
   "slug": "117",
+  "page": "g/117.html",
+  "thumb": "thumbs/117.jpg",
   "name": "Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 10.0
  },
  {
+  "set": "participants",
   "slug": "118",
+  "page": "g/118.html",
+  "thumb": "thumbs/118.jpg",
   "name": "Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 21.0
  },
  {
+  "set": "participants",
   "slug": "119",
+  "page": "g/119.html",
+  "thumb": "thumbs/119.jpg",
   "name": "Whack-a-mole",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 70.0
  },
  {
+  "set": "participants",
   "slug": "120",
+  "page": "g/120.html",
+  "thumb": "thumbs/120.jpg",
   "name": "Mole Mayhem",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "121",
+  "page": "g/121.html",
+  "thumb": "thumbs/121.jpg",
   "name": "\ud83d\udc79 DEMON SNAKE \ud83d\udc79",
   "basic_game": "Snake",
   "consumer_wtp_cents": 34.0
  },
  {
+  "set": "participants",
   "slug": "122",
+  "page": "g/122.html",
+  "thumb": "thumbs/122.jpg",
   "name": "Paddle ball",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 6.0
  },
  {
+  "set": "participants",
   "slug": "123",
+  "page": "g/123.html",
+  "thumb": "thumbs/123.jpg",
   "name": "\u2728 Falling Blocks \u2728",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 14.5
  },
  {
+  "set": "participants",
   "slug": "124",
+  "page": "g/124.html",
+  "thumb": "thumbs/124.jpg",
   "name": "Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 10.0
  },
  {
+  "set": "participants",
   "slug": "125",
+  "page": "g/125.html",
+  "thumb": "thumbs/125.jpg",
   "name": "Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 59.0
  },
  {
+  "set": "participants",
   "slug": "126",
+  "page": "g/126.html",
+  "thumb": "thumbs/126.jpg",
   "name": "Cross the lanes",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 31.3
  },
  {
+  "set": "participants",
   "slug": "127",
+  "page": "g/127.html",
+  "thumb": "thumbs/127.jpg",
   "name": "Bumper Ball",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 90.0
  },
  {
+  "set": "participants",
   "slug": "128",
+  "page": "g/128.html",
+  "thumb": "thumbs/128.jpg",
   "name": "\u2694 DRAGON'S GAUNTLET \u2694",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 50.0
  },
  {
+  "set": "participants",
   "slug": "129",
+  "page": "g/129.html",
+  "thumb": "thumbs/129.jpg",
   "name": "NEON PADDLE",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 23.0
  },
  {
+  "set": "participants",
   "slug": "130",
+  "page": "g/130.html",
+  "thumb": "thumbs/130.jpg",
   "name": "\u2605 STAR SIEGE \u2605",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 30.0
  },
  {
+  "set": "participants",
   "slug": "131",
+  "page": "g/131.html",
+  "thumb": "thumbs/131.jpg",
   "name": "Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 45.0
  },
  {
+  "set": "participants",
   "slug": "132",
+  "page": "g/132.html",
+  "thumb": "thumbs/132.jpg",
   "name": "Falling blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 31.0
  },
  {
+  "set": "participants",
   "slug": "133",
+  "page": "g/133.html",
+  "thumb": "thumbs/133.jpg",
   "name": "Paddle ball",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "134",
+  "page": "g/134.html",
+  "thumb": "thumbs/134.jpg",
   "name": "\u2728 Whack-a-mole \u2728",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 35.0
  },
  {
+  "set": "participants",
   "slug": "135",
+  "page": "g/135.html",
+  "thumb": "thumbs/135.jpg",
   "name": "Cross the lanes",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 42.0
  },
  {
+  "set": "participants",
   "slug": "136",
+  "page": "g/136.html",
+  "thumb": "thumbs/136.jpg",
   "name": "Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 37.5
  },
  {
+  "set": "participants",
   "slug": "137",
+  "page": "g/137.html",
+  "thumb": "thumbs/137.jpg",
   "name": "Cannon Blast",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 76.0
  },
  {
+  "set": "participants",
   "slug": "138",
+  "page": "g/138.html",
+  "thumb": "thumbs/138.jpg",
   "name": "\u2728 CRITTER SMASH \u2728",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 55.0
  },
  {
+  "set": "participants",
   "slug": "139",
+  "page": "g/139.html",
+  "thumb": "thumbs/139.jpg",
   "name": "Cross the lanes",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "140",
+  "page": "g/140.html",
+  "thumb": "thumbs/140.jpg",
   "name": "Whack-a-Mole",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 24.0
  },
  {
+  "set": "participants",
   "slug": "141",
+  "page": "g/141.html",
+  "thumb": "thumbs/141.jpg",
   "name": "FROGGER QUEST",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 45.7
  },
  {
+  "set": "participants",
   "slug": "142",
+  "page": "g/142.html",
+  "thumb": "thumbs/142.jpg",
   "name": "Crystal Defender",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 74.0
  },
  {
+  "set": "participants",
   "slug": "143",
+  "page": "g/143.html",
+  "thumb": "thumbs/143.jpg",
   "name": "Whack-a-mole",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 24.0
  },
  {
+  "set": "participants",
   "slug": "144",
+  "page": "g/144.html",
+  "thumb": "thumbs/144.jpg",
   "name": "\ud83d\udc38 Frog Crossing",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "145",
+  "page": "g/145.html",
+  "thumb": "thumbs/145.jpg",
   "name": "Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 91.0
  },
  {
+  "set": "participants",
   "slug": "146",
+  "page": "g/146.html",
+  "thumb": "thumbs/146.jpg",
   "name": "Cross the lanes",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "147",
+  "page": "g/147.html",
+  "thumb": "thumbs/147.jpg",
   "name": "\ud83d\udc38 Coin Dash Crossing",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 63.0
  },
  {
+  "set": "participants",
   "slug": "148",
+  "page": "g/148.html",
+  "thumb": "thumbs/148.jpg",
   "name": "Paddle ball",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 71.0
  },
  {
+  "set": "participants",
   "slug": "149",
+  "page": "g/149.html",
+  "thumb": "thumbs/149.jpg",
   "name": "\ud83e\udd86 Duck Hunt",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 27.5
  },
  {
+  "set": "participants",
   "slug": "150",
+  "page": "g/150.html",
+  "thumb": "thumbs/150.jpg",
   "name": "\ud83d\ude97 Balloon Dash",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 75.0
  },
  {
+  "set": "participants",
   "slug": "151",
+  "page": "g/151.html",
+  "thumb": "thumbs/151.jpg",
   "name": "Cross the lanes",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 5.0
  },
  {
+  "set": "participants",
   "slug": "152",
+  "page": "g/152.html",
+  "thumb": "thumbs/152.jpg",
   "name": "Ship Duel",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 40.0
  },
  {
+  "set": "participants",
   "slug": "153",
+  "page": "g/153.html",
+  "thumb": "thumbs/153.jpg",
   "name": "Catch-a-ball",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "154",
+  "page": "g/154.html",
+  "thumb": "thumbs/154.jpg",
   "name": "\ud83c\udf88 Space Balloon Pop \ud83c\udf88",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 40.0
  },
  {
+  "set": "participants",
   "slug": "155",
+  "page": "g/155.html",
+  "thumb": "thumbs/155.jpg",
   "name": "Jumper Ant",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 20.0
  },
  {
+  "set": "participants",
   "slug": "156",
+  "page": "g/156.html",
+  "thumb": "thumbs/156.jpg",
   "name": "Eyeball Batter",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 25.0
  },
  {
+  "set": "participants",
   "slug": "157",
+  "page": "g/157.html",
+  "thumb": "thumbs/157.jpg",
   "name": "\ud83d\udc36 Dog Trampoline",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 100.0
  },
  {
+  "set": "participants",
   "slug": "158",
+  "page": "g/158.html",
+  "thumb": "thumbs/158.jpg",
   "name": "Blobby Bounce",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 88.0
  },
  {
+  "set": "participants",
   "slug": "159",
+  "page": "g/159.html",
+  "thumb": "thumbs/159.jpg",
   "name": "Kitten Curve Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 8.3
  },
  {
+  "set": "participants",
   "slug": "160",
+  "page": "g/160.html",
+  "thumb": "thumbs/160.jpg",
   "name": "Critter Catch",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 2.0
  },
  {
+  "set": "participants",
   "slug": "161",
+  "page": "g/161.html",
+  "thumb": "thumbs/161.jpg",
   "name": "\ud83e\udd92 Jungle Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 17.5
  },
  {
+  "set": "participants",
   "slug": "162",
+  "page": "g/162.html",
+  "thumb": "thumbs/162.jpg",
   "name": "\ud83e\udd51 Guac-the-Avo",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 75.0
  },
  {
+  "set": "participants",
   "slug": "163",
+  "page": "g/163.html",
+  "thumb": "thumbs/163.jpg",
   "name": "GUNDAM ZERO",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 75.0
  },
  {
+  "set": "participants",
   "slug": "164",
+  "page": "g/164.html",
+  "thumb": "thumbs/164.jpg",
   "name": "Golden Goose Tetris",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 71.0
  },
  {
+  "set": "participants",
   "slug": "165",
+  "page": "g/165.html",
+  "thumb": "thumbs/165.jpg",
   "name": "Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 75.0
  },
  {
+  "set": "participants",
   "slug": "166",
+  "page": "g/166.html",
+  "thumb": "thumbs/166.jpg",
   "name": "Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 26.0
  },
  {
+  "set": "participants",
   "slug": "167",
+  "page": "g/167.html",
+  "thumb": "thumbs/167.jpg",
   "name": "\ud83e\ude82 Sky Climb",
   "basic_game": "Snake",
   "consumer_wtp_cents": 25.0
  },
  {
+  "set": "participants",
   "slug": "168",
+  "page": "g/168.html",
+  "thumb": "thumbs/168.jpg",
   "name": "Falling blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 50.0
  },
  {
+  "set": "participants",
   "slug": "169",
+  "page": "g/169.html",
+  "thumb": "thumbs/169.jpg",
   "name": "Cross the lanes",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 34.0
  },
  {
+  "set": "participants",
   "slug": "170",
+  "page": "g/170.html",
+  "thumb": "thumbs/170.jpg",
   "name": "Paddle ball",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 62.5
  },
  {
+  "set": "participants",
   "slug": "171",
+  "page": "g/171.html",
+  "thumb": "thumbs/171.jpg",
   "name": "Falling blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 60.0
  },
  {
+  "set": "participants",
   "slug": "172",
+  "page": "g/172.html",
+  "thumb": "thumbs/172.jpg",
   "name": "NEON SNAKE",
   "basic_game": "Snake",
   "consumer_wtp_cents": 75.0
  },
  {
+  "set": "participants",
   "slug": "173",
+  "page": "g/173.html",
+  "thumb": "thumbs/173.jpg",
   "name": "\u26be Night Slugger",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 80.0
  },
  {
+  "set": "participants",
   "slug": "174",
+  "page": "g/174.html",
+  "thumb": "thumbs/174.jpg",
   "name": "Snake: Power-Up Quest",
   "basic_game": "Snake",
   "consumer_wtp_cents": 43.0
  },
  {
+  "set": "participants",
   "slug": "175",
+  "page": "g/175.html",
+  "thumb": "thumbs/175.jpg",
   "name": "Shooter",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 90.0
  },
  {
+  "set": "participants",
   "slug": "176",
+  "page": "g/176.html",
+  "thumb": "thumbs/176.jpg",
   "name": "\ud83d\udc30 Carrot Hop",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 2.5
  },
  {
+  "set": "participants",
   "slug": "177",
+  "page": "g/177.html",
+  "thumb": "thumbs/177.jpg",
   "name": "Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 44.0
  },
  {
+  "set": "participants",
   "slug": "178",
+  "page": "g/178.html",
+  "thumb": "thumbs/178.jpg",
   "name": "Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 5.0
  },
  {
+  "set": "participants",
   "slug": "179",
+  "page": "g/179.html",
+  "thumb": "thumbs/179.jpg",
   "name": "\ud83c\udf32 Forest Maze Escape \ud83c\udf32",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 75.0
  },
  {
+  "set": "participants",
   "slug": "180",
+  "page": "g/180.html",
+  "thumb": "thumbs/180.jpg",
   "name": "Falling blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 62.5
  },
  {
+  "set": "participants",
   "slug": "181",
+  "page": "g/181.html",
+  "thumb": "thumbs/181.jpg",
   "name": "Brainstorm Blitz \ud83d\udca1",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 5.0
  },
  {
+  "set": "participants",
   "slug": "182",
+  "page": "g/182.html",
+  "thumb": "thumbs/182.jpg",
   "name": "\ud83d\udc36 Puppy Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 8.0
  },
  {
+  "set": "participants",
   "slug": "183",
+  "page": "g/183.html",
+  "thumb": "thumbs/183.jpg",
   "name": "Cross the lanes",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 55.5
  },
  {
+  "set": "participants",
   "slug": "184",
+  "page": "g/184.html",
+  "thumb": "thumbs/184.jpg",
   "name": "\ud83d\ude80 STAR BLASTER",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 57.0
  },
  {
+  "set": "participants",
   "slug": "185",
+  "page": "g/185.html",
+  "thumb": "thumbs/185.jpg",
   "name": "\u2726 METEOR BLASTER \u2726",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 28.0
  },
  {
+  "set": "participants",
   "slug": "186",
+  "page": "g/186.html",
+  "thumb": "thumbs/186.jpg",
   "name": "Target Rush",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 16.0
  },
  {
+  "set": "participants",
   "slug": "187",
+  "page": "g/187.html",
+  "thumb": "thumbs/187.jpg",
   "name": "Rainbow Paddle Ball",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 18.0
  },
  {
+  "set": "participants",
   "slug": "188",
+  "page": "g/188.html",
+  "thumb": "thumbs/188.jpg",
   "name": "Baby Overboard!",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 79.0
  },
  {
+  "set": "participants",
   "slug": "189",
+  "page": "g/189.html",
+  "thumb": "thumbs/189.jpg",
   "name": "NEON SERPENT \u2014 VERSUS",
   "basic_game": "Snake",
   "consumer_wtp_cents": 17.0
  },
  {
+  "set": "participants",
   "slug": "190",
+  "page": "g/190.html",
+  "thumb": "thumbs/190.jpg",
   "name": "\ud83d\udc0d Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 50.0
  },
  {
+  "set": "participants",
   "slug": "191",
+  "page": "g/191.html",
+  "thumb": "thumbs/191.jpg",
   "name": "COSMIC SERPENT",
   "basic_game": "Snake",
   "consumer_wtp_cents": 74.0
  },
  {
+  "set": "participants",
   "slug": "192",
+  "page": "g/192.html",
+  "thumb": "thumbs/192.jpg",
   "name": "\u25ae NEON BLASTER \u25ae",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 43.5
  },
  {
+  "set": "participants",
   "slug": "193",
+  "page": "g/193.html",
+  "thumb": "thumbs/193.jpg",
   "name": "\ud83c\udfaf Catch The Mole",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 51.0
  },
  {
+  "set": "participants",
   "slug": "194",
+  "page": "g/194.html",
+  "thumb": "thumbs/194.jpg",
   "name": "NEON SMASH",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 62.0
  },
  {
+  "set": "participants",
   "slug": "195",
+  "page": "g/195.html",
+  "thumb": "thumbs/195.jpg",
   "name": "NEON DROP",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 42.5
  },
  {
+  "set": "participants",
   "slug": "196",
+  "page": "g/196.html",
+  "thumb": "thumbs/196.jpg",
   "name": "Cross the lanes",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 55.0
  },
  {
+  "set": "participants",
   "slug": "197",
+  "page": "g/197.html",
+  "thumb": "thumbs/197.jpg",
   "name": "Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 71.0
  },
  {
+  "set": "participants",
   "slug": "198",
+  "page": "g/198.html",
+  "thumb": "thumbs/198.jpg",
   "name": "NEON SNAKE",
   "basic_game": "Snake",
   "consumer_wtp_cents": 75.0
  },
  {
+  "set": "participants",
   "slug": "199",
+  "page": "g/199.html",
+  "thumb": "thumbs/199.jpg",
   "name": "Alien Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 17.0
  },
  {
+  "set": "participants",
   "slug": "200",
+  "page": "g/200.html",
+  "thumb": "thumbs/200.jpg",
   "name": "Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 36.0
  },
  {
+  "set": "participants",
   "slug": "201",
+  "page": "g/201.html",
+  "thumb": "thumbs/201.jpg",
   "name": "Cross the lanes",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 1.0
  },
  {
+  "set": "participants",
   "slug": "202",
+  "page": "g/202.html",
+  "thumb": "thumbs/202.jpg",
   "name": "Neon Paddle",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 8.0
  },
  {
+  "set": "participants",
   "slug": "203",
+  "page": "g/203.html",
+  "thumb": "thumbs/203.jpg",
   "name": "Rhythm Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 59.0
  },
  {
+  "set": "participants",
   "slug": "204",
+  "page": "g/204.html",
+  "thumb": "thumbs/204.jpg",
   "name": "Paddle ball",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 80.0
  },
  {
+  "set": "participants",
   "slug": "205",
+  "page": "g/205.html",
+  "thumb": "thumbs/205.jpg",
   "name": "\ud83d\udc0d Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "206",
+  "page": "g/206.html",
+  "thumb": "thumbs/206.jpg",
   "name": "Cross the lanes",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 10.0
  },
  {
+  "set": "participants",
   "slug": "207",
+  "page": "g/207.html",
+  "thumb": "thumbs/207.jpg",
   "name": "\u2728 Slide Quest",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "208",
+  "page": "g/208.html",
+  "thumb": "thumbs/208.jpg",
   "name": "\ud83c\udfaf Critter Bash",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 67.0
  },
  {
+  "set": "participants",
   "slug": "209",
+  "page": "g/209.html",
+  "thumb": "thumbs/209.jpg",
   "name": "Paddle ball",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 5.0
  },
  {
+  "set": "participants",
   "slug": "210",
+  "page": "g/210.html",
+  "thumb": "thumbs/210.jpg",
   "name": "Critter Blocks \ud83d\udc3e",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 35.0
  },
  {
+  "set": "participants",
   "slug": "211",
+  "page": "g/211.html",
+  "thumb": "thumbs/211.jpg",
   "name": "\ud83c\udfa7 Neon DJ Pony \ud83e\udd84",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "212",
+  "page": "g/212.html",
+  "thumb": "thumbs/212.jpg",
   "name": "Bazooka Squad",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 12.5
  },
  {
+  "set": "participants",
   "slug": "213",
+  "page": "g/213.html",
+  "thumb": "thumbs/213.jpg",
   "name": "\ud83d\udc1f Pike Feast",
   "basic_game": "Snake",
   "consumer_wtp_cents": 1.0
  },
  {
+  "set": "participants",
   "slug": "214",
+  "page": "g/214.html",
+  "thumb": "thumbs/214.jpg",
   "name": "Tetris",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "215",
+  "page": "g/215.html",
+  "thumb": "thumbs/215.jpg",
   "name": "Paddle ball",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 21.0
  },
  {
+  "set": "participants",
   "slug": "216",
+  "page": "g/216.html",
+  "thumb": "thumbs/216.jpg",
   "name": "Cross the traffic",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 8.0
  },
  {
+  "set": "participants",
   "slug": "217",
+  "page": "g/217.html",
+  "thumb": "thumbs/217.jpg",
   "name": "Rabbit Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 63.7
  },
  {
+  "set": "participants",
   "slug": "218",
+  "page": "g/218.html",
+  "thumb": "thumbs/218.jpg",
   "name": "Gem Cascade",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 69.0
  },
  {
+  "set": "participants",
   "slug": "219",
+  "page": "g/219.html",
+  "thumb": "thumbs/219.jpg",
   "name": "\u2693 Navy Battle",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 15.0
  },
  {
+  "set": "participants",
   "slug": "220",
+  "page": "g/220.html",
+  "thumb": "thumbs/220.jpg",
   "name": "Snake Feast",
   "basic_game": "Snake",
   "consumer_wtp_cents": 45.3
  },
  {
+  "set": "participants",
   "slug": "221",
+  "page": "g/221.html",
+  "thumb": "thumbs/221.jpg",
   "name": "Shooter",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 4.0
  },
  {
+  "set": "participants",
   "slug": "222",
+  "page": "g/222.html",
+  "thumb": "thumbs/222.jpg",
   "name": "\ud83c\udfd3 Pickleball Rally",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 50.0
  },
  {
+  "set": "participants",
   "slug": "223",
+  "page": "g/223.html",
+  "thumb": "thumbs/223.jpg",
   "name": "Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 78.0
  },
  {
+  "set": "participants",
   "slug": "224",
+  "page": "g/224.html",
+  "thumb": "thumbs/224.jpg",
   "name": "Snake vs. Enemies",
   "basic_game": "Snake",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "225",
+  "page": "g/225.html",
+  "thumb": "thumbs/225.jpg",
   "name": "\ud83d\ude80 Bubble Blaster",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 68.0
  },
  {
+  "set": "participants",
   "slug": "226",
+  "page": "g/226.html",
+  "thumb": "thumbs/226.jpg",
   "name": "NEON FROGGER 2088",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 90.0
  },
  {
+  "set": "participants",
   "slug": "227",
+  "page": "g/227.html",
+  "thumb": "thumbs/227.jpg",
   "name": "Porcupine Ball",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 25.0
  },
  {
+  "set": "participants",
   "slug": "228",
+  "page": "g/228.html",
+  "thumb": "thumbs/228.jpg",
   "name": "Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 25.0
  },
  {
+  "set": "participants",
   "slug": "229",
+  "page": "g/229.html",
+  "thumb": "thumbs/229.jpg",
   "name": "NEON DRAGON",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 75.0
  },
  {
+  "set": "participants",
   "slug": "230",
+  "page": "g/230.html",
+  "thumb": "thumbs/230.jpg",
   "name": "Split Whack",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "231",
+  "page": "g/231.html",
+  "thumb": "thumbs/231.jpg",
   "name": "ROCKET RUN",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 100.0
  },
  {
+  "set": "participants",
   "slug": "232",
+  "page": "g/232.html",
+  "thumb": "thumbs/232.jpg",
   "name": "\ud83d\ude80 Meteor Devourer",
   "basic_game": "Snake",
   "consumer_wtp_cents": 50.0
  },
  {
+  "set": "participants",
   "slug": "233",
+  "page": "g/233.html",
+  "thumb": "thumbs/233.jpg",
   "name": "\ud83d\ude80 Space Invaders",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 50.0
  },
  {
+  "set": "participants",
   "slug": "234",
+  "page": "g/234.html",
+  "thumb": "thumbs/234.jpg",
   "name": "Cross the Lanes",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 3.0
  },
  {
+  "set": "participants",
   "slug": "235",
+  "page": "g/235.html",
+  "thumb": "thumbs/235.jpg",
   "name": "Color Chain Escape",
   "basic_game": "Snake",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "236",
+  "page": "g/236.html",
+  "thumb": "thumbs/236.jpg",
   "name": "Whack-a-mole",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "237",
+  "page": "g/237.html",
+  "thumb": "thumbs/237.jpg",
   "name": "Falling blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 32.5
  },
  {
+  "set": "participants",
   "slug": "238",
+  "page": "g/238.html",
+  "thumb": "thumbs/238.jpg",
   "name": "NEON WHACK \u2014 STYLISH!",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "239",
+  "page": "g/239.html",
+  "thumb": "thumbs/239.jpg",
   "name": "\u2694\ufe0f Medieval Ghost Busters \ud83d\udc7b",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 50.0
  },
  {
+  "set": "participants",
   "slug": "240",
+  "page": "g/240.html",
+  "thumb": "thumbs/240.jpg",
   "name": "Brick breaker",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 71.0
  },
  {
+  "set": "participants",
   "slug": "241",
+  "page": "g/241.html",
+  "thumb": "thumbs/241.jpg",
   "name": "Falling blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 100.0
  },
  {
+  "set": "participants",
   "slug": "242",
+  "page": "g/242.html",
+  "thumb": "thumbs/242.jpg",
   "name": "Paddle ball",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "243",
+  "page": "g/243.html",
+  "thumb": "thumbs/243.jpg",
   "name": "Cross the lanes",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 50.0
  },
  {
+  "set": "participants",
   "slug": "244",
+  "page": "g/244.html",
+  "thumb": "thumbs/244.jpg",
   "name": "Endless Hopper",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 16.0
  },
  {
+  "set": "participants",
   "slug": "245",
+  "page": "g/245.html",
+  "thumb": "thumbs/245.jpg",
   "name": "NEON DROP",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "246",
+  "page": "g/246.html",
+  "thumb": "thumbs/246.jpg",
   "name": "Color Cascade",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 61.0
  },
  {
+  "set": "participants",
   "slug": "247",
+  "page": "g/247.html",
+  "thumb": "thumbs/247.jpg",
   "name": "\ud83d\udc0d Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 35.0
  },
  {
+  "set": "participants",
   "slug": "248",
+  "page": "g/248.html",
+  "thumb": "thumbs/248.jpg",
   "name": "Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 12.5
  },
  {
+  "set": "participants",
   "slug": "249",
+  "page": "g/249.html",
+  "thumb": "thumbs/249.jpg",
   "name": "Neon Blaster",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "250",
+  "page": "g/250.html",
+  "thumb": "thumbs/250.jpg",
   "name": "Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "251",
+  "page": "g/251.html",
+  "thumb": "thumbs/251.jpg",
   "name": "Falling blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 0.5
  },
  {
+  "set": "participants",
   "slug": "252",
+  "page": "g/252.html",
+  "thumb": "thumbs/252.jpg",
   "name": "\u2605 SNAKE ARCADE \u2605",
   "basic_game": "Snake",
   "consumer_wtp_cents": 15.0
  },
  {
+  "set": "participants",
   "slug": "253",
+  "page": "g/253.html",
+  "thumb": "thumbs/253.jpg",
   "name": "\u2726 Ethereal Block Buster \u2726",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 71.5
  },
  {
+  "set": "participants",
   "slug": "254",
+  "page": "g/254.html",
+  "thumb": "thumbs/254.jpg",
   "name": "Falling blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "255",
+  "page": "g/255.html",
+  "thumb": "thumbs/255.jpg",
   "name": "Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 26.7
  },
  {
+  "set": "participants",
   "slug": "256",
+  "page": "g/256.html",
+  "thumb": "thumbs/256.jpg",
   "name": "Neon Whack",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 25.0
  },
  {
+  "set": "participants",
   "slug": "257",
+  "page": "g/257.html",
+  "thumb": "thumbs/257.jpg",
   "name": "Floater",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 71.0
  },
  {
+  "set": "participants",
   "slug": "258",
+  "page": "g/258.html",
+  "thumb": "thumbs/258.jpg",
   "name": "Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 2.0
  },
  {
+  "set": "participants",
   "slug": "259",
+  "page": "g/259.html",
+  "thumb": "thumbs/259.jpg",
   "name": "Color Blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 79.0
  },
  {
+  "set": "participants",
   "slug": "260",
+  "page": "g/260.html",
+  "thumb": "thumbs/260.jpg",
   "name": "Shooter",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 20.0
  },
  {
+  "set": "participants",
   "slug": "261",
+  "page": "g/261.html",
+  "thumb": "thumbs/261.jpg",
   "name": "Dragon Shields \ud83d\udc32\ud83d\udee1\ufe0f",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 72.5
  },
  {
+  "set": "participants",
   "slug": "262",
+  "page": "g/262.html",
+  "thumb": "thumbs/262.jpg",
   "name": "Desert Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 12.0
  },
  {
+  "set": "participants",
   "slug": "263",
+  "page": "g/263.html",
+  "thumb": "thumbs/263.jpg",
   "name": "Neon Blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 25.0
  },
  {
+  "set": "participants",
   "slug": "264",
+  "page": "g/264.html",
+  "thumb": "thumbs/264.jpg",
   "name": "\ud83c\udf6c Don't hit me! \ud83d\udc7b",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 89.0
  },
  {
+  "set": "participants",
   "slug": "265",
+  "page": "g/265.html",
+  "thumb": "thumbs/265.jpg",
   "name": "Starship Shooter",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 53.7
  },
  {
+  "set": "participants",
   "slug": "266",
+  "page": "g/266.html",
+  "thumb": "thumbs/266.jpg",
   "name": "\ud83c\udf3c Garden Whack-a-Mole \ud83c\udf3c",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 2.0
  },
  {
+  "set": "participants",
   "slug": "267",
+  "page": "g/267.html",
+  "thumb": "thumbs/267.jpg",
   "name": "\u2728 Bloom Blocks: Enchanted Worlds \u2728",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 75.0
  },
  {
+  "set": "participants",
   "slug": "268",
+  "page": "g/268.html",
+  "thumb": "thumbs/268.jpg",
   "name": "Whack-a-mole",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 54.0
  },
  {
+  "set": "participants",
   "slug": "269",
+  "page": "g/269.html",
+  "thumb": "thumbs/269.jpg",
   "name": "NEON SKIES",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 68.0
  },
  {
+  "set": "participants",
   "slug": "270",
+  "page": "g/270.html",
+  "thumb": "thumbs/270.jpg",
   "name": "Paddle ball",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 4.0
  },
  {
+  "set": "participants",
   "slug": "271",
+  "page": "g/271.html",
+  "thumb": "thumbs/271.jpg",
   "name": "\ud83c\udf5a Build a Rice Bowl",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 7.0
  },
  {
+  "set": "participants",
   "slug": "272",
+  "page": "g/272.html",
+  "thumb": "thumbs/272.jpg",
   "name": "Whack-a-mole",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "273",
+  "page": "g/273.html",
+  "thumb": "thumbs/273.jpg",
   "name": "Whack-a-mole",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 54.0
  },
  {
+  "set": "participants",
   "slug": "274",
+  "page": "g/274.html",
+  "thumb": "thumbs/274.jpg",
   "name": "Cross the lanes",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 10.0
  },
  {
+  "set": "participants",
   "slug": "275",
+  "page": "g/275.html",
+  "thumb": "thumbs/275.jpg",
   "name": "Endless lane climb",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 27.5
  },
  {
+  "set": "participants",
   "slug": "276",
+  "page": "g/276.html",
+  "thumb": "thumbs/276.jpg",
   "name": "Fly Swatter",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 10.0
  },
  {
+  "set": "participants",
   "slug": "277",
+  "page": "g/277.html",
+  "thumb": "thumbs/277.jpg",
   "name": "\ud83d\udc0d Focus Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 10.0
  },
  {
+  "set": "participants",
   "slug": "278",
+  "page": "g/278.html",
+  "thumb": "thumbs/278.jpg",
   "name": "Cross the lanes",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 75.0
  },
  {
+  "set": "participants",
   "slug": "279",
+  "page": "g/279.html",
+  "thumb": "thumbs/279.jpg",
   "name": "\ud83d\udc1f Fishy Leap",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 74.0
  },
  {
+  "set": "participants",
   "slug": "280",
+  "page": "g/280.html",
+  "thumb": "thumbs/280.jpg",
   "name": "Paddle ball",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 24.5
  },
  {
+  "set": "participants",
   "slug": "281",
+  "page": "g/281.html",
+  "thumb": "thumbs/281.jpg",
   "name": "NEON STRIKE",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 62.0
  },
  {
+  "set": "participants",
   "slug": "282",
+  "page": "g/282.html",
+  "thumb": "thumbs/282.jpg",
   "name": "Catch the apple",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "283",
+  "page": "g/283.html",
+  "thumb": "thumbs/283.jpg",
   "name": "Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 50.0
  },
  {
+  "set": "participants",
   "slug": "284",
+  "page": "g/284.html",
+  "thumb": "thumbs/284.jpg",
   "name": "\ud83c\udf49 Whack-a-Fruit! \ud83c\udf53",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 84.0
  },
  {
+  "set": "participants",
   "slug": "285",
+  "page": "g/285.html",
+  "thumb": "thumbs/285.jpg",
   "name": "\u2726 BRICK BREAKER \u2726",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 12.0
  },
  {
+  "set": "participants",
   "slug": "286",
+  "page": "g/286.html",
+  "thumb": "thumbs/286.jpg",
   "name": "Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 25.0
  },
  {
+  "set": "participants",
   "slug": "287",
+  "page": "g/287.html",
+  "thumb": "thumbs/287.jpg",
   "name": "\ud83c\uddf0\ud83c\uddea Kenya & USA \ud83c\uddfa\ud83c\uddf8 Space Alliance",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 15.0
  },
  {
+  "set": "participants",
   "slug": "288",
+  "page": "g/288.html",
+  "thumb": "thumbs/288.jpg",
   "name": "Cross the lanes",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 8.0
  },
  {
+  "set": "participants",
   "slug": "289",
+  "page": "g/289.html",
+  "thumb": "thumbs/289.jpg",
   "name": "NEON STRIKE \u25b8 Glitch Sweep",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 7.0
  },
  {
+  "set": "participants",
   "slug": "290",
+  "page": "g/290.html",
+  "thumb": "thumbs/290.jpg",
   "name": "NEON BLOCKS: TURBO VIBRATIONS",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 50.0
  },
  {
+  "set": "participants",
   "slug": "291",
+  "page": "g/291.html",
+  "thumb": "thumbs/291.jpg",
   "name": "Paddle ball",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 53.0
  },
  {
+  "set": "participants",
   "slug": "292",
+  "page": "g/292.html",
+  "thumb": "thumbs/292.jpg",
   "name": "\ud83d\udc0d Snake Brawl",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 10.5
  },
  {
+  "set": "participants",
   "slug": "293",
+  "page": "g/293.html",
+  "thumb": "thumbs/293.jpg",
   "name": "TETRIS",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 87.5
  },
  {
+  "set": "participants",
   "slug": "294",
+  "page": "g/294.html",
+  "thumb": "thumbs/294.jpg",
   "name": "NEON RALLY",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 25.0
  },
  {
+  "set": "participants",
   "slug": "295",
+  "page": "g/295.html",
+  "thumb": "thumbs/295.jpg",
   "name": "Falling blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "296",
+  "page": "g/296.html",
+  "thumb": "thumbs/296.jpg",
   "name": "Gem Cascade",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 34.5
  },
  {
+  "set": "participants",
   "slug": "297",
+  "page": "g/297.html",
+  "thumb": "thumbs/297.jpg",
   "name": "\u2728 Cosmic Shooter \u2728",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "298",
+  "page": "g/298.html",
+  "thumb": "thumbs/298.jpg",
   "name": "Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 63.5
  },
  {
+  "set": "participants",
   "slug": "299",
+  "page": "g/299.html",
+  "thumb": "thumbs/299.jpg",
   "name": "SABER RUNNER",
   "basic_game": "Snake",
   "consumer_wtp_cents": 100.0
  },
  {
+  "set": "participants",
   "slug": "300",
+  "page": "g/300.html",
+  "thumb": "thumbs/300.jpg",
   "name": "\ud83d\udc0d Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 42.5
  },
  {
+  "set": "participants",
   "slug": "301",
+  "page": "g/301.html",
+  "thumb": "thumbs/301.jpg",
   "name": "\ud83e\udd86 Duck Crossing",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 29.0
  },
  {
+  "set": "participants",
   "slug": "302",
+  "page": "g/302.html",
+  "thumb": "thumbs/302.jpg",
   "name": "\ud83d\ude80 Galaxy Drop",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 25.0
  },
  {
+  "set": "participants",
   "slug": "303",
+  "page": "g/303.html",
+  "thumb": "thumbs/303.jpg",
   "name": "Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 66.0
  },
  {
+  "set": "participants",
   "slug": "304",
+  "page": "g/304.html",
+  "thumb": "thumbs/304.jpg",
   "name": "Ninja Crossing \u5fcd\u8005\u6a2a\u65ad",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 18.0
  },
  {
+  "set": "participants",
   "slug": "305",
+  "page": "g/305.html",
+  "thumb": "thumbs/305.jpg",
   "name": "\ud83d\udc0d REAL SNAKE \ud83d\udc0d",
   "basic_game": "Snake",
   "consumer_wtp_cents": 37.5
  },
  {
+  "set": "participants",
   "slug": "306",
+  "page": "g/306.html",
+  "thumb": "thumbs/306.jpg",
   "name": "Tickle the Toes",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 10.0
  },
  {
+  "set": "participants",
   "slug": "307",
+  "page": "g/307.html",
+  "thumb": "thumbs/307.jpg",
   "name": "Cross the highway",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 26.5
  },
  {
+  "set": "participants",
   "slug": "308",
+  "page": "g/308.html",
+  "thumb": "thumbs/308.jpg",
   "name": "Whack-a-mole",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 1.5
  },
  {
+  "set": "participants",
   "slug": "309",
+  "page": "g/309.html",
+  "thumb": "thumbs/309.jpg",
   "name": "Leaf Catcher \ud83c\udf42",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "310",
+  "page": "g/310.html",
+  "thumb": "thumbs/310.jpg",
   "name": "Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 3.0
  },
  {
+  "set": "participants",
   "slug": "311",
+  "page": "g/311.html",
+  "thumb": "thumbs/311.jpg",
   "name": "\ud83d\udc39 Critter Whack \ud83d\udca3",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 75.0
  },
  {
+  "set": "participants",
   "slug": "312",
+  "page": "g/312.html",
+  "thumb": "thumbs/312.jpg",
   "name": "Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 25.0
  },
  {
+  "set": "participants",
   "slug": "313",
+  "page": "g/313.html",
+  "thumb": "thumbs/313.jpg",
   "name": "Double Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 5.0
  },
  {
+  "set": "participants",
   "slug": "314",
+  "page": "g/314.html",
+  "thumb": "thumbs/314.jpg",
   "name": "Endless climb",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 1.7
  },
  {
+  "set": "participants",
   "slug": "315",
+  "page": "g/315.html",
+  "thumb": "thumbs/315.jpg",
   "name": "Whack-a-mole",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "316",
+  "page": "g/316.html",
+  "thumb": "thumbs/316.jpg",
   "name": "Falling blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 7.0
  },
  {
+  "set": "participants",
   "slug": "317",
+  "page": "g/317.html",
+  "thumb": "thumbs/317.jpg",
   "name": "\u2728 Paddle Ball \u2728",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 76.0
  },
  {
+  "set": "participants",
   "slug": "318",
+  "page": "g/318.html",
+  "thumb": "thumbs/318.jpg",
   "name": "Cross the road!",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 15.0
  },
  {
+  "set": "participants",
   "slug": "319",
+  "page": "g/319.html",
+  "thumb": "thumbs/319.jpg",
   "name": "Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 5.0
  },
  {
+  "set": "participants",
   "slug": "320",
+  "page": "g/320.html",
+  "thumb": "thumbs/320.jpg",
   "name": "Falling blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 65.0
  },
  {
+  "set": "participants",
   "slug": "321",
+  "page": "g/321.html",
+  "thumb": "thumbs/321.jpg",
   "name": "Falling blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 26.0
  },
  {
+  "set": "participants",
   "slug": "322",
+  "page": "g/322.html",
+  "thumb": "thumbs/322.jpg",
   "name": "Falling blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 84.0
  },
  {
+  "set": "participants",
   "slug": "323",
+  "page": "g/323.html",
+  "thumb": "thumbs/323.jpg",
   "name": "Pickleball \ud83c\udfbe",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 16.7
  },
  {
+  "set": "participants",
   "slug": "324",
+  "page": "g/324.html",
+  "thumb": "thumbs/324.jpg",
   "name": "Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "325",
+  "page": "g/325.html",
+  "thumb": "thumbs/325.jpg",
   "name": "\u2728 Bubble Pop Chain \u2728",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "326",
+  "page": "g/326.html",
+  "thumb": "thumbs/326.jpg",
   "name": "Sky Hopper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 19.7
  },
  {
+  "set": "participants",
   "slug": "327",
+  "page": "g/327.html",
+  "thumb": "thumbs/327.jpg",
   "name": "\u2726 Cosmic Blaster \u2726",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 91.0
  },
  {
+  "set": "participants",
   "slug": "328",
+  "page": "g/328.html",
+  "thumb": "thumbs/328.jpg",
   "name": "Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 25.0
  },
  {
+  "set": "participants",
   "slug": "329",
+  "page": "g/329.html",
+  "thumb": "thumbs/329.jpg",
   "name": "Whack-a-mole",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 25.0
  },
  {
+  "set": "participants",
   "slug": "330",
+  "page": "g/330.html",
+  "thumb": "thumbs/330.jpg",
   "name": "\ud83d\udc3a Wolf Pup Breakout",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 80.0
  },
  {
+  "set": "participants",
   "slug": "331",
+  "page": "g/331.html",
+  "thumb": "thumbs/331.jpg",
   "name": "\u26bd Keepy-Uppy",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 49.0
  },
  {
+  "set": "participants",
   "slug": "332",
+  "page": "g/332.html",
+  "thumb": "thumbs/332.jpg",
   "name": "Shooter",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 60.0
  },
  {
+  "set": "participants",
   "slug": "333",
+  "page": "g/333.html",
+  "thumb": "thumbs/333.jpg",
   "name": "BEAT HOPPER",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "334",
+  "page": "g/334.html",
+  "thumb": "thumbs/334.jpg",
   "name": "Falling blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 26.0
  },
  {
+  "set": "participants",
   "slug": "335",
+  "page": "g/335.html",
+  "thumb": "thumbs/335.jpg",
   "name": "Falling blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 55.0
  },
  {
+  "set": "participants",
   "slug": "336",
+  "page": "g/336.html",
+  "thumb": "thumbs/336.jpg",
   "name": "Critter Bedtime",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 75.0
  },
  {
+  "set": "participants",
   "slug": "337",
+  "page": "g/337.html",
+  "thumb": "thumbs/337.jpg",
   "name": "\ud83e\udddc\u200d\u2640\ufe0f Mermiranda to the Rescue!",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "338",
+  "page": "g/338.html",
+  "thumb": "thumbs/338.jpg",
   "name": "Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 17.3
  },
  {
+  "set": "participants",
   "slug": "339",
+  "page": "g/339.html",
+  "thumb": "thumbs/339.jpg",
   "name": "Banana Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 5.5
  },
  {
+  "set": "participants",
   "slug": "340",
+  "page": "g/340.html",
+  "thumb": "thumbs/340.jpg",
   "name": "Shooter",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 28.0
  },
  {
+  "set": "participants",
   "slug": "341",
+  "page": "g/341.html",
+  "thumb": "thumbs/341.jpg",
   "name": "Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 5.0
  },
  {
+  "set": "participants",
   "slug": "342",
+  "page": "g/342.html",
+  "thumb": "thumbs/342.jpg",
   "name": "\ud83c\udf6c Candy Drop \ud83c\udf6d",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 62.0
  },
  {
+  "set": "participants",
   "slug": "343",
+  "page": "g/343.html",
+  "thumb": "thumbs/343.jpg",
   "name": "Paddle ball",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 10.0
  },
  {
+  "set": "participants",
   "slug": "344",
+  "page": "g/344.html",
+  "thumb": "thumbs/344.jpg",
   "name": "Whack-a-mole",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "345",
+  "page": "g/345.html",
+  "thumb": "thumbs/345.jpg",
   "name": "Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 42.0
  },
  {
+  "set": "participants",
   "slug": "346",
+  "page": "g/346.html",
+  "thumb": "thumbs/346.jpg",
   "name": "Cross the lanes",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 57.0
  },
  {
+  "set": "participants",
   "slug": "347",
+  "page": "g/347.html",
+  "thumb": "thumbs/347.jpg",
   "name": "Falling blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 50.0
  },
  {
+  "set": "participants",
   "slug": "348",
+  "page": "g/348.html",
+  "thumb": "thumbs/348.jpg",
   "name": "Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 42.5
  },
  {
+  "set": "participants",
   "slug": "349",
+  "page": "g/349.html",
+  "thumb": "thumbs/349.jpg",
   "name": "Whack-a-Pirate",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 60.0
  },
  {
+  "set": "participants",
   "slug": "350",
+  "page": "g/350.html",
+  "thumb": "thumbs/350.jpg",
   "name": "NEON BOUNCE: CAMPAIGN",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 64.0
  },
  {
+  "set": "participants",
   "slug": "351",
+  "page": "g/351.html",
+  "thumb": "thumbs/351.jpg",
   "name": "Lunar Lander Blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 12.5
  },
  {
+  "set": "participants",
   "slug": "352",
+  "page": "g/352.html",
+  "thumb": "thumbs/352.jpg",
   "name": "\ud83c\udf08 Rainbow Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 51.0
  },
  {
+  "set": "participants",
   "slug": "353",
+  "page": "g/353.html",
+  "thumb": "thumbs/353.jpg",
   "name": "\ud83d\udc0d Snake Duel",
   "basic_game": "Snake",
   "consumer_wtp_cents": 27.0
  },
  {
+  "set": "participants",
   "slug": "354",
+  "page": "g/354.html",
+  "thumb": "thumbs/354.jpg",
   "name": "Cat Crossing",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 45.0
  },
  {
+  "set": "participants",
   "slug": "355",
+  "page": "g/355.html",
+  "thumb": "thumbs/355.jpg",
   "name": "AIR STRIKE",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 57.0
  },
  {
+  "set": "participants",
   "slug": "356",
+  "page": "g/356.html",
+  "thumb": "thumbs/356.jpg",
   "name": "NEON ASCENT",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 71.0
  },
  {
+  "set": "participants",
   "slug": "357",
+  "page": "g/357.html",
+  "thumb": "thumbs/357.jpg",
   "name": "Multi-ball catch",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 9.0
  },
  {
+  "set": "participants",
   "slug": "358",
+  "page": "g/358.html",
+  "thumb": "thumbs/358.jpg",
   "name": "\ud83d\ude80 Defend the Starship \ud83d\udc7e",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 15.0
  },
  {
+  "set": "participants",
   "slug": "359",
+  "page": "g/359.html",
+  "thumb": "thumbs/359.jpg",
   "name": "Frog Leap",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 23.0
  },
  {
+  "set": "participants",
   "slug": "360",
+  "page": "g/360.html",
+  "thumb": "thumbs/360.jpg",
   "name": "Shooter",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 59.0
  },
  {
+  "set": "participants",
   "slug": "361",
+  "page": "g/361.html",
+  "thumb": "thumbs/361.jpg",
   "name": "Paddle ball",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 67.0
  },
  {
+  "set": "participants",
   "slug": "362",
+  "page": "g/362.html",
+  "thumb": "thumbs/362.jpg",
   "name": "\ud83d\ude80 STAR CHOMPERS",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 40.0
  },
  {
+  "set": "participants",
   "slug": "363",
+  "page": "g/363.html",
+  "thumb": "thumbs/363.jpg",
   "name": "\ud83d\udc38 Froggy Quest",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 51.0
  },
  {
+  "set": "participants",
   "slug": "364",
+  "page": "g/364.html",
+  "thumb": "thumbs/364.jpg",
   "name": "Falling blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "365",
+  "page": "g/365.html",
+  "thumb": "thumbs/365.jpg",
   "name": "HIGHWAY DODGE",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "366",
+  "page": "g/366.html",
+  "thumb": "thumbs/366.jpg",
   "name": "Shooter",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 5.0
  },
  {
+  "set": "participants",
   "slug": "367",
+  "page": "g/367.html",
+  "thumb": "thumbs/367.jpg",
   "name": "\ud83d\udc36 Puppy Dash",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 74.0
  },
  {
+  "set": "participants",
   "slug": "368",
+  "page": "g/368.html",
+  "thumb": "thumbs/368.jpg",
   "name": "\u2726 Rocket Rush \u2726",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 12.0
  },
  {
+  "set": "participants",
   "slug": "369",
+  "page": "g/369.html",
+  "thumb": "thumbs/369.jpg",
   "name": "\ud83d\udc39 Whack-a-Mole!",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 100.0
  },
  {
+  "set": "participants",
   "slug": "370",
+  "page": "g/370.html",
+  "thumb": "thumbs/370.jpg",
   "name": "Fruit Catch",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 70.0
  },
  {
+  "set": "participants",
   "slug": "371",
+  "page": "g/371.html",
+  "thumb": "thumbs/371.jpg",
   "name": "Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 85.5
  },
  {
+  "set": "participants",
   "slug": "372",
+  "page": "g/372.html",
+  "thumb": "thumbs/372.jpg",
   "name": "Paddle Duel",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 54.0
  },
  {
+  "set": "participants",
   "slug": "373",
+  "page": "g/373.html",
+  "thumb": "thumbs/373.jpg",
   "name": "Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 50.0
  },
  {
+  "set": "participants",
   "slug": "374",
+  "page": "g/374.html",
+  "thumb": "thumbs/374.jpg",
   "name": "PROMETHEAN OVERRIDE",
   "basic_game": "Snake",
   "consumer_wtp_cents": 54.0
  },
  {
+  "set": "participants",
   "slug": "375",
+  "page": "g/375.html",
+  "thumb": "thumbs/375.jpg",
   "name": "\ud83d\udc0d Rainbow Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 76.0
  },
  {
+  "set": "participants",
   "slug": "376",
+  "page": "g/376.html",
+  "thumb": "thumbs/376.jpg",
   "name": "Whack-a-ball",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 2.0
  },
  {
+  "set": "participants",
   "slug": "377",
+  "page": "g/377.html",
+  "thumb": "thumbs/377.jpg",
   "name": "Shooter",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 17.0
  },
  {
+  "set": "participants",
   "slug": "378",
+  "page": "g/378.html",
+  "thumb": "thumbs/378.jpg",
   "name": "Color Rush",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 24.0
  },
  {
+  "set": "participants",
   "slug": "379",
+  "page": "g/379.html",
+  "thumb": "thumbs/379.jpg",
   "name": "Battleship",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 48.0
  },
  {
+  "set": "participants",
   "slug": "380",
+  "page": "g/380.html",
+  "thumb": "thumbs/380.jpg",
   "name": "Falling blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 35.0
  },
  {
+  "set": "participants",
   "slug": "381",
+  "page": "g/381.html",
+  "thumb": "thumbs/381.jpg",
   "name": "Brick Breaker",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 80.0
  },
  {
+  "set": "participants",
   "slug": "382",
+  "page": "g/382.html",
+  "thumb": "thumbs/382.jpg",
   "name": "\ud83e\udeb1 Garden Burrower",
   "basic_game": "Snake",
   "consumer_wtp_cents": 35.0
  },
  {
+  "set": "participants",
   "slug": "383",
+  "page": "g/383.html",
+  "thumb": "thumbs/383.jpg",
   "name": "Paddle ball",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 7.0
  },
  {
+  "set": "participants",
   "slug": "384",
+  "page": "g/384.html",
+  "thumb": "thumbs/384.jpg",
   "name": "SCENIC PADDLE",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 50.0
  },
  {
+  "set": "participants",
   "slug": "385",
+  "page": "g/385.html",
+  "thumb": "thumbs/385.jpg",
   "name": "Color Blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 10.0
  },
  {
+  "set": "participants",
   "slug": "386",
+  "page": "g/386.html",
+  "thumb": "thumbs/386.jpg",
   "name": "Paddle ball",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "387",
+  "page": "g/387.html",
+  "thumb": "thumbs/387.jpg",
   "name": "Shooter",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 84.0
  },
  {
+  "set": "participants",
   "slug": "388",
+  "page": "g/388.html",
+  "thumb": "thumbs/388.jpg",
   "name": "Shooter",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 68.0
  },
  {
+  "set": "participants",
   "slug": "389",
+  "page": "g/389.html",
+  "thumb": "thumbs/389.jpg",
   "name": "\ud83d\udc38 Froggy Crossing",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 30.0
  },
  {
+  "set": "participants",
   "slug": "390",
+  "page": "g/390.html",
+  "thumb": "thumbs/390.jpg",
   "name": "Whack-a-mole",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 7.0
  },
  {
+  "set": "participants",
   "slug": "391",
+  "page": "g/391.html",
+  "thumb": "thumbs/391.jpg",
   "name": "\ud83c\udf83 Pumpkin Dash \ud83c\udf83",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 50.0
  },
  {
+  "set": "participants",
   "slug": "392",
+  "page": "g/392.html",
+  "thumb": "thumbs/392.jpg",
   "name": "Paddle ball",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 5.0
  },
  {
+  "set": "participants",
   "slug": "393",
+  "page": "g/393.html",
+  "thumb": "thumbs/393.jpg",
   "name": "\ud83d\ude80 Home Planet Run",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "394",
+  "page": "g/394.html",
+  "thumb": "thumbs/394.jpg",
   "name": "NEON BOUNCE",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 74.0
  },
  {
+  "set": "participants",
   "slug": "395",
+  "page": "g/395.html",
+  "thumb": "thumbs/395.jpg",
   "name": "Whack-a-mole",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 20.0
  },
  {
+  "set": "participants",
   "slug": "396",
+  "page": "g/396.html",
+  "thumb": "thumbs/396.jpg",
   "name": "NEON SNAKE",
   "basic_game": "Snake",
   "consumer_wtp_cents": 14.5
  },
  {
+  "set": "participants",
   "slug": "397",
+  "page": "g/397.html",
+  "thumb": "thumbs/397.jpg",
   "name": "NEON STRIKE: MOLE MAYHEM",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 5.0
  },
  {
+  "set": "participants",
   "slug": "398",
+  "page": "g/398.html",
+  "thumb": "thumbs/398.jpg",
   "name": "Paddle ball",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 27.0
  },
  {
+  "set": "participants",
   "slug": "399",
+  "page": "g/399.html",
+  "thumb": "thumbs/399.jpg",
   "name": "STAR HUNTER",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 87.5
  },
  {
+  "set": "participants",
   "slug": "400",
+  "page": "g/400.html",
+  "thumb": "thumbs/400.jpg",
   "name": "Cross the lanes",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 26.5
  },
  {
+  "set": "participants",
   "slug": "401",
+  "page": "g/401.html",
+  "thumb": "thumbs/401.jpg",
   "name": "Shooter",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 12.5
  },
  {
+  "set": "participants",
   "slug": "402",
+  "page": "g/402.html",
+  "thumb": "thumbs/402.jpg",
   "name": "Capybara Hop",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "403",
+  "page": "g/403.html",
+  "thumb": "thumbs/403.jpg",
   "name": "Serpent Odyssey",
   "basic_game": "Snake",
   "consumer_wtp_cents": 56.0
  },
  {
+  "set": "participants",
   "slug": "404",
+  "page": "g/404.html",
+  "thumb": "thumbs/404.jpg",
   "name": "Block builder",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 44.0
  },
  {
+  "set": "participants",
   "slug": "405",
+  "page": "g/405.html",
+  "thumb": "thumbs/405.jpg",
   "name": "WALL BREAKER",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 6.0
  },
  {
+  "set": "participants",
   "slug": "406",
+  "page": "g/406.html",
+  "thumb": "thumbs/406.jpg",
   "name": "\ud83d\udc31 Cat Crossing",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "407",
+  "page": "g/407.html",
+  "thumb": "thumbs/407.jpg",
   "name": "Runner Duel \ud83c\udfc3 vs \ud83c\udfc3",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 35.0
  },
  {
+  "set": "participants",
   "slug": "408",
+  "page": "g/408.html",
+  "thumb": "thumbs/408.jpg",
   "name": "Falling blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 88.0
  },
  {
+  "set": "participants",
   "slug": "409",
+  "page": "g/409.html",
+  "thumb": "thumbs/409.jpg",
   "name": "\ud83d\ude80 Star Blaster",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 1.0
  },
  {
+  "set": "participants",
   "slug": "410",
+  "page": "g/410.html",
+  "thumb": "thumbs/410.jpg",
   "name": "Whack-a-mole",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 55.0
  },
  {
+  "set": "participants",
   "slug": "411",
+  "page": "g/411.html",
+  "thumb": "thumbs/411.jpg",
   "name": "Neon blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 44.7
  },
  {
+  "set": "participants",
   "slug": "412",
+  "page": "g/412.html",
+  "thumb": "thumbs/412.jpg",
   "name": "Combo Blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 1.0
  },
  {
+  "set": "participants",
   "slug": "413",
+  "page": "g/413.html",
+  "thumb": "thumbs/413.jpg",
   "name": "\ud83c\udf53 Fruit & Critter Drop \ud83d\udc38",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 20.0
  },
  {
+  "set": "participants",
   "slug": "414",
+  "page": "g/414.html",
+  "thumb": "thumbs/414.jpg",
   "name": "\u2605 SPACE BATTLE: CO-OP \u2605",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "415",
+  "page": "g/415.html",
+  "thumb": "thumbs/415.jpg",
   "name": "Snake 3D",
   "basic_game": "Snake",
   "consumer_wtp_cents": 24.0
  },
  {
+  "set": "participants",
   "slug": "416",
+  "page": "g/416.html",
+  "thumb": "thumbs/416.jpg",
   "name": "Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "417",
+  "page": "g/417.html",
+  "thumb": "thumbs/417.jpg",
   "name": "\ud83c\udfc3 Sidewalk Sprint",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 44.0
  },
  {
+  "set": "participants",
   "slug": "418",
+  "page": "g/418.html",
+  "thumb": "thumbs/418.jpg",
   "name": "Falling blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 13.5
  },
  {
+  "set": "participants",
   "slug": "419",
+  "page": "g/419.html",
+  "thumb": "thumbs/419.jpg",
   "name": "Pixel Sailor Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 5.0
  },
  {
+  "set": "participants",
   "slug": "420",
+  "page": "g/420.html",
+  "thumb": "thumbs/420.jpg",
   "name": "Shooter",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "421",
+  "page": "g/421.html",
+  "thumb": "thumbs/421.jpg",
   "name": "Forest Crossing",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "422",
+  "page": "g/422.html",
+  "thumb": "thumbs/422.jpg",
   "name": "\ud83d\udc31 Hungry Cat",
   "basic_game": "Snake",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "423",
+  "page": "g/423.html",
+  "thumb": "thumbs/423.jpg",
   "name": "Shooter",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 22.0
  },
  {
+  "set": "participants",
   "slug": "424",
+  "page": "g/424.html",
+  "thumb": "thumbs/424.jpg",
   "name": "Whack-a-mole",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 13.0
  },
  {
+  "set": "participants",
   "slug": "425",
+  "page": "g/425.html",
+  "thumb": "thumbs/425.jpg",
   "name": "\ud83d\udc20 Coral Drop",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 10.0
  },
  {
+  "set": "participants",
   "slug": "426",
+  "page": "g/426.html",
+  "thumb": "thumbs/426.jpg",
   "name": "\ud83d\udc0d Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 15.0
  },
  {
+  "set": "participants",
   "slug": "427",
+  "page": "g/427.html",
+  "thumb": "thumbs/427.jpg",
   "name": "Sky Hopper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 75.0
  },
  {
+  "set": "participants",
   "slug": "428",
+  "page": "g/428.html",
+  "thumb": "thumbs/428.jpg",
   "name": "\ud83e\uddf8 Whack-a-Teddy",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 76.7
  },
  {
+  "set": "participants",
   "slug": "429",
+  "page": "g/429.html",
+  "thumb": "thumbs/429.jpg",
   "name": "Falling blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 100.0
  },
  {
+  "set": "participants",
   "slug": "430",
+  "page": "g/430.html",
+  "thumb": "thumbs/430.jpg",
   "name": "Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 5.0
  },
  {
+  "set": "participants",
   "slug": "431",
+  "page": "g/431.html",
+  "thumb": "thumbs/431.jpg",
   "name": "Falling blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 14.0
  },
  {
+  "set": "participants",
   "slug": "432",
+  "page": "g/432.html",
+  "thumb": "thumbs/432.jpg",
   "name": "Cross the lanes",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 24.0
  },
  {
+  "set": "participants",
   "slug": "433",
+  "page": "g/433.html",
+  "thumb": "thumbs/433.jpg",
   "name": "Falling blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 62.5
  },
  {
+  "set": "participants",
   "slug": "434",
+  "page": "g/434.html",
+  "thumb": "thumbs/434.jpg",
   "name": "\ud83c\udfaa Carnival Critter Whack \ud83c\udfaa",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 100.0
  },
  {
+  "set": "participants",
   "slug": "435",
+  "page": "g/435.html",
+  "thumb": "thumbs/435.jpg",
   "name": "Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 12.0
  },
  {
+  "set": "participants",
   "slug": "436",
+  "page": "g/436.html",
+  "thumb": "thumbs/436.jpg",
   "name": "\ud83e\udd98 Kangaroo Hop: Hell Run",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 58.0
  },
  {
+  "set": "participants",
   "slug": "437",
+  "page": "g/437.html",
+  "thumb": "thumbs/437.jpg",
   "name": "\ud83c\udf81 Prize Block Drop \ud83c\udf81",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 50.0
  },
  {
+  "set": "participants",
   "slug": "438",
+  "page": "g/438.html",
+  "thumb": "thumbs/438.jpg",
   "name": "\u26a1 Paddle Ball \u26a1",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 87.0
  },
  {
+  "set": "participants",
   "slug": "439",
+  "page": "g/439.html",
+  "thumb": "thumbs/439.jpg",
   "name": "Ball Splash",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 11.0
  },
  {
+  "set": "participants",
   "slug": "440",
+  "page": "g/440.html",
+  "thumb": "thumbs/440.jpg",
   "name": "Shooter",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 59.0
  },
  {
+  "set": "participants",
   "slug": "441",
+  "page": "g/441.html",
+  "thumb": "thumbs/441.jpg",
   "name": "Whack-a-mole",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 25.0
  },
  {
+  "set": "participants",
   "slug": "442",
+  "page": "g/442.html",
+  "thumb": "thumbs/442.jpg",
   "name": "\ud83d\udc19 Sea Monster Rising",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 12.0
  },
  {
+  "set": "participants",
   "slug": "443",
+  "page": "g/443.html",
+  "thumb": "thumbs/443.jpg",
   "name": "Plumber Dash",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "444",
+  "page": "g/444.html",
+  "thumb": "thumbs/444.jpg",
   "name": "\ud83d\udc04 Cow Jump Farm",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 60.0
  },
  {
+  "set": "participants",
   "slug": "445",
+  "page": "g/445.html",
+  "thumb": "thumbs/445.jpg",
   "name": "Pebble Ball: Melody Demolition",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 18.0
  },
  {
+  "set": "participants",
   "slug": "446",
+  "page": "g/446.html",
+  "thumb": "thumbs/446.jpg",
   "name": "\ud83e\udd8a Kitsune Spirit Run",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 43.3
  },
  {
+  "set": "participants",
   "slug": "447",
+  "page": "g/447.html",
+  "thumb": "thumbs/447.jpg",
   "name": "\ud83c\udfce\ufe0f Highway Dash",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 11.0
  },
  {
+  "set": "participants",
   "slug": "448",
+  "page": "g/448.html",
+  "thumb": "thumbs/448.jpg",
   "name": "WHACK WARS",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 90.0
  },
  {
+  "set": "participants",
   "slug": "449",
+  "page": "g/449.html",
+  "thumb": "thumbs/449.jpg",
   "name": "\u2728 Cross the Lanes \u2728",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 28.0
  },
  {
+  "set": "participants",
   "slug": "450",
+  "page": "g/450.html",
+  "thumb": "thumbs/450.jpg",
   "name": "Neon Runner",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 61.7
  },
  {
+  "set": "participants",
   "slug": "451",
+  "page": "g/451.html",
+  "thumb": "thumbs/451.jpg",
   "name": "\ud83d\udc14 Chicken Crossing Catastrophe",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 12.0
  },
  {
+  "set": "participants",
   "slug": "452",
+  "page": "g/452.html",
+  "thumb": "thumbs/452.jpg",
   "name": "Aurora Blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 88.0
  },
  {
+  "set": "participants",
   "slug": "453",
+  "page": "g/453.html",
+  "thumb": "thumbs/453.jpg",
   "name": "Hoop bounce",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 26.0
  },
  {
+  "set": "participants",
   "slug": "454",
+  "page": "g/454.html",
+  "thumb": "thumbs/454.jpg",
   "name": "Cross the lanes",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "455",
+  "page": "g/455.html",
+  "thumb": "thumbs/455.jpg",
   "name": "\ud83d\udc21 Puffer Crossing",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 18.0
  },
  {
+  "set": "participants",
   "slug": "456",
+  "page": "g/456.html",
+  "thumb": "thumbs/456.jpg",
   "name": "Snake",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 65.0
  },
  {
+  "set": "participants",
   "slug": "457",
+  "page": "g/457.html",
+  "thumb": "thumbs/457.jpg",
   "name": "Star Shooter",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "458",
+  "page": "g/458.html",
+  "thumb": "thumbs/458.jpg",
   "name": "Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 30.0
  },
  {
+  "set": "participants",
   "slug": "459",
+  "page": "g/459.html",
+  "thumb": "thumbs/459.jpg",
   "name": "Shooter",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 11.5
  },
  {
+  "set": "participants",
   "slug": "460",
+  "page": "g/460.html",
+  "thumb": "thumbs/460.jpg",
   "name": "Hungry Ball",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 10.0
  },
  {
+  "set": "participants",
   "slug": "461",
+  "page": "g/461.html",
+  "thumb": "thumbs/461.jpg",
   "name": "LASER PADDLE",
   "basic_game": "Paddle and ball",
   "consumer_wtp_cents": 1.0
  },
  {
+  "set": "participants",
   "slug": "462",
+  "page": "g/462.html",
+  "thumb": "thumbs/462.jpg",
   "name": "Whack-a-mole",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 51.0
  },
  {
+  "set": "participants",
   "slug": "463",
+  "page": "g/463.html",
+  "thumb": "thumbs/463.jpg",
   "name": "DINO DASH",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 39.0
  },
  {
+  "set": "participants",
   "slug": "464",
+  "page": "g/464.html",
+  "thumb": "thumbs/464.jpg",
   "name": "Star Blaster",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 15.0
  },
  {
+  "set": "participants",
   "slug": "465",
+  "page": "g/465.html",
+  "thumb": "thumbs/465.jpg",
   "name": "\ud83d\udc0d Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 48.3
  },
  {
+  "set": "participants",
   "slug": "466",
+  "page": "g/466.html",
+  "thumb": "thumbs/466.jpg",
   "name": "\ud83d\udea6 Highway Crossing",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 69.0
  },
  {
+  "set": "participants",
   "slug": "467",
+  "page": "g/467.html",
+  "thumb": "thumbs/467.jpg",
   "name": "Whack-a-mole",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 54.0
  },
  {
+  "set": "participants",
   "slug": "468",
+  "page": "g/468.html",
+  "thumb": "thumbs/468.jpg",
   "name": "Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 25.0
  },
  {
+  "set": "participants",
   "slug": "469",
+  "page": "g/469.html",
+  "thumb": "thumbs/469.jpg",
   "name": "Bunny Hearts \ud83d\udc95",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 79.0
  },
  {
+  "set": "participants",
   "slug": "470",
+  "page": "g/470.html",
+  "thumb": "thumbs/470.jpg",
   "name": "FOXRUN",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 25.0
  },
  {
+  "set": "participants",
   "slug": "471",
+  "page": "g/471.html",
+  "thumb": "thumbs/471.jpg",
   "name": "Falling blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 20.0
  },
  {
+  "set": "participants",
   "slug": "472",
+  "page": "g/472.html",
+  "thumb": "thumbs/472.jpg",
   "name": "Falling blocks",
   "basic_game": "Falling blocks",
   "consumer_wtp_cents": 37.0
  },
  {
+  "set": "participants",
   "slug": "473",
+  "page": "g/473.html",
+  "thumb": "thumbs/473.jpg",
   "name": "\ud83c\udf08 Rainbow Snake",
   "basic_game": "Snake",
   "consumer_wtp_cents": 77.0
  },
  {
+  "set": "participants",
   "slug": "474",
+  "page": "g/474.html",
+  "thumb": "thumbs/474.jpg",
   "name": "Cross the lanes",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 75.0
  },
  {
+  "set": "participants",
   "slug": "475",
+  "page": "g/475.html",
+  "thumb": "thumbs/475.jpg",
   "name": "Jumper",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "476",
+  "page": "g/476.html",
+  "thumb": "thumbs/476.jpg",
   "name": "\ud83d\udc38 Frog Dash",
   "basic_game": "Gravity jumper",
   "consumer_wtp_cents": 9.0
  },
  {
+  "set": "participants",
   "slug": "477",
+  "page": "g/477.html",
+  "thumb": "thumbs/477.jpg",
   "name": "F R O G G E R",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 99.0
  },
  {
+  "set": "participants",
   "slug": "478",
+  "page": "g/478.html",
+  "thumb": "thumbs/478.jpg",
   "name": "Dot Grab",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "479",
+  "page": "g/479.html",
+  "thumb": "thumbs/479.jpg",
   "name": "Whack-a-mole",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 50.0
  },
  {
+  "set": "participants",
   "slug": "480",
+  "page": "g/480.html",
+  "thumb": "thumbs/480.jpg",
   "name": "Dodge & Blast",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 20.0
  },
  {
+  "set": "participants",
   "slug": "481",
+  "page": "g/481.html",
+  "thumb": "thumbs/481.jpg",
   "name": "Shooter",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 60.5
  },
  {
+  "set": "participants",
   "slug": "482",
+  "page": "g/482.html",
+  "thumb": "thumbs/482.jpg",
   "name": "NEON GRID RUNNER",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 73.0
  },
  {
+  "set": "participants",
   "slug": "483",
+  "page": "g/483.html",
+  "thumb": "thumbs/483.jpg",
   "name": "Star Tap",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 10.0
  },
  {
+  "set": "participants",
   "slug": "484",
+  "page": "g/484.html",
+  "thumb": "thumbs/484.jpg",
   "name": "Snake Duel",
   "basic_game": "Snake",
   "consumer_wtp_cents": 50.0
  },
  {
+  "set": "participants",
   "slug": "485",
+  "page": "g/485.html",
+  "thumb": "thumbs/485.jpg",
   "name": "\ud83d\ude80 SPACE DEFENDER",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 65.0
  },
  {
+  "set": "participants",
   "slug": "486",
+  "page": "g/486.html",
+  "thumb": "thumbs/486.jpg",
   "name": "NEON RAIDERS",
   "basic_game": "Space shooter",
   "consumer_wtp_cents": 29.0
  },
  {
+  "set": "participants",
   "slug": "487",
+  "page": "g/487.html",
+  "thumb": "thumbs/487.jpg",
   "name": "Whack-a-mole",
   "basic_game": "Whack-a-mole",
   "consumer_wtp_cents": 0.0
  },
  {
+  "set": "participants",
   "slug": "488",
+  "page": "g/488.html",
+  "thumb": "thumbs/488.jpg",
   "name": "\ud83d\udc38 Froggy Crossing",
   "basic_game": "Road crossing",
   "consumer_wtp_cents": 70.0
+ },
+ {
+  "set": "ai",
+  "slug": "001",
+  "page": "ai/001.html",
+  "thumb": "thumbs/ai/001.jpg",
+  "name": "ASTRO DASH",
+  "consumer_wtp_cents": 9.0
+ },
+ {
+  "set": "ai",
+  "slug": "002",
+  "page": "ai/002.html",
+  "thumb": "thumbs/ai/002.jpg",
+  "name": "NEON DASH",
+  "consumer_wtp_cents": 0.0
+ },
+ {
+  "set": "ai",
+  "slug": "003",
+  "page": "ai/003.html",
+  "thumb": "thumbs/ai/003.jpg",
+  "name": "\ud83c\udf49 Fruit Drop \ud83c\udf47",
+  "consumer_wtp_cents": 85.0
+ },
+ {
+  "set": "ai",
+  "slug": "004",
+  "page": "ai/004.html",
+  "thumb": "thumbs/ai/004.jpg",
+  "name": "COSMIC CASCADE",
+  "consumer_wtp_cents": 100.0
+ },
+ {
+  "set": "ai",
+  "slug": "005",
+  "page": "ai/005.html",
+  "thumb": "thumbs/ai/005.jpg",
+  "name": "STARBLAST",
+  "consumer_wtp_cents": 100.0
+ },
+ {
+  "set": "ai",
+  "slug": "006",
+  "page": "ai/006.html",
+  "thumb": "thumbs/ai/006.jpg",
+  "name": "\u2604 COMET DASH",
+  "consumer_wtp_cents": 28.0
+ },
+ {
+  "set": "ai",
+  "slug": "007",
+  "page": "ai/007.html",
+  "thumb": "thumbs/ai/007.jpg",
+  "name": "\ud83d\udc38 Space Frog Escape \ud83d\udef8",
+  "consumer_wtp_cents": 61.0
+ },
+ {
+  "set": "ai",
+  "slug": "008",
+  "page": "ai/008.html",
+  "thumb": "thumbs/ai/008.jpg",
+  "name": "\u2726 GALACTIC BREAKOUT \u2726",
+  "consumer_wtp_cents": 88.0
+ },
+ {
+  "set": "ai",
+  "slug": "009",
+  "page": "ai/009.html",
+  "thumb": "thumbs/ai/009.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 44.0
+ },
+ {
+  "set": "ai",
+  "slug": "010",
+  "page": "ai/010.html",
+  "thumb": "thumbs/ai/010.jpg",
+  "name": "\ud83e\udd80 Crab Bop \ud83e\udd80",
+  "consumer_wtp_cents": 75.0
+ },
+ {
+  "set": "ai",
+  "slug": "011",
+  "page": "ai/011.html",
+  "thumb": "thumbs/ai/011.jpg",
+  "name": "\ud83c\udf53 Fruit Drop Frenzy \ud83c\udf47",
+  "consumer_wtp_cents": 12.0
+ },
+ {
+  "set": "ai",
+  "slug": "012",
+  "page": "ai/012.html",
+  "thumb": "thumbs/ai/012.jpg",
+  "name": "NEON DEFENDER",
+  "consumer_wtp_cents": 66.0
+ },
+ {
+  "set": "ai",
+  "slug": "013",
+  "page": "ai/013.html",
+  "thumb": "thumbs/ai/013.jpg",
+  "name": "\u2726 COSMIC BREAKOUT \u2726",
+  "consumer_wtp_cents": 0.0
+ },
+ {
+  "set": "ai",
+  "slug": "014",
+  "page": "ai/014.html",
+  "thumb": "thumbs/ai/014.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 63.0
+ },
+ {
+  "set": "ai",
+  "slug": "015",
+  "page": "ai/015.html",
+  "thumb": "thumbs/ai/015.jpg",
+  "name": "NEON CASCADE",
+  "consumer_wtp_cents": 26.0
+ },
+ {
+  "set": "ai",
+  "slug": "016",
+  "page": "ai/016.html",
+  "thumb": "thumbs/ai/016.jpg",
+  "name": "\u2726 COSMIC DEFENDER \u2726",
+  "consumer_wtp_cents": 44.0
+ },
+ {
+  "set": "ai",
+  "slug": "017",
+  "page": "ai/017.html",
+  "thumb": "thumbs/ai/017.jpg",
+  "name": "\ud83c\udf31 Gopher Garden \ud83c\udf31",
+  "consumer_wtp_cents": 10.0
+ },
+ {
+  "set": "ai",
+  "slug": "018",
+  "page": "ai/018.html",
+  "thumb": "thumbs/ai/018.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 50.0
+ },
+ {
+  "set": "ai",
+  "slug": "019",
+  "page": "ai/019.html",
+  "thumb": "thumbs/ai/019.jpg",
+  "name": "COMET DASH",
+  "consumer_wtp_cents": 0.0
+ },
+ {
+  "set": "ai",
+  "slug": "020",
+  "page": "ai/020.html",
+  "thumb": "thumbs/ai/020.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 37.0
+ },
+ {
+  "set": "ai",
+  "slug": "021",
+  "page": "ai/021.html",
+  "thumb": "thumbs/ai/021.jpg",
+  "name": "\ud83c\udf53 Fruit Drop Frenzy \ud83c\udf49",
+  "consumer_wtp_cents": 75.0
+ },
+ {
+  "set": "ai",
+  "slug": "022",
+  "page": "ai/022.html",
+  "thumb": "thumbs/ai/022.jpg",
+  "name": "NEON DASH",
+  "consumer_wtp_cents": 0.0
+ },
+ {
+  "set": "ai",
+  "slug": "023",
+  "page": "ai/023.html",
+  "thumb": "thumbs/ai/023.jpg",
+  "name": "COSMIC BARRAGE",
+  "consumer_wtp_cents": 50.0
+ },
+ {
+  "set": "ai",
+  "slug": "024",
+  "page": "ai/024.html",
+  "thumb": "thumbs/ai/024.jpg",
+  "name": "NEON BLITZ",
+  "consumer_wtp_cents": 37.5
+ },
+ {
+  "set": "ai",
+  "slug": "025",
+  "page": "ai/025.html",
+  "thumb": "thumbs/ai/025.jpg",
+  "name": "\ud83d\udc38 SPACE FROG ESCAPE \ud83d\ude80",
+  "consumer_wtp_cents": 85.0
+ },
+ {
+  "set": "ai",
+  "slug": "026",
+  "page": "ai/026.html",
+  "thumb": "thumbs/ai/026.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 57.5
+ },
+ {
+  "set": "ai",
+  "slug": "027",
+  "page": "ai/027.html",
+  "thumb": "thumbs/ai/027.jpg",
+  "name": "\u2726 COSMIC BREAKOUT \u2726",
+  "consumer_wtp_cents": 50.0
+ },
+ {
+  "set": "ai",
+  "slug": "028",
+  "page": "ai/028.html",
+  "thumb": "thumbs/ai/028.jpg",
+  "name": "COSMIC DEFENDER",
+  "consumer_wtp_cents": 75.0
+ },
+ {
+  "set": "ai",
+  "slug": "029",
+  "page": "ai/029.html",
+  "thumb": "thumbs/ai/029.jpg",
+  "name": "\u2604 Comet Dash",
+  "consumer_wtp_cents": 90.0
+ },
+ {
+  "set": "ai",
+  "slug": "030",
+  "page": "ai/030.html",
+  "thumb": "thumbs/ai/030.jpg",
+  "name": "\ud83c\udf0a STELLAR REEF DEFENSE \ud83c\udf0a",
+  "consumer_wtp_cents": 12.0
+ },
+ {
+  "set": "ai",
+  "slug": "031",
+  "page": "ai/031.html",
+  "thumb": "thumbs/ai/031.jpg",
+  "name": "\ud83d\ude80 METEOR DASH",
+  "consumer_wtp_cents": 20.0
+ },
+ {
+  "set": "ai",
+  "slug": "032",
+  "page": "ai/032.html",
+  "thumb": "thumbs/ai/032.jpg",
+  "name": "\ud83e\udd8a NEON FOX",
+  "consumer_wtp_cents": 68.5
+ },
+ {
+  "set": "ai",
+  "slug": "033",
+  "page": "ai/033.html",
+  "thumb": "thumbs/ai/033.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 80.0
+ },
+ {
+  "set": "ai",
+  "slug": "034",
+  "page": "ai/034.html",
+  "thumb": "thumbs/ai/034.jpg",
+  "name": "COSMIC DEFENDER",
+  "consumer_wtp_cents": 46.0
+ },
+ {
+  "set": "ai",
+  "slug": "035",
+  "page": "ai/035.html",
+  "thumb": "thumbs/ai/035.jpg",
+  "name": "\u2726 COSMIC BREAKOUT \u2726",
+  "consumer_wtp_cents": 8.0
+ },
+ {
+  "set": "ai",
+  "slug": "036",
+  "page": "ai/036.html",
+  "thumb": "thumbs/ai/036.jpg",
+  "name": "Neon Reef Defense",
+  "consumer_wtp_cents": 12.0
+ },
+ {
+  "set": "ai",
+  "slug": "037",
+  "page": "ai/037.html",
+  "thumb": "thumbs/ai/037.jpg",
+  "name": "\ud83c\udf4e Fruit Drop \ud83c\udf47",
+  "consumer_wtp_cents": 73.0
+ },
+ {
+  "set": "ai",
+  "slug": "038",
+  "page": "ai/038.html",
+  "thumb": "thumbs/ai/038.jpg",
+  "name": "NEON REEF",
+  "consumer_wtp_cents": 56.0
+ },
+ {
+  "set": "ai",
+  "slug": "039",
+  "page": "ai/039.html",
+  "thumb": "thumbs/ai/039.jpg",
+  "name": "ZAP THE ALIENS!",
+  "consumer_wtp_cents": 63.0
+ },
+ {
+  "set": "ai",
+  "slug": "040",
+  "page": "ai/040.html",
+  "thumb": "thumbs/ai/040.jpg",
+  "name": "\ud83d\udc1f NEON REEF DEFENDER",
+  "consumer_wtp_cents": 16.3
+ },
+ {
+  "set": "ai",
+  "slug": "041",
+  "page": "ai/041.html",
+  "thumb": "thumbs/ai/041.jpg",
+  "name": "NEON VOID",
+  "consumer_wtp_cents": 16.0
+ },
+ {
+  "set": "ai",
+  "slug": "042",
+  "page": "ai/042.html",
+  "thumb": "thumbs/ai/042.jpg",
+  "name": "\ud83d\udc38 Space Frog vs. The Galaxy Highway \ud83d\ude80",
+  "consumer_wtp_cents": 73.0
+ },
+ {
+  "set": "ai",
+  "slug": "043",
+  "page": "ai/043.html",
+  "thumb": "thumbs/ai/043.jpg",
+  "name": "GALACTIC DEFENDER",
+  "consumer_wtp_cents": 100.0
+ },
+ {
+  "set": "ai",
+  "slug": "044",
+  "page": "ai/044.html",
+  "thumb": "thumbs/ai/044.jpg",
+  "name": "\ud83d\udc1f Whack-a-Fish \ud83d\udc21",
+  "consumer_wtp_cents": 100.0
+ },
+ {
+  "set": "ai",
+  "slug": "045",
+  "page": "ai/045.html",
+  "thumb": "thumbs/ai/045.jpg",
+  "name": "\ud83d\udc38 Frog Dash: Rush Hour Rampage",
+  "consumer_wtp_cents": 4.0
+ },
+ {
+  "set": "ai",
+  "slug": "046",
+  "page": "ai/046.html",
+  "thumb": "thumbs/ai/046.jpg",
+  "name": "COSMIC DEFENDER",
+  "consumer_wtp_cents": 30.0
+ },
+ {
+  "set": "ai",
+  "slug": "047",
+  "page": "ai/047.html",
+  "thumb": "thumbs/ai/047.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 2.5
+ },
+ {
+  "set": "ai",
+  "slug": "048",
+  "page": "ai/048.html",
+  "thumb": "thumbs/ai/048.jpg",
+  "name": "\ud83d\udc38 Frog Superstar",
+  "consumer_wtp_cents": 0.0
+ },
+ {
+  "set": "ai",
+  "slug": "049",
+  "page": "ai/049.html",
+  "thumb": "thumbs/ai/049.jpg",
+  "name": "\ud83c\udf4e Fruit Drop Frenzy \ud83c\udf47",
+  "consumer_wtp_cents": 100.0
+ },
+ {
+  "set": "ai",
+  "slug": "050",
+  "page": "ai/050.html",
+  "thumb": "thumbs/ai/050.jpg",
+  "name": "\u2605 STAR SURFER \u2605",
+  "consumer_wtp_cents": 78.0
+ },
+ {
+  "set": "ai",
+  "slug": "051",
+  "page": "ai/051.html",
+  "thumb": "thumbs/ai/051.jpg",
+  "name": "COSMIC DEFENDER",
+  "consumer_wtp_cents": 5.0
+ },
+ {
+  "set": "ai",
+  "slug": "052",
+  "page": "ai/052.html",
+  "thumb": "thumbs/ai/052.jpg",
+  "name": "\ud83c\udf49 Fruit Drop \ud83c\udf53",
+  "consumer_wtp_cents": 9.0
+ },
+ {
+  "set": "ai",
+  "slug": "053",
+  "page": "ai/053.html",
+  "thumb": "thumbs/ai/053.jpg",
+  "name": "GRAVITY FLIPPER",
+  "consumer_wtp_cents": 51.5
+ },
+ {
+  "set": "ai",
+  "slug": "054",
+  "page": "ai/054.html",
+  "thumb": "thumbs/ai/054.jpg",
+  "name": "\ud83c\udf49 Fruit Drop Frenzy \ud83c\udf53",
+  "consumer_wtp_cents": 0.0
+ },
+ {
+  "set": "ai",
+  "slug": "055",
+  "page": "ai/055.html",
+  "thumb": "thumbs/ai/055.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 6.0
+ },
+ {
+  "set": "ai",
+  "slug": "056",
+  "page": "ai/056.html",
+  "thumb": "thumbs/ai/056.jpg",
+  "name": "\u2726 COSMIC BREAKOUT \u2726",
+  "consumer_wtp_cents": 84.5
+ },
+ {
+  "set": "ai",
+  "slug": "057",
+  "page": "ai/057.html",
+  "thumb": "thumbs/ai/057.jpg",
+  "name": "NEON DEFENDER",
+  "consumer_wtp_cents": 28.0
+ },
+ {
+  "set": "ai",
+  "slug": "058",
+  "page": "ai/058.html",
+  "thumb": "thumbs/ai/058.jpg",
+  "name": "\u2726 COSMIC DEFENDER \u2726",
+  "consumer_wtp_cents": 55.0
+ },
+ {
+  "set": "ai",
+  "slug": "059",
+  "page": "ai/059.html",
+  "thumb": "thumbs/ai/059.jpg",
+  "name": "COSMIC DEFENDER",
+  "consumer_wtp_cents": 72.0
+ },
+ {
+  "set": "ai",
+  "slug": "060",
+  "page": "ai/060.html",
+  "thumb": "thumbs/ai/060.jpg",
+  "name": "COSMIC BREAKOUT",
+  "consumer_wtp_cents": 33.3
+ },
+ {
+  "set": "ai",
+  "slug": "061",
+  "page": "ai/061.html",
+  "thumb": "thumbs/ai/061.jpg",
+  "name": "\u2604 Comet Surfer",
+  "consumer_wtp_cents": 25.0
+ },
+ {
+  "set": "ai",
+  "slug": "062",
+  "page": "ai/062.html",
+  "thumb": "thumbs/ai/062.jpg",
+  "name": "\ud83d\udc38 COSMIC FROG \ud83d\ude80",
+  "consumer_wtp_cents": 10.0
+ },
+ {
+  "set": "ai",
+  "slug": "063",
+  "page": "ai/063.html",
+  "thumb": "thumbs/ai/063.jpg",
+  "name": "\ud83c\udf4e Fruit Drop Frenzy \ud83c\udf47",
+  "consumer_wtp_cents": 75.0
+ },
+ {
+  "set": "ai",
+  "slug": "064",
+  "page": "ai/064.html",
+  "thumb": "thumbs/ai/064.jpg",
+  "name": "\u2726 COSMIC SURFER \u2726",
+  "consumer_wtp_cents": 50.0
+ },
+ {
+  "set": "ai",
+  "slug": "065",
+  "page": "ai/065.html",
+  "thumb": "thumbs/ai/065.jpg",
+  "name": "\ud83d\udc21 Deep Sea Tap",
+  "consumer_wtp_cents": null
+ },
+ {
+  "set": "ai",
+  "slug": "066",
+  "page": "ai/066.html",
+  "thumb": "thumbs/ai/066.jpg",
+  "name": "\ud83c\udf53 Fruit Drop \ud83c\udf47",
+  "consumer_wtp_cents": 59.0
+ },
+ {
+  "set": "ai",
+  "slug": "067",
+  "page": "ai/067.html",
+  "thumb": "thumbs/ai/067.jpg",
+  "name": "NEON REEF DEFENDER",
+  "consumer_wtp_cents": 25.0
+ },
+ {
+  "set": "ai",
+  "slug": "068",
+  "page": "ai/068.html",
+  "thumb": "thumbs/ai/068.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 90.0
+ },
+ {
+  "set": "ai",
+  "slug": "069",
+  "page": "ai/069.html",
+  "thumb": "thumbs/ai/069.jpg",
+  "name": "\ud83c\udf53 Fruit Drop \ud83c\udf4b",
+  "consumer_wtp_cents": 90.0
+ },
+ {
+  "set": "ai",
+  "slug": "070",
+  "page": "ai/070.html",
+  "thumb": "thumbs/ai/070.jpg",
+  "name": "COSMONAUT DASH",
+  "consumer_wtp_cents": 47.0
+ },
+ {
+  "set": "ai",
+  "slug": "071",
+  "page": "ai/071.html",
+  "thumb": "thumbs/ai/071.jpg",
+  "name": "\ud83c\udf49 Fruit Drop \ud83c\udf53",
+  "consumer_wtp_cents": 66.0
+ },
+ {
+  "set": "ai",
+  "slug": "072",
+  "page": "ai/072.html",
+  "thumb": "thumbs/ai/072.jpg",
+  "name": "\ud83c\udf3b Gopher Garden Bash \ud83c\udf3b",
+  "consumer_wtp_cents": 24.0
+ },
+ {
+  "set": "ai",
+  "slug": "073",
+  "page": "ai/073.html",
+  "thumb": "thumbs/ai/073.jpg",
+  "name": "\ud83d\udc19 NEON REEF DEFENSE",
+  "consumer_wtp_cents": 1.0
+ },
+ {
+  "set": "ai",
+  "slug": "074",
+  "page": "ai/074.html",
+  "thumb": "thumbs/ai/074.jpg",
+  "name": "\u2726 COSMIC DEFENDER \u2726",
+  "consumer_wtp_cents": 100.0
+ },
+ {
+  "set": "ai",
+  "slug": "075",
+  "page": "ai/075.html",
+  "thumb": "thumbs/ai/075.jpg",
+  "name": "\ud83c\udfa3 Deep-Sea Fishing Pier",
+  "consumer_wtp_cents": 75.0
+ },
+ {
+  "set": "ai",
+  "slug": "076",
+  "page": "ai/076.html",
+  "thumb": "thumbs/ai/076.jpg",
+  "name": "\ud83c\udf49 FRUIT DROP \ud83c\udf53",
+  "consumer_wtp_cents": 54.0
+ },
+ {
+  "set": "ai",
+  "slug": "077",
+  "page": "ai/077.html",
+  "thumb": "thumbs/ai/077.jpg",
+  "name": "ASTRO BLITZ",
+  "consumer_wtp_cents": 25.0
+ },
+ {
+  "set": "ai",
+  "slug": "078",
+  "page": "ai/078.html",
+  "thumb": "thumbs/ai/078.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 76.0
+ },
+ {
+  "set": "ai",
+  "slug": "079",
+  "page": "ai/079.html",
+  "thumb": "thumbs/ai/079.jpg",
+  "name": "\ud83c\udf4e Fruit Drop Frenzy \ud83c\udf47",
+  "consumer_wtp_cents": 35.0
+ },
+ {
+  "set": "ai",
+  "slug": "080",
+  "page": "ai/080.html",
+  "thumb": "thumbs/ai/080.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 10.0
+ },
+ {
+  "set": "ai",
+  "slug": "081",
+  "page": "ai/081.html",
+  "thumb": "thumbs/ai/081.jpg",
+  "name": "\ud83d\udc38 Frog Dash: Neon River",
+  "consumer_wtp_cents": 33.0
+ },
+ {
+  "set": "ai",
+  "slug": "082",
+  "page": "ai/082.html",
+  "thumb": "thumbs/ai/082.jpg",
+  "name": "\u2604 COMET DASH",
+  "consumer_wtp_cents": 50.0
+ },
+ {
+  "set": "ai",
+  "slug": "083",
+  "page": "ai/083.html",
+  "thumb": "thumbs/ai/083.jpg",
+  "name": "\ud83d\udc38 FROGGY INFERNO \ud83d\udd25",
+  "consumer_wtp_cents": 25.0
+ },
+ {
+  "set": "ai",
+  "slug": "084",
+  "page": "ai/084.html",
+  "thumb": "thumbs/ai/084.jpg",
+  "name": "NEON ROCKET RUSH",
+  "consumer_wtp_cents": 57.5
+ },
+ {
+  "set": "ai",
+  "slug": "085",
+  "page": "ai/085.html",
+  "thumb": "thumbs/ai/085.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 50.0
+ },
+ {
+  "set": "ai",
+  "slug": "086",
+  "page": "ai/086.html",
+  "thumb": "thumbs/ai/086.jpg",
+  "name": "\u2604 Comet Dash",
+  "consumer_wtp_cents": 39.0
+ },
+ {
+  "set": "ai",
+  "slug": "087",
+  "page": "ai/087.html",
+  "thumb": "thumbs/ai/087.jpg",
+  "name": "NEON CASCADE",
+  "consumer_wtp_cents": 25.0
+ },
+ {
+  "set": "ai",
+  "slug": "088",
+  "page": "ai/088.html",
+  "thumb": "thumbs/ai/088.jpg",
+  "name": "\ud83c\udf49 Fruit Drop Frenzy \ud83c\udf53",
+  "consumer_wtp_cents": 86.0
+ },
+ {
+  "set": "ai",
+  "slug": "089",
+  "page": "ai/089.html",
+  "thumb": "thumbs/ai/089.jpg",
+  "name": "\ud83c\udf4e Fruit Drop Frenzy \ud83c\udf47",
+  "consumer_wtp_cents": 50.0
+ },
+ {
+  "set": "ai",
+  "slug": "090",
+  "page": "ai/090.html",
+  "thumb": "thumbs/ai/090.jpg",
+  "name": "COSMIC BREAKOUT",
+  "consumer_wtp_cents": 0.0
+ },
+ {
+  "set": "ai",
+  "slug": "091",
+  "page": "ai/091.html",
+  "thumb": "thumbs/ai/091.jpg",
+  "name": "\ud83d\udc38 Lily Pad Leap",
+  "consumer_wtp_cents": 13.5
+ },
+ {
+  "set": "ai",
+  "slug": "092",
+  "page": "ai/092.html",
+  "thumb": "thumbs/ai/092.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 84.0
+ },
+ {
+  "set": "ai",
+  "slug": "093",
+  "page": "ai/093.html",
+  "thumb": "thumbs/ai/093.jpg",
+  "name": "\ud83e\udd80 Crab Whack",
+  "consumer_wtp_cents": 50.3
+ },
+ {
+  "set": "ai",
+  "slug": "094",
+  "page": "ai/094.html",
+  "thumb": "thumbs/ai/094.jpg",
+  "name": "\u2726 COSMIC SURFER \u2726",
+  "consumer_wtp_cents": 67.0
+ },
+ {
+  "set": "ai",
+  "slug": "095",
+  "page": "ai/095.html",
+  "thumb": "thumbs/ai/095.jpg",
+  "name": "\ud83c\udf0a Tap the Sea Critters",
+  "consumer_wtp_cents": 9.0
+ },
+ {
+  "set": "ai",
+  "slug": "096",
+  "page": "ai/096.html",
+  "thumb": "thumbs/ai/096.jpg",
+  "name": "COSMIC BREAKOUT",
+  "consumer_wtp_cents": 50.0
+ },
+ {
+  "set": "ai",
+  "slug": "097",
+  "page": "ai/097.html",
+  "thumb": "thumbs/ai/097.jpg",
+  "name": "NEON REEF DEFENDER",
+  "consumer_wtp_cents": 20.0
+ },
+ {
+  "set": "ai",
+  "slug": "098",
+  "page": "ai/098.html",
+  "thumb": "thumbs/ai/098.jpg",
+  "name": "COMET DASH",
+  "consumer_wtp_cents": 98.0
+ },
+ {
+  "set": "ai",
+  "slug": "099",
+  "page": "ai/099.html",
+  "thumb": "thumbs/ai/099.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 12.5
+ },
+ {
+  "set": "ai",
+  "slug": "100",
+  "page": "ai/100.html",
+  "thumb": "thumbs/ai/100.jpg",
+  "name": "\ud83d\udc38 Froggy Fiesta \ud83c\udf89",
+  "consumer_wtp_cents": 30.0
+ },
+ {
+  "set": "ai",
+  "slug": "101",
+  "page": "ai/101.html",
+  "thumb": "thumbs/ai/101.jpg",
+  "name": "\u2726 COSMIC DEFENDER \u2726",
+  "consumer_wtp_cents": 59.5
+ },
+ {
+  "set": "ai",
+  "slug": "102",
+  "page": "ai/102.html",
+  "thumb": "thumbs/ai/102.jpg",
+  "name": "COSMIC SURFER",
+  "consumer_wtp_cents": 97.0
+ },
+ {
+  "set": "ai",
+  "slug": "103",
+  "page": "ai/103.html",
+  "thumb": "thumbs/ai/103.jpg",
+  "name": "\ud83c\udf4e FRUIT DROP \ud83c\udf47",
+  "consumer_wtp_cents": 25.0
+ },
+ {
+  "set": "ai",
+  "slug": "104",
+  "page": "ai/104.html",
+  "thumb": "thumbs/ai/104.jpg",
+  "name": "\ud83d\udd73\ufe0f Mole Mayhem \ud83d\udd28",
+  "consumer_wtp_cents": 62.0
+ },
+ {
+  "set": "ai",
+  "slug": "105",
+  "page": "ai/105.html",
+  "thumb": "thumbs/ai/105.jpg",
+  "name": "\ud83d\udc38 Frog Superstar",
+  "consumer_wtp_cents": 0.0
+ },
+ {
+  "set": "ai",
+  "slug": "106",
+  "page": "ai/106.html",
+  "thumb": "thumbs/ai/106.jpg",
+  "name": "\ud83c\udf49 Fruit Drop Frenzy \ud83c\udf53",
+  "consumer_wtp_cents": 6.0
+ },
+ {
+  "set": "ai",
+  "slug": "107",
+  "page": "ai/107.html",
+  "thumb": "thumbs/ai/107.jpg",
+  "name": "\u2726 COSMIC BREAKOUT \u2726",
+  "consumer_wtp_cents": 35.0
+ },
+ {
+  "set": "ai",
+  "slug": "108",
+  "page": "ai/108.html",
+  "thumb": "thumbs/ai/108.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 10.0
+ },
+ {
+  "set": "ai",
+  "slug": "109",
+  "page": "ai/109.html",
+  "thumb": "thumbs/ai/109.jpg",
+  "name": "\ud83c\udf53 Fruit Drop \ud83c\udf4b",
+  "consumer_wtp_cents": 72.0
+ },
+ {
+  "set": "ai",
+  "slug": "110",
+  "page": "ai/110.html",
+  "thumb": "thumbs/ai/110.jpg",
+  "name": "\ud83d\udc38 Space Frog",
+  "consumer_wtp_cents": 76.0
+ },
+ {
+  "set": "ai",
+  "slug": "111",
+  "page": "ai/111.html",
+  "thumb": "thumbs/ai/111.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 24.0
+ },
+ {
+  "set": "ai",
+  "slug": "112",
+  "page": "ai/112.html",
+  "thumb": "thumbs/ai/112.jpg",
+  "name": "\u25c8 NEON REEF \u25c8",
+  "consumer_wtp_cents": 32.5
+ },
+ {
+  "set": "ai",
+  "slug": "113",
+  "page": "ai/113.html",
+  "thumb": "thumbs/ai/113.jpg",
+  "name": "ASTEROID BLITZ",
+  "consumer_wtp_cents": 63.0
+ },
+ {
+  "set": "ai",
+  "slug": "114",
+  "page": "ai/114.html",
+  "thumb": "thumbs/ai/114.jpg",
+  "name": "NOVA BLITZ",
+  "consumer_wtp_cents": 28.0
+ },
+ {
+  "set": "ai",
+  "slug": "115",
+  "page": "ai/115.html",
+  "thumb": "thumbs/ai/115.jpg",
+  "name": "\ud83c\udf0a Deep Sea Pop",
+  "consumer_wtp_cents": 83.0
+ },
+ {
+  "set": "ai",
+  "slug": "116",
+  "page": "ai/116.html",
+  "thumb": "thumbs/ai/116.jpg",
+  "name": "NOVA BURST",
+  "consumer_wtp_cents": 84.0
+ },
+ {
+  "set": "ai",
+  "slug": "117",
+  "page": "ai/117.html",
+  "thumb": "thumbs/ai/117.jpg",
+  "name": "\ud83e\udd80 Crab Splash! \ud83e\udd80",
+  "consumer_wtp_cents": 25.0
+ },
+ {
+  "set": "ai",
+  "slug": "118",
+  "page": "ai/118.html",
+  "thumb": "thumbs/ai/118.jpg",
+  "name": "Stellar Surfer",
+  "consumer_wtp_cents": 0.0
+ },
+ {
+  "set": "ai",
+  "slug": "119",
+  "page": "ai/119.html",
+  "thumb": "thumbs/ai/119.jpg",
+  "name": "\ud83c\udf4e Fruit Drop \ud83c\udf47",
+  "consumer_wtp_cents": 17.5
+ },
+ {
+  "set": "ai",
+  "slug": "120",
+  "page": "ai/120.html",
+  "thumb": "thumbs/ai/120.jpg",
+  "name": "\ud83c\udf4e Fruit Drop Frenzy \ud83c\udf47",
+  "consumer_wtp_cents": 82.0
+ },
+ {
+  "set": "ai",
+  "slug": "121",
+  "page": "ai/121.html",
+  "thumb": "thumbs/ai/121.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 0.0
+ },
+ {
+  "set": "ai",
+  "slug": "122",
+  "page": "ai/122.html",
+  "thumb": "thumbs/ai/122.jpg",
+  "name": "\ud83d\udc38 Frog Dash Inferno \ud83d\udd25",
+  "consumer_wtp_cents": 50.0
+ },
+ {
+  "set": "ai",
+  "slug": "123",
+  "page": "ai/123.html",
+  "thumb": "thumbs/ai/123.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 76.0
+ },
+ {
+  "set": "ai",
+  "slug": "124",
+  "page": "ai/124.html",
+  "thumb": "thumbs/ai/124.jpg",
+  "name": "COSMIC DEFENDER",
+  "consumer_wtp_cents": 7.0
+ },
+ {
+  "set": "ai",
+  "slug": "125",
+  "page": "ai/125.html",
+  "thumb": "thumbs/ai/125.jpg",
+  "name": "\ud83c\udf49 Fruit Drop Frenzy \ud83c\udf47",
+  "consumer_wtp_cents": 10.0
+ },
+ {
+  "set": "ai",
+  "slug": "126",
+  "page": "ai/126.html",
+  "thumb": "thumbs/ai/126.jpg",
+  "name": "\ud83c\udf53 Fruit Drop Frenzy \ud83c\udf49",
+  "consumer_wtp_cents": 75.0
+ },
+ {
+  "set": "ai",
+  "slug": "127",
+  "page": "ai/127.html",
+  "thumb": "thumbs/ai/127.jpg",
+  "name": "\ud83c\udf53 Fruit Drop \ud83c\udf49",
+  "consumer_wtp_cents": 41.0
+ },
+ {
+  "set": "ai",
+  "slug": "128",
+  "page": "ai/128.html",
+  "thumb": "thumbs/ai/128.jpg",
+  "name": "NEON DEFENDER",
+  "consumer_wtp_cents": 0.0
+ },
+ {
+  "set": "ai",
+  "slug": "129",
+  "page": "ai/129.html",
+  "thumb": "thumbs/ai/129.jpg",
+  "name": "\ud83d\udc38 Froggy Fever",
+  "consumer_wtp_cents": 47.0
+ },
+ {
+  "set": "ai",
+  "slug": "130",
+  "page": "ai/130.html",
+  "thumb": "thumbs/ai/130.jpg",
+  "name": "\ud83c\udf79 Fruit Drop Frenzy",
+  "consumer_wtp_cents": 85.0
+ },
+ {
+  "set": "ai",
+  "slug": "131",
+  "page": "ai/131.html",
+  "thumb": "thumbs/ai/131.jpg",
+  "name": "COSMIC BREAKOUT",
+  "consumer_wtp_cents": 82.0
+ },
+ {
+  "set": "ai",
+  "slug": "132",
+  "page": "ai/132.html",
+  "thumb": "thumbs/ai/132.jpg",
+  "name": "\ud83c\udf49 Fruit Drop Frenzy \ud83c\udf53",
+  "consumer_wtp_cents": 4.0
+ },
+ {
+  "set": "ai",
+  "slug": "133",
+  "page": "ai/133.html",
+  "thumb": "thumbs/ai/133.jpg",
+  "name": "\ud83c\udf0d PLANET DEFENDER",
+  "consumer_wtp_cents": 63.0
+ },
+ {
+  "set": "ai",
+  "slug": "134",
+  "page": "ai/134.html",
+  "thumb": "thumbs/ai/134.jpg",
+  "name": "\ud83c\udf4e Fruit Drop Frenzy \ud83c\udf47",
+  "consumer_wtp_cents": 0.0
+ },
+ {
+  "set": "ai",
+  "slug": "135",
+  "page": "ai/135.html",
+  "thumb": "thumbs/ai/135.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 40.0
+ },
+ {
+  "set": "ai",
+  "slug": "136",
+  "page": "ai/136.html",
+  "thumb": "thumbs/ai/136.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 79.0
+ },
+ {
+  "set": "ai",
+  "slug": "137",
+  "page": "ai/137.html",
+  "thumb": "thumbs/ai/137.jpg",
+  "name": "\ud83e\udebc Neon Reef Defense",
+  "consumer_wtp_cents": 9.0
+ },
+ {
+  "set": "ai",
+  "slug": "138",
+  "page": "ai/138.html",
+  "thumb": "thumbs/ai/138.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 100.0
+ },
+ {
+  "set": "ai",
+  "slug": "139",
+  "page": "ai/139.html",
+  "thumb": "thumbs/ai/139.jpg",
+  "name": "\u2726 STARDUST SURFER \u2726",
+  "consumer_wtp_cents": 69.0
+ },
+ {
+  "set": "ai",
+  "slug": "140",
+  "page": "ai/140.html",
+  "thumb": "thumbs/ai/140.jpg",
+  "name": "\ud83d\udc19 Reef Whack \ud83e\udd80",
+  "consumer_wtp_cents": 53.0
+ },
+ {
+  "set": "ai",
+  "slug": "141",
+  "page": "ai/141.html",
+  "thumb": "thumbs/ai/141.jpg",
+  "name": "NEON DASH",
+  "consumer_wtp_cents": 67.0
+ },
+ {
+  "set": "ai",
+  "slug": "142",
+  "page": "ai/142.html",
+  "thumb": "thumbs/ai/142.jpg",
+  "name": "\ud83d\ude80 Cosmic Defender",
+  "consumer_wtp_cents": 10.0
+ },
+ {
+  "set": "ai",
+  "slug": "143",
+  "page": "ai/143.html",
+  "thumb": "thumbs/ai/143.jpg",
+  "name": "\u2604 COMET DASH \u2604",
+  "consumer_wtp_cents": 7.0
+ },
+ {
+  "set": "ai",
+  "slug": "144",
+  "page": "ai/144.html",
+  "thumb": "thumbs/ai/144.jpg",
+  "name": "\ud83d\udc19 Reef Bonkers \ud83e\udd80",
+  "consumer_wtp_cents": 13.0
+ },
+ {
+  "set": "ai",
+  "slug": "145",
+  "page": "ai/145.html",
+  "thumb": "thumbs/ai/145.jpg",
+  "name": "METEOR SURFER",
+  "consumer_wtp_cents": 81.0
+ },
+ {
+  "set": "ai",
+  "slug": "146",
+  "page": "ai/146.html",
+  "thumb": "thumbs/ai/146.jpg",
+  "name": "\ud83c\udf4e Fruit Drop \ud83c\udf47",
+  "consumer_wtp_cents": 50.0
+ },
+ {
+  "set": "ai",
+  "slug": "147",
+  "page": "ai/147.html",
+  "thumb": "thumbs/ai/147.jpg",
+  "name": "\u2726 COSMIC BREAKOUT \u2726",
+  "consumer_wtp_cents": 12.5
+ },
+ {
+  "set": "ai",
+  "slug": "148",
+  "page": "ai/148.html",
+  "thumb": "thumbs/ai/148.jpg",
+  "name": "Cosmic Candy Blaster",
+  "consumer_wtp_cents": 10.0
+ },
+ {
+  "set": "ai",
+  "slug": "149",
+  "page": "ai/149.html",
+  "thumb": "thumbs/ai/149.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 70.0
+ },
+ {
+  "set": "ai",
+  "slug": "150",
+  "page": "ai/150.html",
+  "thumb": "thumbs/ai/150.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 44.5
+ },
+ {
+  "set": "ai",
+  "slug": "151",
+  "page": "ai/151.html",
+  "thumb": "thumbs/ai/151.jpg",
+  "name": "\ud83d\udc38 Frog Fever",
+  "consumer_wtp_cents": 5.0
+ },
+ {
+  "set": "ai",
+  "slug": "152",
+  "page": "ai/152.html",
+  "thumb": "thumbs/ai/152.jpg",
+  "name": "\ud83c\udf53 Fruit Drop \ud83c\udf47",
+  "consumer_wtp_cents": 0.0
+ },
+ {
+  "set": "ai",
+  "slug": "153",
+  "page": "ai/153.html",
+  "thumb": "thumbs/ai/153.jpg",
+  "name": "\ud83c\udf53 Fruit Drop Frenzy \ud83c\udf47",
+  "consumer_wtp_cents": 96.0
+ },
+ {
+  "set": "ai",
+  "slug": "154",
+  "page": "ai/154.html",
+  "thumb": "thumbs/ai/154.jpg",
+  "name": "COSMIC DEFENDER",
+  "consumer_wtp_cents": 0.0
+ },
+ {
+  "set": "ai",
+  "slug": "155",
+  "page": "ai/155.html",
+  "thumb": "thumbs/ai/155.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 100.0
+ },
+ {
+  "set": "ai",
+  "slug": "156",
+  "page": "ai/156.html",
+  "thumb": "thumbs/ai/156.jpg",
+  "name": "\ud83d\udc38 Frogventure",
+  "consumer_wtp_cents": 2.5
+ },
+ {
+  "set": "ai",
+  "slug": "157",
+  "page": "ai/157.html",
+  "thumb": "thumbs/ai/157.jpg",
+  "name": "\ud83d\udc20 Neon Reef Defender \ud83d\udc20",
+  "consumer_wtp_cents": 75.0
+ },
+ {
+  "set": "ai",
+  "slug": "158",
+  "page": "ai/158.html",
+  "thumb": "thumbs/ai/158.jpg",
+  "name": "GALACTIC BREAKOUT",
+  "consumer_wtp_cents": 12.0
+ },
+ {
+  "set": "ai",
+  "slug": "159",
+  "page": "ai/159.html",
+  "thumb": "thumbs/ai/159.jpg",
+  "name": "NEBULA BLITZ",
+  "consumer_wtp_cents": 58.0
+ },
+ {
+  "set": "ai",
+  "slug": "160",
+  "page": "ai/160.html",
+  "thumb": "thumbs/ai/160.jpg",
+  "name": "COSMIC SERPENT",
+  "consumer_wtp_cents": 75.0
+ },
+ {
+  "set": "ai",
+  "slug": "161",
+  "page": "ai/161.html",
+  "thumb": "thumbs/ai/161.jpg",
+  "name": "\ud83d\udc38 Frog Dash",
+  "consumer_wtp_cents": 8.0
+ },
+ {
+  "set": "ai",
+  "slug": "162",
+  "page": "ai/162.html",
+  "thumb": "thumbs/ai/162.jpg",
+  "name": "\ud83d\udc38 Frog Dash",
+  "consumer_wtp_cents": 82.0
+ },
+ {
+  "set": "ai",
+  "slug": "163",
+  "page": "ai/163.html",
+  "thumb": "thumbs/ai/163.jpg",
+  "name": "GALACTIC DEFLECTOR",
+  "consumer_wtp_cents": 29.5
+ },
+ {
+  "set": "ai",
+  "slug": "164",
+  "page": "ai/164.html",
+  "thumb": "thumbs/ai/164.jpg",
+  "name": "\ud83d\udc39 Mole Mayhem \ud83c\udf31",
+  "consumer_wtp_cents": 20.0
+ },
+ {
+  "set": "ai",
+  "slug": "165",
+  "page": "ai/165.html",
+  "thumb": "thumbs/ai/165.jpg",
+  "name": "\ud83c\udf4e Fruit Drop Frenzy \ud83c\udf47",
+  "consumer_wtp_cents": 54.0
+ },
+ {
+  "set": "ai",
+  "slug": "166",
+  "page": "ai/166.html",
+  "thumb": "thumbs/ai/166.jpg",
+  "name": "COSMIC SURFER",
+  "consumer_wtp_cents": 0.0
+ },
+ {
+  "set": "ai",
+  "slug": "167",
+  "page": "ai/167.html",
+  "thumb": "thumbs/ai/167.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 80.0
+ },
+ {
+  "set": "ai",
+  "slug": "168",
+  "page": "ai/168.html",
+  "thumb": "thumbs/ai/168.jpg",
+  "name": "\ud83c\udf0a Cosmic Reef Defender",
+  "consumer_wtp_cents": 8.5
+ },
+ {
+  "set": "ai",
+  "slug": "169",
+  "page": "ai/169.html",
+  "thumb": "thumbs/ai/169.jpg",
+  "name": "STELLAR BLITZ",
+  "consumer_wtp_cents": 50.0
+ },
+ {
+  "set": "ai",
+  "slug": "170",
+  "page": "ai/170.html",
+  "thumb": "thumbs/ai/170.jpg",
+  "name": "\ud83d\udc7e Alien Zap Invasion \ud83d\udef8",
+  "consumer_wtp_cents": 100.0
+ },
+ {
+  "set": "ai",
+  "slug": "171",
+  "page": "ai/171.html",
+  "thumb": "thumbs/ai/171.jpg",
+  "name": "COSMIC DEFENDER",
+  "consumer_wtp_cents": 62.0
+ },
+ {
+  "set": "ai",
+  "slug": "172",
+  "page": "ai/172.html",
+  "thumb": "thumbs/ai/172.jpg",
+  "name": "\ud83d\udc38 Space Frog Dash",
+  "consumer_wtp_cents": 75.0
+ },
+ {
+  "set": "ai",
+  "slug": "173",
+  "page": "ai/173.html",
+  "thumb": "thumbs/ai/173.jpg",
+  "name": "\ud83d\udc38 FROG DASH",
+  "consumer_wtp_cents": 59.3
+ },
+ {
+  "set": "ai",
+  "slug": "174",
+  "page": "ai/174.html",
+  "thumb": "thumbs/ai/174.jpg",
+  "name": "\ud83c\udf0a Reef Rush \ud83d\udc19",
+  "consumer_wtp_cents": 63.0
+ },
+ {
+  "set": "ai",
+  "slug": "175",
+  "page": "ai/175.html",
+  "thumb": "thumbs/ai/175.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 35.0
+ },
+ {
+  "set": "ai",
+  "slug": "176",
+  "page": "ai/176.html",
+  "thumb": "thumbs/ai/176.jpg",
+  "name": "COSMIC DEFENDER",
+  "consumer_wtp_cents": 75.0
+ },
+ {
+  "set": "ai",
+  "slug": "177",
+  "page": "ai/177.html",
+  "thumb": "thumbs/ai/177.jpg",
+  "name": "GALACTIC BREAKOUT",
+  "consumer_wtp_cents": 100.0
+ },
+ {
+  "set": "ai",
+  "slug": "178",
+  "page": "ai/178.html",
+  "thumb": "thumbs/ai/178.jpg",
+  "name": "\ud83c\udf49 Fruit Drop Frenzy \ud83c\udf47",
+  "consumer_wtp_cents": 49.0
+ },
+ {
+  "set": "ai",
+  "slug": "179",
+  "page": "ai/179.html",
+  "thumb": "thumbs/ai/179.jpg",
+  "name": "\ud83d\udc38 Frog Dash",
+  "consumer_wtp_cents": 10.0
+ },
+ {
+  "set": "ai",
+  "slug": "180",
+  "page": "ai/180.html",
+  "thumb": "thumbs/ai/180.jpg",
+  "name": "\u2604 COMET DASH",
+  "consumer_wtp_cents": 62.0
+ },
+ {
+  "set": "ai",
+  "slug": "181",
+  "page": "ai/181.html",
+  "thumb": "thumbs/ai/181.jpg",
+  "name": "\u2726 COSMIC DEFENDER \u2726",
+  "consumer_wtp_cents": 32.0
+ },
+ {
+  "set": "ai",
+  "slug": "182",
+  "page": "ai/182.html",
+  "thumb": "thumbs/ai/182.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 20.0
+ },
+ {
+  "set": "ai",
+  "slug": "183",
+  "page": "ai/183.html",
+  "thumb": "thumbs/ai/183.jpg",
+  "name": "\ud83d\udc38 Frog Superstar \ud83c\udf1f",
+  "consumer_wtp_cents": 59.0
+ },
+ {
+  "set": "ai",
+  "slug": "184",
+  "page": "ai/184.html",
+  "thumb": "thumbs/ai/184.jpg",
+  "name": "COSMIC DEFENDER",
+  "consumer_wtp_cents": 43.0
+ },
+ {
+  "set": "ai",
+  "slug": "185",
+  "page": "ai/185.html",
+  "thumb": "thumbs/ai/185.jpg",
+  "name": "\ud83d\udc38 Frog Dash: Lily to Lily",
+  "consumer_wtp_cents": 25.0
+ },
+ {
+  "set": "ai",
+  "slug": "186",
+  "page": "ai/186.html",
+  "thumb": "thumbs/ai/186.jpg",
+  "name": "\ud83d\udc19 Captain Ink's Puffer Frenzy",
+  "consumer_wtp_cents": 0.0
+ },
+ {
+  "set": "ai",
+  "slug": "187",
+  "page": "ai/187.html",
+  "thumb": "thumbs/ai/187.jpg",
+  "name": "\ud83c\udf4e Fruit Drop Frenzy \ud83c\udf47",
+  "consumer_wtp_cents": 25.0
+ },
+ {
+  "set": "ai",
+  "slug": "188",
+  "page": "ai/188.html",
+  "thumb": "thumbs/ai/188.jpg",
+  "name": "\ud83d\udc38 Space Frog Escape \ud83d\udef8",
+  "consumer_wtp_cents": 56.3
+ },
+ {
+  "set": "ai",
+  "slug": "189",
+  "page": "ai/189.html",
+  "thumb": "thumbs/ai/189.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 40.0
+ },
+ {
+  "set": "ai",
+  "slug": "190",
+  "page": "ai/190.html",
+  "thumb": "thumbs/ai/190.jpg",
+  "name": "\ud83c\udf4e Fruit Drop \ud83c\udf47",
+  "consumer_wtp_cents": 25.0
+ },
+ {
+  "set": "ai",
+  "slug": "191",
+  "page": "ai/191.html",
+  "thumb": "thumbs/ai/191.jpg",
+  "name": "COMET DASH",
+  "consumer_wtp_cents": 67.0
+ },
+ {
+  "set": "ai",
+  "slug": "192",
+  "page": "ai/192.html",
+  "thumb": "thumbs/ai/192.jpg",
+  "name": "\ud83c\udfa3 Deep-Sea Dock Derby",
+  "consumer_wtp_cents": 97.0
+ },
+ {
+  "set": "ai",
+  "slug": "193",
+  "page": "ai/193.html",
+  "thumb": "thumbs/ai/193.jpg",
+  "name": "\ud83d\udc38 COSMIC FROG",
+  "consumer_wtp_cents": 75.0
+ },
+ {
+  "set": "ai",
+  "slug": "194",
+  "page": "ai/194.html",
+  "thumb": "thumbs/ai/194.jpg",
+  "name": "\ud83c\udf49 Fruit Drop Frenzy \ud83c\udf4a",
+  "consumer_wtp_cents": 0.0
+ },
+ {
+  "set": "ai",
+  "slug": "195",
+  "page": "ai/195.html",
+  "thumb": "thumbs/ai/195.jpg",
+  "name": "\ud83c\udf0a COSMIC REEF DEFENDER",
+  "consumer_wtp_cents": 50.0
+ },
+ {
+  "set": "ai",
+  "slug": "196",
+  "page": "ai/196.html",
+  "thumb": "thumbs/ai/196.jpg",
+  "name": "\ud83e\uddea Mad Lab Mutants \ud83e\uddea",
+  "consumer_wtp_cents": 0.0
+ },
+ {
+  "set": "ai",
+  "slug": "197",
+  "page": "ai/197.html",
+  "thumb": "thumbs/ai/197.jpg",
+  "name": "GALACTIC DEFENDER",
+  "consumer_wtp_cents": 11.7
+ },
+ {
+  "set": "ai",
+  "slug": "198",
+  "page": "ai/198.html",
+  "thumb": "thumbs/ai/198.jpg",
+  "name": "GALACTIC BREAKOUT",
+  "consumer_wtp_cents": 43.0
+ },
+ {
+  "set": "ai",
+  "slug": "199",
+  "page": "ai/199.html",
+  "thumb": "thumbs/ai/199.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 0.0
+ },
+ {
+  "set": "ai",
+  "slug": "200",
+  "page": "ai/200.html",
+  "thumb": "thumbs/ai/200.jpg",
+  "name": "\ud83d\udc38 Space Frog Escape",
+  "consumer_wtp_cents": 6.5
+ },
+ {
+  "set": "ai",
+  "slug": "201",
+  "page": "ai/201.html",
+  "thumb": "thumbs/ai/201.jpg",
+  "name": "COSMIC DEFENDER",
+  "consumer_wtp_cents": 60.0
+ },
+ {
+  "set": "ai",
+  "slug": "202",
+  "page": "ai/202.html",
+  "thumb": "thumbs/ai/202.jpg",
+  "name": "\ud83c\udf0a Deep Reef Pop \ud83d\udc21",
+  "consumer_wtp_cents": 57.0
+ },
+ {
+  "set": "ai",
+  "slug": "203",
+  "page": "ai/203.html",
+  "thumb": "thumbs/ai/203.jpg",
+  "name": "GALACTIC BREAKOUT",
+  "consumer_wtp_cents": 0.0
+ },
+ {
+  "set": "ai",
+  "slug": "204",
+  "page": "ai/204.html",
+  "thumb": "thumbs/ai/204.jpg",
+  "name": "\ud83d\udc38 Frog Superstar",
+  "consumer_wtp_cents": 100.0
+ },
+ {
+  "set": "ai",
+  "slug": "205",
+  "page": "ai/205.html",
+  "thumb": "thumbs/ai/205.jpg",
+  "name": "\ud83d\udc20 Reef Rumble \ud83e\udd80",
+  "consumer_wtp_cents": 15.0
+ },
+ {
+  "set": "ai",
+  "slug": "206",
+  "page": "ai/206.html",
+  "thumb": "thumbs/ai/206.jpg",
+  "name": "NEON REEF DEFENSE",
+  "consumer_wtp_cents": 89.0
+ },
+ {
+  "set": "ai",
+  "slug": "207",
+  "page": "ai/207.html",
+  "thumb": "thumbs/ai/207.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 2.0
+ },
+ {
+  "set": "ai",
+  "slug": "208",
+  "page": "ai/208.html",
+  "thumb": "thumbs/ai/208.jpg",
+  "name": "\ud83c\udf49 Fruit Drop \ud83c\udf4a",
+  "consumer_wtp_cents": 6.0
+ },
+ {
+  "set": "ai",
+  "slug": "209",
+  "page": "ai/209.html",
+  "thumb": "thumbs/ai/209.jpg",
+  "name": "\ud83d\ude80 FROGSTRONAUT",
+  "consumer_wtp_cents": 10.0
+ },
+ {
+  "set": "ai",
+  "slug": "210",
+  "page": "ai/210.html",
+  "thumb": "thumbs/ai/210.jpg",
+  "name": "\ud83c\udf49 Fruit Drop \ud83c\udf53",
+  "consumer_wtp_cents": 75.0
+ },
+ {
+  "set": "ai",
+  "slug": "211",
+  "page": "ai/211.html",
+  "thumb": "thumbs/ai/211.jpg",
+  "name": "\u2604 COMET DASH",
+  "consumer_wtp_cents": 6.0
+ },
+ {
+  "set": "ai",
+  "slug": "212",
+  "page": "ai/212.html",
+  "thumb": "thumbs/ai/212.jpg",
+  "name": "\ud83d\udc38 Space Frog Escape \ud83d\ude80",
+  "consumer_wtp_cents": 41.0
+ },
+ {
+  "set": "ai",
+  "slug": "213",
+  "page": "ai/213.html",
+  "thumb": "thumbs/ai/213.jpg",
+  "name": "\u2726 COSMIC BREAKOUT \u2726",
+  "consumer_wtp_cents": 30.0
+ },
+ {
+  "set": "ai",
+  "slug": "214",
+  "page": "ai/214.html",
+  "thumb": "thumbs/ai/214.jpg",
+  "name": "NEON REEF",
+  "consumer_wtp_cents": 0.0
+ },
+ {
+  "set": "ai",
+  "slug": "215",
+  "page": "ai/215.html",
+  "thumb": "thumbs/ai/215.jpg",
+  "name": "ASTRO BLITZ",
+  "consumer_wtp_cents": 38.5
+ },
+ {
+  "set": "ai",
+  "slug": "216",
+  "page": "ai/216.html",
+  "thumb": "thumbs/ai/216.jpg",
+  "name": "\u2604 COMET DASH \u2604",
+  "consumer_wtp_cents": 55.0
+ },
+ {
+  "set": "ai",
+  "slug": "217",
+  "page": "ai/217.html",
+  "thumb": "thumbs/ai/217.jpg",
+  "name": "\ud83c\udf49 Fruit Drop Frenzy \ud83c\udf53",
+  "consumer_wtp_cents": 11.0
+ },
+ {
+  "set": "ai",
+  "slug": "218",
+  "page": "ai/218.html",
+  "thumb": "thumbs/ai/218.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 11.0
+ },
+ {
+  "set": "ai",
+  "slug": "219",
+  "page": "ai/219.html",
+  "thumb": "thumbs/ai/219.jpg",
+  "name": "\u2726 COSMIC BOUNCER \u2726",
+  "consumer_wtp_cents": 50.5
+ },
+ {
+  "set": "ai",
+  "slug": "220",
+  "page": "ai/220.html",
+  "thumb": "thumbs/ai/220.jpg",
+  "name": "\ud83d\udef8 Cow Rescue \ud83d\udc04",
+  "consumer_wtp_cents": 0.0
+ },
+ {
+  "set": "ai",
+  "slug": "221",
+  "page": "ai/221.html",
+  "thumb": "thumbs/ai/221.jpg",
+  "name": "\ud83c\udf31 Gopher Garden \ud83d\udd28",
+  "consumer_wtp_cents": 67.0
+ },
+ {
+  "set": "ai",
+  "slug": "222",
+  "page": "ai/222.html",
+  "thumb": "thumbs/ai/222.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 30.0
+ },
+ {
+  "set": "ai",
+  "slug": "223",
+  "page": "ai/223.html",
+  "thumb": "thumbs/ai/223.jpg",
+  "name": "\ud83c\udf4e Fruit Drop Frenzy \ud83c\udf47",
+  "consumer_wtp_cents": 25.0
+ },
+ {
+  "set": "ai",
+  "slug": "224",
+  "page": "ai/224.html",
+  "thumb": "thumbs/ai/224.jpg",
+  "name": "\u2604 COMET RIDER \u2604",
+  "consumer_wtp_cents": 35.0
+ },
+ {
+  "set": "ai",
+  "slug": "225",
+  "page": "ai/225.html",
+  "thumb": "thumbs/ai/225.jpg",
+  "name": "GALAXY DEFENDER",
+  "consumer_wtp_cents": 75.0
+ },
+ {
+  "set": "ai",
+  "slug": "226",
+  "page": "ai/226.html",
+  "thumb": "thumbs/ai/226.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 74.0
+ },
+ {
+  "set": "ai",
+  "slug": "227",
+  "page": "ai/227.html",
+  "thumb": "thumbs/ai/227.jpg",
+  "name": "ASTEROID BLASTER",
+  "consumer_wtp_cents": 42.5
+ },
+ {
+  "set": "ai",
+  "slug": "228",
+  "page": "ai/228.html",
+  "thumb": "thumbs/ai/228.jpg",
+  "name": "\ud83c\udf53 Fruit Drop Frenzy \ud83c\udf47",
+  "consumer_wtp_cents": 25.0
+ },
+ {
+  "set": "ai",
+  "slug": "229",
+  "page": "ai/229.html",
+  "thumb": "thumbs/ai/229.jpg",
+  "name": "COSMIC BREAKOUT",
+  "consumer_wtp_cents": 86.0
+ },
+ {
+  "set": "ai",
+  "slug": "230",
+  "page": "ai/230.html",
+  "thumb": "thumbs/ai/230.jpg",
+  "name": "\ud83c\udf0a NEON REEF \ud83c\udf0a",
+  "consumer_wtp_cents": 5.0
+ },
+ {
+  "set": "ai",
+  "slug": "231",
+  "page": "ai/231.html",
+  "thumb": "thumbs/ai/231.jpg",
+  "name": "\u2605 STAR SURFER \u2605",
+  "consumer_wtp_cents": 5.0
+ },
+ {
+  "set": "ai",
+  "slug": "232",
+  "page": "ai/232.html",
+  "thumb": "thumbs/ai/232.jpg",
+  "name": "GRAVITY FLIP",
+  "consumer_wtp_cents": 2.0
+ },
+ {
+  "set": "ai",
+  "slug": "233",
+  "page": "ai/233.html",
+  "thumb": "thumbs/ai/233.jpg",
+  "name": "\ud83e\udd80 Crab Whacker \ud83e\udd80",
+  "consumer_wtp_cents": 76.0
+ },
+ {
+  "set": "ai",
+  "slug": "234",
+  "page": "ai/234.html",
+  "thumb": "thumbs/ai/234.jpg",
+  "name": "\u2726 COSMIC DEFENDER \u2726",
+  "consumer_wtp_cents": 73.0
+ },
+ {
+  "set": "ai",
+  "slug": "235",
+  "page": "ai/235.html",
+  "thumb": "thumbs/ai/235.jpg",
+  "name": "ZAP THE ALIENS!",
+  "consumer_wtp_cents": 52.0
+ },
+ {
+  "set": "ai",
+  "slug": "236",
+  "page": "ai/236.html",
+  "thumb": "thumbs/ai/236.jpg",
+  "name": "STARDRIFTER",
+  "consumer_wtp_cents": 23.0
+ },
+ {
+  "set": "ai",
+  "slug": "237",
+  "page": "ai/237.html",
+  "thumb": "thumbs/ai/237.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 75.0
+ },
+ {
+  "set": "ai",
+  "slug": "238",
+  "page": "ai/238.html",
+  "thumb": "thumbs/ai/238.jpg",
+  "name": "COMET DASH",
+  "consumer_wtp_cents": 61.0
+ },
+ {
+  "set": "ai",
+  "slug": "239",
+  "page": "ai/239.html",
+  "thumb": "thumbs/ai/239.jpg",
+  "name": "Fruit Drop Frenzy \ud83c\udf4e\ud83c\udf47",
+  "consumer_wtp_cents": 76.5
+ },
+ {
+  "set": "ai",
+  "slug": "240",
+  "page": "ai/240.html",
+  "thumb": "thumbs/ai/240.jpg",
+  "name": "\ud83c\udf52 Fruit Drop \ud83c\udf49",
+  "consumer_wtp_cents": 5.0
+ },
+ {
+  "set": "ai",
+  "slug": "241",
+  "page": "ai/241.html",
+  "thumb": "thumbs/ai/241.jpg",
+  "name": "\ud83c\udf0a Deep-Sea Tap Reef \ud83d\udc1f",
+  "consumer_wtp_cents": 62.0
+ },
+ {
+  "set": "ai",
+  "slug": "242",
+  "page": "ai/242.html",
+  "thumb": "thumbs/ai/242.jpg",
+  "name": "\ud83c\udf53 Fruit Drop \ud83c\udf47",
+  "consumer_wtp_cents": 10.0
+ },
+ {
+  "set": "ai",
+  "slug": "243",
+  "page": "ai/243.html",
+  "thumb": "thumbs/ai/243.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 5.0
+ },
+ {
+  "set": "ai",
+  "slug": "244",
+  "page": "ai/244.html",
+  "thumb": "thumbs/ai/244.jpg",
+  "name": "\u2726 COSMIC SURFER \u2726",
+  "consumer_wtp_cents": 9.0
+ },
+ {
+  "set": "ai",
+  "slug": "245",
+  "page": "ai/245.html",
+  "thumb": "thumbs/ai/245.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 25.0
+ },
+ {
+  "set": "ai",
+  "slug": "246",
+  "page": "ai/246.html",
+  "thumb": "thumbs/ai/246.jpg",
+  "name": "NEON REEF DEFENSE",
+  "consumer_wtp_cents": 72.5
+ },
+ {
+  "set": "ai",
+  "slug": "247",
+  "page": "ai/247.html",
+  "thumb": "thumbs/ai/247.jpg",
+  "name": "COSMIC DEFENDER",
+  "consumer_wtp_cents": 86.0
+ },
+ {
+  "set": "ai",
+  "slug": "248",
+  "page": "ai/248.html",
+  "thumb": "thumbs/ai/248.jpg",
+  "name": "\ud83d\udc38 Frog Dash: River Rush",
+  "consumer_wtp_cents": 5.0
+ },
+ {
+  "set": "ai",
+  "slug": "249",
+  "page": "ai/249.html",
+  "thumb": "thumbs/ai/249.jpg",
+  "name": "\u2726 GALACTIC BREAKOUT \u2726",
+  "consumer_wtp_cents": 23.0
+ },
+ {
+  "set": "ai",
+  "slug": "250",
+  "page": "ai/250.html",
+  "thumb": "thumbs/ai/250.jpg",
+  "name": "\u25c8 COSMIC DEFENDER \u25c8",
+  "consumer_wtp_cents": 26.0
+ },
+ {
+  "set": "ai",
+  "slug": "251",
+  "page": "ai/251.html",
+  "thumb": "thumbs/ai/251.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 76.0
+ },
+ {
+  "set": "ai",
+  "slug": "252",
+  "page": "ai/252.html",
+  "thumb": "thumbs/ai/252.jpg",
+  "name": "\ud83d\udc38 Space Frog",
+  "consumer_wtp_cents": 56.0
+ },
+ {
+  "set": "ai",
+  "slug": "253",
+  "page": "ai/253.html",
+  "thumb": "thumbs/ai/253.jpg",
+  "name": "NEON REEF",
+  "consumer_wtp_cents": 2.5
+ },
+ {
+  "set": "ai",
+  "slug": "254",
+  "page": "ai/254.html",
+  "thumb": "thumbs/ai/254.jpg",
+  "name": "\u2726 COSMIC SURFER \u2726",
+  "consumer_wtp_cents": 21.7
+ },
+ {
+  "set": "ai",
+  "slug": "255",
+  "page": "ai/255.html",
+  "thumb": "thumbs/ai/255.jpg",
+  "name": "GALACTIC BREAKOUT",
+  "consumer_wtp_cents": 37.0
+ },
+ {
+  "set": "ai",
+  "slug": "256",
+  "page": "ai/256.html",
+  "thumb": "thumbs/ai/256.jpg",
+  "name": "\ud83d\udd31 NEON REEF DEFENDER",
+  "consumer_wtp_cents": 69.0
+ },
+ {
+  "set": "ai",
+  "slug": "257",
+  "page": "ai/257.html",
+  "thumb": "thumbs/ai/257.jpg",
+  "name": "NEON NEBULA",
+  "consumer_wtp_cents": 100.0
+ },
+ {
+  "set": "ai",
+  "slug": "258",
+  "page": "ai/258.html",
+  "thumb": "thumbs/ai/258.jpg",
+  "name": "\ud83c\udf31 Mole Mayhem \ud83d\udd28",
+  "consumer_wtp_cents": 43.0
+ },
+ {
+  "set": "ai",
+  "slug": "259",
+  "page": "ai/259.html",
+  "thumb": "thumbs/ai/259.jpg",
+  "name": "GRAVITY SWAP",
+  "consumer_wtp_cents": 15.0
+ },
+ {
+  "set": "ai",
+  "slug": "260",
+  "page": "ai/260.html",
+  "thumb": "thumbs/ai/260.jpg",
+  "name": "VOID BREAKER",
+  "consumer_wtp_cents": 29.0
+ },
+ {
+  "set": "ai",
+  "slug": "261",
+  "page": "ai/261.html",
+  "thumb": "thumbs/ai/261.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 47.0
+ },
+ {
+  "set": "ai",
+  "slug": "262",
+  "page": "ai/262.html",
+  "thumb": "thumbs/ai/262.jpg",
+  "name": "COSMIC BREAKOUT",
+  "consumer_wtp_cents": 100.0
+ },
+ {
+  "set": "ai",
+  "slug": "263",
+  "page": "ai/263.html",
+  "thumb": "thumbs/ai/263.jpg",
+  "name": "\ud83d\udc38 Frog Dash",
+  "consumer_wtp_cents": 47.0
+ },
+ {
+  "set": "ai",
+  "slug": "264",
+  "page": "ai/264.html",
+  "thumb": "thumbs/ai/264.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 63.3
+ },
+ {
+  "set": "ai",
+  "slug": "265",
+  "page": "ai/265.html",
+  "thumb": "thumbs/ai/265.jpg",
+  "name": "\u2726 GALACTIC DEFENDER \u2726",
+  "consumer_wtp_cents": 63.5
+ },
+ {
+  "set": "ai",
+  "slug": "266",
+  "page": "ai/266.html",
+  "thumb": "thumbs/ai/266.jpg",
+  "name": "\ud83c\udf49 Fruit Drop \ud83c\udf47",
+  "consumer_wtp_cents": 100.0
+ },
+ {
+  "set": "ai",
+  "slug": "267",
+  "page": "ai/267.html",
+  "thumb": "thumbs/ai/267.jpg",
+  "name": "\ud83c\udf49 Fruit Drop Frenzy \ud83c\udf53",
+  "consumer_wtp_cents": 42.0
+ },
+ {
+  "set": "ai",
+  "slug": "268",
+  "page": "ai/268.html",
+  "thumb": "thumbs/ai/268.jpg",
+  "name": "\u2726 COSMIC DEFENDER \u2726",
+  "consumer_wtp_cents": 87.5
+ },
+ {
+  "set": "ai",
+  "slug": "269",
+  "page": "ai/269.html",
+  "thumb": "thumbs/ai/269.jpg",
+  "name": "NEON INVADERS",
+  "consumer_wtp_cents": 12.0
+ },
+ {
+  "set": "ai",
+  "slug": "270",
+  "page": "ai/270.html",
+  "thumb": "thumbs/ai/270.jpg",
+  "name": "\u2726 COSMIC BREAKOUT \u2726",
+  "consumer_wtp_cents": 70.0
+ },
+ {
+  "set": "ai",
+  "slug": "271",
+  "page": "ai/271.html",
+  "thumb": "thumbs/ai/271.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 58.3
+ },
+ {
+  "set": "ai",
+  "slug": "272",
+  "page": "ai/272.html",
+  "thumb": "thumbs/ai/272.jpg",
+  "name": "NOVA RAIDER",
+  "consumer_wtp_cents": 25.0
+ },
+ {
+  "set": "ai",
+  "slug": "273",
+  "page": "ai/273.html",
+  "thumb": "thumbs/ai/273.jpg",
+  "name": "GEM DROP",
+  "consumer_wtp_cents": 19.0
+ },
+ {
+  "set": "ai",
+  "slug": "274",
+  "page": "ai/274.html",
+  "thumb": "thumbs/ai/274.jpg",
+  "name": "\ud83c\udf3b Gopher Garden Defense",
+  "consumer_wtp_cents": 66.0
+ },
+ {
+  "set": "ai",
+  "slug": "275",
+  "page": "ai/275.html",
+  "thumb": "thumbs/ai/275.jpg",
+  "name": "\ud83c\udf53 Fruit Drop Frenzy \ud83c\udf49",
+  "consumer_wtp_cents": 50.0
+ },
+ {
+  "set": "ai",
+  "slug": "276",
+  "page": "ai/276.html",
+  "thumb": "thumbs/ai/276.jpg",
+  "name": "\ud83c\udf0a Deep-Sea Net Diver \ud83c\udf0a",
+  "consumer_wtp_cents": 30.5
+ },
+ {
+  "set": "ai",
+  "slug": "277",
+  "page": "ai/277.html",
+  "thumb": "thumbs/ai/277.jpg",
+  "name": "\ud83d\udc38 Frog Dash: Galactic Crossing",
+  "consumer_wtp_cents": 35.7
+ },
+ {
+  "set": "ai",
+  "slug": "278",
+  "page": "ai/278.html",
+  "thumb": "thumbs/ai/278.jpg",
+  "name": "\ud83d\udc38 Frog Dash: Rush Hour",
+  "consumer_wtp_cents": 55.0
+ },
+ {
+  "set": "ai",
+  "slug": "279",
+  "page": "ai/279.html",
+  "thumb": "thumbs/ai/279.jpg",
+  "name": "COSMIC BREAKOUT",
+  "consumer_wtp_cents": 65.5
+ },
+ {
+  "set": "ai",
+  "slug": "280",
+  "page": "ai/280.html",
+  "thumb": "thumbs/ai/280.jpg",
+  "name": "COSMIC DEFENDER",
+  "consumer_wtp_cents": 52.5
+ },
+ {
+  "set": "ai",
+  "slug": "281",
+  "page": "ai/281.html",
+  "thumb": "thumbs/ai/281.jpg",
+  "name": "Neon Reef Defense",
+  "consumer_wtp_cents": 71.0
+ },
+ {
+  "set": "ai",
+  "slug": "282",
+  "page": "ai/282.html",
+  "thumb": "thumbs/ai/282.jpg",
+  "name": "\ud83c\udf4e Fruit Drop \ud83c\udf47",
+  "consumer_wtp_cents": 8.0
+ },
+ {
+  "set": "ai",
+  "slug": "283",
+  "page": "ai/283.html",
+  "thumb": "thumbs/ai/283.jpg",
+  "name": "\ud83c\udf0a NEON REEF \ud83d\udc20",
+  "consumer_wtp_cents": 46.0
+ },
+ {
+  "set": "ai",
+  "slug": "284",
+  "page": "ai/284.html",
+  "thumb": "thumbs/ai/284.jpg",
+  "name": "\ud83c\udf44 Gnome Grove",
+  "consumer_wtp_cents": 37.5
+ },
+ {
+  "set": "ai",
+  "slug": "285",
+  "page": "ai/285.html",
+  "thumb": "thumbs/ai/285.jpg",
+  "name": "\ud83d\udc7d Cow Abduction Defense",
+  "consumer_wtp_cents": 7.0
+ },
+ {
+  "set": "ai",
+  "slug": "286",
+  "page": "ai/286.html",
+  "thumb": "thumbs/ai/286.jpg",
+  "name": "\ud83d\udc38 Frog Dash",
+  "consumer_wtp_cents": 55.0
+ },
+ {
+  "set": "ai",
+  "slug": "287",
+  "page": "ai/287.html",
+  "thumb": "thumbs/ai/287.jpg",
+  "name": "\u2726 GALACTIC DEFLECTOR \u2726",
+  "consumer_wtp_cents": 100.0
+ },
+ {
+  "set": "ai",
+  "slug": "288",
+  "page": "ai/288.html",
+  "thumb": "thumbs/ai/288.jpg",
+  "name": "\u2726 COSMIC BREAKOUT \u2726",
+  "consumer_wtp_cents": 70.0
+ },
+ {
+  "set": "ai",
+  "slug": "289",
+  "page": "ai/289.html",
+  "thumb": "thumbs/ai/289.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 63.0
+ },
+ {
+  "set": "ai",
+  "slug": "290",
+  "page": "ai/290.html",
+  "thumb": "thumbs/ai/290.jpg",
+  "name": "\u2604 COMET SURFER",
+  "consumer_wtp_cents": 0.0
+ },
+ {
+  "set": "ai",
+  "slug": "291",
+  "page": "ai/291.html",
+  "thumb": "thumbs/ai/291.jpg",
+  "name": "\ud83d\ude80 Rocket Pup",
+  "consumer_wtp_cents": 0.0
+ },
+ {
+  "set": "ai",
+  "slug": "292",
+  "page": "ai/292.html",
+  "thumb": "thumbs/ai/292.jpg",
+  "name": "\ud83c\udf3b Gopher Garden \ud83c\udf3b",
+  "consumer_wtp_cents": 65.0
+ },
+ {
+  "set": "ai",
+  "slug": "293",
+  "page": "ai/293.html",
+  "thumb": "thumbs/ai/293.jpg",
+  "name": "\ud83d\udc20 Deep-Sea Aquarium \ud83d\udc20",
+  "consumer_wtp_cents": 100.0
+ },
+ {
+  "set": "ai",
+  "slug": "294",
+  "page": "ai/294.html",
+  "thumb": "thumbs/ai/294.jpg",
+  "name": "\ud83c\udf4e Fruit Drop Frenzy \ud83c\udf47",
+  "consumer_wtp_cents": 56.0
+ },
+ {
+  "set": "ai",
+  "slug": "295",
+  "page": "ai/295.html",
+  "thumb": "thumbs/ai/295.jpg",
+  "name": "\u2726 COSMIC BREAKOUT \u2726",
+  "consumer_wtp_cents": 50.0
+ },
+ {
+  "set": "ai",
+  "slug": "296",
+  "page": "ai/296.html",
+  "thumb": "thumbs/ai/296.jpg",
+  "name": "\u2726 COSMIC SURF \u2726",
+  "consumer_wtp_cents": 70.0
+ },
+ {
+  "set": "ai",
+  "slug": "297",
+  "page": "ai/297.html",
+  "thumb": "thumbs/ai/297.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 12.5
+ },
+ {
+  "set": "ai",
+  "slug": "298",
+  "page": "ai/298.html",
+  "thumb": "thumbs/ai/298.jpg",
+  "name": "NEON SERPENT",
+  "consumer_wtp_cents": 10.0
+ },
+ {
+  "set": "ai",
+  "slug": "299",
+  "page": "ai/299.html",
+  "thumb": "thumbs/ai/299.jpg",
+  "name": "NEON REEF DEFENDER",
+  "consumer_wtp_cents": 88.0
+ },
+ {
+  "set": "ai",
+  "slug": "300",
+  "page": "ai/300.html",
+  "thumb": "thumbs/ai/300.jpg",
+  "name": "\u2726 COSMIC DEFENDER \u2726",
+  "consumer_wtp_cents": 22.0
+ },
+ {
+  "set": "ai",
+  "slug": "301",
+  "page": "ai/301.html",
+  "thumb": "thumbs/ai/301.jpg",
+  "name": "\u2726 COSMIC BREAKOUT \u2726",
+  "consumer_wtp_cents": 20.0
+ },
+ {
+  "set": "ai",
+  "slug": "302",
+  "page": "ai/302.html",
+  "thumb": "thumbs/ai/302.jpg",
+  "name": "\ud83c\udf53 Fruit Drop Frenzy \ud83c\udf47",
+  "consumer_wtp_cents": 12.5
+ },
+ {
+  "set": "ai",
+  "slug": "303",
+  "page": "ai/303.html",
+  "thumb": "thumbs/ai/303.jpg",
+  "name": "\u2726 COSMIC SURFER \u2726",
+  "consumer_wtp_cents": 93.0
+ },
+ {
+  "set": "ai",
+  "slug": "304",
+  "page": "ai/304.html",
+  "thumb": "thumbs/ai/304.jpg",
+  "name": "\ud83d\udc38 Froggy Dash",
+  "consumer_wtp_cents": 98.0
+ },
+ {
+  "set": "ai",
+  "slug": "305",
+  "page": "ai/305.html",
+  "thumb": "thumbs/ai/305.jpg",
+  "name": "\ud83c\udf4e Fruit Drop Frenzy \ud83c\udf47",
+  "consumer_wtp_cents": 53.0
+ },
+ {
+  "set": "ai",
+  "slug": "306",
+  "page": "ai/306.html",
+  "thumb": "thumbs/ai/306.jpg",
+  "name": "\ud83d\udc38 Froggy Fever",
+  "consumer_wtp_cents": 11.7
+ },
+ {
+  "set": "ai",
+  "slug": "307",
+  "page": "ai/307.html",
+  "thumb": "thumbs/ai/307.jpg",
+  "name": "COSMIC PADDLE",
+  "consumer_wtp_cents": 74.0
+ },
+ {
+  "set": "ai",
+  "slug": "308",
+  "page": "ai/308.html",
+  "thumb": "thumbs/ai/308.jpg",
+  "name": "\ud83d\udc38 Froggy in Space",
+  "consumer_wtp_cents": 0.0
+ },
+ {
+  "set": "ai",
+  "slug": "309",
+  "page": "ai/309.html",
+  "thumb": "thumbs/ai/309.jpg",
+  "name": "NEON REEF DEFENSE",
+  "consumer_wtp_cents": 19.0
+ },
+ {
+  "set": "ai",
+  "slug": "310",
+  "page": "ai/310.html",
+  "thumb": "thumbs/ai/310.jpg",
+  "name": "\ud83d\udc38 Frog Dash: Lily to Lily",
+  "consumer_wtp_cents": 24.0
+ },
+ {
+  "set": "ai",
+  "slug": "311",
+  "page": "ai/311.html",
+  "thumb": "thumbs/ai/311.jpg",
+  "name": "\ud83c\udf3b Garden Whack-a-Mole \ud83c\udf3b",
+  "consumer_wtp_cents": 73.0
+ },
+ {
+  "set": "ai",
+  "slug": "312",
+  "page": "ai/312.html",
+  "thumb": "thumbs/ai/312.jpg",
+  "name": "\ud83c\udf49 Fruit Drop \ud83c\udf53",
+  "consumer_wtp_cents": 12.5
  }
 ]

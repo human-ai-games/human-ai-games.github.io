@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>✦ COSMIC BREAKOUT ✦</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html#ai">&larr; All games</a> &middot; <b>✦ COSMIC BREAKOUT ✦</b></div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; margin: 0; padding: 0; }
+  body { font-family: system-ui, -apple-system, sans-serif; background: #05010f; color: #eee; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 8px 10px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; }
+  h1 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: 1px;
+       background: linear-gradient(90deg,#0ff,#f0f,#0ff); -webkit-background-clip: text; background-clip: text; color: transparent;
+       text-shadow: 0 0 18px rgba(0,255,255,.4); }
+  .instructions { font-size: 16px; color: #9cc; max-width: 620px; margin: 0; line-height: 1.35; text-align: center; }
+  .score { font-size: 30px; font-weight: 800; color: #0ff; text-shadow: 0 0 14px #0ff; margin: 0; transition: transform .12s; }
+  .score.bump { transform: scale(1.3); }
+  .wrap { position: relative; }
+  canvas { display: block; border-radius: 10px; box-shadow: 0 0 30px rgba(120,0,255,.35); }
+  .flash { position:absolute; inset:0; background:#fff; opacity:0; pointer-events:none; border-radius:10px; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;✦ COSMIC BREAKOUT ✦&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Move your glowing ship with the mouse or &lt;strong&gt;&amp;larr; &amp;rarr;&lt;/strong&gt; keys to bounce the energy orb and smash every brick. Catch falling ⚡ capsules for power-ups — the game restarts with the button below.&lt;/p&gt;
+  &lt;div class=&quot;score&quot;&gt;SCORE: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+  &lt;div class=&quot;wrap&quot;&gt;
+    &lt;canvas id=&quot;cv&quot; width=&quot;600&quot; height=&quot;470&quot;&gt;&lt;/canvas&gt;
+    &lt;div class=&quot;flash&quot; id=&quot;flash&quot;&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+[&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+  window.addEventListener(t, function(e) {
+    try {
+      window.parent.postMessage({ type: &#x27;game_input&#x27;, kind: t, key: e.key || null }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+});
+
+var cv = document.getElementById(&#x27;cv&#x27;), ctx = cv.getContext(&#x27;2d&#x27;);
+var W = cv.width, H = cv.height;
+var scoreEl = document.getElementById(&#x27;score&#x27;), flashEl = document.getElementById(&#x27;flash&#x27;);
+var running = false, animId = null, tPhase = 0;
+
+var PADDLE_BASE_W = 110, PADDLE_H = 14;
+var paddle = { x: (W-PADDLE_BASE_W)/2, w: PADDLE_BASE_W, y: H-28 };
+var wideTimer = 0, slowTimer = 0;
+var keys = {}, mouseX = null;
+var score = 0;
+var balls = [];
+var trail = [];
+var bricks = [];
+var particles = [];
+var capsules = [];
+var powerIcon = null, powerIconTimer = 0;
+
+var COLORS = [&#x27;#ff2d95&#x27;,&#x27;#ff9f1c&#x27;,&#x27;#ffe600&#x27;,&#x27;#2dffb3&#x27;,&#x27;#2d9bff&#x27;,&#x27;#b02dff&#x27;];
+var ROW_PTS = [60,50,40,30,20,10];
+var BW = 54, BH = 20, GAP = 6, COLS = 9, TOP = 44;
+
+function baseSpeed(){ return 4.0 + Math.min(score/120, 3.5); }
+
+function makeBall(vx, vy){
+  var s = baseSpeed();
+  var ang = vx===undefined ? (Math.random()*0.6-0.3) : 0;
+  return { x: W/2, y: H-60, vx: vx!==undefined?vx : Math.sin(ang)*s, vy: vy!==undefined?vy : -Math.abs(Math.cos(ang)*s), r:8 };
+}
+
+function patternMask(kind, r, c){
+  var mid = (COLS-1)/2;
+  if(kind===0){ // chevron
+    return Math.abs(c-mid) &gt;= r-1 &amp;&amp; Math.abs(c-mid) &lt;= r+2;
+  } else if(kind===1){ // wave
+    var w = Math.round(2 + 2*Math.sin(c*0.9));
+    return r&gt;=w &amp;&amp; r&lt;=w+2;
+  } else if(kind===2){ // diamond
+    return Math.abs(c-mid)+Math.abs(r-2) &lt;= 3;
+  }
+  return true; // full block
+}
+
+function buildBricks(){
+  bricks = [];
+  var kind = Math.floor(Math.random()*4);
+  var rows = 6;
+  var totalW = COLS*BW + (COLS-1)*GAP;
+  var startX = (W-totalW)/2;
+  for(var r=0;r&lt;rows;r++){
+    for(var c=0;c&lt;COLS;c++){
+      if(!patternMask(kind,r,c)) continue;
+      bricks.push({
+        x: startX + c*(BW+GAP), y: TOP + r*(BH+GAP),
+        w: BW, h: BH, color: COLORS[r%COLORS.length], pts: ROW_PTS[r%ROW_PTS.length],
+        power: Math.random() &lt; 0.13, alive: true
+      });
+    }
+  }
+  if(bricks.length===0) buildBricks();
+}
+
+function burst(x,y,color){
+  for(var i=0;i&lt;12;i++){
+    var a = Math.random()*Math.PI*2, sp = 1+Math.random()*3.5;
+    particles.push({x:x,y:y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:1,color:color});
+  }
+}
+
+function applyPower(type){
+  if(type===&#x27;wide&#x27;){ paddle.w = PADDLE_BASE_W*1.7; wideTimer=360; powerIcon=&#x27;↔&#x27;; }
+  else if(type===&#x27;split&#x27;){
+    var extra=[];
+    balls.forEach(function(b){ extra.push(makeBall(-b.vx, b.vy)); });
+    balls = balls.concat(extra);
+    powerIcon=&#x27;✦✦&#x27;;
+  } else if(type===&#x27;slow&#x27;){ slowTimer=300; powerIcon=&#x27;🐌&#x27;; }
+  powerIconTimer = 90;
+}
+
+function bump(){
+  scoreEl.textContent = score;
+  var el = scoreEl.parentElement;
+  el.classList.add(&#x27;bump&#x27;);
+  setTimeout(function(){ el.classList.remove(&#x27;bump&#x27;); }, 120);
+}
+
+function doFlash(){
+  flashEl.style.transition=&#x27;none&#x27;; flashEl.style.opacity=&#x27;0.7&#x27;;
+  requestAnimationFrame(function(){ flashEl.style.transition=&#x27;opacity .5s&#x27;; flashEl.style.opacity=&#x27;0&#x27;; });
+}
+
+function update(){
+  tPhase += 0.01;
+  // paddle move
+  if(keys[&#x27;ArrowLeft&#x27;]) paddle.x -= 8;
+  if(keys[&#x27;ArrowRight&#x27;]) paddle.x += 8;
+  if(mouseX!==null) paddle.x += (mouseX - paddle.w/2 - paddle.x)*0.35;
+  paddle.x = Math.max(0, Math.min(W-paddle.w, paddle.x));
+
+  if(wideTimer&gt;0){ wideTimer--; if(wideTimer===0) paddle.w=PADDLE_BASE_W; }
+  if(slowTimer&gt;0) slowTimer--;
+  if(powerIconTimer&gt;0) powerIconTimer--;
+
+  var slowF = slowTimer&gt;0 ? 0.55 : 1;
+
+  // balls
+  for(var i=balls.length-1;i&gt;=0;i--){
+    var b = balls[i];
+    b.x += b.vx*slowF; b.y += b.vy*slowF;
+    trail.push({x:b.x,y:b.y,life:1});
+    if(b.x-b.r&lt;=0){ b.x=b.r; b.vx=Math.abs(b.vx); }
+    if(b.x+b.r&gt;=W){ b.x=W-b.r; b.vx=-Math.abs(b.vx); }
+    if(b.y-b.r&lt;=0){ b.y=b.r; b.vy=Math.abs(b.vy); }
+    // paddle
+    if(b.vy&gt;0 &amp;&amp; b.y+b.r&gt;=paddle.y &amp;&amp; b.y+b.r&lt;=paddle.y+PADDLE_H+8 &amp;&amp; b.x&gt;=paddle.x &amp;&amp; b.x&lt;=paddle.x+paddle.w){
+      var hit = (b.x-(paddle.x+paddle.w/2))/(paddle.w/2);
+      var sp = baseSpeed();
+      b.vx = hit*sp*0.9;
+      b.vy = -Math.sqrt(Math.max(1, sp*sp - b.vx*b.vx));
+      b.y = paddle.y-b.r;
+    }
+    // bottom out
+    if(b.y-b.r&gt;H){ balls.splice(i,1); continue; }
+    // bricks
+    for(var j=0;j&lt;bricks.length;j++){
+      var k=bricks[j];
+      if(!k.alive) continue;
+      if(b.x+b.r&gt;k.x &amp;&amp; b.x-b.r&lt;k.x+k.w &amp;&amp; b.y+b.r&gt;k.y &amp;&amp; b.y-b.r&lt;k.y+k.h){
+        k.alive=false;
+        score += k.pts; bump();
+        burst(b.x,b.y,k.color);
+        // decide bounce axis
+        var overlapX = Math.min(b.x+b.r-k.x, k.x+k.w-(b.x-b.r));
+        var overlapY = Math.min(b.y+b.r-k.y, k.y+k.h-(b.y-b.r));
+        if(overlapX&lt;overlapY) b.vx=-b.vx; else b.vy=-b.vy;
+        if(k.power){
+          var types=[&#x27;wide&#x27;,&#x27;split&#x27;,&#x27;slow&#x27;];
+          capsules.push({x:k.x+k.w/2, y:k.y+k.h/2, type:types[Math.floor(Math.random()*3)]});
+        }
+        break;
+      }
+    }
+  }
+  if(balls.length===0) balls.push(makeBall());
+
+  // capsules
+  for(var c=capsules.length-1;c&gt;=0;c--){
+    var cap=capsules[c];
+    cap.y += 2.2;
+    if(cap.y&gt;=paddle.y &amp;&amp; cap.y&lt;=paddle.y+PADDLE_H+10 &amp;&amp; cap.x&gt;=paddle.x &amp;&amp; cap.x&lt;=paddle.x+paddle.w){
+      applyPower(cap.type); doFlash(); capsules.splice(c,1); continue;
+    }
+    if(cap.y&gt;H) capsules.splice(c,1);
+  }
+
+  // trail decay
+  for(var t=trail.length-1;t&gt;=0;t--){ trail[t].life-=0.06; if(trail[t].life&lt;=0) trail.splice(t,1); }
+  // particles
+  for(var p=particles.length-1;p&gt;=0;p--){
+    var pt=particles[p]; pt.x+=pt.vx; pt.y+=pt.vy; pt.vy+=0.08; pt.life-=0.03;
+    if(pt.life&lt;=0) particles.splice(p,1);
+  }
+
+  // cleared?
+  if(bricks.every(function(k){return !k.alive;})){
+    doFlash(); buildBricks();
+  }
+}
+
+function draw(){
+  // bg pulsing gradient
+  var g = ctx.createRadialGradient(W/2, H*0.35, 40, W/2, H*0.35, W*0.9);
+  var hue = (Math.sin(tPhase)*0.5+0.5);
+  g.addColorStop(0, &#x27;rgb(&#x27;+Math.round(20+40*hue)+&#x27;,0,&#x27;+Math.round(40+40*hue)+&#x27;)&#x27;);
+  g.addColorStop(0.5, &#x27;#0a0320&#x27;);
+  g.addColorStop(1, &#x27;#03010a&#x27;);
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  // stars
+  ctx.fillStyle=&#x27;rgba(255,255,255,0.6)&#x27;;
+  for(var s=0;s&lt;50;s++){
+    var sx=(s*137.5)%W, sy=(s*89.3)%H;
+    var tw = 0.4+0.6*Math.abs(Math.sin(tPhase*2+s));
+    ctx.globalAlpha=tw; ctx.fillRect(sx,sy,2,2);
+  }
+  ctx.globalAlpha=1;
+
+  // bricks
+  bricks.forEach(function(k){
+    if(!k.alive) return;
+    ctx.fillStyle=k.color;
+    ctx.shadowColor=k.color; ctx.shadowBlur=10;
+    ctx.fillRect(k.x,k.y,k.w,k.h);
+    ctx.shadowBlur=0;
+    if(k.power){ ctx.fillStyle=&#x27;#fff&#x27;; ctx.font=&#x27;bold 14px sans-serif&#x27;; ctx.textAlign=&#x27;center&#x27;; ctx.fillText(&#x27;⚡&#x27;, k.x+k.w/2, k.y+15); }
+  });
+
+  // trail
+  trail.forEach(function(tr){
+    ctx.globalAlpha=tr.life*0.5;
+    ctx.fillStyle=&#x27;#0ff&#x27;;
+    ctx.beginPath(); ctx.arc(tr.x,tr.y,tr.life*7,0,Math.PI*2); ctx.fill();
+  });
+  ctx.globalAlpha=1;
+
+  // balls
+  balls.forEach(function(b){
+    var pr = b.r + Math.sin(tPhase*8)*1.5;
+    ctx.shadowColor=&#x27;#0ff&#x27;; ctx.shadowBlur=18;
+    ctx.fillStyle=&#x27;#eafffb&#x27;;
+    ctx.beginPath(); ctx.arc(b.x,b.y,pr,0,Math.PI*2); ctx.fill();
+    ctx.shadowBlur=0;
+  });
+
+  // capsules
+  capsules.forEach(function(cap){
+    var col = cap.type===&#x27;wide&#x27;?&#x27;#2dffb3&#x27;:cap.type===&#x27;split&#x27;?&#x27;#ff2d95&#x27;:&#x27;#2d9bff&#x27;;
+    ctx.fillStyle=col; ctx.shadowColor=col; ctx.shadowBlur=12;
+    ctx.beginPath(); ctx.arc(cap.x,cap.y,10,0,Math.PI*2); ctx.fill();
+    ctx.shadowBlur=0; ctx.fillStyle=&#x27;#fff&#x27;; ctx.font=&#x27;bold 11px sans-serif&#x27;; ctx.textAlign=&#x27;center&#x27;;
+    ctx.fillText(&#x27;⚡&#x27;, cap.x, cap.y+4);
+  });
+
+  // particles
+  particles.forEach(function(pt){
+    ctx.globalAlpha=Math.max(0,pt.life);
+    ctx.fillStyle=pt.color;
+    ctx.fillRect(pt.x,pt.y,3,3);
+  });
+  ctx.globalAlpha=1;
+
+  // paddle (spaceship)
+  var px=paddle.x, py=paddle.y, pw=paddle.w;
+  ctx.shadowColor=&#x27;#0ff&#x27;; ctx.shadowBlur=16;
+  var pg = ctx.createLinearGradient(px,py,px,py+PADDLE_H);
+  pg.addColorStop(0,&#x27;#7dfcff&#x27;); pg.addColorStop(1,&#x27;#0088ff&#x27;);
+  ctx.fillStyle=pg;
+  ctx.beginPath();
+  ctx.moveTo(px, py+PADDLE_H);
+  ctx.lineTo(px+pw*0.15, py);
+  ctx.lineTo(px+pw*0.85, py);
+  ctx.lineTo(px+pw, py+PADDLE_H);
+  ctx.closePath(); ctx.fill();
+  ctx.shadowBlur=0;
+
+  // power icon flash
+  if(powerIconTimer&gt;0 &amp;&amp; powerIcon){
+    ctx.globalAlpha=Math.min(1,powerIconTimer/60);
+    ctx.fillStyle=&#x27;#fff&#x27;; ctx.font=&#x27;bold 34px sans-serif&#x27;; ctx.textAlign=&#x27;center&#x27;;
+    ctx.fillText(powerIcon, W/2, H/2);
+    ctx.globalAlpha=1;
+  }
+}
+
+function loop(){
+  if(!running) return;
+  update(); draw();
+  animId = requestAnimationFrame(loop);
+}
+
+function startGame(){
+  if(running) return;
+  score=0; scoreEl.textContent=&#x27;0&#x27;;
+  paddle.w=PADDLE_BASE_W; paddle.x=(W-PADDLE_BASE_W)/2;
+  wideTimer=0; slowTimer=0; powerIconTimer=0;
+  balls=[makeBall()]; trail=[]; particles=[]; capsules=[];
+  for(var k in keys) keys[k]=false;
+  buildBricks();
+  running=true;
+  animId=requestAnimationFrame(loop);
+}
+function stopGame(){
+  if(!running) return;
+  running=false;
+  if(animId){ cancelAnimationFrame(animId); animId=null; }
+}
+
+window.addEventListener(&#x27;keydown&#x27;, function(e){
+  if(e.key===&#x27;ArrowLeft&#x27;||e.key===&#x27;ArrowRight&#x27;){ keys[e.key]=true; e.preventDefault(); }
+});
+window.addEventListener(&#x27;keyup&#x27;, function(e){
+  if(e.key===&#x27;ArrowLeft&#x27;||e.key===&#x27;ArrowRight&#x27;) keys[e.key]=false;
+});
+cv.addEventListener(&#x27;mousemove&#x27;, function(e){
+  var rect=cv.getBoundingClientRect();
+  mouseX=(e.clientX-rect.left)*(W/rect.width);
+});
+cv.addEventListener(&#x27;touchmove&#x27;, function(e){
+  var rect=cv.getBoundingClientRect();
+  mouseX=(e.touches[0].clientX-rect.left)*(W/rect.width);
+  e.preventDefault();
+}, {passive:false});
+
+window.addEventListener(&#x27;message&#x27;, function(e){
+  if(!e.data || typeof e.data!==&#x27;object&#x27;) return;
+  if(e.data.type===&#x27;wd_start&#x27;) startGame();
+  else if(e.data.type===&#x27;wd_stop&#x27;) stopGame();
+});
+
+// initial static frame
+buildBricks();
+draw();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  // Suppress in-iframe scrollbars. The parent fits the iframe layout
+  // box to match the content size, so internal scroll is redundant —
+  // and if the LLM&#x27;s CSS sets body overflow: auto, the scrollbar shows
+  // briefly before the fit lands. Force hidden so it never appears.
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  // Iframe-internal JS error capture. window.onerror inside a sandboxed
+  // iframe can&#x27;t post to /api/js_error directly, so we relay to the
+  // parent via postMessage; parent&#x27;s error_logger.js forwards to the
+  // server. Catches LLM-emitted broken HTML (invalid hex, undefined
+  // variables, etc.) that would otherwise fail silently inside the
+  // iframe.
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      // Debounce: don&#x27;t fire more than ~10× per second. ResizeObserver
+      // fires repeatedly during layout/font load; we only need the latest.
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      // Clamp: reject obviously bogus dimensions. Any browser-game viewport
+      // is well under 4000×4000 logical px; readings beyond that are layout
+      // noise during load/visibility transitions.
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  // Parent posts wd_remeasure when it makes the iframe visible (the body&#x27;s
+  // ResizeObserver doesn&#x27;t fire on display:none→block of an outer ancestor
+  // because the iframe document didn&#x27;t actually resize). Wait a frame for
+  // layout to settle before measuring.
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

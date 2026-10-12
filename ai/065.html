@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🐡 Deep Sea Tap</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html#ai">&larr; All games</a> &middot; <b>🐡 Deep Sea Tap</b></div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;style&gt;
+  html, body { height: 100%; margin: 0; padding: 0; }
+  body { font-family: system-ui, -apple-system, sans-serif; overflow: hidden;
+    background: radial-gradient(ellipse at 50% 20%, #1b3b5f 0%, #0d2038 45%, #050d1a 100%); color: #d8f6ff; }
+  .game { max-width: 720px; margin: 0 auto; height: 100%; box-sizing: border-box;
+    display: flex; flex-direction: column; align-items: center; padding: 8px 8px 0; }
+  h1 { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: .5px;
+    color: #7ff0c0; text-shadow: 0 0 12px #2affa0, 0 0 4px #0ff; }
+  .instructions { font-size: 16px; color: #9fdfff; max-width: 620px; margin: 3px 0 4px; line-height: 1.35; text-align: center; }
+  .hud { width: 620px; display: flex; align-items: center; gap: 14px; margin-bottom: 5px; }
+  .score { font-size: 22px; font-weight: 700; color: #ffe28a; text-shadow: 0 0 8px #ffb400; white-space: nowrap; }
+  .multiwrap { flex: 1; height: 18px; background: rgba(255,255,255,.12); border-radius: 10px; overflow: hidden; position: relative; box-shadow: inset 0 0 6px rgba(0,0,0,.4); }
+  .multibar { height: 100%; width: 0%; background: linear-gradient(90deg, #2affa0, #37c8ff); transition: width .12s linear; box-shadow: 0 0 10px #2affa0; }
+  .multilabel { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #05202f; }
+  .board { position: relative; width: 620px; height: 452px; flex-shrink: 0; border-radius: 12px; overflow: hidden;
+    background: linear-gradient(180deg, rgba(10,40,70,.2) 0%, rgba(6,24,44,.5) 70%, rgba(3,14,28,.8) 100%);
+    box-shadow: inset 0 0 40px rgba(0,255,200,.08), 0 0 0 1px rgba(120,255,220,.15); }
+  #bubbles { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+  .creatures { position: absolute; inset: 0; z-index: 2; }
+  .coral { position: absolute; bottom: -6px; left: 0; width: 100%; height: 90px; z-index: 3; pointer-events: none; }
+  .critter { position: absolute; width: 74px; height: 74px; cursor: pointer; z-index: 2;
+    display: flex; align-items: center; justify-content: center; font-size: 46px;
+    transform: translateY(90px) scale(.4); opacity: 0; transition: transform .28s cubic-bezier(.2,1.6,.4,1), opacity .2s;
+    filter: drop-shadow(0 0 8px rgba(0,255,200,.55)); user-select: none; }
+  .critter.up { transform: translateY(0) scale(1); opacity: 1; }
+  .critter.gold { filter: drop-shadow(0 0 14px #ffd24d); animation: goldflash .5s infinite alternate; }
+  .critter.bomb { filter: drop-shadow(0 0 10px #ff4d5e); }
+  @keyframes goldflash { from { transform: scale(1); } to { transform: scale(1.12); } }
+  .ptag { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); font-size: 14px; font-weight: 800;
+    color: #fff; text-shadow: 0 0 6px #000; pointer-events: none; }
+  .ptag.g { color: #ffe28a; text-shadow: 0 0 8px #ffb400; }
+  .ptag.b { color: #ff8a94; }
+  .pop { position: absolute; z-index: 5; font-size: 18px; font-weight: 800; pointer-events: none;
+    animation: floatup .8s ease-out forwards; text-shadow: 0 0 6px #000; }
+  @keyframes floatup { 0% { transform: translate(-50%,0) scale(.6); opacity: 0; }
+    20% { transform: translate(-50%,-12px) scale(1.2); opacity: 1; }
+    100% { transform: translate(-50%,-52px) scale(1); opacity: 0; } }
+  .splash { position: absolute; z-index: 4; width: 60px; height: 60px; border-radius: 50%; pointer-events: none;
+    transform: translate(-50%,-50%) scale(.3); opacity: .8; animation: splashout .45s ease-out forwards; }
+  @keyframes splashout { to { transform: translate(-50%,-50%) scale(2.4); opacity: 0; } }
+  .combo { position: absolute; z-index: 8; top: 30%; left: 50%; transform: translate(-50%,-50%) scale(0);
+    font-size: 44px; font-weight: 900; color: #7ff0c0; text-shadow: 0 0 16px #2affa0; pointer-events: none; opacity: 0; }
+  .combo.show { animation: comboPop .7s ease-out; }
+  @keyframes comboPop { 0% { transform: translate(-50%,-50%) scale(0) rotate(-8deg); opacity: 0; }
+    30% { transform: translate(-50%,-50%) scale(1.3) rotate(4deg); opacity: 1; }
+    70% { transform: translate(-50%,-50%) scale(1) rotate(0); opacity: 1; }
+    100% { transform: translate(-50%,-50%) scale(1.1); opacity: 0; } }
+  .ripple { position: absolute; z-index: 6; border-radius: 50%; border: 3px solid rgba(127,240,192,.7);
+    transform: translate(-50%,-50%) scale(0); pointer-events: none; animation: rip .8s ease-out forwards; }
+  @keyframes rip { to { transform: translate(-50%,-50%) scale(1); opacity: 0; } }
+  .board.flash { animation: redflash .4s; }
+  @keyframes redflash { 0%,100% { box-shadow: inset 0 0 40px rgba(0,255,200,.08); }
+    30% { box-shadow: inset 0 0 80px rgba(255,40,60,.75); } }
+  .board.shake { animation: shk .4s; }
+  @keyframes shk { 0%,100%{transform:translate(0,0)} 20%{transform:translate(-8px,4px)} 40%{transform:translate(7px,-5px)} 60%{transform:translate(-6px,3px)} 80%{transform:translate(5px,-2px)} }
+  .hint { position: absolute; z-index: 9; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 20px; color: #9fdfff; text-shadow: 0 0 8px #000; pointer-events: none; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;🐡 Deep Sea Tap&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Tap the glowing critters before they dive back down — golden ones are worth 3, and hitting several fast builds combo bonuses. Avoid the 💣 bombs, and use the Start/Restart button below.&lt;/p&gt;
+  &lt;div class=&quot;hud&quot;&gt;
+    &lt;div class=&quot;score&quot;&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;multiwrap&quot;&gt;&lt;div class=&quot;multibar&quot; id=&quot;multibar&quot;&gt;&lt;/div&gt;&lt;div class=&quot;multilabel&quot; id=&quot;multilabel&quot;&gt;x1&lt;/div&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;board&quot; id=&quot;board&quot;&gt;
+    &lt;canvas id=&quot;bubbles&quot; width=&quot;620&quot; height=&quot;452&quot;&gt;&lt;/canvas&gt;
+    &lt;div class=&quot;creatures&quot; id=&quot;creatures&quot;&gt;&lt;/div&gt;
+    &lt;svg class=&quot;coral&quot; viewBox=&quot;0 0 620 90&quot; preserveAspectRatio=&quot;none&quot;&gt;
+      &lt;path d=&quot;M0 90 L0 55 Q20 30 40 55 Q55 20 75 50 Q95 25 110 55 L110 90 Z&quot; fill=&quot;#0a3a4a&quot;/&gt;
+      &lt;path d=&quot;M90 90 L90 45 Q120 15 150 45 Q170 20 195 50 L195 90 Z&quot; fill=&quot;#134152&quot;/&gt;
+      &lt;path d=&quot;M180 90 L180 50 Q210 20 235 55 Q255 25 285 55 L285 90 Z&quot; fill=&quot;#0d3f4c&quot;/&gt;
+      &lt;path d=&quot;M270 90 L270 48 Q300 18 330 50 Q355 20 390 52 L390 90 Z&quot; fill=&quot;#124656&quot;/&gt;
+      &lt;path d=&quot;M370 90 L370 52 Q400 22 430 52 Q450 25 480 55 L480 90 Z&quot; fill=&quot;#0a3a4a&quot;/&gt;
+      &lt;path d=&quot;M460 90 L460 48 Q490 18 520 50 Q545 22 575 52 L575 90 Z&quot; fill=&quot;#134152&quot;/&gt;
+      &lt;path d=&quot;M540 90 L540 55 Q565 25 585 55 Q600 30 620 55 L620 90 Z&quot; fill=&quot;#0d3f4c&quot;/&gt;
+    &lt;/svg&gt;
+    &lt;div class=&quot;combo&quot; id=&quot;combo&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;hint&quot; id=&quot;hint&quot;&gt;Press Start below to dive in!&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try { window.parent.postMessage({ type: &#x27;game_input&#x27;, kind: t, key: e.key || null }, &#x27;*&#x27;); } catch (_) {}
+    }, true);
+  });
+
+  var BOARD_W = 620, BOARD_H = 452, SIZE = 74;
+  var creaturesEl = document.getElementById(&#x27;creatures&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var multibar = document.getElementById(&#x27;multibar&#x27;);
+  var multilabel = document.getElementById(&#x27;multilabel&#x27;);
+  var board = document.getElementById(&#x27;board&#x27;);
+  var comboEl = document.getElementById(&#x27;combo&#x27;);
+  var hint = document.getElementById(&#x27;hint&#x27;);
+  var canvas = document.getElementById(&#x27;bubbles&#x27;);
+  var ctx = canvas.getContext(&#x27;2d&#x27;);
+
+  var score = 0, running = false;
+  var spawnTimer = null, timeouts = [];
+  var lastHitTime = 0, comboCount = 0;
+  var multiplier = 1, multiProgress = 0;
+
+  var COMMON = [&#x27;🪼&#x27;,&#x27;🐡&#x27;,&#x27;🦞&#x27;,&#x27;🐟&#x27;,&#x27;🦐&#x27;];
+  var GLOW = [&#x27;#2affa0&#x27;,&#x27;#37c8ff&#x27;,&#x27;#8affb0&#x27;,&#x27;#5ad8ff&#x27;,&#x27;#7ff0c0&#x27;];
+
+  // --- audio ---
+  var actx = null;
+  function beep(freq, dur, type, vol) {
+    try {
+      if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+      var o = actx.createOscillator(), g = actx.createGain();
+      o.type = type || &#x27;sine&#x27;; o.frequency.value = freq;
+      o.connect(g); g.connect(actx.destination);
+      g.gain.setValueAtTime(vol || 0.15, actx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + dur);
+      o.start(); o.stop(actx.currentTime + dur);
+    } catch (_) {}
+  }
+
+  // --- bubbles ---
+  var bubbles = [];
+  function initBubbles() {
+    bubbles = [];
+    for (var i = 0; i &lt; 40; i++) {
+      bubbles.push({ x: Math.random()*BOARD_W, y: Math.random()*BOARD_H,
+        r: 1.5 + Math.random()*5, speed: .3 + Math.random()*1.4, drift: (Math.random()-.5)*.4 });
+    }
+  }
+  var rafId = null;
+  function drawBubbles() {
+    ctx.clearRect(0,0,BOARD_W,BOARD_H);
+    for (var i=0;i&lt;bubbles.length;i++) {
+      var b = bubbles[i];
+      b.y -= b.speed; b.x += b.drift;
+      if (b.y &lt; -10) { b.y = BOARD_H + 10; b.x = Math.random()*BOARD_W; }
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.r, 0, 6.283);
+      ctx.fillStyle = &#x27;rgba(140,240,255,&#x27; + (0.06 + b.r/16) + &#x27;)&#x27;;
+      ctx.fill();
+    }
+    rafId = requestAnimationFrame(drawBubbles);
+  }
+
+  function setMultiUI() {
+    multilabel.textContent = &#x27;x&#x27; + multiplier;
+    multibar.style.width = (multiProgress*100) + &#x27;%&#x27;;
+  }
+
+  function difficulty() {
+    var life = Math.max(650, 1400 - score * 12);
+    var spawn = Math.max(420, 950 - score * 8);
+    return { life: life, spawn: spawn };
+  }
+
+  function makePop(x, y, text, color) {
+    var p = document.createElement(&#x27;div&#x27;);
+    p.className = &#x27;pop&#x27;; p.textContent = text; p.style.color = color;
+    p.style.left = x + &#x27;px&#x27;; p.style.top = y + &#x27;px&#x27;;
+    creaturesEl.appendChild(p);
+    setTimeout(function(){ if (p.parentNode) p.parentNode.removeChild(p); }, 800);
+  }
+  function makeSplash(x, y, color) {
+    var s = document.createElement(&#x27;div&#x27;);
+    s.className = &#x27;splash&#x27;;
+    s.style.left = x + &#x27;px&#x27;; s.style.top = y + &#x27;px&#x27;;
+    s.style.background = &#x27;radial-gradient(circle,&#x27; + color + &#x27;99 0%, transparent 70%)&#x27;;
+    creaturesEl.appendChild(s);
+    setTimeout(function(){ if (s.parentNode) s.parentNode.removeChild(s); }, 450);
+  }
+  function makeRipple(x, y) {
+    var r = document.createElement(&#x27;div&#x27;);
+    r.className = &#x27;ripple&#x27;;
+    var sz = 700;
+    r.style.width = sz+&#x27;px&#x27;; r.style.height = sz+&#x27;px&#x27;;
+    r.style.left = x+&#x27;px&#x27;; r.style.top = y+&#x27;px&#x27;;
+    board.appendChild(r);
+    setTimeout(function(){ if (r.parentNode) r.parentNode.removeChild(r); }, 800);
+  }
+
+  function showCombo(n) {
+    comboEl.textContent = n + &#x27;x COMBO!&#x27;;
+    comboEl.classList.remove(&#x27;show&#x27;);
+    void comboEl.offsetWidth;
+    comboEl.classList.add(&#x27;show&#x27;);
+  }
+
+  function addScore(pts) {
+    score += pts;
+    if (score &lt; 0) score = 0;
+    scoreEl.textContent = score;
+  }
+
+  function registerCombo(cx, cy) {
+    var now = Date.now();
+    if (now - lastHitTime &lt; 1000) {
+      comboCount++;
+    } else {
+      comboCount = 1;
+    }
+    lastHitTime = now;
+    if (comboCount &gt;= 2) {
+      var bonus = comboCount;
+      addScore(bonus);
+      showCombo(comboCount);
+      makeRipple(cx, cy);
+      makePop(cx, cy - 20, &#x27;+&#x27; + bonus + &#x27; combo&#x27;, &#x27;#7ff0c0&#x27;);
+      beep(660 + comboCount*40, 0.15, &#x27;triangle&#x27;, 0.12);
+    }
+    // multiplier bar fills with combos
+    multiProgress += 0.34;
+    if (multiProgress &gt;= 1) { multiProgress = 0; multiplier = Math.min(5, multiplier + 1); }
+    setMultiUI();
+  }
+
+  function spawnCreature() {
+    if (!running) return;
+    var d = difficulty();
+    var roll = Math.random();
+    var isBomb = roll &lt; 0.12;
+    var isGold = !isBomb &amp;&amp; roll &gt; 0.85;
+
+    var c = document.createElement(&#x27;div&#x27;);
+    c.className = &#x27;critter&#x27; + (isGold ? &#x27; gold&#x27; : &#x27;&#x27;) + (isBomb ? &#x27; bomb&#x27; : &#x27;&#x27;);
+    var x = 10 + Math.random() * (BOARD_W - SIZE - 20);
+    var y = 40 + Math.random() * (BOARD_H - SIZE - 120);
+    c.style.left = x + &#x27;px&#x27;; c.style.top = y + &#x27;px&#x27;;
+
+    var emoji, points, ptClass, glow;
+    if (isBomb) { emoji = &#x27;💣&#x27;; points = -2; ptClass = &#x27;b&#x27;; glow = &#x27;#ff4d5e&#x27;; }
+    else if (isGold) { emoji = &#x27;🐠&#x27;; points = 3; ptClass = &#x27;g&#x27;; glow = &#x27;#ffd24d&#x27;; }
+    else { emoji = COMMON[Math.floor(Math.random()*COMMON.length)]; points = 1; ptClass = &#x27;&#x27;; glow = GLOW[Math.floor(Math.random()*GLOW.length)]; }
+
+    c.textContent = emoji;
+    if (!isBomb) c.style.filter = &#x27;drop-shadow(0 0 8px &#x27; + glow + &#x27;)&#x27;;
+
+    var tag = document.createElement(&#x27;div&#x27;);
+    tag.className = &#x27;ptag &#x27; + ptClass;
+    tag.textContent = (points &gt; 0 ? &#x27;+&#x27; : &#x27;&#x27;) + points;
+    c.appendChild(tag);
+
+    var hit = false;
+    c.addEventListener(&#x27;click&#x27;, function() {
+      if (hit || !running) return;
+      hit = true;
+      var cx = x + SIZE/2, cy = y + SIZE/2;
+      if (isBomb) {
+        addScore(-2);
+        makeSplash(cx, cy, &#x27;#ff4d5e&#x27;);
+        makePop(cx, cy, &#x27;-2&#x27;, &#x27;#ff8a94&#x27;);
+        board.classList.add(&#x27;flash&#x27;,&#x27;shake&#x27;);
+        setTimeout(function(){ board.classList.remove(&#x27;flash&#x27;,&#x27;shake&#x27;); }, 420);
+        beep(120, 0.35, &#x27;sawtooth&#x27;, 0.25);
+        comboCount = 0;
+      } else {
+        var gained = points * multiplier;
+        addScore(gained);
+        makeSplash(cx, cy, glow);
+        makePop(cx, cy, &#x27;+&#x27; + gained, isGold ? &#x27;#ffe28a&#x27; : &#x27;#bfffe0&#x27;);
+        beep(isGold ? 880 : 520, 0.18, isGold ? &#x27;square&#x27; : &#x27;sine&#x27;, 0.14);
+        registerCombo(cx, cy);
+      }
+      c.style.transition = &#x27;transform .18s ease, opacity .18s&#x27;;
+      c.style.transform = &#x27;scale(1.6)&#x27;; c.style.opacity = &#x27;0&#x27;;
+      setTimeout(function(){ if (c.parentNode) c.parentNode.removeChild(c); }, 180);
+    });
+
+    creaturesEl.appendChild(c);
+    requestAnimationFrame(function(){ c.classList.add(&#x27;up&#x27;); });
+
+    var life = isGold ? d.life * 0.8 : d.life;
+    var to = setTimeout(function() {
+      if (c.parentNode) {
+        c.classList.remove(&#x27;up&#x27;);
+        setTimeout(function(){ if (c.parentNode) c.parentNode.removeChild(c); }, 280);
+      }
+    }, life);
+    timeouts.push(to);
+
+    // schedule next spawn with jitter
+    spawnTimer = setTimeout(spawnCreature, d.spawn * (0.7 + Math.random()*0.6));
+  }
+
+  function clearAll() {
+    if (spawnTimer) { clearTimeout(spawnTimer); spawnTimer = null; }
+    for (var i=0;i&lt;timeouts.length;i++) clearTimeout(timeouts[i]);
+    timeouts = [];
+    creaturesEl.innerHTML = &#x27;&#x27;;
+  }
+
+  function startGame() {
+    if (running) return;
+    running = true;
+    score = 0; scoreEl.textContent = &#x27;0&#x27;;
+    multiplier = 1; multiProgress = 0; comboCount = 0; lastHitTime = 0;
+    setMultiUI();
+    hint.style.display = &#x27;none&#x27;;
+    clearAll();
+    initBubbles();
+    if (rafId) cancelAnimationFrame(rafId);
+    drawBubbles();
+    spawnCreature();
+  }
+
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    clearAll();
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+    hint.textContent = &#x27;Score: &#x27; + score + &#x27; — press Start to dive again!&#x27;;
+    hint.style.display = &#x27;flex&#x27;;
+  }
+
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  // idle bubbles drawn once so page isn&#x27;t blank before start
+  initBubbles();
+  drawBubbles();
+  setTimeout(function(){ if (!running &amp;&amp; rafId) { cancelAnimationFrame(rafId); rafId = null; } }, 60);
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  // Suppress in-iframe scrollbars. The parent fits the iframe layout
+  // box to match the content size, so internal scroll is redundant —
+  // and if the LLM&#x27;s CSS sets body overflow: auto, the scrollbar shows
+  // briefly before the fit lands. Force hidden so it never appears.
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  // Iframe-internal JS error capture. window.onerror inside a sandboxed
+  // iframe can&#x27;t post to /api/js_error directly, so we relay to the
+  // parent via postMessage; parent&#x27;s error_logger.js forwards to the
+  // server. Catches LLM-emitted broken HTML (invalid hex, undefined
+  // variables, etc.) that would otherwise fail silently inside the
+  // iframe.
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      // Debounce: don&#x27;t fire more than ~10× per second. ResizeObserver
+      // fires repeatedly during layout/font load; we only need the latest.
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      // Clamp: reject obviously bogus dimensions. Any browser-game viewport
+      // is well under 4000×4000 logical px; readings beyond that are layout
+      // noise during load/visibility transitions.
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  // Parent posts wd_remeasure when it makes the iframe visible (the body&#x27;s
+  // ResizeObserver doesn&#x27;t fire on display:none→block of an outer ancestor
+  // because the iframe document didn&#x27;t actually resize). Wait a frame for
+  // layout to settle before measuring.
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

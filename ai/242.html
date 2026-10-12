@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🍓 Fruit Drop 🍇</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html#ai">&larr; All games</a> &middot; <b>🍓 Fruit Drop 🍇</b></div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #1b1030; color: #fff; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 8px 12px; box-sizing: border-box; height: 640px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: 1px; background: linear-gradient(90deg,#ff5e7e,#ffd23f,#4fe08b); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .instructions { font-size: 16px; color: #d7cff0; max-width: 620px; margin: 0; line-height: 1.35; text-align: center; }
+  .layout { display: flex; gap: 14px; align-items: flex-start; }
+  .fieldwrap { position: relative; }
+  #field { display: block; border-radius: 10px; background: linear-gradient(160deg,#ffe29a,#ff9a9e 55%,#a18cd1); box-shadow: 0 8px 24px rgba(0,0,0,.4); }
+  #fx { position: absolute; left: 0; top: 0; pointer-events: none; }
+  .side { display: flex; flex-direction: column; gap: 10px; width: 120px; }
+  .panel { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); border-radius: 10px; padding: 8px; text-align: center; }
+  .panel .label { font-size: 13px; color: #ffd23f; font-weight: 700; letter-spacing: 1px; }
+  .panel .val { font-size: 24px; font-weight: 800; }
+  #nextCanvas { display: block; margin: 4px auto 0; background: rgba(0,0,0,.2); border-radius: 6px; }
+  .combo { font-size: 15px; color: #4fe08b; font-weight: 700; min-height: 18px; }
+  #popup { position: absolute; left: 50%; top: 30%; transform: translate(-50%,-50%); font-size: 34px; font-weight: 900; color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,.6); pointer-events: none; opacity: 0; }
+  #popup.show { animation: pop 1s ease-out forwards; }
+  @keyframes pop { 0%{opacity:0;transform:translate(-50%,-50%) scale(.4);} 25%{opacity:1;transform:translate(-50%,-70%) scale(1.3);} 100%{opacity:0;transform:translate(-50%,-120%) scale(1);} }
+  #banner { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); background: rgba(0,0,0,.7); padding: 14px 22px; border-radius: 12px; font-size: 22px; font-weight: 800; text-align: center; display: none; }
+  .btns { display: flex; gap: 6px; justify-content: center; margin-top: 2px; }
+  .btns button { font-size: 20px; width: 52px; height: 40px; border: none; border-radius: 8px; background: rgba(255,255,255,.18); color: #fff; cursor: pointer; }
+  .btns button:active { background: rgba(255,255,255,.4); }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;🍓 Fruit Drop 🍇&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Move fruit pieces with ← / →, rotate with ↑, and press ↓ to drop faster. Clear full rows for points — chain clears for big multipliers before time runs out!&lt;/p&gt;
+  &lt;div class=&quot;layout&quot;&gt;
+    &lt;div class=&quot;fieldwrap&quot;&gt;
+      &lt;canvas id=&quot;field&quot; width=&quot;240&quot; height=&quot;480&quot;&gt;&lt;/canvas&gt;
+      &lt;canvas id=&quot;fx&quot; width=&quot;240&quot; height=&quot;480&quot;&gt;&lt;/canvas&gt;
+      &lt;div id=&quot;popup&quot;&gt;&lt;/div&gt;
+      &lt;div id=&quot;banner&quot;&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;side&quot;&gt;
+      &lt;div class=&quot;panel&quot;&gt;&lt;div class=&quot;label&quot;&gt;SCORE&lt;/div&gt;&lt;div class=&quot;val&quot; id=&quot;score&quot;&gt;0&lt;/div&gt;&lt;/div&gt;
+      &lt;div class=&quot;panel&quot;&gt;&lt;div class=&quot;label&quot;&gt;TIME&lt;/div&gt;&lt;div class=&quot;val&quot; id=&quot;time&quot;&gt;60&lt;/div&gt;&lt;/div&gt;
+      &lt;div class=&quot;panel&quot;&gt;&lt;div class=&quot;label&quot;&gt;NEXT&lt;/div&gt;&lt;canvas id=&quot;nextCanvas&quot; width=&quot;96&quot; height=&quot;96&quot;&gt;&lt;/canvas&gt;&lt;/div&gt;
+      &lt;div class=&quot;combo&quot; id=&quot;combo&quot;&gt;&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;btns&quot;&gt;
+    &lt;button data-a=&quot;left&quot;&gt;←&lt;/button&gt;
+    &lt;button data-a=&quot;rot&quot;&gt;⟳&lt;/button&gt;
+    &lt;button data-a=&quot;down&quot;&gt;↓&lt;/button&gt;
+    &lt;button data-a=&quot;drop&quot;&gt;⤓&lt;/button&gt;
+    &lt;button data-a=&quot;right&quot;&gt;→&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var CELL = 24, COLS = 10, ROWS = 20;
+  var field = document.getElementById(&#x27;field&#x27;), ctx = field.getContext(&#x27;2d&#x27;);
+  var fx = document.getElementById(&#x27;fx&#x27;), fctx = fx.getContext(&#x27;2d&#x27;);
+  var nextC = document.getElementById(&#x27;nextCanvas&#x27;), nctx = nextC.getContext(&#x27;2d&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;), timeEl = document.getElementById(&#x27;time&#x27;);
+  var comboEl = document.getElementById(&#x27;combo&#x27;), popup = document.getElementById(&#x27;popup&#x27;);
+  var banner = document.getElementById(&#x27;banner&#x27;);
+
+  var FRUITS = [
+    { emoji:&#x27;🍓&#x27;, color:&#x27;#ff4d6d&#x27; },
+    { emoji:&#x27;🍋&#x27;, color:&#x27;#ffd23f&#x27; },
+    { emoji:&#x27;🍇&#x27;, color:&#x27;#9b5de5&#x27; },
+    { emoji:&#x27;🍊&#x27;, color:&#x27;#ff8c32&#x27; },
+    { emoji:&#x27;🍉&#x27;, color:&#x27;#4fe08b&#x27; },
+    { emoji:&#x27;🫐&#x27;, color:&#x27;#4d8bff&#x27; },
+    { emoji:&#x27;🍑&#x27;, color:&#x27;#ff9eb1&#x27; },
+  ];
+  // Tetromino definitions: list of rotation states, each 4 cells [x,y]
+  var SHAPES = {
+    I: [[[0,1],[1,1],[2,1],[3,1]],[[2,0],[2,1],[2,2],[2,3]],[[0,2],[1,2],[2,2],[3,2]],[[1,0],[1,1],[1,2],[1,3]]],
+    O: [[[1,0],[2,0],[1,1],[2,1]]],
+    T: [[[1,0],[0,1],[1,1],[2,1]],[[1,0],[1,1],[2,1],[1,2]],[[0,1],[1,1],[2,1],[1,2]],[[1,0],[0,1],[1,1],[1,2]]],
+    S: [[[1,0],[2,0],[0,1],[1,1]],[[1,0],[1,1],[2,1],[2,2]],[[1,1],[2,1],[0,2],[1,2]],[[0,0],[0,1],[1,1],[1,2]]],
+    Z: [[[0,0],[1,0],[1,1],[2,1]],[[2,0],[1,1],[2,1],[1,2]],[[0,1],[1,1],[1,2],[2,2]],[[1,0],[0,1],[1,1],[0,2]]],
+    L: [[[2,0],[0,1],[1,1],[2,1]],[[1,0],[1,1],[1,2],[2,2]],[[0,1],[1,1],[2,1],[0,2]],[[0,0],[1,0],[1,1],[1,2]]],
+    J: [[[0,0],[0,1],[1,1],[2,1]],[[1,0],[2,0],[1,1],[1,2]],[[0,1],[1,1],[2,1],[2,2]],[[1,0],[1,1],[0,2],[1,2]]],
+  };
+  var SHAPE_KEYS = Object.keys(SHAPES);
+
+  var grid, piece, nextPiece, score, combo, running, dropMs, dropAcc, lastT, timeLeft, gameOver;
+  var particles = [], ripples = [];
+  var rafId = null, timerId = null;
+
+  function newGrid() {
+    grid = [];
+    for (var r=0;r&lt;ROWS;r++){ var row=[]; for(var c=0;c&lt;COLS;c++) row.push(null); grid.push(row); }
+  }
+  function randPiece() {
+    var k = SHAPE_KEYS[Math.floor(Math.random()*SHAPE_KEYS.length)];
+    return { type:k, rot:0, x:3, y:-1, fruit:Math.floor(Math.random()*FRUITS.length) };
+  }
+  function cellsOf(p) {
+    var st = SHAPES[p.type][p.rot % SHAPES[p.type].length];
+    return st.map(function(c){ return {x:p.x+c[0], y:p.y+c[1]}; });
+  }
+  function collides(p) {
+    var cs = cellsOf(p);
+    for (var i=0;i&lt;cs.length;i++){
+      var c=cs[i];
+      if (c.x&lt;0||c.x&gt;=COLS||c.y&gt;=ROWS) return true;
+      if (c.y&gt;=0 &amp;&amp; grid[c.y][c.x]) return true;
+    }
+    return false;
+  }
+  function spawn() {
+    piece = nextPiece || randPiece();
+    piece.x=3; piece.y=-1; piece.rot=0;
+    nextPiece = randPiece();
+    drawNext();
+    if (collides(piece)) { endGame(true); return false; }
+    return true;
+  }
+  function lock() {
+    var cs = cellsOf(piece);
+    for (var i=0;i&lt;cs.length;i++){ var c=cs[i]; if(c.y&gt;=0) grid[c.y][c.x]=piece.fruit; }
+    // ripple from piece center
+    var cx=0,cy=0; cs.forEach(function(c){cx+=c.x;cy+=c.y;});
+    ripples.push({x:(cx/cs.length+0.5)*CELL, y:(cy/cs.length+0.5)*CELL, r:0, life:1});
+    clearRows();
+    piece=null;
+  }
+  function clearRows() {
+    var full=[];
+    for (var r=0;r&lt;ROWS;r++){ var f=true; for(var c=0;c&lt;COLS;c++) if(!grid[r][c]){f=false;break;} if(f) full.push(r); }
+    if (full.length===0){ combo=0; updateCombo(); return; }
+    // particles from cleared rows
+    full.forEach(function(r){
+      for (var c=0;c&lt;COLS;c++){
+        var fr=FRUITS[grid[r][c]];
+        for (var k=0;k&lt;3;k++){
+          particles.push({x:(c+0.5)*CELL, y:(r+0.5)*CELL, vx:(Math.random()-0.5)*3, vy:Math.random()*2+1, life:1, color:fr.color, sz:Math.random()*4+2});
+        }
+      }
+    });
+    full.sort(function(a,b){return a-b;});
+    full.forEach(function(r){ grid.splice(r,1); var row=[]; for(var c=0;c&lt;COLS;c++) row.push(null); grid.unshift(row); });
+    combo++;
+    var mult = full.length; // 1..4
+    var base = full.length*10;
+    var pts = base*mult;
+    score += pts;
+    if (combo&gt;1) score += combo*2;
+    scoreEl.textContent = score;
+    var names={1:&#x27;CLEAR!&#x27;,2:&#x27;DOUBLE 2×&#x27;,3:&#x27;TRIPLE 3×&#x27;,4:&#x27;TETRIS 4×&#x27;};
+    showPopup(names[full.length]||&#x27;CLEAR!&#x27;, FRUITS[0].color);
+    updateCombo();
+    // speed ramp every 10 points
+    dropMs = Math.max(120, 500 - Math.floor(score/10)*20);
+  }
+  function updateCombo(){
+    comboEl.textContent = combo&gt;1 ? (&#x27;COMBO ×&#x27;+combo) : &#x27;&#x27;;
+  }
+  function showPopup(txt,color){
+    popup.textContent = txt;
+    popup.style.color = &#x27;#fff&#x27;;
+    popup.classList.remove(&#x27;show&#x27;); void popup.offsetWidth; popup.classList.add(&#x27;show&#x27;);
+  }
+
+  function ghostY() {
+    var g = {type:piece.type, rot:piece.rot, x:piece.x, y:piece.y};
+    while(!collides({type:g.type,rot:g.rot,x:g.x,y:g.y+1})) g.y++;
+    return g.y;
+  }
+
+  function drawCell(x,y,fruitIdx,alpha){
+    if (y&lt;0) return;
+    var fr=FRUITS[fruitIdx];
+    var px=x*CELL, py=y*CELL;
+    ctx.globalAlpha=alpha;
+    ctx.fillStyle=fr.color;
+    roundRect(ctx,px+1,py+1,CELL-2,CELL-2,4); ctx.fill();
+    // sheen
+    ctx.globalAlpha=alpha*0.35;
+    ctx.fillStyle=&#x27;#fff&#x27;;
+    roundRect(ctx,px+3,py+3,CELL-6,(CELL-6)*0.45,3); ctx.fill();
+    ctx.globalAlpha=alpha;
+    ctx.font=&#x27;14px serif&#x27;; ctx.textAlign=&#x27;center&#x27;; ctx.textBaseline=&#x27;middle&#x27;;
+    ctx.fillText(fr.emoji, px+CELL/2, py+CELL/2+1);
+    ctx.globalAlpha=1;
+  }
+  function roundRect(c,x,y,w,h,r){ c.beginPath(); c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r); c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath(); }
+
+  function draw() {
+    ctx.clearRect(0,0,240,480);
+    // grid overlay
+    ctx.strokeStyle=&#x27;rgba(255,255,255,.12)&#x27;; ctx.lineWidth=1;
+    for(var c=0;c&lt;=COLS;c++){ctx.beginPath();ctx.moveTo(c*CELL,0);ctx.lineTo(c*CELL,480);ctx.stroke();}
+    for(var r=0;r&lt;=ROWS;r++){ctx.beginPath();ctx.moveTo(0,r*CELL);ctx.lineTo(240,r*CELL);ctx.stroke();}
+    // locked
+    for(var y=0;y&lt;ROWS;y++) for(var x=0;x&lt;COLS;x++) if(grid[y][x]!==null) drawCell(x,y,grid[y][x],1);
+    // ghost
+    if(piece){
+      var gy=ghostY(); var gp={type:piece.type,rot:piece.rot,x:piece.x,y:gy};
+      cellsOf(gp).forEach(function(c){ if(c.y&gt;=0){ ctx.globalAlpha=0.28; ctx.fillStyle=FRUITS[piece.fruit].color; roundRect(ctx,c.x*CELL+1,c.y*CELL+1,CELL-2,CELL-2,4); ctx.fill(); ctx.globalAlpha=1; }});
+      cellsOf(piece).forEach(function(c){ drawCell(c.x,c.y,piece.fruit,1); });
+    }
+  }
+
+  function drawNext() {
+    nctx.clearRect(0,0,96,96);
+    if(!nextPiece) return;
+    var st=SHAPES[nextPiece.type][0];
+    var minx=4,miny=4,maxx=0,maxy=0;
+    st.forEach(function(c){minx=Math.min(minx,c[0]);miny=Math.min(miny,c[1]);maxx=Math.max(maxx,c[0]);maxy=Math.max(maxy,c[1]);});
+    var w=(maxx-minx+1), h=(maxy-miny+1);
+    var cs=18, ox=(96-w*cs)/2, oy=(96-h*cs)/2;
+    var fr=FRUITS[nextPiece.fruit];
+    st.forEach(function(c){
+      var px=ox+(c[0]-minx)*cs, py=oy+(c[1]-miny)*cs;
+      nctx.fillStyle=fr.color; roundRect(nctx,px+1,py+1,cs-2,cs-2,3); nctx.fill();
+      nctx.font=&#x27;11px serif&#x27;; nctx.textAlign=&#x27;center&#x27;; nctx.textBaseline=&#x27;middle&#x27;;
+      nctx.fillText(fr.emoji, px+cs/2, py+cs/2+1);
+    });
+  }
+
+  function drawFx(dt){
+    fctx.clearRect(0,0,240,480);
+    for(var i=particles.length-1;i&gt;=0;i--){
+      var p=particles[i];
+      p.x+=p.vx; p.y+=p.vy; p.vy+=0.25; p.life-=dt*1.2;
+      if(p.life&lt;=0){particles.splice(i,1);continue;}
+      fctx.globalAlpha=Math.max(0,p.life);
+      fctx.fillStyle=p.color;
+      fctx.beginPath(); fctx.arc(p.x,p.y,p.sz,0,7); fctx.fill();
+      fctx.fillStyle=&#x27;#fff&#x27;; fctx.globalAlpha=Math.max(0,p.life)*0.6;
+      fctx.beginPath(); fctx.arc(p.x,p.y,p.sz*0.4,0,7); fctx.fill();
+    }
+    for(var j=ripples.length-1;j&gt;=0;j--){
+      var rp=ripples[j]; rp.r+=4; rp.life-=dt*1.5;
+      if(rp.life&lt;=0){ripples.splice(j,1);continue;}
+      fctx.globalAlpha=Math.max(0,rp.life)*0.5; fctx.strokeStyle=&#x27;#fff&#x27;; fctx.lineWidth=3;
+      fctx.beginPath(); fctx.arc(rp.x,rp.y,rp.r,0,7); fctx.stroke();
+    }
+    fctx.globalAlpha=1;
+  }
+
+  function loop(t){
+    if(!running){ return; }
+    if(!lastT) lastT=t;
+    var dt=(t-lastT)/1000; lastT=t;
+    dropAcc += (t - (loop._pt||t)); loop._pt=t;
+    if(dropAcc&gt;=dropMs){ dropAcc=0; step(); }
+    draw(); drawFx(dt);
+    rafId=requestAnimationFrame(loop);
+  }
+  function step(){
+    if(!piece){ if(!spawn()){return;} return; }
+    var np={type:piece.type,rot:piece.rot,x:piece.x,y:piece.y+1};
+    if(collides(np)){ lock(); spawn(); }
+    else piece.y++;
+  }
+
+  function move(dx){ if(!running||!piece)return; var np={type:piece.type,rot:piece.rot,x:piece.x+dx,y:piece.y}; if(!collides(np)) piece.x+=dx; draw(); }
+  function rotate(){ if(!running||!piece)return; var nr=(piece.rot+1)%SHAPES[piece.type].length; var np={type:piece.type,rot:nr,x:piece.x,y:piece.y};
+    var kicks=[0,-1,1,-2,2];
+    for(var i=0;i&lt;kicks.length;i++){ np.x=piece.x+kicks[i]; if(!collides(np)){ piece.x=np.x; piece.rot=nr; break; } }
+    draw();
+  }
+  function softDrop(){ if(!running||!piece)return; var np={type:piece.type,rot:piece.rot,x:piece.x,y:piece.y+1}; if(!collides(np)){piece.y++; score+=1; scoreEl.textContent=score;} else {lock();spawn();} draw(); dropAcc=0; }
+  function hardDrop(){ if(!running||!piece)return; var y=ghostY(); score+=(y-piece.y)*2; piece.y=y; scoreEl.textContent=score; lock(); spawn(); draw(); dropAcc=0; }
+
+  function tick(){ if(!running)return; timeLeft--; timeEl.textContent=Math.max(0,timeLeft); if(timeLeft&lt;=0) endGame(false); }
+
+  function startGame(){
+    newGrid(); score=0; combo=0; dropMs=500; dropAcc=0; lastT=0; loop._pt=0; timeLeft=60; gameOver=false;
+    particles=[]; ripples=[];
+    scoreEl.textContent=&#x27;0&#x27;; timeEl.textContent=&#x27;60&#x27;; comboEl.textContent=&#x27;&#x27;;
+    banner.style.display=&#x27;none&#x27;;
+    nextPiece=randPiece(); spawn();
+    running=true;
+    if(rafId) cancelAnimationFrame(rafId);
+    rafId=requestAnimationFrame(loop);
+    if(timerId) clearInterval(timerId);
+    timerId=setInterval(tick,1000);
+    draw(); drawFx(0);
+  }
+  function stopGame(){ running=false; if(rafId){cancelAnimationFrame(rafId);rafId=null;} if(timerId){clearInterval(timerId);timerId=null;} }
+  function endGame(over){
+    running=false; if(rafId){cancelAnimationFrame(rafId);rafId=null;} if(timerId){clearInterval(timerId);timerId=null;}
+    banner.innerHTML = (over?&#x27;🧺 Basket Full!&#x27;:&#x27;⏰ Time!&#x27;)+&#x27;&lt;br&gt;Score: &#x27;+score;
+    banner.style.display=&#x27;block&#x27;;
+    draw();
+  }
+
+  document.querySelectorAll(&#x27;.btns button&#x27;).forEach(function(b){
+    b.addEventListener(&#x27;click&#x27;, function(){
+      var a=b.getAttribute(&#x27;data-a&#x27;);
+      if(a===&#x27;left&#x27;)move(-1); else if(a===&#x27;right&#x27;)move(1); else if(a===&#x27;rot&#x27;)rotate();
+      else if(a===&#x27;down&#x27;)softDrop(); else if(a===&#x27;drop&#x27;)hardDrop();
+    });
+  });
+
+  window.addEventListener(&#x27;keydown&#x27;, function(e){
+    if(e.key===&#x27;ArrowLeft&#x27;){move(-1);e.preventDefault();}
+    else if(e.key===&#x27;ArrowRight&#x27;){move(1);e.preventDefault();}
+    else if(e.key===&#x27;ArrowUp&#x27;){rotate();e.preventDefault();}
+    else if(e.key===&#x27;ArrowDown&#x27;){softDrop();e.preventDefault();}
+    else if(e.key===&#x27; &#x27;){hardDrop();e.preventDefault();}
+  });
+
+  // touch swipe on field
+  var tsx,tsy,tst,moved;
+  field.addEventListener(&#x27;touchstart&#x27;,function(e){var t=e.touches[0];tsx=t.clientX;tsy=t.clientY;tst=Date.now();moved=false;},{passive:true});
+  field.addEventListener(&#x27;touchend&#x27;,function(e){
+    var t=e.changedTouches[0]; var dx=t.clientX-tsx, dy=t.clientY-tsy;
+    if(Math.abs(dx)&lt;20&amp;&amp;Math.abs(dy)&lt;20){ rotate(); return; }
+    if(Math.abs(dx)&gt;Math.abs(dy)){ move(dx&gt;0?1:-1); } else { if(dy&gt;0) hardDrop(); }
+  },{passive:true});
+
+  window.addEventListener(&#x27;message&#x27;, function(e){
+    if(!e.data||typeof e.data!==&#x27;object&#x27;)return;
+    if(e.data.type===&#x27;wd_start&#x27;) startGame();
+    else if(e.data.type===&#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;,&#x27;mousedown&#x27;,&#x27;touchstart&#x27;].forEach(function(t){
+    window.addEventListener(t,function(e){ try{ window.parent.postMessage({type:&#x27;game_input&#x27;,kind:t,key:e.key||null},&#x27;*&#x27;); }catch(_){}} ,true);
+  });
+
+  // initial static paint
+  newGrid(); nextPiece=randPiece(); draw(); drawNext();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  // Suppress in-iframe scrollbars. The parent fits the iframe layout
+  // box to match the content size, so internal scroll is redundant —
+  // and if the LLM&#x27;s CSS sets body overflow: auto, the scrollbar shows
+  // briefly before the fit lands. Force hidden so it never appears.
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  // Iframe-internal JS error capture. window.onerror inside a sandboxed
+  // iframe can&#x27;t post to /api/js_error directly, so we relay to the
+  // parent via postMessage; parent&#x27;s error_logger.js forwards to the
+  // server. Catches LLM-emitted broken HTML (invalid hex, undefined
+  // variables, etc.) that would otherwise fail silently inside the
+  // iframe.
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      // Debounce: don&#x27;t fire more than ~10× per second. ResizeObserver
+      // fires repeatedly during layout/font load; we only need the latest.
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      // Clamp: reject obviously bogus dimensions. Any browser-game viewport
+      // is well under 4000×4000 logical px; readings beyond that are layout
+      // noise during load/visibility transitions.
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  // Parent posts wd_remeasure when it makes the iframe visible (the body&#x27;s
+  // ResizeObserver doesn&#x27;t fire on display:none→block of an outer ancestor
+  // because the iframe document didn&#x27;t actually resize). Wait a frame for
+  // layout to settle before measuring.
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

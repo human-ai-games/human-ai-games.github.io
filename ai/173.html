@@ -1,0 +1,646 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🐸 FROG DASH</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html#ai">&larr; All games</a> &middot; <b>🐸 FROG DASH</b></div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #10131a; color: #eee; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 8px 12px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  h1 { margin: 0; font-size: 24px; font-weight: 800; letter-spacing: 1px; color: #7CFC00; text-shadow: 0 0 8px rgba(124,252,0,.5); }
+  .instructions { font-size: 16px; color: #9fb0c0; max-width: 640px; margin: 0; line-height: 1.35; text-align: center; }
+  .hud { display: flex; align-items: center; justify-content: space-between; width: 620px; }
+  .score { font-size: 26px; font-weight: 800; color: #7CFC00; }
+  .score.bump { animation: bump .25s ease; }
+  @keyframes bump { 0%{transform:scale(1);} 40%{transform:scale(1.4);} 100%{transform:scale(1);} }
+  .best { font-size: 15px; color: #9fb0c0; }
+  .mult { font-size: 15px; color: #ffd54a; font-weight: 700; min-width: 60px; text-align: right; }
+  .timerwrap { width: 620px; height: 8px; background: #222b38; border-radius: 4px; overflow: hidden; }
+  .timerbar { height: 100%; width: 100%; background: linear-gradient(90deg,#7CFC00,#ffd54a,#ff5252); transition: width .1s linear; }
+  .field { position: relative; width: 620px; height: 480px; flex-shrink: 0; background: #123; border-radius: 8px; overflow: hidden; box-shadow: 0 0 0 3px #2a3446; }
+  .zone { position: absolute; left: 0; width: 100%; }
+  .obj { position: absolute; }
+  .frog { position: absolute; z-index: 30; transition: transform .09s ease; }
+  .msg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; z-index: 60; color: #fff; background: rgba(10,14,22,.72); text-align:center; }
+  .msg h2 { font-size: 30px; margin: 0 0 6px; color: #7CFC00; }
+  .msg p { font-size: 16px; margin: 0; color: #cfe; }
+  .confetti { position: absolute; z-index: 50; border-radius: 1px; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;🐸 FROG DASH&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Use the arrow keys to hop up across the highway and river to an open lily pad. Ride logs and turtles over the water, dodge cars, and don&#x27;t fall in — score before the timer runs out!&lt;/p&gt;
+  &lt;div class=&quot;hud&quot;&gt;
+    &lt;div class=&quot;best&quot;&gt;Best: &lt;span id=&quot;best&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;score&quot; id=&quot;score&quot;&gt;0&lt;/div&gt;
+    &lt;div class=&quot;mult&quot; id=&quot;mult&quot;&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;timerwrap&quot;&gt;&lt;div class=&quot;timerbar&quot; id=&quot;timerbar&quot;&gt;&lt;/div&gt;&lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;
+    &lt;div class=&quot;msg&quot; id=&quot;msg&quot;&gt;&lt;h2&gt;Frog Dash&lt;/h2&gt;&lt;p&gt;Press Start below to play&lt;/p&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+[&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+  window.addEventListener(t, function(e) {
+    try { window.parent.postMessage({ type: &#x27;game_input&#x27;, kind: t, key: e.key || null }, &#x27;*&#x27;); } catch (_) {}
+  }, true);
+});
+
+var CELL = 40;
+var COLS = 620 / CELL;              // ~15.5 -&gt; use pixel width directly
+var FIELD_W = 620, FIELD_H = 480;
+var ROW_H = 40;
+var ROWS = FIELD_H / ROW_H;         // 12 rows
+// Row layout (top=0):
+// 0 : lily pad shore (targets)
+// 1-5 : river lanes (logs/turtles)
+// 6 : median (safe)
+// 7-11: highway lanes (cars) ... but we need bottom shore too.
+// Let&#x27;s define: 12 rows total.
+// row 0: lily shore
+// rows 1-5: river
+// row 6: median
+// rows 7-10: highway (4 lanes)
+// row 11: bottom shore (start)
+// That gives 4 highway lanes; design says 5. Increase field rows.
+
+var field = document.getElementById(&#x27;field&#x27;);
+var scoreEl = document.getElementById(&#x27;score&#x27;);
+var bestEl = document.getElementById(&#x27;best&#x27;);
+var multEl = document.getElementById(&#x27;mult&#x27;);
+var timerBar = document.getElementById(&#x27;timerbar&#x27;);
+var msg = document.getElementById(&#x27;msg&#x27;);
+
+var running = false, animId = null, lastT = 0;
+var score = 0, best = 0, timeLeft = 60;
+var startRow, padRow, medianRow;
+var lanes = [];    // {row, type:&#x27;car&#x27;|&#x27;log&#x27;|&#x27;turtle&#x27;, dir, speed, objs:[{x,w,el,submerge?}]}
+var pads = [];     // {col, filled, el}
+var frog = { x: 0, row: 0, dir: &#x27;up&#x27; };
+var frogEl = null, hopFlash = 0;
+var rideCarry = 0;  // horizontal drift carried from log
+var multiplier = 1, ridingLog = null, ridingStartRow = 0;
+var confetti = [];
+
+// zone rows
+// 0 lily shore
+// 1..5 river
+// 6 median
+// 7..11 highway (5 lanes)
+// 12 bottom shore
+// -&gt; 13 rows. Recompute geometry.
+ROWS = 13;
+ROW_H = FIELD_H / ROWS;  // ~36.9
+
+var LILY_ROW = 0;
+var RIVER_ROWS = [1,2,3,4,5];
+var MEDIAN_ROW = 6;
+var HIGHWAY_ROWS = [7,8,9,10,11];
+var SHORE_ROW = 12;
+
+function rowY(r){ return r * ROW_H; }
+
+var carColors = [&#x27;#ff5252&#x27;,&#x27;#42a5f5&#x27;,&#x27;#ffca28&#x27;,&#x27;#ab47bc&#x27;,&#x27;#26c6da&#x27;,&#x27;#ef6c00&#x27;,&#x27;#66bb6a&#x27;];
+
+function buildZones() {
+  field.innerHTML = &#x27;&#x27;;
+  field.appendChild(msg);
+  // background zones
+  addZone(rowY(LILY_ROW), ROW_H, &#x27;#2e7d32&#x27;);           // lily shore
+  addZone(rowY(RIVER_ROWS[0]), ROW_H*5, &#x27;#1565c0&#x27;);     // river
+  addZone(rowY(MEDIAN_ROW), ROW_H, &#x27;#5d4037&#x27;);          // median mud
+  addZone(rowY(HIGHWAY_ROWS[0]), ROW_H*5, &#x27;#37474f&#x27;);   // highway
+  addZone(rowY(SHORE_ROW), ROW_H, &#x27;#2e7d32&#x27;);           // bottom shore
+  // lane lines on highway
+  for (var i=1;i&lt;5;i++){
+    var l=document.createElement(&#x27;div&#x27;);
+    l.style.position=&#x27;absolute&#x27;; l.style.left=0; l.style.width=&#x27;100%&#x27;;
+    l.style.top=(rowY(HIGHWAY_ROWS[0])+i*ROW_H-1)+&#x27;px&#x27;; l.style.height=&#x27;2px&#x27;;
+    l.style.background=&#x27;repeating-linear-gradient(90deg,#ffd54a 0 18px,transparent 18px 36px)&#x27;;
+    l.style.opacity=&#x27;.5&#x27;; field.appendChild(l);
+  }
+}
+function addZone(top,h,color){
+  var z=document.createElement(&#x27;div&#x27;); z.className=&#x27;zone&#x27;;
+  z.style.top=top+&#x27;px&#x27;; z.style.height=h+&#x27;px&#x27;; z.style.background=color;
+  field.appendChild(z);
+}
+
+function buildPads() {
+  pads = [];
+  var slots = 5;
+  var margin = 40;
+  var span = FIELD_W - margin*2;
+  for (var i=0;i&lt;slots;i++){
+    var cx = margin + span*(i/(slots-1));
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className=&#x27;obj&#x27;;
+    el.style.width=&#x27;34px&#x27;; el.style.height=&#x27;30px&#x27;;
+    el.style.left=(cx-17)+&#x27;px&#x27;; el.style.top=(rowY(LILY_ROW)+3)+&#x27;px&#x27;;
+    el.innerHTML = padSVG(false);
+    field.appendChild(el);
+    pads.push({cx:cx, filled:false, el:el});
+  }
+}
+function padSVG(filled){
+  if(filled) return &#x27;&lt;div style=&quot;font-size:26px;line-height:30px;text-align:center;&quot;&gt;🐸&lt;/div&gt;&#x27;;
+  return &#x27;&lt;svg width=&quot;34&quot; height=&quot;30&quot; viewBox=&quot;0 0 34 30&quot;&gt;&lt;ellipse cx=&quot;17&quot; cy=&quot;16&quot; rx=&quot;16&quot; ry=&quot;13&quot; fill=&quot;#43a047&quot; stroke=&quot;#7CFC00&quot; stroke-width=&quot;2&quot;&gt;&lt;animate attributeName=&quot;opacity&quot; values=&quot;0.7;1;0.7&quot; dur=&quot;1.4s&quot; repeatCount=&quot;indefinite&quot;/&gt;&lt;/ellipse&gt;&lt;path d=&quot;M17 16 L17 3&quot; stroke=&quot;#1b5e20&quot; stroke-width=&quot;3&quot;/&gt;&lt;/svg&gt;&#x27;;
+}
+
+function buildLanes() {
+  lanes = [];
+  // River lanes: logs &amp; turtles
+  RIVER_ROWS.forEach(function(r,i){
+    var isTurtle = (i%2===1);
+    var dir = (i%2===0)?1:-1;
+    var speed = 40 + i*10;
+    lanes.push(makeLane(r, isTurtle?&#x27;turtle&#x27;:&#x27;log&#x27;, dir, speed));
+  });
+  // Highway lanes: cars
+  HIGHWAY_ROWS.forEach(function(r,i){
+    var dir = (i%2===0)?-1:1;
+    var speed = 55 + i*14 + score*3;
+    lanes.push(makeLane(r,&#x27;car&#x27;,dir,speed));
+  });
+}
+
+function makeLane(row,type,dir,speed){
+  var lane = {row:row, type:type, dir:dir, speed:speed, objs:[]};
+  var count, minW, maxW;
+  if(type===&#x27;log&#x27;){ count=2; minW=90; maxW=130; }
+  else if(type===&#x27;turtle&#x27;){ count=3; minW=70; maxW=80; }
+  else { count = 2 + Math.min(2, Math.floor(score/3)); minW=48; maxW=84; }
+  var gap = FIELD_W / count;
+  for(var j=0;j&lt;count;j++){
+    var w = minW + Math.random()*(maxW-minW);
+    var x = j*gap + Math.random()*(gap*0.4);
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className=&#x27;obj&#x27;;
+    el.style.height=(ROW_H-8)+&#x27;px&#x27;;
+    el.style.top=(rowY(row)+4)+&#x27;px&#x27;;
+    el.style.width=w+&#x27;px&#x27;;
+    if(type===&#x27;car&#x27;) el.innerHTML = carSVG(w, carColors[(row*3+j)%carColors.length], dir);
+    else if(type===&#x27;log&#x27;) el.innerHTML = logSVG(w);
+    field.appendChild(el);
+    var o = {x:x, w:w, el:el};
+    if(type===&#x27;turtle&#x27;){ o.count=Math.floor(w/26); o.submerge=0; o.nextDive = 3+Math.random()*5; el.innerHTML=turtleSVG(o.count,false); }
+    lane.objs.push(o);
+  }
+  return lane;
+}
+
+function carSVG(w,color,dir){
+  return &#x27;&lt;svg width=&quot;&#x27;+w+&#x27;&quot; height=&quot;&#x27;+(ROW_H-8)+&#x27;&quot; viewBox=&quot;0 0 &#x27;+w+&#x27; 30&quot; preserveAspectRatio=&quot;none&quot;&gt;&#x27;+
+    &#x27;&lt;rect x=&quot;1&quot; y=&quot;4&quot; width=&quot;&#x27;+(w-2)+&#x27;&quot; height=&quot;22&quot; rx=&quot;6&quot; fill=&quot;&#x27;+color+&#x27;&quot; stroke=&quot;#000&quot; stroke-width=&quot;1.5&quot;/&gt;&#x27;+
+    &#x27;&lt;rect x=&quot;&#x27;+(w*0.2)+&#x27;&quot; y=&quot;7&quot; width=&quot;&#x27;+(w*0.55)+&#x27;&quot; height=&quot;9&quot; rx=&quot;3&quot; fill=&quot;#bbdefb&quot;/&gt;&#x27;+
+    &#x27;&lt;circle cx=&quot;&#x27;+(w*0.22)+&#x27;&quot; cy=&quot;27&quot; r=&quot;4&quot; fill=&quot;#222&quot;/&gt;&#x27;+
+    &#x27;&lt;circle cx=&quot;&#x27;+(w*0.78)+&#x27;&quot; cy=&quot;27&quot; r=&quot;4&quot; fill=&quot;#222&quot;/&gt;&#x27;+
+    &#x27;&lt;circle cx=&quot;&#x27;+(dir&gt;0?w-4:4)+&#x27;&quot; cy=&quot;12&quot; r=&quot;2.5&quot; fill=&quot;#fff59d&quot;/&gt;&lt;/svg&gt;&#x27;;
+}
+function logSVG(w){
+  return &#x27;&lt;svg width=&quot;&#x27;+w+&#x27;&quot; height=&quot;&#x27;+(ROW_H-8)+&#x27;&quot; viewBox=&quot;0 0 &#x27;+w+&#x27; 30&quot; preserveAspectRatio=&quot;none&quot;&gt;&#x27;+
+    &#x27;&lt;rect x=&quot;0&quot; y=&quot;2&quot; width=&quot;&#x27;+w+&#x27;&quot; height=&quot;26&quot; rx=&quot;10&quot; fill=&quot;#8d6e63&quot; stroke=&quot;#5d4037&quot; stroke-width=&quot;2&quot;/&gt;&#x27;+
+    &#x27;&lt;ellipse cx=&quot;8&quot; cy=&quot;15&quot; rx=&quot;6&quot; ry=&quot;11&quot; fill=&quot;#a1887f&quot;/&gt;&#x27;+
+    &#x27;&lt;line x1=&quot;&#x27;+(w*0.4)+&#x27;&quot; y1=&quot;4&quot; x2=&quot;&#x27;+(w*0.4)+&#x27;&quot; y2=&quot;26&quot; stroke=&quot;#6d4c41&quot; stroke-width=&quot;2&quot;/&gt;&#x27;+
+    &#x27;&lt;line x1=&quot;&#x27;+(w*0.65)+&#x27;&quot; y1=&quot;4&quot; x2=&quot;&#x27;+(w*0.65)+&#x27;&quot; y2=&quot;26&quot; stroke=&quot;#6d4c41&quot; stroke-width=&quot;2&quot;/&gt;&lt;/svg&gt;&#x27;;
+}
+function turtleSVG(count,diving){
+  var w = count*26; var s=&#x27;&#x27;;
+  for(var i=0;i&lt;count;i++){
+    var cx=13+i*26;
+    if(diving){
+      s+=&#x27;&lt;ellipse cx=&quot;&#x27;+cx+&#x27;&quot; cy=&quot;15&quot; rx=&quot;11&quot; ry=&quot;8&quot; fill=&quot;#1565c0&quot; opacity=&quot;0.6&quot;/&gt;&#x27;;
+    } else {
+      s+=&#x27;&lt;ellipse cx=&quot;&#x27;+cx+&#x27;&quot; cy=&quot;15&quot; rx=&quot;12&quot; ry=&quot;9&quot; fill=&quot;#2e7d32&quot; stroke=&quot;#1b5e20&quot; stroke-width=&quot;2&quot;/&gt;&#x27;;
+      s+=&#x27;&lt;circle cx=&quot;&#x27;+cx+&#x27;&quot; cy=&quot;15&quot; r=&quot;4&quot; fill=&quot;#66bb6a&quot;/&gt;&#x27;;
+      s+=&#x27;&lt;circle cx=&quot;&#x27;+(cx+11)+&#x27;&quot; cy=&quot;15&quot; r=&quot;4&quot; fill=&quot;#43a047&quot;/&gt;&#x27;;
+    }
+  }
+  return &#x27;&lt;svg width=&quot;&#x27;+w+&#x27;&quot; height=&quot;&#x27;+(ROW_H-8)+&#x27;&quot; viewBox=&quot;0 0 &#x27;+w+&#x27; 30&quot;&gt;&#x27;+s+&#x27;&lt;/svg&gt;&#x27;;
+}
+
+function makeFrog(){
+  if(frogEl &amp;&amp; frogEl.parentNode) frogEl.parentNode.removeChild(frogEl);
+  frogEl=document.createElement(&#x27;div&#x27;);
+  frogEl.className=&#x27;frog&#x27;;
+  frogEl.style.width=&#x27;30px&#x27;; frogEl.style.height=&#x27;30px&#x27;;
+  field.appendChild(frogEl);
+  frogEl.innerHTML = frogSVG();
+}
+function frogSVG(){
+  return &#x27;&lt;svg width=&quot;30&quot; height=&quot;30&quot; viewBox=&quot;0 0 30 30&quot;&gt;&#x27;+
+    &#x27;&lt;ellipse cx=&quot;15&quot; cy=&quot;20&quot; rx=&quot;12&quot; ry=&quot;9&quot; fill=&quot;#4caf50&quot; stroke=&quot;#2e7d32&quot; stroke-width=&quot;1.5&quot;/&gt;&#x27;+
+    &#x27;&lt;circle cx=&quot;8&quot; cy=&quot;9&quot; r=&quot;6&quot; fill=&quot;#4caf50&quot; stroke=&quot;#2e7d32&quot; stroke-width=&quot;1.5&quot;/&gt;&#x27;+
+    &#x27;&lt;circle cx=&quot;22&quot; cy=&quot;9&quot; r=&quot;6&quot; fill=&quot;#4caf50&quot; stroke=&quot;#2e7d32&quot; stroke-width=&quot;1.5&quot;/&gt;&#x27;+
+    &#x27;&lt;circle cx=&quot;8&quot; cy=&quot;9&quot; r=&quot;3.5&quot; fill=&quot;#fff&quot;/&gt;&#x27;+
+    &#x27;&lt;circle cx=&quot;22&quot; cy=&quot;9&quot; r=&quot;3.5&quot; fill=&quot;#fff&quot;/&gt;&#x27;+
+    &#x27;&lt;circle cx=&quot;8&quot; cy=&quot;10&quot; r=&quot;1.8&quot; fill=&quot;#000&quot;/&gt;&#x27;+
+    &#x27;&lt;circle cx=&quot;22&quot; cy=&quot;10&quot; r=&quot;1.8&quot; fill=&quot;#000&quot;/&gt;&#x27;+
+    &#x27;&lt;path d=&quot;M9 22 Q15 27 21 22&quot; stroke=&quot;#1b5e20&quot; stroke-width=&quot;1.6&quot; fill=&quot;none&quot;/&gt;&#x27;+
+    &#x27;&lt;ellipse cx=&quot;4&quot; cy=&quot;24&quot; rx=&quot;3&quot; ry=&quot;2&quot; fill=&quot;#43a047&quot;/&gt;&#x27;+
+    &#x27;&lt;ellipse cx=&quot;26&quot; cy=&quot;24&quot; rx=&quot;3&quot; ry=&quot;2&quot; fill=&quot;#43a047&quot;/&gt;&lt;/svg&gt;&#x27;;
+}
+
+function resetFrog(){
+  frog.x = FIELD_W/2 - 15;
+  frog.row = SHORE_ROW;
+  ridingLog = null; multiplier = 1; multEl.textContent=&#x27;&#x27;;
+  paintFrog(true);
+}
+function paintFrog(hop){
+  frogEl.style.left = frog.x+&#x27;px&#x27;;
+  frogEl.style.top = (rowY(frog.row)+ (ROW_H-30)/2)+&#x27;px&#x27;;
+  if(hop){
+    frogEl.style.transform=&#x27;scale(1.25,0.8)&#x27;;
+    setTimeout(function(){ if(frogEl) frogEl.style.transform=&#x27;scale(1,1)&#x27;; },90);
+  }
+}
+
+// Web Audio for ribbit
+var actx=null;
+function beep(freqs,dur,type){
+  try{
+    if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)();
+    var t=actx.currentTime;
+    freqs.forEach(function(f,i){
+      var o=actx.createOscillator(),g=actx.createGain();
+      o.type=type||&#x27;square&#x27;; o.frequency.value=f;
+      o.connect(g); g.connect(actx.destination);
+      g.gain.setValueAtTime(0.12,t+i*dur); g.gain.exponentialRampToValueAtTime(0.001,t+i*dur+dur);
+      o.start(t+i*dur); o.stop(t+i*dur+dur);
+    });
+  }catch(e){}
+}
+function ribbit(){ beep([180,260,180],0.11,&#x27;sawtooth&#x27;); }
+function splash(){ beep([300,120],0.14,&#x27;sine&#x27;); }
+function hopSound(){ beep([440],0.05,&#x27;square&#x27;); }
+
+function move(dx,dy){
+  if(!running) return;
+  var nr = frog.row + dy;
+  var nx = frog.x + dx;
+  if(nr&lt;0) nr=0; if(nr&gt;SHORE_ROW) nr=SHORE_ROW;
+  nx = Math.max(0, Math.min(FIELD_W-30, nx));
+  frog.row = nr; frog.x = nx;
+  ridingLog = null; // moving breaks the ride
+  hopSound();
+  paintFrog(true);
+  checkImmediate();
+}
+
+function checkImmediate(){
+  // Lily pad row
+  if(frog.row===LILY_ROW){
+    var fc = frog.x+15;
+    var hit=null;
+    for(var i=0;i&lt;pads.length;i++){
+      if(Math.abs(pads[i].cx-fc)&lt;24 &amp;&amp; !pads[i].filled){ hit=pads[i]; break; }
+    }
+    if(hit){
+      hit.filled=true; hit.el.innerHTML=padSVG(true);
+      var gain = 1*multiplier;
+      score += gain;
+      scoreEl.textContent=score;
+      scoreEl.classList.remove(&#x27;bump&#x27;); void scoreEl.offsetWidth; scoreEl.classList.add(&#x27;bump&#x27;);
+      ribbit(); confettiBurst(fc, rowY(LILY_ROW)+15);
+      if(score&gt;best){best=score; bestEl.textContent=best;}
+      if(pads.every(function(p){return p.filled;})){
+        // all filled: reset pads, rebuild harder lanes
+        pads.forEach(function(p){p.filled=false; p.el.innerHTML=padSVG(false);});
+        rebuildLanes();
+      }
+      resetFrog();
+      return;
+    } else {
+      // landed on shore between pads = fine, stay
+    }
+  }
+}
+
+function rebuildLanes(){
+  lanes.forEach(function(l){ l.objs.forEach(function(o){ if(o.el.parentNode) o.el.parentNode.removeChild(o.el); }); });
+  buildLanes();
+}
+
+function confettiBurst(x,y){
+  var colors=[&#x27;#ff5252&#x27;,&#x27;#ffd54a&#x27;,&#x27;#7CFC00&#x27;,&#x27;#42a5f5&#x27;,&#x27;#ab47bc&#x27;];
+  for(var i=0;i&lt;22;i++){
+    var el=document.createElement(&#x27;div&#x27;); el.className=&#x27;confetti&#x27;;
+    var s=3+Math.random()*4;
+    el.style.width=s+&#x27;px&#x27;; el.style.height=s+&#x27;px&#x27;;
+    el.style.background=colors[i%colors.length];
+    el.style.left=x+&#x27;px&#x27;; el.style.top=y+&#x27;px&#x27;;
+    field.appendChild(el);
+    confetti.push({el:el,x:x,y:y,vx:(Math.random()-0.5)*180,vy:-60-Math.random()*140,life:0.9});
+  }
+}
+
+function tick(ts){
+  if(!running) return;
+  if(!lastT) lastT=ts;
+  var dt=Math.min(0.05,(ts-lastT)/1000); lastT=ts;
+
+  timeLeft -= dt;
+  if(timeLeft&lt;=0){ timeLeft=0; timerBar.style.width=&#x27;0%&#x27;; return endGame(false); }
+  timerBar.style.width=(timeLeft/60*100)+&#x27;%&#x27;;
+
+  // move lane objects
+  for(var i=0;i&lt;lanes.length;i++){
+    var lane=lanes[i];
+    for(var j=0;j&lt;lane.objs.length;j++){
+      var o=lane.objs[j];
+      o.x += lane.dir*lane.speed*dt;
+      if(lane.dir&gt;0 &amp;&amp; o.x&gt;FIELD_W) o.x=-o.w;
+      else if(lane.dir&lt;0 &amp;&amp; o.x+o.w&lt;0) o.x=FIELD_W;
+      o.el.style.left=o.x+&#x27;px&#x27;;
+      if(lane.type===&#x27;turtle&#x27;){
+        o.nextDive -= dt;
+        if(o.submerge&gt;0){ o.submerge-=dt; if(o.submerge&lt;=0){ o.el.innerHTML=turtleSVG(o.count,false); } }
+        else if(o.nextDive&lt;=0){ o.submerge=1.4; o.nextDive=4+Math.random()*5; o.el.innerHTML=turtleSVG(o.count,true); }
+      }
+    }
+  }
+
+  // frog riding logic in river
+  if(RIVER_ROWS.indexOf(frog.row)&gt;=0){
+    var lane = lanes.find(function(l){return l.row===frog.row;});
+    var fc = frog.x+15;
+    var onSomething=null;
+    for(var k=0;k&lt;lane.objs.length;k++){
+      var o2=lane.objs[k];
+      if(fc&gt;o2.x &amp;&amp; fc&lt;o2.x+o2.w){
+        if(lane.type===&#x27;turtle&#x27; &amp;&amp; o2.submerge&gt;0){ onSomething=&#x27;diving&#x27;; break; }
+        onSomething=o2; break;
+      }
+    }
+    if(!onSomething || onSomething===&#x27;diving&#x27;){
+      splash(); return endGame(false);
+    } else {
+      // carry frog with the object
+      frog.x += lane.dir*lane.speed*dt;
+      // ride tracking for multiplier
+      if(ridingLog !== onSomething){ ridingLog = onSomething; ridingStartRow = frog.row; }
+      if(frog.x&lt;0 || frog.x&gt;FIELD_W-30){ splash(); return endGame(false); }
+      frogEl.style.left=frog.x+&#x27;px&#x27;;
+    }
+  } else {
+    ridingLog=null;
+  }
+
+  // multiplier display: if riding a single log up several river rows
+  if(ridingLog &amp;&amp; RIVER_ROWS.indexOf(frog.row)&gt;=0){
+    var traveled = ridingStartRow - frog.row;
+    if(traveled&gt;=2){ multiplier=2; multEl.textContent=&#x27;x2 RIDE!&#x27;; }
+  }
+
+  // car collision in highway
+  if(HIGHWAY_ROWS.indexOf(frog.row)&gt;=0){
+    var lane2 = lanes.find(function(l){return l.row===frog.row;});
+    for(var m=0;m&lt;lane2.objs.length;m++){
+      var c=lane2.objs[m];
+      if(frog.x+24&gt;c.x &amp;&amp; frog.x+6&lt;c.x+c.w){
+        splash(); return endGame(false);
+      }
+    }
+  }
+
+  // confetti update
+  for(var p=confetti.length-1;p&gt;=0;p--){
+    var cf=confetti[p];
+    cf.life-=dt;
+    if(cf.life&lt;=0){ if(cf.el.parentNode) cf.el.parentNode.removeChild(cf.el); confetti.splice(p,1); continue; }
+    cf.vy+=400*dt; cf.x+=cf.vx*dt; cf.y+=cf.vy*dt;
+    cf.el.style.left=cf.x+&#x27;px&#x27;; cf.el.style.top=cf.y+&#x27;px&#x27;; cf.el.style.opacity=cf.life;
+  }
+
+  animId=requestAnimationFrame(tick);
+}
+
+function endGame(win){
+  running=false;
+  if(animId){cancelAnimationFrame(animId);animId=null;}
+  msg.style.display=&#x27;flex&#x27;;
+  msg.innerHTML=&#x27;&lt;h2&gt;&#x27;+(timeLeft&lt;=0?&quot;Time&#x27;s Up!&quot;:&#x27;Splat!&#x27;)+&#x27;&lt;/h2&gt;&lt;p&gt;Score: &#x27;+score+&#x27; &amp;nbsp;·&amp;nbsp; Best: &#x27;+best+&#x27;&lt;/p&gt;&lt;p&gt;Press Start below to play again&lt;/p&gt;&#x27;;
+}
+
+function startGame(){
+  running=true; lastT=0;
+  score=0; scoreEl.textContent=&#x27;0&#x27;; timeLeft=60; timerBar.style.width=&#x27;100%&#x27;;
+  multiplier=1; multEl.textContent=&#x27;&#x27;; confetti=[];
+  msg.style.display=&#x27;none&#x27;;
+  buildZones(); buildPads(); buildLanes(); makeFrog(); resetFrog();
+  animId=requestAnimationFrame(tick);
+}
+function stopGame(){
+  running=false;
+  if(animId){cancelAnimationFrame(animId);animId=null;}
+}
+
+window.addEventListener(&#x27;keydown&#x27;,function(e){
+  if(e.key===&#x27;ArrowLeft&#x27;){ move(-ROW_H,0); e.preventDefault(); }
+  else if(e.key===&#x27;ArrowRight&#x27;){ move(ROW_H,0); e.preventDefault(); }
+  else if(e.key===&#x27;ArrowUp&#x27;){ move(0,-1); e.preventDefault(); }
+  else if(e.key===&#x27;ArrowDown&#x27;){ move(0,1); e.preventDefault(); }
+});
+window.addEventListener(&#x27;message&#x27;,function(e){
+  if(!e.data||typeof e.data!==&#x27;object&#x27;) return;
+  if(e.data.type===&#x27;wd_start&#x27;) startGame();
+  else if(e.data.type===&#x27;wd_stop&#x27;) stopGame();
+});
+
+// initial static paint
+buildZones(); buildPads(); buildLanes(); makeFrog();
+frog.x=FIELD_W/2-15; frog.row=SHORE_ROW; paintFrog(false);
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  // Suppress in-iframe scrollbars. The parent fits the iframe layout
+  // box to match the content size, so internal scroll is redundant —
+  // and if the LLM&#x27;s CSS sets body overflow: auto, the scrollbar shows
+  // briefly before the fit lands. Force hidden so it never appears.
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  // Iframe-internal JS error capture. window.onerror inside a sandboxed
+  // iframe can&#x27;t post to /api/js_error directly, so we relay to the
+  // parent via postMessage; parent&#x27;s error_logger.js forwards to the
+  // server. Catches LLM-emitted broken HTML (invalid hex, undefined
+  // variables, etc.) that would otherwise fail silently inside the
+  // iframe.
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      // Debounce: don&#x27;t fire more than ~10× per second. ResizeObserver
+      // fires repeatedly during layout/font load; we only need the latest.
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      // Clamp: reject obviously bogus dimensions. Any browser-game viewport
+      // is well under 4000×4000 logical px; readings beyond that are layout
+      // noise during load/visibility transitions.
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  // Parent posts wd_remeasure when it makes the iframe visible (the body&#x27;s
+  // ResizeObserver doesn&#x27;t fire on display:none→block of an outer ancestor
+  // because the iframe document didn&#x27;t actually resize). Wait a frame for
+  // layout to settle before measuring.
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

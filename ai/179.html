@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🐸 Frog Dash</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html#ai">&larr; All games</a> &middot; <b>🐸 Frog Dash</b></div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;style&gt;
+  html, body { height: 100%; margin: 0; padding: 0; }
+  body { font-family: system-ui, -apple-system, sans-serif; background: #2e7d32; color: #fff; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 8px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 800; color: #ffe082; text-shadow: 1px 1px 0 #33691e; }
+  .instructions { font-size: 16px; color: #dcedc8; max-width: 620px; margin: 0; line-height: 1.35; text-align: center; }
+  .topbar { display: flex; align-items: center; justify-content: center; gap: 14px; }
+  .score { font-size: 20px; font-weight: 800; color: #4e342e; background: linear-gradient(#c68642,#8d5524); border: 3px solid #5d4037; border-radius: 8px; padding: 4px 12px; box-shadow: 0 2px 0 #3e2723; }
+  .score span { color: #fff8e1; }
+  .field { position: relative; width: 600px; height: 460px; flex-shrink: 0; border-radius: 10px; overflow: hidden; border: 4px solid #33691e; box-shadow: 0 4px 12px rgba(0,0,0,.4); }
+  .field.shake { animation: shake .35s; }
+  @keyframes shake {
+    0%,100%{transform:translate(0,0);} 20%{transform:translate(-8px,4px);}
+    40%{transform:translate(8px,-4px);} 60%{transform:translate(-6px,-3px);} 80%{transform:translate(6px,3px);}
+  }
+  .row { position: absolute; left: 0; right: 0; }
+  .actor { position: absolute; font-size: 40px; line-height: 1; will-change: left; user-select: none; }
+  .frog { position: absolute; font-size: 34px; line-height: 1; z-index: 10; transition: left .08s, top .08s; text-shadow: 0 1px 2px rgba(0,0,0,.4); }
+  .frog.splat { animation: splatpop .4s forwards; }
+  @keyframes splatpop { 0%{transform:scale(1);} 50%{transform:scale(1.6) rotate(15deg);} 100%{transform:scale(0);} }
+  .msg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 800; color: #fff; background: rgba(0,0,0,.45); z-index: 20; text-align:center; padding:20px; box-sizing:border-box; }
+  .pads { position: absolute; left: 0; right: 0; display: flex; justify-content: space-around; }
+  .arrows { display: grid; grid-template-columns: repeat(3, 56px); grid-template-rows: 44px 44px; gap: 6px; margin-top: 2px; }
+  .arrows button { font-size: 22px; border: none; border-radius: 8px; background: #558b2f; color: #fff; cursor: pointer; box-shadow: 0 2px 0 #33691e; }
+  .arrows button:active { transform: translateY(2px); box-shadow: 0 0 0 #33691e; }
+  .arrows .up { grid-column: 2; } .arrows .left { grid-column: 1; grid-row: 2; }
+  .arrows .down { grid-column: 2; grid-row: 2; } .arrows .right { grid-column: 3; grid-row: 2; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;🐸 Frog Dash&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Hop the frog across the river with the arrow keys or the buttons below — ride logs 🪵 and turtles 🐢, but dodge speedboats 🚤 and open water. Reach the golden pad at the top to score!&lt;/p&gt;
+  &lt;div class=&quot;topbar&quot;&gt;
+    &lt;div class=&quot;score&quot;&gt;🏆 Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;score&quot;&gt;⏱ &lt;span id=&quot;time&quot;&gt;60&lt;/span&gt;s&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;&lt;/div&gt;
+  &lt;div class=&quot;arrows&quot;&gt;
+    &lt;button class=&quot;up&quot; data-dir=&quot;up&quot;&gt;▲&lt;/button&gt;
+    &lt;button class=&quot;left&quot; data-dir=&quot;left&quot;&gt;◀&lt;/button&gt;
+    &lt;button class=&quot;down&quot; data-dir=&quot;down&quot;&gt;▼&lt;/button&gt;
+    &lt;button class=&quot;right&quot; data-dir=&quot;right&quot;&gt;▶&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var CELL = 46, COLS = 13, ROWS = 10;
+  var FIELD_W = COLS * CELL, FIELD_H = ROWS * CELL; // 598 x 460
+  var field = document.getElementById(&#x27;field&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var timeEl = document.getElementById(&#x27;time&#x27;);
+
+  var running = false, animId = null, lastTs = 0;
+  var score = 0, speedMult = 1, timeLeft = 60, timerId = null;
+  var frog = { col: 6, y: (ROWS-1)*CELL };
+  var frogEl = null, msgEl = null;
+  var lanes = []; // river lanes rows 2..7
+
+  // Row layout:
+  // 0: top grass (goal)
+  // 1..7: river (7 lanes)
+  // 8: bottom grass safe
+  // 9: start bank
+  var RIVER_TOP = 1, RIVER_BOT = 7;
+
+  var laneConfigs = [
+    { type:&#x27;log&#x27;,    dir: 1,  speed: 55, w:3, gap: 5, emoji:&#x27;🪵&#x27; },
+    { type:&#x27;turtle&#x27;, dir:-1,  speed: 70, w:1, gap: 3, emoji:&#x27;🐢&#x27; },
+    { type:&#x27;boat&#x27;,   dir: 1,  speed:120, w:1, gap: 5, emoji:&#x27;🚤&#x27; },
+    { type:&#x27;log&#x27;,    dir:-1,  speed: 60, w:2, gap: 4, emoji:&#x27;🪵&#x27; },
+    { type:&#x27;turtle&#x27;, dir: 1,  speed: 80, w:1, gap: 3, emoji:&#x27;🐢&#x27; },
+    { type:&#x27;boat&#x27;,   dir:-1,  speed:130, w:1, gap: 6, emoji:&#x27;🚣&#x27; },
+    { type:&#x27;log&#x27;,    dir: 1,  speed: 50, w:3, gap: 5, emoji:&#x27;🪵&#x27; }
+  ];
+
+  function clearField() { field.innerHTML = &#x27;&#x27;; }
+
+  function buildScene() {
+    clearField();
+    // background lanes
+    for (var r = 0; r &lt; ROWS; r++) {
+      var band = document.createElement(&#x27;div&#x27;);
+      band.className = &#x27;row&#x27;;
+      band.style.top = (r*CELL) + &#x27;px&#x27;;
+      band.style.height = CELL + &#x27;px&#x27;;
+      if (r === 0) band.style.background = &#x27;linear-gradient(#8bc34a,#689f38)&#x27;;
+      else if (r === 8 || r === 9) band.style.background = &#x27;linear-gradient(#8bc34a,#558b2f)&#x27;;
+      else {
+        var shades = [&#x27;#1e88e5&#x27;,&#x27;#1976d2&#x27;,&#x27;#1565c0&#x27;,&#x27;#1e88e5&#x27;,&#x27;#1976d2&#x27;,&#x27;#1565c0&#x27;,&#x27;#1e88e5&#x27;];
+        band.style.background = shades[r-1];
+      }
+      field.appendChild(band);
+    }
+    // goal pads on top
+    var goal = document.createElement(&#x27;div&#x27;);
+    goal.className = &#x27;actor&#x27;; goal.textContent = &#x27;⭐&#x27;; goal.style.fontSize=&#x27;34px&#x27;;
+    goal.style.top = &#x27;4px&#x27;; goal.style.left = ((COLS/2)*CELL - 20) + &#x27;px&#x27;;
+    field.appendChild(goal);
+    // lily pads on start bank &amp; safe rows
+    var lily = &#x27;🪷&#x27;;
+    [8,9].forEach(function(rr){
+      for (var c=0;c&lt;COLS;c+=3){
+        var p=document.createElement(&#x27;div&#x27;); p.className=&#x27;actor&#x27;;
+        p.textContent=lily; p.style.fontSize=&#x27;26px&#x27;;
+        p.style.top=(rr*CELL+8)+&#x27;px&#x27;; p.style.left=(c*CELL+6)+&#x27;px&#x27;;
+        field.appendChild(p);
+      }
+    });
+
+    // build lanes
+    lanes = [];
+    for (var i = 0; i &lt; laneConfigs.length; i++) {
+      var cfg = laneConfigs[i];
+      var laneRow = i + RIVER_TOP;
+      var lane = { row: laneRow, y: laneRow*CELL, dir: cfg.dir, baseSpeed: cfg.speed,
+                   type: cfg.type, w: cfg.w, gap: cfg.gap, emoji: cfg.emoji, items: [] };
+      var block = (cfg.w + cfg.gap) * CELL;
+      var count = Math.ceil((FIELD_W + block*2) / block);
+      for (var j = 0; j &lt; count; j++) {
+        var x = j * block - block;
+        var el = document.createElement(&#x27;div&#x27;);
+        el.className = &#x27;actor&#x27;;
+        el.style.top = (lane.y + 2) + &#x27;px&#x27;;
+        el.style.fontSize = &#x27;38px&#x27;;
+        // repeat emoji for wide platforms
+        el.textContent = cfg.emoji.repeat(cfg.w);
+        field.appendChild(el);
+        lane.items.push({ x: x, w: cfg.w*CELL, el: el });
+      }
+      lanes.push(lane);
+    }
+
+    // frog
+    frogEl = document.createElement(&#x27;div&#x27;);
+    frogEl.className = &#x27;frog&#x27;;
+    frogEl.textContent = &#x27;🐸&#x27;;
+    field.appendChild(frogEl);
+    paintFrog();
+  }
+
+  function paintFrog() {
+    frogEl.style.left = (frog.col * CELL + 6) + &#x27;px&#x27;;
+    frogEl.style.top = (frog.y + 4) + &#x27;px&#x27;;
+  }
+
+  function resetFrog() {
+    frog.col = 6;
+    frog.y = (ROWS-1)*CELL;
+    frogEl.className = &#x27;frog&#x27;;
+    paintFrog();
+  }
+
+  function rowOf(y) { return Math.round(y / CELL); }
+
+  function step(ts) {
+    if (!running) return;
+    if (!lastTs) lastTs = ts;
+    var dt = Math.min(0.05, (ts - lastTs) / 1000);
+    lastTs = ts;
+
+    var carrySpeed = 0, onPlatform = false, boatHit = false;
+    var frogRow = rowOf(frog.y);
+    var fx = frog.col * CELL + CELL/2; // frog center x
+
+    for (var i = 0; i &lt; lanes.length; i++) {
+      var lane = lanes[i];
+      var v = lane.dir * lane.baseSpeed * speedMult * dt;
+      var block = (lane.w + lane.gap) * CELL;
+      var total = block * lane.items.length;
+      for (var j = 0; j &lt; lane.items.length; j++) {
+        var it = lane.items[j];
+        it.x += v;
+        if (lane.dir &gt; 0 &amp;&amp; it.x &gt; FIELD_W) it.x -= total;
+        else if (lane.dir &lt; 0 &amp;&amp; it.x + it.w &lt; 0) it.x += total;
+        it.el.style.left = it.x + &#x27;px&#x27;;
+
+        if (lane.row === frogRow) {
+          if (fx &gt; it.x &amp;&amp; fx &lt; it.x + it.w) {
+            if (lane.type === &#x27;boat&#x27;) boatHit = true;
+            else { onPlatform = true; carrySpeed = v; }
+          }
+        }
+      }
+    }
+
+    // river rows require a platform
+    if (frogRow &gt;= RIVER_TOP &amp;&amp; frogRow &lt;= RIVER_BOT) {
+      if (boatHit) { splat(&#x27;🚤 Ouch!&#x27;); return; }
+      if (onPlatform) {
+        frog.col += carrySpeed / CELL;
+        // carried off edge = drown
+        var edge = frog.col * CELL + CELL/2;
+        if (edge &lt; 0 || edge &gt; FIELD_W) { splat(&#x27;Swept away!&#x27;); return; }
+        paintFrog();
+      } else {
+        splat(&#x27;💦 Splash!&#x27;); return;
+      }
+    }
+
+    animId = requestAnimationFrame(step);
+  }
+
+  function move(dir) {
+    if (!running || frogEl.classList.contains(&#x27;splat&#x27;)) return;
+    if (dir === &#x27;left&#x27;)  frog.col = Math.max(0, Math.round(frog.col) - 1);
+    if (dir === &#x27;right&#x27;) frog.col = Math.min(COLS-1, Math.round(frog.col) + 1);
+    if (dir === &#x27;up&#x27;)    frog.y = Math.max(0, frog.y - CELL);
+    if (dir === &#x27;down&#x27;)  frog.y = Math.min((ROWS-1)*CELL, frog.y + CELL);
+    frog.col = Math.round(frog.col);
+    paintFrog();
+    if (rowOf(frog.y) === 0) {
+      score += 1;
+      scoreEl.textContent = score;
+      speedMult += 0.12;
+      flashGoal();
+      resetFrog();
+    }
+  }
+
+  function flashGoal() {
+    var f = document.createElement(&#x27;div&#x27;);
+    f.className = &#x27;actor&#x27;; f.textContent = &#x27;🎉&#x27;;
+    f.style.fontSize = &#x27;40px&#x27;; f.style.top = &#x27;2px&#x27;;
+    f.style.left = (frog.col*CELL) + &#x27;px&#x27;; f.style.zIndex = 15;
+    field.appendChild(f);
+    setTimeout(function(){ if (f.parentNode) f.parentNode.removeChild(f); }, 500);
+  }
+
+  function splat(text) {
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+    frogEl.classList.add(&#x27;splat&#x27;);
+    field.classList.add(&#x27;shake&#x27;);
+    running = false; // pause motion during splat
+    setTimeout(function(){ field.classList.remove(&#x27;shake&#x27;); }, 350);
+    setTimeout(function(){
+      resetFrog();
+      if (timeLeft &gt; 0) { running = true; lastTs = 0; animId = requestAnimationFrame(step); }
+    }, 550);
+  }
+
+  function showMsg(text) {
+    hideMsg();
+    msgEl = document.createElement(&#x27;div&#x27;);
+    msgEl.className = &#x27;msg&#x27;;
+    msgEl.innerHTML = text;
+    field.appendChild(msgEl);
+  }
+  function hideMsg() { if (msgEl &amp;&amp; msgEl.parentNode) msgEl.parentNode.removeChild(msgEl); msgEl = null; }
+
+  function startGame() {
+    score = 0; speedMult = 1; timeLeft = 60;
+    scoreEl.textContent = &#x27;0&#x27;; timeEl.textContent = &#x27;60&#x27;;
+    buildScene();
+    hideMsg();
+    running = true; lastTs = 0;
+    animId = requestAnimationFrame(step);
+    if (timerId) clearInterval(timerId);
+    timerId = setInterval(function(){
+      if (!running &amp;&amp; timeLeft &gt; 0) return; // don&#x27;t count during splat pause... actually keep counting
+      timeLeft -= 1;
+      timeEl.textContent = Math.max(0, timeLeft);
+      if (timeLeft &lt;= 0) endGame();
+    }, 1000);
+  }
+
+  function endGame() {
+    running = false;
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+    if (timerId) { clearInterval(timerId); timerId = null; }
+    showMsg(&quot;⏰ Time&#x27;s up!&lt;br&gt;Score: &quot; + score + &quot;&lt;br&gt;&lt;span style=&#x27;font-size:16px&#x27;&gt;Press Start to play again&lt;/span&gt;&quot;);
+  }
+
+  function stopGame() {
+    running = false;
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+    if (timerId) { clearInterval(timerId); timerId = null; }
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    var map = { ArrowLeft:&#x27;left&#x27;, ArrowRight:&#x27;right&#x27;, ArrowUp:&#x27;up&#x27;, ArrowDown:&#x27;down&#x27; };
+    if (map[e.key]) { move(map[e.key]); e.preventDefault(); }
+  });
+  document.querySelectorAll(&#x27;.arrows button&#x27;).forEach(function(b){
+    b.addEventListener(&#x27;click&#x27;, function(){ move(b.getAttribute(&#x27;data-dir&#x27;)); });
+  });
+
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage({ type: &#x27;game_input&#x27;, kind: t, key: e.key || null }, &#x27;*&#x27;);
+      } catch (_) {}
+    }, true);
+  });
+
+  // initial static paint
+  buildScene();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  // Suppress in-iframe scrollbars. The parent fits the iframe layout
+  // box to match the content size, so internal scroll is redundant —
+  // and if the LLM&#x27;s CSS sets body overflow: auto, the scrollbar shows
+  // briefly before the fit lands. Force hidden so it never appears.
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  // Iframe-internal JS error capture. window.onerror inside a sandboxed
+  // iframe can&#x27;t post to /api/js_error directly, so we relay to the
+  // parent via postMessage; parent&#x27;s error_logger.js forwards to the
+  // server. Catches LLM-emitted broken HTML (invalid hex, undefined
+  // variables, etc.) that would otherwise fail silently inside the
+  // iframe.
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      // Debounce: don&#x27;t fire more than ~10× per second. ResizeObserver
+      // fires repeatedly during layout/font load; we only need the latest.
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      // Clamp: reject obviously bogus dimensions. Any browser-game viewport
+      // is well under 4000×4000 logical px; readings beyond that are layout
+      // noise during load/visibility transitions.
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  // Parent posts wd_remeasure when it makes the iframe visible (the body&#x27;s
+  // ResizeObserver doesn&#x27;t fire on display:none→block of an outer ancestor
+  // because the iframe document didn&#x27;t actually resize). Wait a frame for
+  // layout to settle before measuring.
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

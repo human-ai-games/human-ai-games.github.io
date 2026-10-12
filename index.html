@@ -3,31 +3,40 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Study website</title>
+<title>Games from Conlon and Schwardmann (2026)</title>
 <style>
   :root { --bg: #f5f5f5; --card: #fff; --ink: #222; --muted: #666; --accent: #1f6feb; --line: #ddd; }
   body { margin: 0; background: var(--bg); color: var(--ink);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
   main { max-width: 1100px; margin: 0 auto; padding: 28px 16px 48px; }
-  h1 { font-size: 24px; margin: 0 0 8px; }
-  p.lede { color: var(--muted); max-width: 760px; line-height: 1.5; margin: 0 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 14px; }
+  .toggle { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; margin-bottom: 20px; }
+  .toggle button { font: inherit; font-size: 14px; padding: 7px 16px; border: 0; background: #fff; color: var(--ink); cursor: pointer; }
+  .toggle button + button { border-left: 1px solid var(--line); }
+  .toggle button[aria-pressed="true"] { background: var(--accent); color: #fff; }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+  .grid[hidden] { display: none; }
   a.card { display: block; background: var(--card); border: 1px solid var(--line); border-radius: 8px;
     overflow: hidden; color: inherit; text-decoration: none; }
   a.card:hover { border-color: var(--accent); }
   a.card img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: #eee; }
   .meta { padding: 8px 10px; font-size: 13px; }
   .meta b { display: block; font-weight: 600; }
-  .meta span { color: var(--muted); display: block; margin-top: 2px; }
+  .pager { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 24px; }
+  .pager button { font: inherit; font-size: 14px; min-width: 36px; padding: 6px 10px; border: 1px solid var(--line);
+    border-radius: 5px; background: #fff; color: var(--ink); cursor: pointer; }
+  .pager button[aria-current="page"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .pager button:disabled { color: #aaa; cursor: default; }
 </style>
 </head>
 <body>
 <main>
-<h1>Study website</h1>
-<p class="lede">Browser games designed by participants in a research study, ordered by how
-much consumers in the study were willing to pay to play them. All games are shown
-anonymously; clicking a card opens a playable version.</p>
-<div class="grid">
+<h1 id="title">Games designed by participants in Conlon and Schwardmann (2026)</h1>
+<div class="toggle" role="group" aria-label="Which games">
+  <button type="button" data-set="participants" aria-pressed="true">Participants</button>
+  <button type="button" data-set="ai" aria-pressed="false">AI</button>
+</div>
+<div class="grid" id="grid-participants">
 <a class="card" href="g/020.html"><img src="thumbs/020.jpg" alt="" loading="lazy"><div class="meta"><b>NEON BLASTER</b></div></a>
 <a class="card" href="g/027.html"><img src="thumbs/027.jpg" alt="" loading="lazy"><div class="meta"><b>Cross the lanes</b></div></a>
 <a class="card" href="g/033.html"><img src="thumbs/033.jpg" alt="" loading="lazy"><div class="meta"><b>Shooter</b></div></a>
@@ -517,6 +526,375 @@ anonymously; clicking a card opens a playable version.</p>
 <a class="card" href="g/478.html"><img src="thumbs/478.jpg" alt="" loading="lazy"><div class="meta"><b>Dot Grab</b></div></a>
 <a class="card" href="g/487.html"><img src="thumbs/487.jpg" alt="" loading="lazy"><div class="meta"><b>Whack-a-mole</b></div></a>
 </div>
+<div class="grid" id="grid-ai" hidden>
+<a class="card" href="ai/004.html"><img src="thumbs/ai/004.jpg" alt="" loading="lazy"><div class="meta"><b>COSMIC CASCADE</b></div></a>
+<a class="card" href="ai/005.html"><img src="thumbs/ai/005.jpg" alt="" loading="lazy"><div class="meta"><b>STARBLAST</b></div></a>
+<a class="card" href="ai/043.html"><img src="thumbs/ai/043.jpg" alt="" loading="lazy"><div class="meta"><b>GALACTIC DEFENDER</b></div></a>
+<a class="card" href="ai/044.html"><img src="thumbs/ai/044.jpg" alt="" loading="lazy"><div class="meta"><b>🐟 Whack-a-Fish 🐡</b></div></a>
+<a class="card" href="ai/049.html"><img src="thumbs/ai/049.jpg" alt="" loading="lazy"><div class="meta"><b>🍎 Fruit Drop Frenzy 🍇</b></div></a>
+<a class="card" href="ai/074.html"><img src="thumbs/ai/074.jpg" alt="" loading="lazy"><div class="meta"><b>✦ COSMIC DEFENDER ✦</b></div></a>
+<a class="card" href="ai/138.html"><img src="thumbs/ai/138.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/155.html"><img src="thumbs/ai/155.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/170.html"><img src="thumbs/ai/170.jpg" alt="" loading="lazy"><div class="meta"><b>👾 Alien Zap Invasion 🛸</b></div></a>
+<a class="card" href="ai/177.html"><img src="thumbs/ai/177.jpg" alt="" loading="lazy"><div class="meta"><b>GALACTIC BREAKOUT</b></div></a>
+<a class="card" href="ai/204.html"><img src="thumbs/ai/204.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 Frog Superstar</b></div></a>
+<a class="card" href="ai/257.html"><img src="thumbs/ai/257.jpg" alt="" loading="lazy"><div class="meta"><b>NEON NEBULA</b></div></a>
+<a class="card" href="ai/262.html"><img src="thumbs/ai/262.jpg" alt="" loading="lazy"><div class="meta"><b>COSMIC BREAKOUT</b></div></a>
+<a class="card" href="ai/266.html"><img src="thumbs/ai/266.jpg" alt="" loading="lazy"><div class="meta"><b>🍉 Fruit Drop 🍇</b></div></a>
+<a class="card" href="ai/287.html"><img src="thumbs/ai/287.jpg" alt="" loading="lazy"><div class="meta"><b>✦ GALACTIC DEFLECTOR ✦</b></div></a>
+<a class="card" href="ai/293.html"><img src="thumbs/ai/293.jpg" alt="" loading="lazy"><div class="meta"><b>🐠 Deep-Sea Aquarium 🐠</b></div></a>
+<a class="card" href="ai/098.html"><img src="thumbs/ai/098.jpg" alt="" loading="lazy"><div class="meta"><b>COMET DASH</b></div></a>
+<a class="card" href="ai/304.html"><img src="thumbs/ai/304.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 Froggy Dash</b></div></a>
+<a class="card" href="ai/102.html"><img src="thumbs/ai/102.jpg" alt="" loading="lazy"><div class="meta"><b>COSMIC SURFER</b></div></a>
+<a class="card" href="ai/192.html"><img src="thumbs/ai/192.jpg" alt="" loading="lazy"><div class="meta"><b>🎣 Deep-Sea Dock Derby</b></div></a>
+<a class="card" href="ai/153.html"><img src="thumbs/ai/153.jpg" alt="" loading="lazy"><div class="meta"><b>🍓 Fruit Drop Frenzy 🍇</b></div></a>
+<a class="card" href="ai/303.html"><img src="thumbs/ai/303.jpg" alt="" loading="lazy"><div class="meta"><b>✦ COSMIC SURFER ✦</b></div></a>
+<a class="card" href="ai/029.html"><img src="thumbs/ai/029.jpg" alt="" loading="lazy"><div class="meta"><b>☄ Comet Dash</b></div></a>
+<a class="card" href="ai/068.html"><img src="thumbs/ai/068.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/069.html"><img src="thumbs/ai/069.jpg" alt="" loading="lazy"><div class="meta"><b>🍓 Fruit Drop 🍋</b></div></a>
+<a class="card" href="ai/206.html"><img src="thumbs/ai/206.jpg" alt="" loading="lazy"><div class="meta"><b>NEON REEF DEFENSE</b></div></a>
+<a class="card" href="ai/008.html"><img src="thumbs/ai/008.jpg" alt="" loading="lazy"><div class="meta"><b>✦ GALACTIC BREAKOUT ✦</b></div></a>
+<a class="card" href="ai/299.html"><img src="thumbs/ai/299.jpg" alt="" loading="lazy"><div class="meta"><b>NEON REEF DEFENDER</b></div></a>
+<a class="card" href="ai/268.html"><img src="thumbs/ai/268.jpg" alt="" loading="lazy"><div class="meta"><b>✦ COSMIC DEFENDER ✦</b></div></a>
+<a class="card" href="ai/088.html"><img src="thumbs/ai/088.jpg" alt="" loading="lazy"><div class="meta"><b>🍉 Fruit Drop Frenzy 🍓</b></div></a>
+<a class="card" href="ai/229.html"><img src="thumbs/ai/229.jpg" alt="" loading="lazy"><div class="meta"><b>COSMIC BREAKOUT</b></div></a>
+<a class="card" href="ai/247.html"><img src="thumbs/ai/247.jpg" alt="" loading="lazy"><div class="meta"><b>COSMIC DEFENDER</b></div></a>
+<a class="card" href="ai/003.html"><img src="thumbs/ai/003.jpg" alt="" loading="lazy"><div class="meta"><b>🍉 Fruit Drop 🍇</b></div></a>
+<a class="card" href="ai/025.html"><img src="thumbs/ai/025.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 SPACE FROG ESCAPE 🚀</b></div></a>
+<a class="card" href="ai/130.html"><img src="thumbs/ai/130.jpg" alt="" loading="lazy"><div class="meta"><b>🍹 Fruit Drop Frenzy</b></div></a>
+<a class="card" href="ai/056.html"><img src="thumbs/ai/056.jpg" alt="" loading="lazy"><div class="meta"><b>✦ COSMIC BREAKOUT ✦</b></div></a>
+<a class="card" href="ai/092.html"><img src="thumbs/ai/092.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/116.html"><img src="thumbs/ai/116.jpg" alt="" loading="lazy"><div class="meta"><b>NOVA BURST</b></div></a>
+<a class="card" href="ai/115.html"><img src="thumbs/ai/115.jpg" alt="" loading="lazy"><div class="meta"><b>🌊 Deep Sea Pop</b></div></a>
+<a class="card" href="ai/120.html"><img src="thumbs/ai/120.jpg" alt="" loading="lazy"><div class="meta"><b>🍎 Fruit Drop Frenzy 🍇</b></div></a>
+<a class="card" href="ai/131.html"><img src="thumbs/ai/131.jpg" alt="" loading="lazy"><div class="meta"><b>COSMIC BREAKOUT</b></div></a>
+<a class="card" href="ai/162.html"><img src="thumbs/ai/162.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 Frog Dash</b></div></a>
+<a class="card" href="ai/145.html"><img src="thumbs/ai/145.jpg" alt="" loading="lazy"><div class="meta"><b>METEOR SURFER</b></div></a>
+<a class="card" href="ai/033.html"><img src="thumbs/ai/033.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/167.html"><img src="thumbs/ai/167.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/136.html"><img src="thumbs/ai/136.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/050.html"><img src="thumbs/ai/050.jpg" alt="" loading="lazy"><div class="meta"><b>★ STAR SURFER ★</b></div></a>
+<a class="card" href="ai/239.html"><img src="thumbs/ai/239.jpg" alt="" loading="lazy"><div class="meta"><b>Fruit Drop Frenzy 🍎🍇</b></div></a>
+<a class="card" href="ai/078.html"><img src="thumbs/ai/078.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/110.html"><img src="thumbs/ai/110.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 Space Frog</b></div></a>
+<a class="card" href="ai/123.html"><img src="thumbs/ai/123.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/233.html"><img src="thumbs/ai/233.jpg" alt="" loading="lazy"><div class="meta"><b>🦀 Crab Whacker 🦀</b></div></a>
+<a class="card" href="ai/251.html"><img src="thumbs/ai/251.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/010.html"><img src="thumbs/ai/010.jpg" alt="" loading="lazy"><div class="meta"><b>🦀 Crab Bop 🦀</b></div></a>
+<a class="card" href="ai/021.html"><img src="thumbs/ai/021.jpg" alt="" loading="lazy"><div class="meta"><b>🍓 Fruit Drop Frenzy 🍉</b></div></a>
+<a class="card" href="ai/028.html"><img src="thumbs/ai/028.jpg" alt="" loading="lazy"><div class="meta"><b>COSMIC DEFENDER</b></div></a>
+<a class="card" href="ai/063.html"><img src="thumbs/ai/063.jpg" alt="" loading="lazy"><div class="meta"><b>🍎 Fruit Drop Frenzy 🍇</b></div></a>
+<a class="card" href="ai/075.html"><img src="thumbs/ai/075.jpg" alt="" loading="lazy"><div class="meta"><b>🎣 Deep-Sea Fishing Pier</b></div></a>
+<a class="card" href="ai/126.html"><img src="thumbs/ai/126.jpg" alt="" loading="lazy"><div class="meta"><b>🍓 Fruit Drop Frenzy 🍉</b></div></a>
+<a class="card" href="ai/157.html"><img src="thumbs/ai/157.jpg" alt="" loading="lazy"><div class="meta"><b>🐠 Neon Reef Defender 🐠</b></div></a>
+<a class="card" href="ai/160.html"><img src="thumbs/ai/160.jpg" alt="" loading="lazy"><div class="meta"><b>COSMIC SERPENT</b></div></a>
+<a class="card" href="ai/172.html"><img src="thumbs/ai/172.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 Space Frog Dash</b></div></a>
+<a class="card" href="ai/176.html"><img src="thumbs/ai/176.jpg" alt="" loading="lazy"><div class="meta"><b>COSMIC DEFENDER</b></div></a>
+<a class="card" href="ai/193.html"><img src="thumbs/ai/193.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 COSMIC FROG</b></div></a>
+<a class="card" href="ai/210.html"><img src="thumbs/ai/210.jpg" alt="" loading="lazy"><div class="meta"><b>🍉 Fruit Drop 🍓</b></div></a>
+<a class="card" href="ai/225.html"><img src="thumbs/ai/225.jpg" alt="" loading="lazy"><div class="meta"><b>GALAXY DEFENDER</b></div></a>
+<a class="card" href="ai/237.html"><img src="thumbs/ai/237.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/226.html"><img src="thumbs/ai/226.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/307.html"><img src="thumbs/ai/307.jpg" alt="" loading="lazy"><div class="meta"><b>COSMIC PADDLE</b></div></a>
+<a class="card" href="ai/037.html"><img src="thumbs/ai/037.jpg" alt="" loading="lazy"><div class="meta"><b>🍎 Fruit Drop 🍇</b></div></a>
+<a class="card" href="ai/042.html"><img src="thumbs/ai/042.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 Space Frog vs. The Galaxy Highway 🚀</b></div></a>
+<a class="card" href="ai/234.html"><img src="thumbs/ai/234.jpg" alt="" loading="lazy"><div class="meta"><b>✦ COSMIC DEFENDER ✦</b></div></a>
+<a class="card" href="ai/311.html"><img src="thumbs/ai/311.jpg" alt="" loading="lazy"><div class="meta"><b>🌻 Garden Whack-a-Mole 🌻</b></div></a>
+<a class="card" href="ai/246.html"><img src="thumbs/ai/246.jpg" alt="" loading="lazy"><div class="meta"><b>NEON REEF DEFENSE</b></div></a>
+<a class="card" href="ai/059.html"><img src="thumbs/ai/059.jpg" alt="" loading="lazy"><div class="meta"><b>COSMIC DEFENDER</b></div></a>
+<a class="card" href="ai/109.html"><img src="thumbs/ai/109.jpg" alt="" loading="lazy"><div class="meta"><b>🍓 Fruit Drop 🍋</b></div></a>
+<a class="card" href="ai/281.html"><img src="thumbs/ai/281.jpg" alt="" loading="lazy"><div class="meta"><b>Neon Reef Defense</b></div></a>
+<a class="card" href="ai/149.html"><img src="thumbs/ai/149.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/270.html"><img src="thumbs/ai/270.jpg" alt="" loading="lazy"><div class="meta"><b>✦ COSMIC BREAKOUT ✦</b></div></a>
+<a class="card" href="ai/288.html"><img src="thumbs/ai/288.jpg" alt="" loading="lazy"><div class="meta"><b>✦ COSMIC BREAKOUT ✦</b></div></a>
+<a class="card" href="ai/296.html"><img src="thumbs/ai/296.jpg" alt="" loading="lazy"><div class="meta"><b>✦ COSMIC SURF ✦</b></div></a>
+<a class="card" href="ai/139.html"><img src="thumbs/ai/139.jpg" alt="" loading="lazy"><div class="meta"><b>✦ STARDUST SURFER ✦</b></div></a>
+<a class="card" href="ai/256.html"><img src="thumbs/ai/256.jpg" alt="" loading="lazy"><div class="meta"><b>🔱 NEON REEF DEFENDER</b></div></a>
+<a class="card" href="ai/032.html"><img src="thumbs/ai/032.jpg" alt="" loading="lazy"><div class="meta"><b>🦊 NEON FOX</b></div></a>
+<a class="card" href="ai/094.html"><img src="thumbs/ai/094.jpg" alt="" loading="lazy"><div class="meta"><b>✦ COSMIC SURFER ✦</b></div></a>
+<a class="card" href="ai/141.html"><img src="thumbs/ai/141.jpg" alt="" loading="lazy"><div class="meta"><b>NEON DASH</b></div></a>
+<a class="card" href="ai/191.html"><img src="thumbs/ai/191.jpg" alt="" loading="lazy"><div class="meta"><b>COMET DASH</b></div></a>
+<a class="card" href="ai/221.html"><img src="thumbs/ai/221.jpg" alt="" loading="lazy"><div class="meta"><b>🌱 Gopher Garden 🔨</b></div></a>
+<a class="card" href="ai/012.html"><img src="thumbs/ai/012.jpg" alt="" loading="lazy"><div class="meta"><b>NEON DEFENDER</b></div></a>
+<a class="card" href="ai/071.html"><img src="thumbs/ai/071.jpg" alt="" loading="lazy"><div class="meta"><b>🍉 Fruit Drop 🍓</b></div></a>
+<a class="card" href="ai/274.html"><img src="thumbs/ai/274.jpg" alt="" loading="lazy"><div class="meta"><b>🌻 Gopher Garden Defense</b></div></a>
+<a class="card" href="ai/279.html"><img src="thumbs/ai/279.jpg" alt="" loading="lazy"><div class="meta"><b>COSMIC BREAKOUT</b></div></a>
+<a class="card" href="ai/292.html"><img src="thumbs/ai/292.jpg" alt="" loading="lazy"><div class="meta"><b>🌻 Gopher Garden 🌻</b></div></a>
+<a class="card" href="ai/265.html"><img src="thumbs/ai/265.jpg" alt="" loading="lazy"><div class="meta"><b>✦ GALACTIC DEFENDER ✦</b></div></a>
+<a class="card" href="ai/264.html"><img src="thumbs/ai/264.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/014.html"><img src="thumbs/ai/014.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/039.html"><img src="thumbs/ai/039.jpg" alt="" loading="lazy"><div class="meta"><b>ZAP THE ALIENS!</b></div></a>
+<a class="card" href="ai/113.html"><img src="thumbs/ai/113.jpg" alt="" loading="lazy"><div class="meta"><b>ASTEROID BLITZ</b></div></a>
+<a class="card" href="ai/133.html"><img src="thumbs/ai/133.jpg" alt="" loading="lazy"><div class="meta"><b>🌍 PLANET DEFENDER</b></div></a>
+<a class="card" href="ai/174.html"><img src="thumbs/ai/174.jpg" alt="" loading="lazy"><div class="meta"><b>🌊 Reef Rush 🐙</b></div></a>
+<a class="card" href="ai/289.html"><img src="thumbs/ai/289.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/104.html"><img src="thumbs/ai/104.jpg" alt="" loading="lazy"><div class="meta"><b>🕳️ Mole Mayhem 🔨</b></div></a>
+<a class="card" href="ai/171.html"><img src="thumbs/ai/171.jpg" alt="" loading="lazy"><div class="meta"><b>COSMIC DEFENDER</b></div></a>
+<a class="card" href="ai/180.html"><img src="thumbs/ai/180.jpg" alt="" loading="lazy"><div class="meta"><b>☄ COMET DASH</b></div></a>
+<a class="card" href="ai/241.html"><img src="thumbs/ai/241.jpg" alt="" loading="lazy"><div class="meta"><b>🌊 Deep-Sea Tap Reef 🐟</b></div></a>
+<a class="card" href="ai/007.html"><img src="thumbs/ai/007.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 Space Frog Escape 🛸</b></div></a>
+<a class="card" href="ai/238.html"><img src="thumbs/ai/238.jpg" alt="" loading="lazy"><div class="meta"><b>COMET DASH</b></div></a>
+<a class="card" href="ai/201.html"><img src="thumbs/ai/201.jpg" alt="" loading="lazy"><div class="meta"><b>COSMIC DEFENDER</b></div></a>
+<a class="card" href="ai/101.html"><img src="thumbs/ai/101.jpg" alt="" loading="lazy"><div class="meta"><b>✦ COSMIC DEFENDER ✦</b></div></a>
+<a class="card" href="ai/173.html"><img src="thumbs/ai/173.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 FROG DASH</b></div></a>
+<a class="card" href="ai/066.html"><img src="thumbs/ai/066.jpg" alt="" loading="lazy"><div class="meta"><b>🍓 Fruit Drop 🍇</b></div></a>
+<a class="card" href="ai/183.html"><img src="thumbs/ai/183.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 Frog Superstar 🌟</b></div></a>
+<a class="card" href="ai/271.html"><img src="thumbs/ai/271.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/159.html"><img src="thumbs/ai/159.jpg" alt="" loading="lazy"><div class="meta"><b>NEBULA BLITZ</b></div></a>
+<a class="card" href="ai/026.html"><img src="thumbs/ai/026.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/084.html"><img src="thumbs/ai/084.jpg" alt="" loading="lazy"><div class="meta"><b>NEON ROCKET RUSH</b></div></a>
+<a class="card" href="ai/202.html"><img src="thumbs/ai/202.jpg" alt="" loading="lazy"><div class="meta"><b>🌊 Deep Reef Pop 🐡</b></div></a>
+<a class="card" href="ai/188.html"><img src="thumbs/ai/188.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 Space Frog Escape 🛸</b></div></a>
+<a class="card" href="ai/038.html"><img src="thumbs/ai/038.jpg" alt="" loading="lazy"><div class="meta"><b>NEON REEF</b></div></a>
+<a class="card" href="ai/252.html"><img src="thumbs/ai/252.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 Space Frog</b></div></a>
+<a class="card" href="ai/294.html"><img src="thumbs/ai/294.jpg" alt="" loading="lazy"><div class="meta"><b>🍎 Fruit Drop Frenzy 🍇</b></div></a>
+<a class="card" href="ai/058.html"><img src="thumbs/ai/058.jpg" alt="" loading="lazy"><div class="meta"><b>✦ COSMIC DEFENDER ✦</b></div></a>
+<a class="card" href="ai/216.html"><img src="thumbs/ai/216.jpg" alt="" loading="lazy"><div class="meta"><b>☄ COMET DASH ☄</b></div></a>
+<a class="card" href="ai/278.html"><img src="thumbs/ai/278.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 Frog Dash: Rush Hour</b></div></a>
+<a class="card" href="ai/286.html"><img src="thumbs/ai/286.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 Frog Dash</b></div></a>
+<a class="card" href="ai/076.html"><img src="thumbs/ai/076.jpg" alt="" loading="lazy"><div class="meta"><b>🍉 FRUIT DROP 🍓</b></div></a>
+<a class="card" href="ai/165.html"><img src="thumbs/ai/165.jpg" alt="" loading="lazy"><div class="meta"><b>🍎 Fruit Drop Frenzy 🍇</b></div></a>
+<a class="card" href="ai/140.html"><img src="thumbs/ai/140.jpg" alt="" loading="lazy"><div class="meta"><b>🐙 Reef Whack 🦀</b></div></a>
+<a class="card" href="ai/305.html"><img src="thumbs/ai/305.jpg" alt="" loading="lazy"><div class="meta"><b>🍎 Fruit Drop Frenzy 🍇</b></div></a>
+<a class="card" href="ai/280.html"><img src="thumbs/ai/280.jpg" alt="" loading="lazy"><div class="meta"><b>COSMIC DEFENDER</b></div></a>
+<a class="card" href="ai/235.html"><img src="thumbs/ai/235.jpg" alt="" loading="lazy"><div class="meta"><b>ZAP THE ALIENS!</b></div></a>
+<a class="card" href="ai/053.html"><img src="thumbs/ai/053.jpg" alt="" loading="lazy"><div class="meta"><b>GRAVITY FLIPPER</b></div></a>
+<a class="card" href="ai/219.html"><img src="thumbs/ai/219.jpg" alt="" loading="lazy"><div class="meta"><b>✦ COSMIC BOUNCER ✦</b></div></a>
+<a class="card" href="ai/093.html"><img src="thumbs/ai/093.jpg" alt="" loading="lazy"><div class="meta"><b>🦀 Crab Whack</b></div></a>
+<a class="card" href="ai/018.html"><img src="thumbs/ai/018.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/023.html"><img src="thumbs/ai/023.jpg" alt="" loading="lazy"><div class="meta"><b>COSMIC BARRAGE</b></div></a>
+<a class="card" href="ai/027.html"><img src="thumbs/ai/027.jpg" alt="" loading="lazy"><div class="meta"><b>✦ COSMIC BREAKOUT ✦</b></div></a>
+<a class="card" href="ai/064.html"><img src="thumbs/ai/064.jpg" alt="" loading="lazy"><div class="meta"><b>✦ COSMIC SURFER ✦</b></div></a>
+<a class="card" href="ai/082.html"><img src="thumbs/ai/082.jpg" alt="" loading="lazy"><div class="meta"><b>☄ COMET DASH</b></div></a>
+<a class="card" href="ai/085.html"><img src="thumbs/ai/085.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/089.html"><img src="thumbs/ai/089.jpg" alt="" loading="lazy"><div class="meta"><b>🍎 Fruit Drop Frenzy 🍇</b></div></a>
+<a class="card" href="ai/096.html"><img src="thumbs/ai/096.jpg" alt="" loading="lazy"><div class="meta"><b>COSMIC BREAKOUT</b></div></a>
+<a class="card" href="ai/122.html"><img src="thumbs/ai/122.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 Frog Dash Inferno 🔥</b></div></a>
+<a class="card" href="ai/146.html"><img src="thumbs/ai/146.jpg" alt="" loading="lazy"><div class="meta"><b>🍎 Fruit Drop 🍇</b></div></a>
+<a class="card" href="ai/169.html"><img src="thumbs/ai/169.jpg" alt="" loading="lazy"><div class="meta"><b>STELLAR BLITZ</b></div></a>
+<a class="card" href="ai/195.html"><img src="thumbs/ai/195.jpg" alt="" loading="lazy"><div class="meta"><b>🌊 COSMIC REEF DEFENDER</b></div></a>
+<a class="card" href="ai/275.html"><img src="thumbs/ai/275.jpg" alt="" loading="lazy"><div class="meta"><b>🍓 Fruit Drop Frenzy 🍉</b></div></a>
+<a class="card" href="ai/295.html"><img src="thumbs/ai/295.jpg" alt="" loading="lazy"><div class="meta"><b>✦ COSMIC BREAKOUT ✦</b></div></a>
+<a class="card" href="ai/178.html"><img src="thumbs/ai/178.jpg" alt="" loading="lazy"><div class="meta"><b>🍉 Fruit Drop Frenzy 🍇</b></div></a>
+<a class="card" href="ai/070.html"><img src="thumbs/ai/070.jpg" alt="" loading="lazy"><div class="meta"><b>COSMONAUT DASH</b></div></a>
+<a class="card" href="ai/129.html"><img src="thumbs/ai/129.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 Froggy Fever</b></div></a>
+<a class="card" href="ai/261.html"><img src="thumbs/ai/261.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/263.html"><img src="thumbs/ai/263.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 Frog Dash</b></div></a>
+<a class="card" href="ai/034.html"><img src="thumbs/ai/034.jpg" alt="" loading="lazy"><div class="meta"><b>COSMIC DEFENDER</b></div></a>
+<a class="card" href="ai/283.html"><img src="thumbs/ai/283.jpg" alt="" loading="lazy"><div class="meta"><b>🌊 NEON REEF 🐠</b></div></a>
+<a class="card" href="ai/150.html"><img src="thumbs/ai/150.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/009.html"><img src="thumbs/ai/009.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/016.html"><img src="thumbs/ai/016.jpg" alt="" loading="lazy"><div class="meta"><b>✦ COSMIC DEFENDER ✦</b></div></a>
+<a class="card" href="ai/184.html"><img src="thumbs/ai/184.jpg" alt="" loading="lazy"><div class="meta"><b>COSMIC DEFENDER</b></div></a>
+<a class="card" href="ai/198.html"><img src="thumbs/ai/198.jpg" alt="" loading="lazy"><div class="meta"><b>GALACTIC BREAKOUT</b></div></a>
+<a class="card" href="ai/258.html"><img src="thumbs/ai/258.jpg" alt="" loading="lazy"><div class="meta"><b>🌱 Mole Mayhem 🔨</b></div></a>
+<a class="card" href="ai/227.html"><img src="thumbs/ai/227.jpg" alt="" loading="lazy"><div class="meta"><b>ASTEROID BLASTER</b></div></a>
+<a class="card" href="ai/267.html"><img src="thumbs/ai/267.jpg" alt="" loading="lazy"><div class="meta"><b>🍉 Fruit Drop Frenzy 🍓</b></div></a>
+<a class="card" href="ai/127.html"><img src="thumbs/ai/127.jpg" alt="" loading="lazy"><div class="meta"><b>🍓 Fruit Drop 🍉</b></div></a>
+<a class="card" href="ai/212.html"><img src="thumbs/ai/212.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 Space Frog Escape 🚀</b></div></a>
+<a class="card" href="ai/135.html"><img src="thumbs/ai/135.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/189.html"><img src="thumbs/ai/189.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/086.html"><img src="thumbs/ai/086.jpg" alt="" loading="lazy"><div class="meta"><b>☄ Comet Dash</b></div></a>
+<a class="card" href="ai/215.html"><img src="thumbs/ai/215.jpg" alt="" loading="lazy"><div class="meta"><b>ASTRO BLITZ</b></div></a>
+<a class="card" href="ai/024.html"><img src="thumbs/ai/024.jpg" alt="" loading="lazy"><div class="meta"><b>NEON BLITZ</b></div></a>
+<a class="card" href="ai/284.html"><img src="thumbs/ai/284.jpg" alt="" loading="lazy"><div class="meta"><b>🍄 Gnome Grove</b></div></a>
+<a class="card" href="ai/020.html"><img src="thumbs/ai/020.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/255.html"><img src="thumbs/ai/255.jpg" alt="" loading="lazy"><div class="meta"><b>GALACTIC BREAKOUT</b></div></a>
+<a class="card" href="ai/277.html"><img src="thumbs/ai/277.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 Frog Dash: Galactic Crossing</b></div></a>
+<a class="card" href="ai/079.html"><img src="thumbs/ai/079.jpg" alt="" loading="lazy"><div class="meta"><b>🍎 Fruit Drop Frenzy 🍇</b></div></a>
+<a class="card" href="ai/107.html"><img src="thumbs/ai/107.jpg" alt="" loading="lazy"><div class="meta"><b>✦ COSMIC BREAKOUT ✦</b></div></a>
+<a class="card" href="ai/175.html"><img src="thumbs/ai/175.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/224.html"><img src="thumbs/ai/224.jpg" alt="" loading="lazy"><div class="meta"><b>☄ COMET RIDER ☄</b></div></a>
+<a class="card" href="ai/060.html"><img src="thumbs/ai/060.jpg" alt="" loading="lazy"><div class="meta"><b>COSMIC BREAKOUT</b></div></a>
+<a class="card" href="ai/081.html"><img src="thumbs/ai/081.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 Frog Dash: Neon River</b></div></a>
+<a class="card" href="ai/112.html"><img src="thumbs/ai/112.jpg" alt="" loading="lazy"><div class="meta"><b>◈ NEON REEF ◈</b></div></a>
+<a class="card" href="ai/181.html"><img src="thumbs/ai/181.jpg" alt="" loading="lazy"><div class="meta"><b>✦ COSMIC DEFENDER ✦</b></div></a>
+<a class="card" href="ai/276.html"><img src="thumbs/ai/276.jpg" alt="" loading="lazy"><div class="meta"><b>🌊 Deep-Sea Net Diver 🌊</b></div></a>
+<a class="card" href="ai/046.html"><img src="thumbs/ai/046.jpg" alt="" loading="lazy"><div class="meta"><b>COSMIC DEFENDER</b></div></a>
+<a class="card" href="ai/100.html"><img src="thumbs/ai/100.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 Froggy Fiesta 🎉</b></div></a>
+<a class="card" href="ai/213.html"><img src="thumbs/ai/213.jpg" alt="" loading="lazy"><div class="meta"><b>✦ COSMIC BREAKOUT ✦</b></div></a>
+<a class="card" href="ai/222.html"><img src="thumbs/ai/222.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/163.html"><img src="thumbs/ai/163.jpg" alt="" loading="lazy"><div class="meta"><b>GALACTIC DEFLECTOR</b></div></a>
+<a class="card" href="ai/260.html"><img src="thumbs/ai/260.jpg" alt="" loading="lazy"><div class="meta"><b>VOID BREAKER</b></div></a>
+<a class="card" href="ai/006.html"><img src="thumbs/ai/006.jpg" alt="" loading="lazy"><div class="meta"><b>☄ COMET DASH</b></div></a>
+<a class="card" href="ai/057.html"><img src="thumbs/ai/057.jpg" alt="" loading="lazy"><div class="meta"><b>NEON DEFENDER</b></div></a>
+<a class="card" href="ai/114.html"><img src="thumbs/ai/114.jpg" alt="" loading="lazy"><div class="meta"><b>NOVA BLITZ</b></div></a>
+<a class="card" href="ai/015.html"><img src="thumbs/ai/015.jpg" alt="" loading="lazy"><div class="meta"><b>NEON CASCADE</b></div></a>
+<a class="card" href="ai/250.html"><img src="thumbs/ai/250.jpg" alt="" loading="lazy"><div class="meta"><b>◈ COSMIC DEFENDER ◈</b></div></a>
+<a class="card" href="ai/061.html"><img src="thumbs/ai/061.jpg" alt="" loading="lazy"><div class="meta"><b>☄ Comet Surfer</b></div></a>
+<a class="card" href="ai/067.html"><img src="thumbs/ai/067.jpg" alt="" loading="lazy"><div class="meta"><b>NEON REEF DEFENDER</b></div></a>
+<a class="card" href="ai/077.html"><img src="thumbs/ai/077.jpg" alt="" loading="lazy"><div class="meta"><b>ASTRO BLITZ</b></div></a>
+<a class="card" href="ai/083.html"><img src="thumbs/ai/083.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 FROGGY INFERNO 🔥</b></div></a>
+<a class="card" href="ai/087.html"><img src="thumbs/ai/087.jpg" alt="" loading="lazy"><div class="meta"><b>NEON CASCADE</b></div></a>
+<a class="card" href="ai/103.html"><img src="thumbs/ai/103.jpg" alt="" loading="lazy"><div class="meta"><b>🍎 FRUIT DROP 🍇</b></div></a>
+<a class="card" href="ai/117.html"><img src="thumbs/ai/117.jpg" alt="" loading="lazy"><div class="meta"><b>🦀 Crab Splash! 🦀</b></div></a>
+<a class="card" href="ai/185.html"><img src="thumbs/ai/185.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 Frog Dash: Lily to Lily</b></div></a>
+<a class="card" href="ai/187.html"><img src="thumbs/ai/187.jpg" alt="" loading="lazy"><div class="meta"><b>🍎 Fruit Drop Frenzy 🍇</b></div></a>
+<a class="card" href="ai/190.html"><img src="thumbs/ai/190.jpg" alt="" loading="lazy"><div class="meta"><b>🍎 Fruit Drop 🍇</b></div></a>
+<a class="card" href="ai/223.html"><img src="thumbs/ai/223.jpg" alt="" loading="lazy"><div class="meta"><b>🍎 Fruit Drop Frenzy 🍇</b></div></a>
+<a class="card" href="ai/228.html"><img src="thumbs/ai/228.jpg" alt="" loading="lazy"><div class="meta"><b>🍓 Fruit Drop Frenzy 🍇</b></div></a>
+<a class="card" href="ai/245.html"><img src="thumbs/ai/245.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/272.html"><img src="thumbs/ai/272.jpg" alt="" loading="lazy"><div class="meta"><b>NOVA RAIDER</b></div></a>
+<a class="card" href="ai/072.html"><img src="thumbs/ai/072.jpg" alt="" loading="lazy"><div class="meta"><b>🌻 Gopher Garden Bash 🌻</b></div></a>
+<a class="card" href="ai/111.html"><img src="thumbs/ai/111.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/310.html"><img src="thumbs/ai/310.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 Frog Dash: Lily to Lily</b></div></a>
+<a class="card" href="ai/236.html"><img src="thumbs/ai/236.jpg" alt="" loading="lazy"><div class="meta"><b>STARDRIFTER</b></div></a>
+<a class="card" href="ai/249.html"><img src="thumbs/ai/249.jpg" alt="" loading="lazy"><div class="meta"><b>✦ GALACTIC BREAKOUT ✦</b></div></a>
+<a class="card" href="ai/300.html"><img src="thumbs/ai/300.jpg" alt="" loading="lazy"><div class="meta"><b>✦ COSMIC DEFENDER ✦</b></div></a>
+<a class="card" href="ai/254.html"><img src="thumbs/ai/254.jpg" alt="" loading="lazy"><div class="meta"><b>✦ COSMIC SURFER ✦</b></div></a>
+<a class="card" href="ai/031.html"><img src="thumbs/ai/031.jpg" alt="" loading="lazy"><div class="meta"><b>🚀 METEOR DASH</b></div></a>
+<a class="card" href="ai/097.html"><img src="thumbs/ai/097.jpg" alt="" loading="lazy"><div class="meta"><b>NEON REEF DEFENDER</b></div></a>
+<a class="card" href="ai/164.html"><img src="thumbs/ai/164.jpg" alt="" loading="lazy"><div class="meta"><b>🐹 Mole Mayhem 🌱</b></div></a>
+<a class="card" href="ai/182.html"><img src="thumbs/ai/182.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/301.html"><img src="thumbs/ai/301.jpg" alt="" loading="lazy"><div class="meta"><b>✦ COSMIC BREAKOUT ✦</b></div></a>
+<a class="card" href="ai/273.html"><img src="thumbs/ai/273.jpg" alt="" loading="lazy"><div class="meta"><b>GEM DROP</b></div></a>
+<a class="card" href="ai/309.html"><img src="thumbs/ai/309.jpg" alt="" loading="lazy"><div class="meta"><b>NEON REEF DEFENSE</b></div></a>
+<a class="card" href="ai/119.html"><img src="thumbs/ai/119.jpg" alt="" loading="lazy"><div class="meta"><b>🍎 Fruit Drop 🍇</b></div></a>
+<a class="card" href="ai/040.html"><img src="thumbs/ai/040.jpg" alt="" loading="lazy"><div class="meta"><b>🐟 NEON REEF DEFENDER</b></div></a>
+<a class="card" href="ai/041.html"><img src="thumbs/ai/041.jpg" alt="" loading="lazy"><div class="meta"><b>NEON VOID</b></div></a>
+<a class="card" href="ai/205.html"><img src="thumbs/ai/205.jpg" alt="" loading="lazy"><div class="meta"><b>🐠 Reef Rumble 🦀</b></div></a>
+<a class="card" href="ai/259.html"><img src="thumbs/ai/259.jpg" alt="" loading="lazy"><div class="meta"><b>GRAVITY SWAP</b></div></a>
+<a class="card" href="ai/091.html"><img src="thumbs/ai/091.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 Lily Pad Leap</b></div></a>
+<a class="card" href="ai/144.html"><img src="thumbs/ai/144.jpg" alt="" loading="lazy"><div class="meta"><b>🐙 Reef Bonkers 🦀</b></div></a>
+<a class="card" href="ai/099.html"><img src="thumbs/ai/099.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/147.html"><img src="thumbs/ai/147.jpg" alt="" loading="lazy"><div class="meta"><b>✦ COSMIC BREAKOUT ✦</b></div></a>
+<a class="card" href="ai/297.html"><img src="thumbs/ai/297.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/302.html"><img src="thumbs/ai/302.jpg" alt="" loading="lazy"><div class="meta"><b>🍓 Fruit Drop Frenzy 🍇</b></div></a>
+<a class="card" href="ai/312.html"><img src="thumbs/ai/312.jpg" alt="" loading="lazy"><div class="meta"><b>🍉 Fruit Drop 🍓</b></div></a>
+<a class="card" href="ai/011.html"><img src="thumbs/ai/011.jpg" alt="" loading="lazy"><div class="meta"><b>🍓 Fruit Drop Frenzy 🍇</b></div></a>
+<a class="card" href="ai/030.html"><img src="thumbs/ai/030.jpg" alt="" loading="lazy"><div class="meta"><b>🌊 STELLAR REEF DEFENSE 🌊</b></div></a>
+<a class="card" href="ai/036.html"><img src="thumbs/ai/036.jpg" alt="" loading="lazy"><div class="meta"><b>Neon Reef Defense</b></div></a>
+<a class="card" href="ai/158.html"><img src="thumbs/ai/158.jpg" alt="" loading="lazy"><div class="meta"><b>GALACTIC BREAKOUT</b></div></a>
+<a class="card" href="ai/269.html"><img src="thumbs/ai/269.jpg" alt="" loading="lazy"><div class="meta"><b>NEON INVADERS</b></div></a>
+<a class="card" href="ai/197.html"><img src="thumbs/ai/197.jpg" alt="" loading="lazy"><div class="meta"><b>GALACTIC DEFENDER</b></div></a>
+<a class="card" href="ai/306.html"><img src="thumbs/ai/306.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 Froggy Fever</b></div></a>
+<a class="card" href="ai/217.html"><img src="thumbs/ai/217.jpg" alt="" loading="lazy"><div class="meta"><b>🍉 Fruit Drop Frenzy 🍓</b></div></a>
+<a class="card" href="ai/218.html"><img src="thumbs/ai/218.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/017.html"><img src="thumbs/ai/017.jpg" alt="" loading="lazy"><div class="meta"><b>🌱 Gopher Garden 🌱</b></div></a>
+<a class="card" href="ai/062.html"><img src="thumbs/ai/062.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 COSMIC FROG 🚀</b></div></a>
+<a class="card" href="ai/080.html"><img src="thumbs/ai/080.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/108.html"><img src="thumbs/ai/108.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/125.html"><img src="thumbs/ai/125.jpg" alt="" loading="lazy"><div class="meta"><b>🍉 Fruit Drop Frenzy 🍇</b></div></a>
+<a class="card" href="ai/142.html"><img src="thumbs/ai/142.jpg" alt="" loading="lazy"><div class="meta"><b>🚀 Cosmic Defender</b></div></a>
+<a class="card" href="ai/148.html"><img src="thumbs/ai/148.jpg" alt="" loading="lazy"><div class="meta"><b>Cosmic Candy Blaster</b></div></a>
+<a class="card" href="ai/179.html"><img src="thumbs/ai/179.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 Frog Dash</b></div></a>
+<a class="card" href="ai/209.html"><img src="thumbs/ai/209.jpg" alt="" loading="lazy"><div class="meta"><b>🚀 FROGSTRONAUT</b></div></a>
+<a class="card" href="ai/242.html"><img src="thumbs/ai/242.jpg" alt="" loading="lazy"><div class="meta"><b>🍓 Fruit Drop 🍇</b></div></a>
+<a class="card" href="ai/298.html"><img src="thumbs/ai/298.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/001.html"><img src="thumbs/ai/001.jpg" alt="" loading="lazy"><div class="meta"><b>ASTRO DASH</b></div></a>
+<a class="card" href="ai/052.html"><img src="thumbs/ai/052.jpg" alt="" loading="lazy"><div class="meta"><b>🍉 Fruit Drop 🍓</b></div></a>
+<a class="card" href="ai/095.html"><img src="thumbs/ai/095.jpg" alt="" loading="lazy"><div class="meta"><b>🌊 Tap the Sea Critters</b></div></a>
+<a class="card" href="ai/137.html"><img src="thumbs/ai/137.jpg" alt="" loading="lazy"><div class="meta"><b>🪼 Neon Reef Defense</b></div></a>
+<a class="card" href="ai/244.html"><img src="thumbs/ai/244.jpg" alt="" loading="lazy"><div class="meta"><b>✦ COSMIC SURFER ✦</b></div></a>
+<a class="card" href="ai/168.html"><img src="thumbs/ai/168.jpg" alt="" loading="lazy"><div class="meta"><b>🌊 Cosmic Reef Defender</b></div></a>
+<a class="card" href="ai/035.html"><img src="thumbs/ai/035.jpg" alt="" loading="lazy"><div class="meta"><b>✦ COSMIC BREAKOUT ✦</b></div></a>
+<a class="card" href="ai/161.html"><img src="thumbs/ai/161.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 Frog Dash</b></div></a>
+<a class="card" href="ai/282.html"><img src="thumbs/ai/282.jpg" alt="" loading="lazy"><div class="meta"><b>🍎 Fruit Drop 🍇</b></div></a>
+<a class="card" href="ai/124.html"><img src="thumbs/ai/124.jpg" alt="" loading="lazy"><div class="meta"><b>COSMIC DEFENDER</b></div></a>
+<a class="card" href="ai/143.html"><img src="thumbs/ai/143.jpg" alt="" loading="lazy"><div class="meta"><b>☄ COMET DASH ☄</b></div></a>
+<a class="card" href="ai/285.html"><img src="thumbs/ai/285.jpg" alt="" loading="lazy"><div class="meta"><b>👽 Cow Abduction Defense</b></div></a>
+<a class="card" href="ai/200.html"><img src="thumbs/ai/200.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 Space Frog Escape</b></div></a>
+<a class="card" href="ai/055.html"><img src="thumbs/ai/055.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/106.html"><img src="thumbs/ai/106.jpg" alt="" loading="lazy"><div class="meta"><b>🍉 Fruit Drop Frenzy 🍓</b></div></a>
+<a class="card" href="ai/208.html"><img src="thumbs/ai/208.jpg" alt="" loading="lazy"><div class="meta"><b>🍉 Fruit Drop 🍊</b></div></a>
+<a class="card" href="ai/211.html"><img src="thumbs/ai/211.jpg" alt="" loading="lazy"><div class="meta"><b>☄ COMET DASH</b></div></a>
+<a class="card" href="ai/051.html"><img src="thumbs/ai/051.jpg" alt="" loading="lazy"><div class="meta"><b>COSMIC DEFENDER</b></div></a>
+<a class="card" href="ai/151.html"><img src="thumbs/ai/151.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 Frog Fever</b></div></a>
+<a class="card" href="ai/230.html"><img src="thumbs/ai/230.jpg" alt="" loading="lazy"><div class="meta"><b>🌊 NEON REEF 🌊</b></div></a>
+<a class="card" href="ai/231.html"><img src="thumbs/ai/231.jpg" alt="" loading="lazy"><div class="meta"><b>★ STAR SURFER ★</b></div></a>
+<a class="card" href="ai/240.html"><img src="thumbs/ai/240.jpg" alt="" loading="lazy"><div class="meta"><b>🍒 Fruit Drop 🍉</b></div></a>
+<a class="card" href="ai/243.html"><img src="thumbs/ai/243.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/248.html"><img src="thumbs/ai/248.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 Frog Dash: River Rush</b></div></a>
+<a class="card" href="ai/045.html"><img src="thumbs/ai/045.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 Frog Dash: Rush Hour Rampage</b></div></a>
+<a class="card" href="ai/132.html"><img src="thumbs/ai/132.jpg" alt="" loading="lazy"><div class="meta"><b>🍉 Fruit Drop Frenzy 🍓</b></div></a>
+<a class="card" href="ai/047.html"><img src="thumbs/ai/047.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/156.html"><img src="thumbs/ai/156.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 Frogventure</b></div></a>
+<a class="card" href="ai/253.html"><img src="thumbs/ai/253.jpg" alt="" loading="lazy"><div class="meta"><b>NEON REEF</b></div></a>
+<a class="card" href="ai/207.html"><img src="thumbs/ai/207.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/232.html"><img src="thumbs/ai/232.jpg" alt="" loading="lazy"><div class="meta"><b>GRAVITY FLIP</b></div></a>
+<a class="card" href="ai/073.html"><img src="thumbs/ai/073.jpg" alt="" loading="lazy"><div class="meta"><b>🐙 NEON REEF DEFENSE</b></div></a>
+<a class="card" href="ai/002.html"><img src="thumbs/ai/002.jpg" alt="" loading="lazy"><div class="meta"><b>NEON DASH</b></div></a>
+<a class="card" href="ai/013.html"><img src="thumbs/ai/013.jpg" alt="" loading="lazy"><div class="meta"><b>✦ COSMIC BREAKOUT ✦</b></div></a>
+<a class="card" href="ai/019.html"><img src="thumbs/ai/019.jpg" alt="" loading="lazy"><div class="meta"><b>COMET DASH</b></div></a>
+<a class="card" href="ai/022.html"><img src="thumbs/ai/022.jpg" alt="" loading="lazy"><div class="meta"><b>NEON DASH</b></div></a>
+<a class="card" href="ai/048.html"><img src="thumbs/ai/048.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 Frog Superstar</b></div></a>
+<a class="card" href="ai/054.html"><img src="thumbs/ai/054.jpg" alt="" loading="lazy"><div class="meta"><b>🍉 Fruit Drop Frenzy 🍓</b></div></a>
+<a class="card" href="ai/090.html"><img src="thumbs/ai/090.jpg" alt="" loading="lazy"><div class="meta"><b>COSMIC BREAKOUT</b></div></a>
+<a class="card" href="ai/105.html"><img src="thumbs/ai/105.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 Frog Superstar</b></div></a>
+<a class="card" href="ai/118.html"><img src="thumbs/ai/118.jpg" alt="" loading="lazy"><div class="meta"><b>Stellar Surfer</b></div></a>
+<a class="card" href="ai/121.html"><img src="thumbs/ai/121.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/128.html"><img src="thumbs/ai/128.jpg" alt="" loading="lazy"><div class="meta"><b>NEON DEFENDER</b></div></a>
+<a class="card" href="ai/134.html"><img src="thumbs/ai/134.jpg" alt="" loading="lazy"><div class="meta"><b>🍎 Fruit Drop Frenzy 🍇</b></div></a>
+<a class="card" href="ai/152.html"><img src="thumbs/ai/152.jpg" alt="" loading="lazy"><div class="meta"><b>🍓 Fruit Drop 🍇</b></div></a>
+<a class="card" href="ai/154.html"><img src="thumbs/ai/154.jpg" alt="" loading="lazy"><div class="meta"><b>COSMIC DEFENDER</b></div></a>
+<a class="card" href="ai/166.html"><img src="thumbs/ai/166.jpg" alt="" loading="lazy"><div class="meta"><b>COSMIC SURFER</b></div></a>
+<a class="card" href="ai/186.html"><img src="thumbs/ai/186.jpg" alt="" loading="lazy"><div class="meta"><b>🐙 Captain Ink&#x27;s Puffer Frenzy</b></div></a>
+<a class="card" href="ai/194.html"><img src="thumbs/ai/194.jpg" alt="" loading="lazy"><div class="meta"><b>🍉 Fruit Drop Frenzy 🍊</b></div></a>
+<a class="card" href="ai/196.html"><img src="thumbs/ai/196.jpg" alt="" loading="lazy"><div class="meta"><b>🧪 Mad Lab Mutants 🧪</b></div></a>
+<a class="card" href="ai/199.html"><img src="thumbs/ai/199.jpg" alt="" loading="lazy"><div class="meta"><b>NEON SERPENT</b></div></a>
+<a class="card" href="ai/203.html"><img src="thumbs/ai/203.jpg" alt="" loading="lazy"><div class="meta"><b>GALACTIC BREAKOUT</b></div></a>
+<a class="card" href="ai/214.html"><img src="thumbs/ai/214.jpg" alt="" loading="lazy"><div class="meta"><b>NEON REEF</b></div></a>
+<a class="card" href="ai/220.html"><img src="thumbs/ai/220.jpg" alt="" loading="lazy"><div class="meta"><b>🛸 Cow Rescue 🐄</b></div></a>
+<a class="card" href="ai/290.html"><img src="thumbs/ai/290.jpg" alt="" loading="lazy"><div class="meta"><b>☄ COMET SURFER</b></div></a>
+<a class="card" href="ai/291.html"><img src="thumbs/ai/291.jpg" alt="" loading="lazy"><div class="meta"><b>🚀 Rocket Pup</b></div></a>
+<a class="card" href="ai/308.html"><img src="thumbs/ai/308.jpg" alt="" loading="lazy"><div class="meta"><b>🐸 Froggy in Space</b></div></a>
+<a class="card" href="ai/065.html"><img src="thumbs/ai/065.jpg" alt="" loading="lazy"><div class="meta"><b>🐡 Deep Sea Tap</b></div></a>
+</div>
+<nav class="pager" id="pager" aria-label="Pages"></nav>
 </main>
+<script>
+(function () {
+  var PER_PAGE = 40;
+  var titles = {
+    participants: 'Games designed by participants in Conlon and Schwardmann (2026)',
+    ai: 'Games designed by AI in Conlon and Schwardmann (2026)'
+  };
+  var buttons = document.querySelectorAll('.toggle button');
+  var pager = document.getElementById('pager');
+  var state = { set: 'participants', page: 1 };
+
+  function readHash() {
+    var m = /^#(ai)?(?:-?p(\d+))?$/.exec(location.hash);
+    state.set = m && m[1] ? 'ai' : 'participants';
+    state.page = m && m[2] ? +m[2] : 1;
+  }
+  function writeHash() {
+    var h = (state.set === 'ai' ? 'ai' : '') + (state.page > 1 ? (state.set === 'ai' ? '-' : '') + 'p' + state.page : '');
+    history.replaceState(null, '', h ? '#' + h : location.pathname);
+  }
+  function button(label, page, opts) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.textContent = label;
+    if (opts && opts.current) b.setAttribute('aria-current', 'page');
+    if (opts && opts.disabled) b.disabled = true;
+    else b.addEventListener('click', function () { state.page = page; render(); window.scrollTo(0, 0); });
+    return b;
+  }
+  function render() {
+    document.getElementById('title').textContent = titles[state.set];
+    for (var i = 0; i < buttons.length; i++)
+      buttons[i].setAttribute('aria-pressed', buttons[i].dataset.set === state.set ? 'true' : 'false');
+    ['participants', 'ai'].forEach(function (set) {
+      document.getElementById('grid-' + set).hidden = set !== state.set;
+    });
+    var cards = document.querySelectorAll('#grid-' + state.set + ' a.card');
+    var pages = Math.max(1, Math.ceil(cards.length / PER_PAGE));
+    state.page = Math.min(Math.max(1, state.page), pages);
+    for (var k = 0; k < cards.length; k++) {
+      var p = Math.floor(k / PER_PAGE) + 1;
+      cards[k].style.display = p === state.page ? '' : 'none';
+    }
+    pager.innerHTML = '';
+    pager.appendChild(button('← Previous', state.page - 1, { disabled: state.page === 1 }));
+    for (var n = 1; n <= pages; n++) pager.appendChild(button(String(n), n, { current: n === state.page }));
+    pager.appendChild(button('Next →', state.page + 1, { disabled: state.page === pages }));
+    writeHash();
+  }
+  for (var i = 0; i < buttons.length; i++) buttons[i].addEventListener('click', function () {
+    state.set = this.dataset.set; state.page = 1; render();
+  });
+  readHash(); render();
+})();
+</script>
 </body>
 </html>

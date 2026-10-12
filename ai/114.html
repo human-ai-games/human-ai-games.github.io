@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NOVA BLITZ</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html#ai">&larr; All games</a> &middot; <b>NOVA BLITZ</b></div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; margin: 0; }
+  body { font-family: system-ui, -apple-system, sans-serif; background: #05030f; color: #e8e8ff; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 8px 12px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 640px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: 3px;
+       background: linear-gradient(90deg,#ff3caa,#8a5cff,#38e8ff); -webkit-background-clip: text; background-clip: text; color: transparent;
+       text-shadow: 0 0 18px rgba(138,92,255,.4); }
+  .instructions { font-size: 16px; color: #9fa4d6; max-width: 640px; margin: 0; line-height: 1.35; text-align: center; }
+  .hud { width: 640px; display: flex; align-items: center; gap: 12px; font-size: 14px; }
+  .bar { flex: 1; height: 14px; border-radius: 8px; background: rgba(255,255,255,.08); overflow: hidden; position: relative; box-shadow: inset 0 0 6px rgba(0,0,0,.6); }
+  .bar span { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 8px; transition: width .12s linear; }
+  #shieldFill { background: linear-gradient(90deg,#00ffa2,#38e8ff); box-shadow: 0 0 10px #38e8ff; }
+  #novaFill { background: linear-gradient(90deg,#ff3caa,#ffd34d); box-shadow: 0 0 10px #ff3caa; }
+  .lbl { width: 54px; font-weight: 700; letter-spacing: 1px; }
+  .scores { width: 640px; display: flex; justify-content: space-between; align-items: baseline; }
+  .score { font-size: 22px; font-weight: 800; }
+  #mult { color: #ffd34d; text-shadow: 0 0 12px #ffd34d; display: inline-block; }
+  .mpop { animation: pop .3s ease; }
+  @keyframes pop { 0%{transform:scale(1.8)} 100%{transform:scale(1)} }
+  canvas { border-radius: 10px; box-shadow: 0 0 30px rgba(138,92,255,.25); display: block; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;NOVA BLITZ&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Move with &lt;strong&gt;&amp;larr; &amp;rarr;&lt;/strong&gt;, hold &lt;strong&gt;Space&lt;/strong&gt; to fire, and press &lt;strong&gt;Shift&lt;/strong&gt; when your Nova meter is full to wipe the screen. Shoot invaders before they reach you — letting them past drains your shield.&lt;/p&gt;
+  &lt;div class=&quot;scores&quot;&gt;
+    &lt;div class=&quot;score&quot;&gt;SCORE &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;score&quot;&gt;x&lt;span id=&quot;mult&quot;&gt;1&lt;/span&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;hud&quot;&gt;&lt;div class=&quot;lbl&quot; style=&quot;color:#38e8ff&quot;&gt;SHIELD&lt;/div&gt;&lt;div class=&quot;bar&quot;&gt;&lt;span id=&quot;shieldFill&quot; style=&quot;width:100%&quot;&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;
+  &lt;div class=&quot;hud&quot;&gt;&lt;div class=&quot;lbl&quot; style=&quot;color:#ff3caa&quot;&gt;NOVA&lt;/div&gt;&lt;div class=&quot;bar&quot;&gt;&lt;span id=&quot;novaFill&quot; style=&quot;width:0%&quot;&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;
+  &lt;canvas id=&quot;cv&quot; width=&quot;640&quot; height=&quot;440&quot;&gt;&lt;/canvas&gt;
+&lt;/div&gt;
+&lt;script&gt;
+[&#x27;keydown&#x27;,&#x27;mousedown&#x27;,&#x27;touchstart&#x27;].forEach(function(t){
+  window.addEventListener(t,function(e){try{window.parent.postMessage({type:&#x27;game_input&#x27;,kind:t,key:e.key||null},&#x27;*&#x27;);}catch(_){}},true);
+});
+
+var cv=document.getElementById(&#x27;cv&#x27;), ctx=cv.getContext(&#x27;2d&#x27;);
+var W=640,H=440;
+var scoreEl=document.getElementById(&#x27;score&#x27;), multEl=document.getElementById(&#x27;mult&#x27;);
+var shieldFill=document.getElementById(&#x27;shieldFill&#x27;), novaFill=document.getElementById(&#x27;novaFill&#x27;);
+
+var running=false, animId=null;
+var keys={}, lastShot=0;
+var ship, bullets, enemies, particles, stars1, stars2;
+var score, mult, missStreakBroken, shield, nova, spawnTimer, hue, hueTimer, shake, blastFlash;
+
+function rnd(a,b){return a+Math.random()*(b-a);}
+
+function initStars(){
+  stars1=[]; stars2=[];
+  for(var i=0;i&lt;50;i++) stars1.push({x:rnd(0,W),y:rnd(0,H),s:rnd(.4,1)});
+  for(var i=0;i&lt;30;i++) stars2.push({x:rnd(0,W),y:rnd(0,H),s:rnd(1.2,2.2)});
+}
+
+function reset(){
+  ship={x:W/2,y:H-30,w:34,h:26,trail:[]};
+  bullets=[]; enemies=[]; particles=[];
+  score=0; mult=1; shield=100; nova=0;
+  spawnTimer=0; hue=0; hueTimer=0; shake=0; blastFlash=0;
+  keys={}; lastShot=0;
+  initStars();
+  updateHUD();
+}
+
+function updateHUD(){
+  scoreEl.textContent=score;
+  multEl.textContent=mult;
+  shieldFill.style.width=Math.max(0,shield)+&#x27;%&#x27;;
+  novaFill.style.width=nova+&#x27;%&#x27;;
+}
+
+function popMult(){
+  multEl.classList.remove(&#x27;mpop&#x27;); void multEl.offsetWidth; multEl.classList.add(&#x27;mpop&#x27;);
+}
+
+// audio
+var actx=null;
+function beep(freq,dur,type,vol){
+  try{
+    if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)();
+    var o=actx.createOscillator(), g=actx.createGain();
+    o.type=type||&#x27;square&#x27;; o.frequency.value=freq;
+    g.gain.value=vol||.08;
+    o.connect(g); g.connect(actx.destination);
+    o.start();
+    g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime+dur);
+    o.stop(actx.currentTime+dur);
+  }catch(_){}
+}
+
+var TYPES={
+  dart:{r:11,hp:1,pts:1,speed:2.4,col:&#x27;#c46bff&#x27;,zig:false},
+  orb: {r:16,hp:1,pts:2,speed:1.5,col:&#x27;#3cff9e&#x27;,zig:true},
+  cruiser:{r:24,hp:2,pts:5,speed:.9,col:&#x27;#ff4d5e&#x27;,zig:false}
+};
+
+function spawnEnemy(type,x,y){
+  var t=TYPES[type];
+  var ex = x!==undefined? x : rnd(t.r,W-t.r);
+  enemies.push({type:type,x:ex,y:y!==undefined?y:-t.r,r:t.r,hp:t.hp,
+    speed:t.speed*rnd(.85,1.2),col:t.col,phase:rnd(0,6.28),vx:0});
+}
+
+function spawnWave(){
+  var roll=Math.random();
+  if(roll&lt;0.5) spawnEnemy(&#x27;dart&#x27;);
+  else if(roll&lt;0.8) spawnEnemy(&#x27;orb&#x27;);
+  else spawnEnemy(&#x27;cruiser&#x27;);
+  // occasional cluster
+  if(Math.random()&lt;0.25){
+    var n=Math.floor(rnd(2,4));
+    for(var i=0;i&lt;n;i++) spawnEnemy(&#x27;dart&#x27;, rnd(30,W-30), -rnd(20,80));
+  }
+}
+
+function fire(){
+  var now=performance.now();
+  if(now-lastShot&lt;140) return;
+  lastShot=now;
+  bullets.push({x:ship.x-8,y:ship.y-14,col:&#x27;#38e8ff&#x27;});
+  bullets.push({x:ship.x+8,y:ship.y-14,col:&#x27;#ff3caa&#x27;});
+  beep(880,.08,&#x27;square&#x27;,.04);
+}
+
+function explode(x,y,col,count){
+  for(var i=0;i&lt;count;i++){
+    var a=rnd(0,6.28),sp=rnd(1,5);
+    particles.push({x:x,y:y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:rnd(20,40),col:col});
+  }
+}
+
+function novaBlast(){
+  if(nova&lt;100) return;
+  nova=0;
+  blastFlash=1;
+  shake=Math.max(shake,22);
+  beep(120,.5,&#x27;sawtooth&#x27;,.12);
+  for(var i=enemies.length-1;i&gt;=0;i--){
+    var e=enemies[i];
+    explode(e.x,e.y,e.col,18);
+    addScore(TYPES[e.type].pts);
+  }
+  enemies=[];
+  for(var k=0;k&lt;60;k++){
+    var a=rnd(0,6.28),sp=rnd(3,9);
+    particles.push({x:ship.x,y:ship.y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:rnd(25,50),col:&#x27;#ffd34d&#x27;});
+  }
+}
+
+function addScore(base){
+  score += base*mult;
+}
+
+function hitEnemy(e,idx){
+  e.hp--;
+  if(e.hp&lt;=0){
+    explode(e.x,e.y,e.col,e.type===&#x27;cruiser&#x27;?24:e.type===&#x27;orb&#x27;?14:8);
+    addScore(TYPES[e.type].pts);
+    mult++; popMult();
+    nova=Math.min(100,nova+ (e.type===&#x27;cruiser&#x27;?12:e.type===&#x27;orb&#x27;?6:3));
+    shake=Math.max(shake,e.r*0.4);
+    beep(e.type===&#x27;cruiser&#x27;?200:440,.12,&#x27;triangle&#x27;,.07);
+    // cruiser splits into two darts
+    if(e.type===&#x27;cruiser&#x27;){
+      spawnEnemy(&#x27;dart&#x27;, e.x-14, e.y);
+      spawnEnemy(&#x27;dart&#x27;, e.x+14, e.y);
+    }
+    enemies.splice(idx,1);
+  } else {
+    explode(e.x,e.y,&#x27;#fff&#x27;,5);
+    beep(300,.05,&#x27;square&#x27;,.04);
+  }
+  updateHUD();
+}
+
+function loop(){
+  if(!running) return;
+  var dt=1;
+
+  // hue shift every 15s (slow)
+  hueTimer++;
+  if(hueTimer&gt;900){ hueTimer=0; }
+  hue=(hue+0.05)%360;
+
+  // spawn
+  spawnTimer--;
+  if(spawnTimer&lt;=0){ spawnWave(); spawnTimer=Math.max(28, 70 - Math.floor(score/60)); }
+
+  // movement
+  if(keys[&#x27;ArrowLeft&#x27;]) ship.x-=5;
+  if(keys[&#x27;ArrowRight&#x27;]) ship.x+=5;
+  ship.x=Math.max(20,Math.min(W-20,ship.x));
+  if(keys[&#x27; &#x27;]) fire();
+
+  // exhaust trail
+  ship.trail.push({x:ship.x,y:ship.y+14,life:12});
+  if(ship.trail.length&gt;16) ship.trail.shift();
+  for(var i=ship.trail.length-1;i&gt;=0;i--){ ship.trail[i].life--; if(ship.trail[i].life&lt;=0) ship.trail.splice(i,1); }
+
+  // bullets
+  for(var i=bullets.length-1;i&gt;=0;i--){
+    bullets[i].y-=9;
+    if(bullets[i].y&lt;-10) bullets.splice(i,1);
+  }
+
+  // enemies
+  for(var i=enemies.length-1;i&gt;=0;i--){
+    var e=enemies[i];
+    e.y+=e.speed;
+    if(TYPES[e.type].zig){ e.phase+=0.08; e.x += Math.sin(e.phase)*2.2; e.x=Math.max(e.r,Math.min(W-e.r,e.x)); }
+    if(e.y&gt;H+e.r){
+      enemies.splice(i,1);
+      shield-=10; mult=1; popMult();
+      shake=Math.max(shake,10);
+      beep(90,.2,&#x27;sawtooth&#x27;,.09);
+      updateHUD();
+      if(shield&lt;=0){ gameOver(); return; }
+    }
+  }
+
+  // collisions
+  for(var i=bullets.length-1;i&gt;=0;i--){
+    var b=bullets[i];
+    for(var j=enemies.length-1;j&gt;=0;j--){
+      var e=enemies[j];
+      var dx=b.x-e.x, dy=b.y-e.y;
+      if(dx*dx+dy*dy &lt; e.r*e.r){
+        bullets.splice(i,1);
+        hitEnemy(e,j);
+        break;
+      }
+    }
+  }
+
+  // particles
+  for(var i=particles.length-1;i&gt;=0;i--){
+    var p=particles[i];
+    p.x+=p.vx; p.y+=p.vy; p.vx*=.96; p.vy*=.96; p.life--;
+    if(p.life&lt;=0) particles.splice(i,1);
+  }
+
+  // stars parallax
+  for(var i=0;i&lt;stars1.length;i++){ stars1[i].y+=0.6; if(stars1[i].y&gt;H){stars1[i].y=0;stars1[i].x=rnd(0,W);} }
+  for(var i=0;i&lt;stars2.length;i++){ stars2[i].y+=1.8; if(stars2[i].y&gt;H){stars2[i].y=0;stars2[i].x=rnd(0,W);} }
+
+  if(shake&gt;0) shake*=0.85;
+  if(blastFlash&gt;0) blastFlash-=0.06;
+
+  draw();
+  animId=requestAnimationFrame(loop);
+}
+
+function draw(){
+  ctx.save();
+  ctx.clearRect(0,0,W,H);
+  // background gradient with hue shift
+  var g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,&#x27;hsl(&#x27;+hue+&#x27;,60%,6%)&#x27;);
+  g.addColorStop(1,&#x27;hsl(&#x27;+((hue+60)%360)+&#x27;,70%,4%)&#x27;);
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+
+  var sx=(Math.random()-.5)*shake, sy=(Math.random()-.5)*shake;
+  ctx.translate(sx,sy);
+
+  // stars
+  ctx.fillStyle=&#x27;rgba(255,255,255,.35)&#x27;;
+  for(var i=0;i&lt;stars1.length;i++){ ctx.fillRect(stars1[i].x,stars1[i].y,stars1[i].s,stars1[i].s); }
+  ctx.fillStyle=&#x27;rgba(255,255,255,.85)&#x27;;
+  for(var i=0;i&lt;stars2.length;i++){ ctx.fillRect(stars2[i].x,stars2[i].y,stars2[i].s,stars2[i].s); }
+
+  // exhaust trail
+  for(var i=0;i&lt;ship.trail.length;i++){
+    var tr=ship.trail[i];
+    ctx.globalAlpha=tr.life/16*0.6;
+    ctx.fillStyle=&#x27;#38e8ff&#x27;;
+    ctx.beginPath(); ctx.arc(tr.x,tr.y,tr.life*0.5,0,6.28); ctx.fill();
+  }
+  ctx.globalAlpha=1;
+
+  // bullets
+  for(var i=0;i&lt;bullets.length;i++){
+    var b=bullets[i];
+    ctx.fillStyle=b.col; ctx.shadowColor=b.col; ctx.shadowBlur=8;
+    ctx.fillRect(b.x-2,b.y,4,12);
+  }
+  ctx.shadowBlur=0;
+
+  // enemies
+  for(var i=0;i&lt;enemies.length;i++){
+    var e=enemies[i];
+    ctx.shadowColor=e.col; ctx.shadowBlur=14;
+    ctx.fillStyle=e.col;
+    if(e.type===&#x27;dart&#x27;){
+      ctx.beginPath(); ctx.moveTo(e.x,e.y+e.r); ctx.lineTo(e.x-e.r*.8,e.y-e.r*.6); ctx.lineTo(e.x+e.r*.8,e.y-e.r*.6); ctx.closePath(); ctx.fill();
+    } else if(e.type===&#x27;orb&#x27;){
+      ctx.beginPath(); ctx.arc(e.x,e.y,e.r,0,6.28); ctx.fill();
+      ctx.fillStyle=&#x27;rgba(255,255,255,.6)&#x27;; ctx.beginPath(); ctx.arc(e.x-4,e.y-4,e.r*.35,0,6.28); ctx.fill();
+    } else {
+      ctx.beginPath(); ctx.arc(e.x,e.y,e.r,0,6.28); ctx.fill();
+      ctx.strokeStyle=e.hp&gt;1?&#x27;#ffd34d&#x27;:&#x27;#fff&#x27;; ctx.lineWidth=3; ctx.stroke();
+      ctx.fillStyle=&#x27;rgba(0,0,0,.3)&#x27;; ctx.fillRect(e.x-e.r*.6,e.y-4,e.r*1.2,8);
+    }
+    ctx.shadowBlur=0;
+  }
+
+  // particles
+  for(var i=0;i&lt;particles.length;i++){
+    var p=particles[i];
+    ctx.globalAlpha=Math.max(0,p.life/40);
+    ctx.fillStyle=p.col;
+    ctx.fillRect(p.x-2,p.y-2,4,4);
+  }
+  ctx.globalAlpha=1;
+
+  // ship
+  ctx.shadowColor=&#x27;#38e8ff&#x27;; ctx.shadowBlur=16;
+  ctx.fillStyle=&#x27;#dff8ff&#x27;;
+  ctx.beginPath();
+  ctx.moveTo(ship.x,ship.y-16);
+  ctx.lineTo(ship.x-16,ship.y+12);
+  ctx.lineTo(ship.x,ship.y+4);
+  ctx.lineTo(ship.x+16,ship.y+12);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle=&#x27;#8a5cff&#x27;; ctx.shadowColor=&#x27;#8a5cff&#x27;;
+  ctx.beginPath(); ctx.arc(ship.x,ship.y-2,4,0,6.28); ctx.fill();
+  ctx.shadowBlur=0;
+
+  ctx.restore();
+
+  // blast flash
+  if(blastFlash&gt;0){
+    ctx.fillStyle=&#x27;rgba(255,255,255,&#x27;+(blastFlash*0.5)+&#x27;)&#x27;;
+    ctx.fillRect(0,0,W,H);
+  }
+}
+
+function drawIdle(){
+  ctx.clearRect(0,0,W,H);
+  var g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,&#x27;#0a0620&#x27;); g.addColorStop(1,&#x27;#05030f&#x27;);
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle=&#x27;rgba(255,255,255,.5)&#x27;;
+  for(var i=0;i&lt;stars2.length;i++) ctx.fillRect(stars2[i].x,stars2[i].y,stars2[i].s,stars2[i].s);
+  ctx.fillStyle=&#x27;#8a5cff&#x27;; ctx.textAlign=&#x27;center&#x27;; ctx.font=&#x27;bold 24px system-ui&#x27;;
+  ctx.fillText(&#x27;PRESS START&#x27;, W/2, H/2);
+}
+
+function gameOver(){
+  running=false;
+  if(animId){cancelAnimationFrame(animId);animId=null;}
+  draw();
+  ctx.fillStyle=&#x27;rgba(5,3,15,.75)&#x27;; ctx.fillRect(0,0,W,H);
+  ctx.textAlign=&#x27;center&#x27;;
+  ctx.fillStyle=&#x27;#ff3caa&#x27;; ctx.font=&#x27;bold 40px system-ui&#x27;; ctx.fillText(&#x27;GAME OVER&#x27;,W/2,H/2-10);
+  ctx.fillStyle=&#x27;#e8e8ff&#x27;; ctx.font=&#x27;bold 22px system-ui&#x27;; ctx.fillText(&#x27;Score &#x27;+score,W/2,H/2+30);
+  beep(150,.6,&#x27;sawtooth&#x27;,.1);
+}
+
+function startGame(){
+  reset();
+  running=true;
+  spawnTimer=0;
+  animId=requestAnimationFrame(loop);
+}
+function stopGame(){
+  running=false;
+  if(animId){cancelAnimationFrame(animId);animId=null;}
+}
+
+window.addEventListener(&#x27;keydown&#x27;,function(e){
+  if([&#x27;ArrowLeft&#x27;,&#x27;ArrowRight&#x27;,&#x27; &#x27;].indexOf(e.key)&gt;=0){ keys[e.key]=true; e.preventDefault(); }
+  if(e.key===&#x27;Shift&#x27;){ if(running) novaBlast(); e.preventDefault(); }
+});
+window.addEventListener(&#x27;keyup&#x27;,function(e){
+  if([&#x27;ArrowLeft&#x27;,&#x27;ArrowRight&#x27;,&#x27; &#x27;].indexOf(e.key)&gt;=0) keys[e.key]=false;
+});
+window.addEventListener(&#x27;message&#x27;,function(e){
+  if(!e.data||typeof e.data!==&#x27;object&#x27;) return;
+  if(e.data.type===&#x27;wd_start&#x27;) startGame();
+  else if(e.data.type===&#x27;wd_stop&#x27;) stopGame();
+});
+
+initStars();
+drawIdle();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  // Suppress in-iframe scrollbars. The parent fits the iframe layout
+  // box to match the content size, so internal scroll is redundant —
+  // and if the LLM&#x27;s CSS sets body overflow: auto, the scrollbar shows
+  // briefly before the fit lands. Force hidden so it never appears.
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  // Iframe-internal JS error capture. window.onerror inside a sandboxed
+  // iframe can&#x27;t post to /api/js_error directly, so we relay to the
+  // parent via postMessage; parent&#x27;s error_logger.js forwards to the
+  // server. Catches LLM-emitted broken HTML (invalid hex, undefined
+  // variables, etc.) that would otherwise fail silently inside the
+  // iframe.
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      // Debounce: don&#x27;t fire more than ~10× per second. ResizeObserver
+      // fires repeatedly during layout/font load; we only need the latest.
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      // Clamp: reject obviously bogus dimensions. Any browser-game viewport
+      // is well under 4000×4000 logical px; readings beyond that are layout
+      // noise during load/visibility transitions.
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  // Parent posts wd_remeasure when it makes the iframe visible (the body&#x27;s
+  // ResizeObserver doesn&#x27;t fire on display:none→block of an outer ancestor
+  // because the iframe document didn&#x27;t actually resize). Wait a frame for
+  // layout to settle before measuring.
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

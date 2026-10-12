@@ -1,0 +1,588 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stellar Surfer</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html#ai">&larr; All games</a> &middot; <b>Stellar Surfer</b></div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #05060f; color: #e8ecff; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 12px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: 2px;
+       font-family: &#x27;Courier New&#x27;, monospace; text-transform: uppercase;
+       color: #6ff; text-shadow: 0 0 8px #0ff, 0 0 18px #08f; }
+  .instructions { font-size: 16px; color: #9fb; max-width: 620px; margin: 0; line-height: 1.35; text-align: center; }
+  .score { font-family: &#x27;Courier New&#x27;, monospace; font-size: 22px; font-weight: bold;
+           letter-spacing: 2px; color: #ffe45e; text-shadow: 0 0 6px #ff0, 0 0 12px #f80; margin: 0; }
+  .wrap { position: relative; width: 660px; height: 440px; border-radius: 10px; overflow: hidden;
+          box-shadow: 0 0 24px rgba(80,120,255,0.4); }
+  #canvas { display: block; width: 660px; height: 440px; }
+  #flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+  #msg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+         font-family: &#x27;Courier New&#x27;, monospace; font-size: 26px; font-weight: bold; color: #fff;
+         text-shadow: 0 0 10px #f80; pointer-events: none; text-align: center; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;Stellar Surfer&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Press &lt;strong&gt;Space&lt;/strong&gt; (or click) to thrust your ship upward; release to fall. Weave through the asteroid field and survive as long as you can — use the Start button below.&lt;/p&gt;
+  &lt;p class=&quot;score&quot;&gt;LIGHT YEARS: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/p&gt;
+  &lt;div class=&quot;wrap&quot;&gt;
+    &lt;canvas id=&quot;canvas&quot; width=&quot;660&quot; height=&quot;440&quot;&gt;&lt;/canvas&gt;
+    &lt;div id=&quot;flash&quot;&gt;&lt;/div&gt;
+    &lt;div id=&quot;msg&quot;&gt;PRESS START&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+[&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+  window.addEventListener(t, function(e) {
+    try {
+      window.parent.postMessage({ type: &#x27;game_input&#x27;, kind: t, key: e.key || null }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+});
+
+var W = 660, H = 440;
+var canvas = document.getElementById(&#x27;canvas&#x27;);
+var ctx = canvas.getContext(&#x27;2d&#x27;);
+var scoreEl = document.getElementById(&#x27;score&#x27;);
+var flashEl = document.getElementById(&#x27;flash&#x27;);
+var msgEl = document.getElementById(&#x27;msg&#x27;);
+
+var GROUND = H - 24;
+var SHIP_X = 90, SHIP_W = 40, SHIP_H = 24;
+var GRAVITY = 0.42, THRUST = -0.9, MAX_FALL = 8, MAX_RISE = -8;
+
+var running = false, animId = null;
+var shipY, shipVY, thrusting;
+var asteroids, particles, stars;
+var score, distanceAcc, speed, gameOver;
+var flashVal = 0, spawnAcc = 0, speedRampAcc = 0;
+var frozen = false, freezeTimer = 0;
+
+// Asteroid type definitions: craggy polygon points (unit circle scaled), color
+var TYPES = [
+  { r: 14, color: &#x27;#7fd8ff&#x27;, edge: &#x27;#bff&#x27;, speed: 3.6, yBand: [0.05, 0.4] },   // small icy, fast, high
+  { r: 24, color: &#x27;#9aa0a8&#x27;, edge: &#x27;#d8dde3&#x27;, speed: 2.6, yBand: [0.25, 0.7] }, // medium grey
+  { r: 38, color: &#x27;#a9784e&#x27;, edge: &#x27;#d9a06b&#x27;, speed: 1.8, yBand: [0.55, 0.92] } // large brown, slow, low
+];
+
+function makePoly(r) {
+  var pts = [], n = 9;
+  for (var i = 0; i &lt; n; i++) {
+    var a = (i / n) * Math.PI * 2;
+    var rr = r * (0.72 + Math.random() * 0.42);
+    pts.push([Math.cos(a) * rr, Math.sin(a) * rr]);
+  }
+  return pts;
+}
+
+function initStars() {
+  stars = [];
+  for (var i = 0; i &lt; 90; i++) {
+    var layer = i &lt; 55 ? 0 : (i &lt; 80 ? 1 : 2);
+    stars.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      layer: layer,
+      size: layer === 0 ? 1 : (layer === 1 ? 2 : 3.5),
+      sp: layer === 0 ? 0.4 : (layer === 1 ? 1.1 : 2.4)
+    });
+  }
+}
+
+function reset() {
+  shipY = GROUND - SHIP_H - 40;
+  shipVY = 0;
+  thrusting = false;
+  asteroids = [];
+  particles = [];
+  score = 0;
+  distanceAcc = 0;
+  speed = 1;
+  spawnAcc = 0;
+  speedRampAcc = 0;
+  flashVal = 0;
+  frozen = false;
+  freezeTimer = 0;
+  gameOver = false;
+  scoreEl.textContent = &#x27;0&#x27;;
+  initStars();
+  spawnAsteroid();
+}
+
+function spawnAsteroid() {
+  var t = Math.floor(Math.random() * 3);
+  var def = TYPES[t];
+  var band = def.yBand;
+  var minY = band[0] * H + def.r;
+  var maxY = band[1] * H - def.r;
+  if (maxY &gt; GROUND - def.r) maxY = GROUND - def.r;
+  var y = minY + Math.random() * (maxY - minY);
+  asteroids.push({
+    x: W + def.r + 10,
+    y: y,
+    r: def.r,
+    typeSpeed: def.speed,
+    color: def.color,
+    edge: def.edge,
+    poly: makePoly(def.r),
+    rot: Math.random() * Math.PI * 2,
+    rotV: (Math.random() - 0.5) * 0.04,
+    scored: false
+  });
+}
+
+function burst(x, y, color, count, spread) {
+  for (var i = 0; i &lt; count; i++) {
+    var a = Math.random() * Math.PI * 2;
+    var sp = Math.random() * spread;
+    particles.push({
+      x: x, y: y,
+      vx: Math.cos(a) * sp, vy: Math.sin(a) * sp,
+      life: 1, decay: 0.02 + Math.random() * 0.03,
+      color: color, size: 1 + Math.random() * 3
+    });
+  }
+}
+
+function thrust() {
+  if (!running || frozen) return;
+  thrusting = true;
+}
+
+function bgColor() {
+  // navy -&gt; purple -&gt; red as score climbs (cap at 400)
+  var t = Math.min(score / 400, 1);
+  var r, g, b;
+  if (t &lt; 0.5) {
+    var k = t / 0.5;
+    r = Math.round(8 + k * (60 - 8));
+    g = Math.round(10 + k * (6 - 10));
+    b = Math.round(40 + k * (70 - 40));
+  } else {
+    var k2 = (t - 0.5) / 0.5;
+    r = Math.round(60 + k2 * (110 - 60));
+    g = Math.round(6 + k2 * (8 - 6));
+    b = Math.round(70 + k2 * (18 - 70));
+  }
+  return &#x27;rgb(&#x27; + r + &#x27;,&#x27; + g + &#x27;,&#x27; + b + &#x27;)&#x27;;
+}
+
+function drawShip() {
+  ctx.save();
+  ctx.translate(SHIP_X, shipY + SHIP_H / 2);
+  // thruster flame
+  if (thrusting &amp;&amp; !frozen) {
+    ctx.fillStyle = &#x27;rgba(120,220,255,0.9)&#x27;;
+    ctx.beginPath();
+    ctx.moveTo(-SHIP_W / 2, -5);
+    ctx.lineTo(-SHIP_W / 2 - 8 - Math.random() * 8, 0);
+    ctx.lineTo(-SHIP_W / 2, 5);
+    ctx.closePath();
+    ctx.fill();
+  }
+  // neon glow ship body
+  ctx.shadowColor = &#x27;#0ff&#x27;;
+  ctx.shadowBlur = 16;
+  ctx.fillStyle = &#x27;#0ff&#x27;;
+  ctx.beginPath();
+  ctx.moveTo(SHIP_W / 2, 0);
+  ctx.lineTo(-SHIP_W / 2, -SHIP_H / 2);
+  ctx.lineTo(-SHIP_W / 2 + 8, 0);
+  ctx.lineTo(-SHIP_W / 2, SHIP_H / 2);
+  ctx.closePath();
+  ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = &#x27;#fff&#x27;;
+  ctx.beginPath();
+  ctx.arc(2, 0, 4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawAsteroid(a) {
+  ctx.save();
+  ctx.translate(a.x, a.y);
+  ctx.rotate(a.rot);
+  ctx.shadowColor = a.edge;
+  ctx.shadowBlur = 8;
+  ctx.fillStyle = a.color;
+  ctx.strokeStyle = a.edge;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(a.poly[0][0], a.poly[0][1]);
+  for (var i = 1; i &lt; a.poly.length; i++) ctx.lineTo(a.poly[i][0], a.poly[i][1]);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+  // crater detail
+  ctx.fillStyle = &#x27;rgba(0,0,0,0.25)&#x27;;
+  ctx.beginPath();
+  ctx.arc(-a.r * 0.2, a.r * 0.15, a.r * 0.22, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function render() {
+  ctx.fillStyle = bgColor();
+  ctx.fillRect(0, 0, W, H);
+
+  // stars
+  for (var i = 0; i &lt; stars.length; i++) {
+    var s = stars[i];
+    ctx.fillStyle = s.layer === 2 ? &#x27;#fff&#x27; : (s.layer === 1 ? &#x27;#cfe&#x27; : &#x27;#89b&#x27;);
+    ctx.globalAlpha = s.layer === 0 ? 0.6 : 0.9;
+    ctx.fillRect(s.x, s.y, s.size, s.size);
+  }
+  ctx.globalAlpha = 1;
+
+  // ground glow line
+  ctx.strokeStyle = &#x27;rgba(120,180,255,0.4)&#x27;;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, GROUND);
+  ctx.lineTo(W, GROUND);
+  ctx.stroke();
+
+  for (var j = 0; j &lt; asteroids.length; j++) drawAsteroid(asteroids[j]);
+
+  // particles
+  for (var k = 0; k &lt; particles.length; k++) {
+    var p = particles[k];
+    ctx.globalAlpha = Math.max(0, p.life);
+    ctx.fillStyle = p.color;
+    ctx.fillRect(p.x, p.y, p.size, p.size);
+  }
+  ctx.globalAlpha = 1;
+
+  if (!frozen || (frozen &amp;&amp; freezeTimer % 6 &lt; 3)) drawShip();
+  else drawShip();
+}
+
+function update() {
+  // stars parallax
+  for (var i = 0; i &lt; stars.length; i++) {
+    var s = stars[i];
+    s.x -= s.sp * speed;
+    if (s.x &lt; -4) { s.x = W + Math.random() * 20; s.y = Math.random() * H; }
+  }
+
+  if (frozen) {
+    freezeTimer++;
+    stepParticles();
+    if (freezeTimer &gt; 45) { stopGame(); }
+    return;
+  }
+
+  // physics
+  if (thrusting) shipVY += THRUST;
+  shipVY += GRAVITY;
+  if (shipVY &gt; MAX_FALL) shipVY = MAX_FALL;
+  if (shipVY &lt; MAX_RISE) shipVY = MAX_RISE;
+  shipY += shipVY;
+  if (shipY &lt; 4) { shipY = 4; shipVY = 0; }
+  if (shipY + SHIP_H &gt; GROUND) { shipY = GROUND - SHIP_H; shipVY = 0; }
+  thrusting = false;
+
+  // score by distance
+  distanceAcc += speed;
+  if (distanceAcc &gt;= 12) {
+    var add = Math.floor(distanceAcc / 12);
+    score += add;
+    distanceAcc -= add * 12;
+    scoreEl.textContent = score;
+  }
+
+  // speed ramp
+  speedRampAcc++;
+  if (speedRampAcc &gt;= 240) { speedRampAcc = 0; speed = Math.min(speed + 0.18, 3.2); }
+
+  // spawn
+  spawnAcc += speed;
+  if (spawnAcc &gt;= 70) { spawnAcc = 0; spawnAsteroid(); }
+
+  // asteroids
+  var shipCX = SHIP_X, shipCY = shipY + SHIP_H / 2;
+  for (var a = asteroids.length - 1; a &gt;= 0; a--) {
+    var o = asteroids[a];
+    o.x -= o.typeSpeed * speed;
+    o.rot += o.rotV;
+    if (o.x + o.r &lt; -10) { asteroids.splice(a, 1); continue; }
+    if (!o.scored &amp;&amp; o.x + o.r &lt; shipCX - SHIP_W / 2) {
+      o.scored = true;
+      score += 5;
+      scoreEl.textContent = score;
+      burst(SHIP_X, shipY + SHIP_H / 2, &#x27;#0ff&#x27;, 12, 4);
+    }
+    // collision (circle approx vs ship box)
+    var nearestX = Math.max(shipCX - SHIP_W / 2, Math.min(o.x, shipCX + SHIP_W / 2));
+    var nearestY = Math.max(shipY, Math.min(o.y, shipY + SHIP_H));
+    var dx = o.x - nearestX, dy = o.y - nearestY;
+    if (dx * dx + dy * dy &lt; (o.r * 0.85) * (o.r * 0.85)) {
+      explode();
+      return;
+    }
+  }
+
+  stepParticles();
+}
+
+function stepParticles() {
+  for (var k = particles.length - 1; k &gt;= 0; k--) {
+    var p = particles[k];
+    p.x += p.vx; p.y += p.vy;
+    p.vy += 0.05;
+    p.life -= p.decay;
+    if (p.life &lt;= 0) particles.splice(k, 1);
+  }
+}
+
+function explode() {
+  frozen = true;
+  freezeTimer = 0;
+  gameOver = true;
+  flashVal = 1;
+  flashEl.style.opacity = &#x27;1&#x27;;
+  burst(SHIP_X, shipY + SHIP_H / 2, &#x27;#ffae2e&#x27;, 40, 8);
+  burst(SHIP_X, shipY + SHIP_H / 2, &#x27;#fff&#x27;, 30, 6);
+  msgEl.textContent = &#x27;DESTROYED — &#x27; + score + &#x27; LY&#x27;;
+  msgEl.style.display = &#x27;flex&#x27;;
+}
+
+function tick() {
+  if (!running) return;
+  update();
+  render();
+  if (flashVal &gt; 0) {
+    flashVal -= 0.06;
+    flashEl.style.opacity = Math.max(0, flashVal);
+  }
+  animId = requestAnimationFrame(tick);
+}
+
+function startGame() {
+  if (running) return;
+  reset();
+  msgEl.style.display = &#x27;none&#x27;;
+  flashEl.style.opacity = &#x27;0&#x27;;
+  running = true;
+  render();
+  animId = requestAnimationFrame(tick);
+}
+
+function stopGame() {
+  running = false;
+  if (animId) { cancelAnimationFrame(animId); animId = null; }
+  if (gameOver) msgEl.style.display = &#x27;flex&#x27;;
+}
+
+window.addEventListener(&#x27;keydown&#x27;, function (e) {
+  if (e.key === &#x27; &#x27; || e.code === &#x27;Space&#x27;) { thrust(); e.preventDefault(); }
+});
+canvas.addEventListener(&#x27;mousedown&#x27;, function () { thrust(); });
+window.addEventListener(&#x27;message&#x27;, function (e) {
+  if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+  if (e.data.type === &#x27;wd_start&#x27;) startGame();
+  else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+});
+
+// initial static view
+initStars();
+shipY = GROUND - SHIP_H - 40;
+asteroids = [];
+particles = [];
+score = 0; speed = 1;
+render();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  // Suppress in-iframe scrollbars. The parent fits the iframe layout
+  // box to match the content size, so internal scroll is redundant —
+  // and if the LLM&#x27;s CSS sets body overflow: auto, the scrollbar shows
+  // briefly before the fit lands. Force hidden so it never appears.
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  // Iframe-internal JS error capture. window.onerror inside a sandboxed
+  // iframe can&#x27;t post to /api/js_error directly, so we relay to the
+  // parent via postMessage; parent&#x27;s error_logger.js forwards to the
+  // server. Catches LLM-emitted broken HTML (invalid hex, undefined
+  // variables, etc.) that would otherwise fail silently inside the
+  // iframe.
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      // Debounce: don&#x27;t fire more than ~10× per second. ResizeObserver
+      // fires repeatedly during layout/font load; we only need the latest.
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      // Clamp: reject obviously bogus dimensions. Any browser-game viewport
+      // is well under 4000×4000 logical px; readings beyond that are layout
+      // noise during load/visibility transitions.
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  // Parent posts wd_remeasure when it makes the iframe visible (the body&#x27;s
+  // ResizeObserver doesn&#x27;t fire on display:none→block of an outer ancestor
+  // because the iframe document didn&#x27;t actually resize). Wait a frame for
+  // layout to settle before measuring.
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

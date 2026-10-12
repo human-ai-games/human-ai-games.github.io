@@ -1,0 +1,585 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🌊 Deep Sea Pop</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html#ai">&larr; All games</a> &middot; <b>🌊 Deep Sea Pop</b></div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;style&gt;
+  html, body { height: 100%; margin: 0; }
+  body { font-family: system-ui, -apple-system, sans-serif; overflow: hidden; user-select: none; }
+  .game {
+    position: relative; width: 720px; height: 640px; margin: 0 auto; box-sizing: border-box;
+    background: linear-gradient(180deg, #012a4a, #013a63, #01497c, #014f86);
+    overflow: hidden; color: #e0f7ff;
+    animation: oceanShift 14s ease-in-out infinite alternate;
+  }
+  @keyframes oceanShift {
+    0%   { background: linear-gradient(180deg, #012a4a, #013a63, #01497c, #014f86); }
+    50%  { background: linear-gradient(180deg, #013a3a, #024b56, #026773, #027d8a); }
+    100% { background: linear-gradient(180deg, #011f3a, #012f52, #013f66, #01557a); }
+  }
+  .topbar { position: relative; z-index: 30; text-align: center; padding: 8px 10px 4px; }
+  h1 { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: 1px; text-shadow: 0 0 10px #4fd1e0; }
+  .instructions { font-size: 16px; margin: 4px auto 0; max-width: 620px; line-height: 1.35; color: #bfeaf5; }
+  .hud { display: flex; justify-content: center; gap: 14px; margin-top: 8px; }
+  .gauge {
+    background: radial-gradient(circle at 30% 30%, #0b2b3a, #051820);
+    border: 3px solid #2b6d7a; border-radius: 12px; padding: 6px 16px; min-width: 120px;
+    box-shadow: inset 0 0 12px #000, 0 0 8px #1a4f5a;
+  }
+  .gauge .label { font-size: 12px; letter-spacing: 2px; color: #6fd0dc; text-transform: uppercase; }
+  .gauge .val { font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums; color: #9fe8f2; }
+  .gauge.combo .val.gold { color: #ffd447; text-shadow: 0 0 12px #ffb200; }
+  #comboTag { font-size: 12px; color: #ffd447; height: 14px; }
+  .board { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+
+  .coral-row { position: absolute; bottom: 0; left: 0; width: 100%; height: 120px; z-index: 10; pointer-events: none; }
+  .coral { position: absolute; bottom: -10px; font-size: 88px; filter: drop-shadow(0 0 6px rgba(0,0,0,.4)); }
+
+  .hole { position: absolute; width: 92px; height: 92px; }
+  .creature {
+    position: absolute; left: 0; bottom: -100px; width: 92px; height: 92px;
+    cursor: pointer; transition: bottom .45s cubic-bezier(.34,1.4,.64,1);
+    display: flex; align-items: center; justify-content: center; z-index: 15;
+  }
+  .creature.up { bottom: 8px; }
+  .creature.miss { transition: bottom .4s ease-in; }
+  .critter {
+    width: 78px; height: 78px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-size: 46px;
+    position: relative; box-shadow: 0 0 18px currentColor;
+  }
+  .pts {
+    position: absolute; top: -8px; right: -6px; background: #001b26; color: #fff;
+    font-size: 13px; font-weight: 800; border-radius: 10px; padding: 1px 6px;
+    border: 2px solid currentColor; box-shadow: 0 0 6px currentColor;
+  }
+  .creature.hit .critter { animation: spinOff .5s ease-in forwards; }
+  @keyframes spinOff {
+    to { transform: translateY(-260px) rotate(720deg) scale(.3); opacity: 0; }
+  }
+
+  .bubble { position: absolute; border-radius: 50%; background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.6), rgba(180,240,255,.12));
+    border: 1px solid rgba(255,255,255,.25); pointer-events: none; z-index: 5; bottom: -30px;
+    animation: rise linear forwards; }
+  @keyframes rise { to { transform: translateY(-680px); opacity: 0; } }
+
+  .ring { position: absolute; border: 3px solid #bff; border-radius: 50%; pointer-events: none; z-index: 25;
+    animation: ringExpand .55s ease-out forwards; }
+  @keyframes ringExpand { from { transform: scale(.2); opacity: .9; } to { transform: scale(2.4); opacity: 0; } }
+  .missrip { position: absolute; border: 2px solid #ff8080; border-radius: 50%; pointer-events: none; z-index: 25;
+    animation: ringExpand .5s ease-out forwards; }
+
+  .overlay { position: absolute; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: center;
+    flex-direction: column; background: rgba(1,20,35,.55); text-align: center; }
+  .overlay h2 { font-size: 30px; margin: 0 0 6px; text-shadow: 0 0 12px #4fd1e0; }
+  .overlay p { font-size: 18px; margin: 4px; }
+  .hidden { display: none; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot; id=&quot;game&quot;&gt;
+  &lt;div class=&quot;topbar&quot;&gt;
+    &lt;h1&gt;🌊 Deep Sea Pop&lt;/h1&gt;
+    &lt;p class=&quot;instructions&quot;&gt;Click the glowing creatures as they pop up from the coral — rarer ones score more. Land three hits in a row for a gold combo that doubles your points!&lt;/p&gt;
+    &lt;div class=&quot;hud&quot;&gt;
+      &lt;div class=&quot;gauge&quot;&gt;&lt;div class=&quot;label&quot;&gt;Score&lt;/div&gt;&lt;div class=&quot;val&quot; id=&quot;score&quot;&gt;0&lt;/div&gt;&lt;/div&gt;
+      &lt;div class=&quot;gauge&quot;&gt;&lt;div class=&quot;label&quot;&gt;Time&lt;/div&gt;&lt;div class=&quot;val&quot; id=&quot;time&quot;&gt;60&lt;/div&gt;&lt;/div&gt;
+      &lt;div class=&quot;gauge combo&quot;&gt;&lt;div class=&quot;label&quot;&gt;Combo&lt;/div&gt;&lt;div class=&quot;val&quot; id=&quot;combo&quot;&gt;x1&lt;/div&gt;&lt;div id=&quot;comboTag&quot;&gt;&lt;/div&gt;&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;board&quot; id=&quot;board&quot;&gt;
+    &lt;div class=&quot;coral-row&quot; id=&quot;coralRow&quot;&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;overlay&quot; id=&quot;overlay&quot;&gt;
+    &lt;h2&gt;🐠 Ready to Dive?&lt;/h2&gt;
+    &lt;p&gt;Press &lt;strong&gt;Start&lt;/strong&gt; below to begin your 60-second dive.&lt;/p&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+[&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+  window.addEventListener(t, function(e) {
+    try { window.parent.postMessage({ type: &#x27;game_input&#x27;, kind: t, key: e.key || null }, &#x27;*&#x27;); } catch (_) {}
+  }, true);
+});
+
+var board = document.getElementById(&#x27;board&#x27;);
+var coralRow = document.getElementById(&#x27;coralRow&#x27;);
+var scoreEl = document.getElementById(&#x27;score&#x27;);
+var timeEl = document.getElementById(&#x27;time&#x27;);
+var comboEl = document.getElementById(&#x27;combo&#x27;);
+var comboTag = document.getElementById(&#x27;comboTag&#x27;);
+var comboGauge = document.querySelector(&#x27;.gauge.combo&#x27;);
+var overlay = document.getElementById(&#x27;overlay&#x27;);
+
+var TYPES = [
+  { name:&#x27;jelly&#x27;,  emoji:&#x27;🪼&#x27;, color:&#x27;#c77dff&#x27;, pts:1, weight:44 },
+  { name:&#x27;puffer&#x27;, emoji:&#x27;🐡&#x27;, color:&#x27;#ffa94d&#x27;, pts:2, weight:30 },
+  { name:&#x27;angler&#x27;, emoji:&#x27;🎣&#x27;, color:&#x27;#7be0f2&#x27;, pts:3, weight:20 },
+  { name:&#x27;crab&#x27;,   emoji:&#x27;🦀&#x27;, color:&#x27;#ffd447&#x27;, pts:5, weight:6 }
+];
+
+// positions where creatures pop up (behind coral)
+var SLOTS = [];
+var running = false;
+var score = 0, timeLeft = 60, combo = 0, mult = 1;
+var spawnTimer = null, tickTimer = null, rampTimer = null;
+var spawnDelay = 950, moleLife = 1500, difficulty = 0;
+var activeCreatures = [];
+var audioCtx = null;
+
+function initScene() {
+  coralRow.innerHTML = &#x27;&#x27;;
+  var corals = [&#x27;🪸&#x27;,&#x27;🌿&#x27;,&#x27;🪸&#x27;,&#x27;🌿&#x27;,&#x27;🪸&#x27;,&#x27;🌿&#x27;,&#x27;🪸&#x27;];
+  var n = 6; SLOTS = [];
+  var boardW = 720, margin = 30;
+  var gap = (boardW - margin*2 - 92) / (n-1);
+  for (var i=0;i&lt;n;i++) {
+    var x = margin + gap*i;
+    SLOTS.push(x);
+    var c = document.createElement(&#x27;div&#x27;);
+    c.className = &#x27;coral&#x27;;
+    c.textContent = corals[i % corals.length];
+    c.style.left = (x - 6) + &#x27;px&#x27;;
+    c.style.zIndex = 20; // coral in front of creatures at rest edges
+    coralRow.appendChild(c);
+  }
+}
+initScene();
+
+function beep(freq) {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    var o = audioCtx.createOscillator(); var g = audioCtx.createGain();
+    o.type = &#x27;sine&#x27;; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.001, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.28, audioCtx.currentTime + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(); o.stop(audioCtx.currentTime + 0.26);
+  } catch(_) {}
+}
+function missSound() {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    var o = audioCtx.createOscillator(); var g = audioCtx.createGain();
+    o.type = &#x27;sawtooth&#x27;; o.frequency.setValueAtTime(220, audioCtx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(90, audioCtx.currentTime + 0.25);
+    g.gain.setValueAtTime(0.001, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.14, audioCtx.currentTime + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(); o.stop(audioCtx.currentTime + 0.3);
+  } catch(_) {}
+}
+
+function pickType() {
+  var total = TYPES.reduce(function(s,t){return s+t.weight;},0);
+  var r = Math.random()*total;
+  for (var i=0;i&lt;TYPES.length;i++){ r -= TYPES[i].weight; if (r&lt;=0) return TYPES[i]; }
+  return TYPES[0];
+}
+
+function usedSlots() { return activeCreatures.map(function(c){return c.slot;}); }
+
+function spawnCreature() {
+  if (!running) return;
+  var free = [];
+  for (var i=0;i&lt;SLOTS.length;i++) if (usedSlots().indexOf(i)&lt;0) free.push(i);
+  if (free.length === 0) return;
+  var slot = free[Math.floor(Math.random()*free.length)];
+  var type = pickType();
+
+  var el = document.createElement(&#x27;div&#x27;);
+  el.className = &#x27;creature&#x27;;
+  el.style.left = SLOTS[slot] + &#x27;px&#x27;;
+  el.innerHTML = &#x27;&lt;div class=&quot;critter&quot; style=&quot;color:&#x27;+type.color+&#x27;;background:radial-gradient(circle at 35% 30%, #ffffff33, &#x27;+type.color+&#x27;44);&quot;&gt;&#x27;
+    + type.emoji + &#x27;&lt;span class=&quot;pts&quot;&gt;&#x27;+type.pts+&#x27;&lt;/span&gt;&lt;/div&gt;&#x27;;
+
+  var rec = { el: el, slot: slot, type: type, done: false };
+  activeCreatures.push(rec);
+  board.appendChild(el);
+  // pop up
+  requestAnimationFrame(function(){ el.classList.add(&#x27;up&#x27;); });
+
+  var life = Math.max(700, moleLife);
+  rec.lifeTimer = setTimeout(function(){ resolveMiss(rec); }, life);
+
+  el.addEventListener(&#x27;click&#x27;, function(ev){
+    ev.stopPropagation();
+    if (rec.done) return;
+    hitCreature(rec, ev);
+  });
+}
+
+function removeRec(rec) {
+  var idx = activeCreatures.indexOf(rec);
+  if (idx&gt;=0) activeCreatures.splice(idx,1);
+  if (rec.lifeTimer) clearTimeout(rec.lifeTimer);
+}
+
+function burst(x, y, color) {
+  for (var i=0;i&lt;2;i++){
+    var r = document.createElement(&#x27;div&#x27;);
+    r.className = &#x27;ring&#x27;;
+    r.style.borderColor = color;
+    var size = 40 + i*20;
+    r.style.width = size+&#x27;px&#x27;; r.style.height = size+&#x27;px&#x27;;
+    r.style.left = (x - size/2) + &#x27;px&#x27;; r.style.top = (y - size/2) + &#x27;px&#x27;;
+    board.appendChild(r);
+    setTimeout((function(el){return function(){ if(el.parentNode) el.parentNode.removeChild(el); };})(r), 600);
+  }
+}
+
+function hitCreature(rec, ev) {
+  rec.done = true;
+  clearTimeout(rec.lifeTimer);
+
+  combo++;
+  if (combo &gt;= 3) { mult = 2; } 
+  updateCombo();
+
+  var gained = rec.type.pts * mult;
+  score += gained;
+  scoreEl.textContent = score;
+
+  // pitch higher for rarer creatures
+  var freqMap = { jelly:520, puffer:660, angler:820, crab:1050 };
+  beep(freqMap[rec.type.name] + (mult&gt;1?200:0));
+
+  var rect = board.getBoundingClientRect();
+  var cRect = rec.el.getBoundingClientRect();
+  burst(cRect.left - rect.left + 46, cRect.top - rect.top + 46, rec.type.color);
+
+  rec.el.classList.add(&#x27;hit&#x27;);
+  var el = rec.el;
+  removeRec(rec);
+  setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 520);
+}
+
+function resolveMiss(rec) {
+  if (rec.done) return;
+  rec.done = true;
+  // frown &amp; dive back
+  var crit = rec.el.querySelector(&#x27;.critter&#x27;);
+  if (crit) crit.style.filter = &#x27;grayscale(.6)&#x27;;
+  rec.el.classList.remove(&#x27;up&#x27;);
+  rec.el.classList.add(&#x27;miss&#x27;);
+
+  // miss ripple
+  var rect = board.getBoundingClientRect();
+  var cRect = rec.el.getBoundingClientRect();
+  var rip = document.createElement(&#x27;div&#x27;);
+  rip.className = &#x27;missrip&#x27;;
+  rip.style.width=&#x27;36px&#x27;; rip.style.height=&#x27;36px&#x27;;
+  rip.style.left = (cRect.left - rect.left + 28)+&#x27;px&#x27;;
+  rip.style.top = (cRect.top - rect.top + 20)+&#x27;px&#x27;;
+  board.appendChild(rip);
+  setTimeout(function(){ if(rip.parentNode) rip.parentNode.removeChild(rip); }, 520);
+
+  missSound();
+  combo = 0; mult = 1; updateCombo();
+
+  var el = rec.el;
+  removeRec(rec);
+  setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 450);
+}
+
+function updateCombo() {
+  comboEl.textContent = &#x27;x&#x27; + mult;
+  if (mult &gt; 1) {
+    comboEl.classList.add(&#x27;gold&#x27;); comboEl.classList.add(&#x27;val&#x27;);
+    scoreEl.classList.add(&#x27;gold&#x27;);
+    comboGauge.classList.add(&#x27;combo&#x27;);
+    comboTag.textContent = &#x27;DOUBLE!&#x27;;
+    scoreEl.style.color = &#x27;#ffd447&#x27;;
+    scoreEl.style.textShadow = &#x27;0 0 12px #ffb200&#x27;;
+  } else {
+    comboEl.classList.remove(&#x27;gold&#x27;);
+    scoreEl.classList.remove(&#x27;gold&#x27;);
+    comboTag.textContent = combo&gt;0 ? (combo+&#x27; hit&#x27;+(combo&gt;1?&#x27;s&#x27;:&#x27;&#x27;)) : &#x27;&#x27;;
+    scoreEl.style.color = &#x27;#9fe8f2&#x27;;
+    scoreEl.style.textShadow = &#x27;none&#x27;;
+  }
+}
+
+// missing when clicking empty water breaks combo lightly? -&gt; keep simple: only creature-miss resets
+
+function makeBubble() {
+  if (!running) return;
+  var b = document.createElement(&#x27;div&#x27;);
+  b.className = &#x27;bubble&#x27;;
+  var size = 6 + Math.random()*16;
+  b.style.width = size+&#x27;px&#x27;; b.style.height = size+&#x27;px&#x27;;
+  b.style.left = Math.random()*700 + &#x27;px&#x27;;
+  var dur = 5 + Math.random()*5;
+  b.style.animationDuration = dur + &#x27;s&#x27;;
+  board.appendChild(b);
+  setTimeout(function(){ if(b.parentNode) b.parentNode.removeChild(b); }, dur*1000);
+}
+var bubbleTimer = null;
+
+function clearAll() {
+  activeCreatures.forEach(function(rec){
+    if (rec.lifeTimer) clearTimeout(rec.lifeTimer);
+    if (rec.el.parentNode) rec.el.parentNode.removeChild(rec.el);
+  });
+  activeCreatures = [];
+  Array.prototype.slice.call(board.querySelectorAll(&#x27;.ring,.missrip,.bubble&#x27;)).forEach(function(e){
+    if(e.parentNode) e.parentNode.removeChild(e);
+  });
+}
+
+function scheduleSpawn() {
+  spawnTimer = setTimeout(function loop(){
+    spawnCreature();
+    if (running) spawnTimer = setTimeout(loop, spawnDelay + Math.random()*350);
+  }, 400);
+}
+
+function startGame() {
+  if (running) return;
+  running = true;
+  overlay.classList.add(&#x27;hidden&#x27;);
+  score = 0; timeLeft = 60; combo = 0; mult = 1;
+  spawnDelay = 950; moleLife = 1500; difficulty = 0;
+  scoreEl.textContent = &#x27;0&#x27;; timeEl.textContent = &#x27;60&#x27;;
+  updateCombo();
+  clearAll();
+
+  spawnCreature(); // immediate feedback
+  scheduleSpawn();
+  bubbleTimer = setInterval(makeBubble, 500);
+  for (var i=0;i&lt;5;i++) setTimeout(makeBubble, i*120);
+
+  tickTimer = setInterval(function(){
+    timeLeft--;
+    timeEl.textContent = timeLeft;
+    if (timeLeft &lt;= 0) endGame();
+  }, 1000);
+
+  rampTimer = setInterval(function(){
+    difficulty++;
+    spawnDelay = Math.max(420, 950 - difficulty*90);
+    moleLife = Math.max(750, 1500 - difficulty*110);
+  }, 10000);
+}
+
+function stopTimers() {
+  if (spawnTimer) { clearTimeout(spawnTimer); spawnTimer = null; }
+  if (tickTimer) { clearInterval(tickTimer); tickTimer = null; }
+  if (rampTimer) { clearInterval(rampTimer); rampTimer = null; }
+  if (bubbleTimer) { clearInterval(bubbleTimer); bubbleTimer = null; }
+}
+
+function stopGame() {
+  if (!running) return;
+  running = false;
+  stopTimers();
+  clearAll();
+}
+
+function endGame() {
+  running = false;
+  stopTimers();
+  clearAll();
+  overlay.innerHTML = &#x27;&lt;h2&gt;🐚 Dive Complete!&lt;/h2&gt;&lt;p&gt;Final Score: &lt;strong&gt;&#x27;+score+&#x27;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;Press Start below to dive again.&lt;/p&gt;&#x27;;
+  overlay.classList.remove(&#x27;hidden&#x27;);
+}
+
+window.addEventListener(&#x27;message&#x27;, function (e) {
+  if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+  if (e.data.type === &#x27;wd_start&#x27;) startGame();
+  else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+});
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  // Suppress in-iframe scrollbars. The parent fits the iframe layout
+  // box to match the content size, so internal scroll is redundant —
+  // and if the LLM&#x27;s CSS sets body overflow: auto, the scrollbar shows
+  // briefly before the fit lands. Force hidden so it never appears.
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  // Iframe-internal JS error capture. window.onerror inside a sandboxed
+  // iframe can&#x27;t post to /api/js_error directly, so we relay to the
+  // parent via postMessage; parent&#x27;s error_logger.js forwards to the
+  // server. Catches LLM-emitted broken HTML (invalid hex, undefined
+  // variables, etc.) that would otherwise fail silently inside the
+  // iframe.
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      // Debounce: don&#x27;t fire more than ~10× per second. ResizeObserver
+      // fires repeatedly during layout/font load; we only need the latest.
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      // Clamp: reject obviously bogus dimensions. Any browser-game viewport
+      // is well under 4000×4000 logical px; readings beyond that are layout
+      // noise during load/visibility transitions.
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  // Parent posts wd_remeasure when it makes the iframe visible (the body&#x27;s
+  // ResizeObserver doesn&#x27;t fire on display:none→block of an outer ancestor
+  // because the iframe document didn&#x27;t actually resize). Wait a frame for
+  // layout to settle before measuring.
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

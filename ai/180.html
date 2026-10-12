@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>☄ COMET DASH</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html#ai">&larr; All games</a> &middot; <b>☄ COMET DASH</b></div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #05010f; color: #eee; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 12px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: 2px;
+       background: linear-gradient(90deg,#4df,#f4f,#fa4); -webkit-background-clip: text; background-clip: text; color: transparent;
+       text-shadow: 0 0 18px rgba(120,180,255,.4); }
+  .instructions { font-size: 16px; color: #9ad; max-width: 620px; margin: 0; line-height: 1.35; text-align: center; }
+  .field { position: relative; width: 660px; height: 460px; flex-shrink: 0; border-radius: 12px; overflow: hidden;
+           box-shadow: 0 0 30px rgba(90,120,255,.3), inset 0 0 40px rgba(0,0,0,.5);
+           background: #0a0530; transition: background 1.2s linear; }
+  .planet { position: absolute; right: 60px; top: 40px; width: 150px; height: 150px; border-radius: 50%;
+            background: radial-gradient(circle at 35% 30%, #7cf6ff, #2a5bd7 55%, #14206b);
+            box-shadow: 0 0 60px rgba(90,200,255,.5); opacity: .55; }
+  .stars { position: absolute; inset: 0; pointer-events: none; }
+  .star { position: absolute; background: #fff; border-radius: 50%; }
+  .rail { position: absolute; left: 0; right: 0; bottom: 0; height: 14px;
+          background: linear-gradient(90deg,#a24dff,#e14dff,#a24dff);
+          box-shadow: 0 -6px 20px rgba(200,80,255,.7); }
+  .comet { position: absolute; width: 30px; height: 30px; border-radius: 50%;
+           background: radial-gradient(circle at 40% 40%, #fff, #bfe8ff 60%, #6fb8ff);
+           box-shadow: 0 0 22px 6px rgba(150,220,255,.9); z-index: 5; }
+  .trail { position: absolute; height: 12px; border-radius: 6px;
+           background: linear-gradient(90deg, rgba(120,200,255,0), rgba(180,230,255,.85));
+           box-shadow: 0 0 14px rgba(150,220,255,.7); z-index: 4; }
+  .aster { position: absolute; z-index: 3; }
+  .aster svg { display: block; filter: drop-shadow(0 0 8px rgba(255,160,90,.5)); }
+  .hud { position: absolute; top: 10px; left: 12px; right: 12px; display: flex; align-items: center;
+         justify-content: space-between; z-index: 8; pointer-events: none; }
+  .hud .score { font-size: 24px; font-weight: 700; color: #fff; text-shadow: 0 0 12px rgba(120,200,255,.9); }
+  .hud .tier { font-size: 16px; font-weight: 700; letter-spacing: 2px; }
+  .combo { font-size: 18px; font-weight: 800; padding: 3px 10px; border-radius: 20px; color: #fff;
+           background: rgba(255,90,90,.25); border: 1px solid rgba(255,120,120,.7);
+           box-shadow: 0 0 16px rgba(255,120,120,.7); opacity: 0; transition: opacity .2s; }
+  .combo.on { opacity: 1; animation: pulse .5s infinite alternate; }
+  @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.18); } }
+  .flash { position: absolute; inset: 0; background: rgba(255,40,40,.45); opacity: 0; pointer-events: none; z-index: 9; }
+  .over { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center;
+          background: rgba(5,1,20,.72); z-index: 10; color: #fff; text-align: center; }
+  .over h2 { font-size: 34px; margin: 0 0 8px; text-shadow: 0 0 20px rgba(255,120,120,.8); }
+  .over p { font-size: 18px; margin: 4px; color: #cde; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;☄ COMET DASH&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Press &lt;strong&gt;Space&lt;/strong&gt; or click to jump — press again in mid-air for a double-jump to dodge the tumbling asteroids. Skim past them within a whisker for combo multipliers, and use the Start/Restart button below to play.&lt;/p&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;
+    &lt;div class=&quot;planet&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;stars&quot; id=&quot;stars&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;rail&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;trail&quot; id=&quot;trail&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;comet&quot; id=&quot;comet&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;hud&quot;&gt;
+      &lt;div class=&quot;score&quot;&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;combo&quot; id=&quot;combo&quot;&gt;x2&lt;/div&gt;
+      &lt;div class=&quot;tier&quot; id=&quot;tier&quot; style=&quot;color:#6cf&quot;&gt;CRUISING&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;flash&quot; id=&quot;flash&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;over&quot; id=&quot;over&quot;&gt;
+      &lt;h2&gt;CRASHED!&lt;/h2&gt;
+      &lt;p&gt;Final Score: &lt;span id=&quot;finalScore&quot;&gt;0&lt;/span&gt;&lt;/p&gt;
+      &lt;p&gt;Press Restart below to fly again.&lt;/p&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var FIELD_W = 660, FIELD_H = 460, RAIL_H = 14, COMET_SIZE = 30;
+  var GRAVITY = 0.62, JUMP_V = -13.2;
+  var cometX = 70;
+  var floorY = FIELD_H - RAIL_H - COMET_SIZE;
+  var cometY = floorY, cometVY = 0, jumps = 0;
+  var obstacles = [], score = 0, running = false, gameOver = false;
+  var animId = null, spawnId = null;
+  var combo = 1, comboTimer = 0;
+  var baseSpeed = 3.4, speed = baseSpeed;
+  var nextSpawnGap = 0;
+
+  var field = document.getElementById(&#x27;field&#x27;);
+  var comet = document.getElementById(&#x27;comet&#x27;);
+  var trail = document.getElementById(&#x27;trail&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var tierEl = document.getElementById(&#x27;tier&#x27;);
+  var comboEl = document.getElementById(&#x27;combo&#x27;);
+  var flash = document.getElementById(&#x27;flash&#x27;);
+  var over = document.getElementById(&#x27;over&#x27;);
+  var finalScoreEl = document.getElementById(&#x27;finalScore&#x27;);
+  var starsBox = document.getElementById(&#x27;stars&#x27;);
+
+  // ---- parallax starfield ----
+  var starLayers = [];
+  function buildStars() {
+    starsBox.innerHTML = &#x27;&#x27;;
+    starLayers = [];
+    var config = [ {n:26, s:1, spd:0.4, o:.45}, {n:20, s:2, spd:0.9, o:.65}, {n:12, s:3, spd:1.6, o:.95} ];
+    config.forEach(function(cfg){
+      var arr = [];
+      for (var i=0;i&lt;cfg.n;i++){
+        var el = document.createElement(&#x27;div&#x27;);
+        el.className = &#x27;star&#x27;;
+        var x = Math.random()*FIELD_W, y = Math.random()*(FIELD_H-40);
+        el.style.width = cfg.s+&#x27;px&#x27;; el.style.height = cfg.s+&#x27;px&#x27;;
+        el.style.left = x+&#x27;px&#x27;; el.style.top = y+&#x27;px&#x27;; el.style.opacity = cfg.o;
+        starsBox.appendChild(el);
+        arr.push({el:el, x:x, y:y, spd:cfg.spd});
+      }
+      starLayers.push(arr);
+    });
+  }
+  function moveStars(){
+    starLayers.forEach(function(arr){
+      arr.forEach(function(s){
+        s.x -= s.spd * (speed/baseSpeed);
+        if (s.x &lt; -4){ s.x = FIELD_W+4; s.y = Math.random()*(FIELD_H-40); s.el.style.top = s.y+&#x27;px&#x27;; }
+        s.el.style.left = s.x+&#x27;px&#x27;;
+      });
+    });
+  }
+
+  function paintComet() {
+    comet.style.left = cometX + &#x27;px&#x27;;
+    comet.style.top = cometY + &#x27;px&#x27;;
+    // trail stretches behind based on horizontal position &amp; vertical motion
+    var stretch = 34 + Math.min(30, Math.abs(cometVY)*2);
+    trail.style.width = stretch + &#x27;px&#x27;;
+    trail.style.left = (cometX - stretch + 12) + &#x27;px&#x27;;
+    trail.style.top = (cometY + COMET_SIZE/2 - 6) + &#x27;px&#x27;;
+  }
+
+  function asterSVG(size, seed) {
+    var pts = 8, r = size/2, cx = size/2, cy = size/2, path = &#x27;&#x27;;
+    for (var i=0;i&lt;pts;i++){
+      var ang = (i/pts)*Math.PI*2;
+      var rad = r * (0.72 + ((Math.sin(seed+i*2.3)+1)/2)*0.28);
+      var x = cx + Math.cos(ang)*rad, y = cy + Math.sin(ang)*rad;
+      path += (i===0?&#x27;M&#x27;:&#x27;L&#x27;) + x.toFixed(1) + &#x27;,&#x27; + y.toFixed(1) + &#x27; &#x27;;
+    }
+    path += &#x27;Z&#x27;;
+    return &#x27;&lt;svg width=&quot;&#x27;+size+&#x27;&quot; height=&quot;&#x27;+size+&#x27;&quot; viewBox=&quot;0 0 &#x27;+size+&#x27; &#x27;+size+&#x27;&quot;&gt;&#x27;+
+      &#x27;&lt;path d=&quot;&#x27;+path+&#x27;&quot; fill=&quot;#6b4a3a&quot; stroke=&quot;#c98a5a&quot; stroke-width=&quot;2&quot;/&gt;&#x27;+
+      &#x27;&lt;circle cx=&quot;&#x27;+(cx-r*0.3)+&#x27;&quot; cy=&quot;&#x27;+(cy-r*0.2)+&#x27;&quot; r=&quot;&#x27;+(r*0.18)+&#x27;&quot; fill=&quot;#4a3025&quot;/&gt;&#x27;+
+      &#x27;&lt;circle cx=&quot;&#x27;+(cx+r*0.25)+&#x27;&quot; cy=&quot;&#x27;+(cy+r*0.25)+&#x27;&quot; r=&quot;&#x27;+(r*0.12)+&#x27;&quot; fill=&quot;#4a3025&quot;/&gt;&lt;/svg&gt;&#x27;;
+  }
+
+  function spawnFormation() {
+    // occasionally a double-gap: two asteroids stacked with a gap requiring timing
+    var isDouble = Math.random() &lt; 0.28;
+    if (isDouble) {
+      // low asteroid + a floating one leaving a gap
+      makeAster(FIELD_W, 30 + Math.random()*10, false);
+      makeAster(FIELD_W, 26 + Math.random()*8, true);
+    } else {
+      var h = 26 + Math.random()*34;
+      makeAster(FIELD_W, h, false);
+    }
+    nextSpawnGap = 260 + Math.random()*160;
+  }
+
+  function makeAster(x, size, floating) {
+    var o = { x:x, size:size, scored:false, near:false, rot:Math.random()*360,
+              rotSpd:(Math.random()-.5)*8, floating:floating, el:null };
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;aster&#x27;;
+    el.innerHTML = asterSVG(size, Math.random()*10);
+    el.style.width = size+&#x27;px&#x27;; el.style.height = size+&#x27;px&#x27;;
+    o.top = floating ? (FIELD_H - RAIL_H - size - 88) : (FIELD_H - RAIL_H - size);
+    el.style.left = x+&#x27;px&#x27;; el.style.top = o.top+&#x27;px&#x27;;
+    field.appendChild(el);
+    o.el = el;
+    obstacles.push(o);
+  }
+
+  function jump() {
+    if (!running || gameOver) return;
+    if (jumps &lt; 2) { cometVY = JUMP_V; jumps++; }
+  }
+
+  function triggerFlash(strong) {
+    flash.style.opacity = strong ? &#x27;0.7&#x27; : &#x27;0.35&#x27;;
+    setTimeout(function(){ flash.style.opacity = &#x27;0&#x27;; }, strong ? 260 : 140);
+  }
+
+  function updateSpeedTier() {
+    var tier, col, sp;
+    if (score &lt; 12) { tier=&#x27;CRUISING&#x27;; col=&#x27;#6cf&#x27;; sp = baseSpeed; field.style.background = &#x27;#0a0530&#x27;; }
+    else if (score &lt; 30) { tier=&#x27;BURNING&#x27;; col=&#x27;#f7a&#x27;; sp = baseSpeed+1.8; field.style.background = &#x27;#2a0540&#x27;; }
+    else { tier=&#x27;INFERNO&#x27;; col=&#x27;#f55&#x27;; sp = baseSpeed+3.6; field.style.background = &#x27;#40060f&#x27;; }
+    speed = sp + Math.min(2.5, score*0.03);
+    tierEl.textContent = tier;
+    tierEl.style.color = col;
+    tierEl.style.textShadow = &#x27;0 0 12px &#x27; + col;
+  }
+
+  function tick() {
+    if (!running) return;
+    moveStars();
+    cometVY += GRAVITY;
+    cometY += cometVY;
+    if (cometY &gt; floorY) { cometY = floorY; cometVY = 0; jumps = 0; }
+    if (cometY &lt; 0) { cometY = 0; cometVY = 0; }
+    paintComet();
+
+    if (comboTimer &gt; 0) { comboTimer--; if (comboTimer===0){ combo=1; comboEl.classList.remove(&#x27;on&#x27;); } }
+
+    for (var i=obstacles.length-1;i&gt;=0;i--){
+      var o = obstacles[i];
+      o.x -= speed;
+      o.rot += o.rotSpd;
+      o.el.style.left = o.x+&#x27;px&#x27;;
+      o.el.style.transform = &#x27;rotate(&#x27;+o.rot+&#x27;deg)&#x27;;
+
+      if (o.x + o.size &lt; 0) { field.removeChild(o.el); obstacles.splice(i,1); continue; }
+
+      // near-miss detection (within 10px vertical clearance while overlapping horizontally)
+      var ox0 = o.x, ox1 = o.x + o.size, oy0 = o.top, oy1 = o.top + o.size;
+      var cx0 = cometX, cx1 = cometX + COMET_SIZE, cy0 = cometY, cy1 = cometY + COMET_SIZE;
+      var overlapX = cx1 &gt; ox0 &amp;&amp; cx0 &lt; ox1;
+      var hit = overlapX &amp;&amp; cy1 &gt; oy0 &amp;&amp; cy0 &lt; oy1;
+
+      if (hit) { endGame(); return; }
+
+      if (overlapX &amp;&amp; !o.near) {
+        var gap = Math.min(Math.abs(cy1 - oy0), Math.abs(oy1 - cy0), Math.abs(cy0-oy1), Math.abs(cy1-oy0));
+        var vClear = Math.min(oy0 - cy1, cy0 - oy1);
+        // if not overlapping vertically but very close
+        var closeGap = (cy1 &lt;= oy0) ? (oy0 - cy1) : (cy0 - oy1);
+        if (closeGap &gt;= 0 &amp;&amp; closeGap &lt;= 12) {
+          o.near = true;
+          combo = Math.min(3, combo + 1);
+          comboTimer = 150;
+          comboEl.textContent = &#x27;x&#x27; + combo;
+          comboEl.classList.add(&#x27;on&#x27;);
+          triggerFlash(false);
+        }
+      }
+
+      if (!o.scored &amp;&amp; o.x + o.size &lt; cometX) {
+        o.scored = true;
+        score += combo;
+        scoreEl.textContent = score;
+        updateSpeedTier();
+      }
+    }
+
+    nextSpawnGap -= speed;
+    if (nextSpawnGap &lt;= 0) spawnFormation();
+
+    animId = requestAnimationFrame(tick);
+  }
+
+  function clearObstacles() {
+    obstacles.forEach(function(o){ if(o.el.parentNode) o.el.parentNode.removeChild(o.el); });
+    obstacles = [];
+  }
+
+  function endGame() {
+    gameOver = true;
+    triggerFlash(true);
+    finalScoreEl.textContent = score;
+    over.style.display = &#x27;flex&#x27;;
+    stopGame();
+  }
+
+  function startGame() {
+    if (running) return;
+    over.style.display = &#x27;none&#x27;;
+    score = 0; scoreEl.textContent = &#x27;0&#x27;;
+    combo = 1; comboTimer = 0; comboEl.classList.remove(&#x27;on&#x27;);
+    cometX = 70; cometY = floorY; cometVY = 0; jumps = 0;
+    gameOver = false;
+    speed = baseSpeed;
+    updateSpeedTier();
+    clearObstacles();
+    buildStars();
+    paintComet();
+    spawnFormation();       // immediate visible asteroid on start
+    running = true;
+    animId = requestAnimationFrame(tick);
+  }
+  function stopGame() {
+    running = false;
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+    if (spawnId) { clearInterval(spawnId); spawnId = null; }
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function(e){
+    if (e.key === &#x27; &#x27; || e.code === &#x27;Space&#x27;) { jump(); e.preventDefault(); }
+  });
+  field.addEventListener(&#x27;click&#x27;, function(){ jump(); });
+  window.addEventListener(&#x27;message&#x27;, function(e){
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  // initial static render (stopped state)
+  buildStars();
+  paintComet();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  // Suppress in-iframe scrollbars. The parent fits the iframe layout
+  // box to match the content size, so internal scroll is redundant —
+  // and if the LLM&#x27;s CSS sets body overflow: auto, the scrollbar shows
+  // briefly before the fit lands. Force hidden so it never appears.
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  // Iframe-internal JS error capture. window.onerror inside a sandboxed
+  // iframe can&#x27;t post to /api/js_error directly, so we relay to the
+  // parent via postMessage; parent&#x27;s error_logger.js forwards to the
+  // server. Catches LLM-emitted broken HTML (invalid hex, undefined
+  // variables, etc.) that would otherwise fail silently inside the
+  // iframe.
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      // Debounce: don&#x27;t fire more than ~10× per second. ResizeObserver
+      // fires repeatedly during layout/font load; we only need the latest.
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      // Clamp: reject obviously bogus dimensions. Any browser-game viewport
+      // is well under 4000×4000 logical px; readings beyond that are layout
+      // noise during load/visibility transitions.
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  // Parent posts wd_remeasure when it makes the iframe visible (the body&#x27;s
+  // ResizeObserver doesn&#x27;t fire on display:none→block of an outer ancestor
+  // because the iframe document didn&#x27;t actually resize). Wait a frame for
+  // layout to settle before measuring.
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

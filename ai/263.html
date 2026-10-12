@@ -1,0 +1,623 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🐸 Frog Dash</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html#ai">&larr; All games</a> &middot; <b>🐸 Frog Dash</b></div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;&lt;style&gt;
+  html, body { height: 100%; margin: 0; padding: 0; }
+  body { font-family: system-ui, -apple-system, sans-serif; background: #14261a; color: #eaf5ea; overflow: hidden; user-select: none; -webkit-user-select: none; }
+  .game { max-width: 720px; margin: 0 auto; padding: 8px 8px 4px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: 1px; color: #ffe14d; text-shadow: 0 2px 0 #2a5d34; }
+  .instructions { font-size: 16px; color: #bfe0c2; max-width: 620px; margin: 0; line-height: 1.3; text-align: center; }
+  .hud { display: flex; gap: 22px; align-items: center; font-size: 20px; font-weight: 700; }
+  .hud .lbl { font-size: 12px; color: #8fce97; display: block; letter-spacing: 1px; }
+  .hud .val { color: #ffe14d; }
+  .combo { color: #ff7ac0; font-weight: 800; min-width: 54px; text-align: center; }
+  .field { position: relative; width: 620px; height: 468px; flex-shrink: 0; border-radius: 10px; overflow: hidden; box-shadow: 0 6px 20px rgba(0,0,0,.5); }
+  .danger { position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 0 0 rgba(255,40,40,0); border-radius: 10px; z-index: 40; transition: box-shadow .1s; }
+  .msg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; z-index: 50; pointer-events: none; }
+  .msg span { background: rgba(0,0,0,.6); padding: 10px 20px; border-radius: 10px; font-size: 24px; font-weight: 800; color: #ffe14d; }
+  @keyframes pop { 0% { transform: scale(.3); opacity: 0; } 50% { transform: scale(1.3); } 100% { transform: scale(1); opacity: 1; } }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;🐸 Frog Dash&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Hop with the arrow keys (or swipe) across the jeep lanes and ride the drifting logs to reach the golden flower up top. Don&#x27;t get hit and don&#x27;t fall in the water — chain crossings for a combo multiplier!&lt;/p&gt;
+  &lt;div class=&quot;hud&quot;&gt;
+    &lt;div&gt;&lt;span class=&quot;lbl&quot;&gt;SCORE&lt;/span&gt;&lt;span class=&quot;val&quot; id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;combo&quot; id=&quot;combo&quot;&gt;&lt;/div&gt;
+    &lt;div&gt;&lt;span class=&quot;lbl&quot;&gt;BEST&lt;/span&gt;&lt;span class=&quot;val&quot; id=&quot;best&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;
+    &lt;div class=&quot;danger&quot; id=&quot;danger&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;msg&quot; id=&quot;msg&quot; style=&quot;display:none&quot;&gt;&lt;span id=&quot;msgtxt&quot;&gt;&lt;/span&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var CELL = 44;
+  var COLS = 14;              // 14*44 = 616 ~ 620
+  var ROWS = 11;             // row0 goal, rows1-5 river, row6 median, rows7-11? recalc below
+  // Layout: row0 = goal/flower, rows 1-4 = river (4 lanes), row5 = median safe,
+  // rows 6-10 = road (5 lanes), row10 bottom start... let&#x27;s set 11 rows total.
+  // 11 rows * 44 = 484 -&gt; shrink cell.
+  CELL = 42; // 11*42 = 462, field 468 ok
+  var FIELD_W = COLS * CELL, FIELD_H = ROWS * CELL;
+
+  var GOAL = 0;
+  var RIVER = [1,2,3,4];
+  var MEDIAN = 5;
+  var ROAD = [6,7,8,9,10];
+  var START = 10; // frog starts on median? no, start bottom -&gt; use row 10 as bottom lane is road... need safe bottom
+  // Redefine: make ROWS 12 with bottom safe row.
+  // Recompute cleanly:
+  ROWS = 12; CELL = 39; FIELD_W = COLS*CELL; FIELD_H = ROWS*CELL;
+  GOAL = 0;
+  RIVER = [1,2,3,4];
+  MEDIAN = 5;
+  ROAD = [6,7,8,9,10];
+  var BOTTOM = 11;
+
+  var field = document.getElementById(&#x27;field&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var bestEl = document.getElementById(&#x27;best&#x27;);
+  var comboEl = document.getElementById(&#x27;combo&#x27;);
+  var dangerEl = document.getElementById(&#x27;danger&#x27;);
+  var msgEl = document.getElementById(&#x27;msg&#x27;);
+  var msgTxt = document.getElementById(&#x27;msgtxt&#x27;);
+
+  var running = false, animId = null;
+  var score = 0, best = 0, combo = 0, level = 1;
+  var hero = { col: 7, row: BOTTOM, ridingVX: 0 };
+  var heroEl = null;
+  var lanes = [];      // {row, type:&#x27;car&#x27;|&#x27;log&#x27;, dir, speed, items:[{x,w,el}]}
+  var bgEls = [];
+  var particles = [];
+
+  field.style.width = FIELD_W + &#x27;px&#x27;;
+  field.style.height = FIELD_H + &#x27;px&#x27;;
+
+  function clearField() {
+    // remove everything except danger + msg
+    var keep = [dangerEl, msgEl];
+    Array.prototype.slice.call(field.children).forEach(function(c){
+      if (keep.indexOf(c) === -1) field.removeChild(c);
+    });
+    lanes = []; bgEls = []; particles = [];
+  }
+
+  function buildBackground() {
+    // river band
+    var river = document.createElement(&#x27;div&#x27;);
+    river.style.cssText = &#x27;position:absolute;left:0;right:0;top:&#x27;+(RIVER[0]*CELL)+&#x27;px;height:&#x27;+(RIVER.length*CELL)+&#x27;px;background:linear-gradient(180deg,#1b7fc4,#0d5a95);overflow:hidden;&#x27;;
+    // shimmer
+    for (var s=0;s&lt;3;s++){
+      var sh = document.createElement(&#x27;div&#x27;);
+      sh.style.cssText=&#x27;position:absolute;left:-50%;top:&#x27;+(s*33)+&#x27;%;width:200%;height:14px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.25),transparent);animation:shim&#x27;+s+&#x27; &#x27;+(3+s)+&#x27;s linear infinite;&#x27;;
+      river.appendChild(sh);
+    }
+    field.insertBefore(river, dangerEl);
+    // goal row
+    var goal = document.createElement(&#x27;div&#x27;);
+    goal.style.cssText=&#x27;position:absolute;left:0;right:0;top:0;height:&#x27;+CELL+&#x27;px;background:linear-gradient(180deg,#2e7d3a,#256230);display:flex;align-items:center;justify-content:center;&#x27;;
+    goal.innerHTML=&#x27;&lt;div style=&quot;font-size:&#x27;+(CELL-6)+&#x27;px;line-height:1;filter:drop-shadow(0 0 6px #ffe14d);&quot;&gt;🌻&lt;/div&gt;&#x27;;
+    field.insertBefore(goal, dangerEl);
+    // median
+    var med = document.createElement(&#x27;div&#x27;);
+    med.style.cssText=&#x27;position:absolute;left:0;right:0;top:&#x27;+(MEDIAN*CELL)+&#x27;px;height:&#x27;+CELL+&#x27;px;background:#3a6b40;&#x27;;
+    field.insertBefore(med, dangerEl);
+    // road
+    var road = document.createElement(&#x27;div&#x27;);
+    road.style.cssText=&#x27;position:absolute;left:0;right:0;top:&#x27;+(ROAD[0]*CELL)+&#x27;px;height:&#x27;+(ROAD.length*CELL)+&#x27;px;background:#2b2b30;&#x27;;
+    field.insertBefore(road, dangerEl);
+    // lane dashes
+    ROAD.forEach(function(r){
+      var d=document.createElement(&#x27;div&#x27;);
+      d.style.cssText=&#x27;position:absolute;left:0;right:0;top:&#x27;+((r+1)*CELL-1)+&#x27;px;height:2px;background:repeating-linear-gradient(90deg,#ffd54d 0 18px,transparent 18px 40px);opacity:.5;&#x27;;
+      field.insertBefore(d, dangerEl);
+    });
+    // bottom safe
+    var bot = document.createElement(&#x27;div&#x27;);
+    bot.style.cssText=&#x27;position:absolute;left:0;right:0;top:&#x27;+(BOTTOM*CELL)+&#x27;px;height:&#x27;+CELL+&#x27;px;background:linear-gradient(180deg,#3a6b40,#2e5636);&#x27;;
+    field.insertBefore(bot, dangerEl);
+    // shimmer keyframes injected once
+    if(!document.getElementById(&#x27;shimkf&#x27;)){
+      var st=document.createElement(&#x27;style&#x27;); st.id=&#x27;shimkf&#x27;;
+      st.textContent=&#x27;@keyframes shim0{from{transform:translateX(0)}to{transform:translateX(50%)}}@keyframes shim1{from{transform:translateX(-30%)}to{transform:translateX(20%)}}@keyframes shim2{from{transform:translateX(10%)}to{transform:translateX(60%)}}&#x27;;
+      document.head.appendChild(st);
+    }
+  }
+
+  var CAR_COLORS = [[&#x27;#e8433a&#x27;,&#x27;#ff7a70&#x27;],[&#x27;#f5b400&#x27;,&#x27;#ffd45e&#x27;],[&#x27;#e8433a&#x27;,&#x27;#ff7a70&#x27;],[&#x27;#f5b400&#x27;,&#x27;#ffd45e&#x27;],[&#x27;#5ac0e8&#x27;,&#x27;#9fe0ff&#x27;]];
+
+  function buildLanes() {
+    // road lanes = cars
+    ROAD.forEach(function(r,i){
+      var dir = (i%2===0)?1:-1;
+      var speed = (0.9 + i*0.25 + (level-1)*0.35) * dir;
+      var count = 2 + (i%2) + Math.floor((level-1)/2);
+      count = Math.min(count, 4);
+      var w = CELL*1.8;
+      var items=[];
+      var gap = FIELD_W/count;
+      for(var j=0;j&lt;count;j++){
+        var x = j*gap + (i*23)%gap;
+        var el=document.createElement(&#x27;div&#x27;);
+        var col=CAR_COLORS[i%CAR_COLORS.length];
+        var glowSide = dir&gt;0 ? &#x27;right&#x27; : &#x27;left&#x27;;
+        el.style.cssText=&#x27;position:absolute;top:&#x27;+(r*CELL+5)+&#x27;px;left:&#x27;+x+&#x27;px;width:&#x27;+w+&#x27;px;height:&#x27;+(CELL-10)+&#x27;px;&#x27;+
+          &#x27;background:linear-gradient(180deg,&#x27;+col[1]+&#x27;,&#x27;+col[0]+&#x27;);border-radius:9px;&#x27;+
+          &#x27;box-shadow:0 2px 4px rgba(0,0,0,.5), &#x27;+(glowSide===&#x27;right&#x27;?&#x27;&#x27;:&#x27;&#x27;)+&#x27;inset 0 0 0 2px rgba(0,0,0,.15);z-index:15;&#x27;;
+        // windshield
+        var win=document.createElement(&#x27;div&#x27;);
+        win.style.cssText=&#x27;position:absolute;top:20%;&#x27;+(dir&gt;0?&#x27;left&#x27;:&#x27;right&#x27;)+&#x27;:16%;width:34%;height:60%;background:rgba(180,230,255,.7);border-radius:4px;&#x27;;
+        el.appendChild(win);
+        // headlight glow
+        var hl=document.createElement(&#x27;div&#x27;);
+        hl.style.cssText=&#x27;position:absolute;top:35%;&#x27;+glowSide+&#x27;:-8px;width:20px;height:30%;background:radial-gradient(ellipse at &#x27;+glowSide+&#x27;,rgba(255,255,180,.9),transparent 70%);border-radius:50%;&#x27;;
+        el.appendChild(hl);
+        field.insertBefore(el, dangerEl);
+        items.push({x:x,w:w,el:el});
+      }
+      lanes.push({row:r,type:&#x27;car&#x27;,speed:speed,items:items});
+    });
+    // river lanes = logs / lilypads
+    RIVER.forEach(function(r,i){
+      var dir=(i%2===0)?-1:1;
+      var speed=(0.7 + i*0.2 + (level-1)*0.25)*dir;
+      var isLily = (i%2===1);
+      var w = isLily ? CELL*1.3 : Math.max(CELL*1.6, CELL*2.4 - (level-1)*CELL*0.25);
+      var count = isLily ? 3 : 2;
+      var items=[];
+      var gap = FIELD_W/count;
+      for(var j=0;j&lt;count;j++){
+        var x=j*gap+(i*31)%gap;
+        var el=document.createElement(&#x27;div&#x27;);
+        if(isLily){
+          el.style.cssText=&#x27;position:absolute;top:&#x27;+(r*CELL+3)+&#x27;px;left:&#x27;+x+&#x27;px;width:&#x27;+w+&#x27;px;height:&#x27;+(CELL-6)+&#x27;px;&#x27;+
+            &#x27;background:radial-gradient(circle at 40% 40%,#5fd66a,#2f9a3d);border-radius:50%;z-index:12;box-shadow:0 2px 4px rgba(0,0,0,.3);&#x27;;
+          var sp=document.createElement(&#x27;div&#x27;);
+          sp.style.cssText=&#x27;position:absolute;top:22%;left:30%;font-size:&#x27;+(CELL*0.4)+&#x27;px;line-height:1;&#x27;;
+          sp.textContent=&#x27;✨&#x27;;
+          el.appendChild(sp);
+        } else {
+          el.style.cssText=&#x27;position:absolute;top:&#x27;+(r*CELL+6)+&#x27;px;left:&#x27;+x+&#x27;px;width:&#x27;+w+&#x27;px;height:&#x27;+(CELL-14)+&#x27;px;&#x27;+
+            &#x27;background:repeating-linear-gradient(90deg,#7a4a22 0 8px,#8a5a2c 8px 16px);border-radius:8px;z-index:12;box-shadow:0 2px 4px rgba(0,0,0,.4),inset 0 0 0 2px #5c3517;&#x27;;
+        }
+        field.insertBefore(el, dangerEl);
+        items.push({x:x,w:w,el:el});
+      }
+      lanes.push({row:r,type:&#x27;log&#x27;,speed:speed,items:items,lily:isLily});
+    });
+  }
+
+  function makeHero(){
+    heroEl=document.createElement(&#x27;div&#x27;);
+    heroEl.style.cssText=&#x27;position:absolute;width:&#x27;+(CELL-6)+&#x27;px;height:&#x27;+(CELL-6)+&#x27;px;z-index:30;transition:transform .09s;transform-origin:bottom center;&#x27;;
+    heroEl.innerHTML =
+      &#x27;&lt;div style=&quot;position:absolute;inset:0;&quot;&gt;&#x27;+
+      &#x27;&lt;div style=&quot;position:absolute;left:8%;bottom:2%;width:22%;height:26%;background:#2f9a3d;border-radius:50%;&quot;&gt;&lt;/div&gt;&#x27;+
+      &#x27;&lt;div style=&quot;position:absolute;right:8%;bottom:2%;width:22%;height:26%;background:#2f9a3d;border-radius:50%;&quot;&gt;&lt;/div&gt;&#x27;+
+      &#x27;&lt;div style=&quot;position:absolute;left:12%;top:22%;width:76%;height:62%;background:radial-gradient(circle at 50% 30%,#6ede6f,#3bb14a);border-radius:48% 48% 42% 42%;&quot;&gt;&lt;/div&gt;&#x27;+
+      &#x27;&lt;div style=&quot;position:absolute;left:20%;top:6%;width:26%;height:30%;background:#5fd66a;border-radius:50%;&quot;&gt;&lt;div style=&quot;position:absolute;left:22%;top:22%;width:52%;height:52%;background:#111;border-radius:50%;&quot;&gt;&lt;/div&gt;&lt;/div&gt;&#x27;+
+      &#x27;&lt;div style=&quot;position:absolute;right:20%;top:6%;width:26%;height:30%;background:#5fd66a;border-radius:50%;&quot;&gt;&lt;div style=&quot;position:absolute;left:22%;top:22%;width:52%;height:52%;background:#111;border-radius:50%;&quot;&gt;&lt;/div&gt;&lt;/div&gt;&#x27;+
+      &#x27;&lt;div style=&quot;position:absolute;left:38%;top:52%;width:24%;height:8%;background:#1e6b2a;border-radius:4px;&quot;&gt;&lt;/div&gt;&#x27;+
+      &#x27;&lt;/div&gt;&#x27;;
+    field.insertBefore(heroEl, dangerEl);
+  }
+
+  function paintHero(){
+    var x = hero.col*CELL + 3;
+    var y = hero.row*CELL + 3;
+    heroEl.style.left = x + &#x27;px&#x27;;
+    heroEl.style.top = y + &#x27;px&#x27;;
+  }
+
+  function hopAnim(){
+    heroEl.style.transform=&#x27;scaleY(1.35) scaleX(0.8) translateY(-10%)&#x27;;
+    setTimeout(function(){ if(heroEl) heroEl.style.transform=&#x27;scaleY(0.85) scaleX(1.12)&#x27;; },60);
+    setTimeout(function(){ if(heroEl) heroEl.style.transform=&#x27;scale(1)&#x27;; },150);
+  }
+
+  // --- sound ---
+  var actx=null;
+  function beep(freq,dur,type,vol){
+    try{
+      if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)();
+      var o=actx.createOscillator(),g=actx.createGain();
+      o.type=type||&#x27;square&#x27;; o.frequency.value=freq;
+      g.gain.value=vol||0.12; o.connect(g); g.connect(actx.destination);
+      o.start(); g.gain.exponentialRampToValueAtTime(0.001,actx.currentTime+dur);
+      o.stop(actx.currentTime+dur);
+    }catch(e){}
+  }
+
+  function resetHero(){
+    hero.col=7; hero.row=BOTTOM; hero.ridingVX=0;
+    paintHero();
+  }
+
+  function showMsg(t,ms){
+    msgTxt.textContent=t; msgEl.style.display=&#x27;flex&#x27;;
+    msgTxt.style.animation=&#x27;pop .3s&#x27;; 
+    if(ms) setTimeout(function(){ msgEl.style.display=&#x27;none&#x27;; }, ms);
+  }
+
+  function popCombo(){
+    if(combo&gt;=2){
+      comboEl.textContent=&#x27;x&#x27;+combo+&#x27;!&#x27;;
+      comboEl.style.animation=&#x27;none&#x27;;
+      void comboEl.offsetWidth;
+      comboEl.style.animation=&#x27;pop .4s&#x27;;
+    } else comboEl.textContent=&#x27;&#x27;;
+  }
+
+  function burst(cx,cy){
+    var emojis=[&#x27;🍃&#x27;,&#x27;⭐&#x27;,&#x27;✨&#x27;,&#x27;🍃&#x27;,&#x27;🌟&#x27;];
+    for(var i=0;i&lt;14;i++){
+      var p=document.createElement(&#x27;div&#x27;);
+      p.style.cssText=&#x27;position:absolute;left:&#x27;+cx+&#x27;px;top:&#x27;+cy+&#x27;px;font-size:&#x27;+(12+Math.random()*10)+&#x27;px;z-index:45;pointer-events:none;&#x27;;
+      p.textContent=emojis[i%emojis.length];
+      field.insertBefore(p,dangerEl);
+      var ang=Math.random()*Math.PI*2, sp=2+Math.random()*4;
+      particles.push({el:p,x:cx,y:cy,vx:Math.cos(ang)*sp,vy:Math.sin(ang)*sp-2,life:1});
+    }
+  }
+
+  function updateParticles(){
+    for(var i=particles.length-1;i&gt;=0;i--){
+      var p=particles[i];
+      p.x+=p.vx; p.y+=p.vy; p.vy+=0.15; p.life-=0.02;
+      p.el.style.left=p.x+&#x27;px&#x27;; p.el.style.top=p.y+&#x27;px&#x27;; p.el.style.opacity=Math.max(0,p.life);
+      if(p.life&lt;=0){ if(p.el.parentNode) p.el.parentNode.removeChild(p.el); particles.splice(i,1); }
+    }
+  }
+
+  function endGame(reason){
+    running=false;
+    if(animId){ cancelAnimationFrame(animId); animId=null; }
+    combo=0; popCombo();
+    dangerEl.style.boxShadow=&#x27;inset 0 0 30px 12px rgba(255,40,40,.9)&#x27;;
+    beep(120,0.4,&#x27;sawtooth&#x27;,0.15);
+    showMsg((reason===&#x27;water&#x27;?&#x27;💧 Splash!&#x27;:&#x27;💥 Squashed!&#x27;)+&#x27; Press Start&#x27;, 0);
+  }
+
+  function levelUp(){
+    // reached goal
+    score += 10 + (combo&gt;=2?combo*2:0);
+    combo += 1;
+    if(score&gt;best){ best=score; }
+    scoreEl.textContent=score; bestEl.textContent=best;
+    popCombo();
+    level += 1;
+    var hx=hero.col*CELL+CELL/2, hy=CELL/2;
+    burst(hx,hy);
+    beep(660,0.12,&#x27;square&#x27;,0.14);
+    setTimeout(function(){ beep(880,0.14,&#x27;square&#x27;,0.14); },90);
+    // rebuild harder lanes
+    setTimeout(function(){
+      lanes.forEach(function(l){ l.items.forEach(function(it){ if(it.el.parentNode) it.el.parentNode.removeChild(it.el); }); });
+      lanes=[];
+      buildLanes();
+      resetHero();
+    },120);
+  }
+
+  function move(dc,dr){
+    if(!running) return;
+    var nc=Math.max(0,Math.min(COLS-1,hero.col+dc));
+    var nr=Math.max(0,Math.min(ROWS-1,hero.row+dr));
+    if(nc===hero.col &amp;&amp; nr===hero.row) return;
+    hero.col=nc; hero.row=nr; hero.ridingVX=0;
+    paintHero(); hopAnim();
+    beep(440+Math.random()*60,0.06,&#x27;square&#x27;,0.08);
+    if(hero.row===GOAL){ levelUp(); }
+  }
+
+  function tick(){
+    if(!running) return;
+    // move lane items
+    lanes.forEach(function(lane){
+      lane.items.forEach(function(it){
+        it.x += lane.speed;
+        if(lane.speed&gt;0 &amp;&amp; it.x&gt;FIELD_W) it.x=-it.w;
+        else if(lane.speed&lt;0 &amp;&amp; it.x+it.w&lt;0) it.x=FIELD_W;
+        it.el.style.left=it.x+&#x27;px&#x27;;
+      });
+    });
+
+    var hpx = hero.col*CELL+3, hpy=hero.row*CELL+3, hs=CELL-6;
+    var hcx = hpx+hs/2;
+
+    // river: must be on a log/lily, and ride it
+    if(RIVER.indexOf(hero.row)!==-1){
+      var lane=lanes.filter(function(l){return l.row===hero.row;})[0];
+      var onLog=null;
+      lane.items.forEach(function(it){
+        if(hcx&gt;it.x &amp;&amp; hcx&lt;it.x+it.w) onLog=it;
+      });
+      if(onLog){
+        // carry frog
+        hpx += lane.speed;
+        var newCol = (hpx-3)/CELL;
+        hero.col = Math.max(0,Math.min(COLS-1, Math.round(newCol)));
+        // smooth follow: directly set pixel
+        heroEl.style.left = Math.max(0,Math.min(FIELD_W-hs,hpx)) + &#x27;px&#x27;;
+        if(hpx&lt; -hs*0.3 || hpx&gt;FIELD_W-hs*0.7){ endGame(&#x27;water&#x27;); return; }
+      } else {
+        endGame(&#x27;water&#x27;); return;
+      }
+    }
+
+    // road: collision with cars
+    var nearDanger=false;
+    if(ROAD.indexOf(hero.row)!==-1){
+      var rlane=lanes.filter(function(l){return l.row===hero.row;})[0];
+      var hit=false;
+      rlane.items.forEach(function(it){
+        if(hpx&lt;it.x+it.w &amp;&amp; hpx+hs&gt;it.x) hit=true;
+        // near check
+        var dist=Math.min(Math.abs(it.x-(hpx+hs)),Math.abs((it.x+it.w)-hpx));
+        if(dist&lt;CELL*1.1 &amp;&amp; !((hpx&lt;it.x+it.w)&amp;&amp;(hpx+hs&gt;it.x))) nearDanger=true;
+      });
+      // also check adjacent lanes danger
+      if(hit){ endGame(&#x27;crash&#x27;); return; }
+    }
+
+    // danger tint pulse
+    if(nearDanger){
+      var pulse = 10+8*Math.abs(Math.sin(Date.now()/120));
+      dangerEl.style.boxShadow=&#x27;inset 0 0 &#x27;+pulse+&#x27;px &#x27;+(pulse/3)+&#x27;px rgba(255,40,40,.55)&#x27;;
+    } else {
+      dangerEl.style.boxShadow=&#x27;inset 0 0 0 0 rgba(255,40,40,0)&#x27;;
+    }
+
+    updateParticles();
+    animId=requestAnimationFrame(tick);
+  }
+
+  function startGame(){
+    if(running) return;
+    score=0; combo=0; level=1;
+    scoreEl.textContent=&#x27;0&#x27;; bestEl.textContent=best;
+    comboEl.textContent=&#x27;&#x27;;
+    msgEl.style.display=&#x27;none&#x27;;
+    dangerEl.style.boxShadow=&#x27;inset 0 0 0 0 rgba(255,40,40,0)&#x27;;
+    clearField();
+    buildBackground();
+    buildLanes();
+    makeHero();
+    resetHero();
+    running=true;
+    animId=requestAnimationFrame(tick);
+  }
+  function stopGame(){
+    running=false;
+    if(animId){ cancelAnimationFrame(animId); animId=null; }
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;,function(e){
+    if(e.key===&#x27;ArrowLeft&#x27;){ move(-1,0); e.preventDefault(); }
+    else if(e.key===&#x27;ArrowRight&#x27;){ move(1,0); e.preventDefault(); }
+    else if(e.key===&#x27;ArrowUp&#x27;){ move(0,-1); e.preventDefault(); }
+    else if(e.key===&#x27;ArrowDown&#x27;){ move(0,1); e.preventDefault(); }
+  });
+
+  // swipe
+  var tsx=0,tsy=0;
+  field.addEventListener(&#x27;touchstart&#x27;,function(e){ var t=e.touches[0]; tsx=t.clientX; tsy=t.clientY; },{passive:true});
+  field.addEventListener(&#x27;touchend&#x27;,function(e){
+    var t=e.changedTouches[0]; var dx=t.clientX-tsx, dy=t.clientY-tsy;
+    if(Math.abs(dx)&lt;20&amp;&amp;Math.abs(dy)&lt;20) return;
+    if(Math.abs(dx)&gt;Math.abs(dy)){ move(dx&gt;0?1:-1,0); } else { move(0,dy&gt;0?1:-1); }
+  },{passive:true});
+
+  window.addEventListener(&#x27;message&#x27;,function(e){
+    if(!e.data||typeof e.data!==&#x27;object&#x27;) return;
+    if(e.data.type===&#x27;wd_start&#x27;) startGame();
+    else if(e.data.type===&#x27;wd_stop&#x27;) stopGame();
+  });
+
+  // initial static paint
+  buildBackground();
+  buildLanes();
+  makeHero();
+  paintHero();
+  running=false;
+
+  [&#x27;keydown&#x27;,&#x27;mousedown&#x27;,&#x27;touchstart&#x27;].forEach(function(t){
+    window.addEventListener(t,function(e){
+      try{ window.parent.postMessage({type:&#x27;game_input&#x27;,kind:t,key:e.key||null},&#x27;*&#x27;); }catch(_){}
+    },true);
+  });
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  // Suppress in-iframe scrollbars. The parent fits the iframe layout
+  // box to match the content size, so internal scroll is redundant —
+  // and if the LLM&#x27;s CSS sets body overflow: auto, the scrollbar shows
+  // briefly before the fit lands. Force hidden so it never appears.
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  // Iframe-internal JS error capture. window.onerror inside a sandboxed
+  // iframe can&#x27;t post to /api/js_error directly, so we relay to the
+  // parent via postMessage; parent&#x27;s error_logger.js forwards to the
+  // server. Catches LLM-emitted broken HTML (invalid hex, undefined
+  // variables, etc.) that would otherwise fail silently inside the
+  // iframe.
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      // Debounce: don&#x27;t fire more than ~10× per second. ResizeObserver
+      // fires repeatedly during layout/font load; we only need the latest.
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      // Clamp: reject obviously bogus dimensions. Any browser-game viewport
+      // is well under 4000×4000 logical px; readings beyond that are layout
+      // noise during load/visibility transitions.
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  // Parent posts wd_remeasure when it makes the iframe visible (the body&#x27;s
+  // ResizeObserver doesn&#x27;t fire on display:none→block of an outer ancestor
+  // because the iframe document didn&#x27;t actually resize). Wait a frame for
+  // layout to settle before measuring.
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

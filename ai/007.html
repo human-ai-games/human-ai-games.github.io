@@ -1,0 +1,594 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🐸 Space Frog Escape 🛸</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html#ai">&larr; All games</a> &middot; <b>🐸 Space Frog Escape 🛸</b></div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #05030f; color: #eee; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 10px 12px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  h1 { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: .5px;
+       background: linear-gradient(90deg,#7cf,#c8f,#8fc); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .instructions { font-size: 16px; color: #9fb; max-width: 620px; margin: 0; line-height: 1.35; text-align: center; }
+  .score { font-size: 20px; color: #cde; margin: 0; font-weight: 600; }
+  .score b { color: #8fe; }
+  .field { position: relative; width: 620px; height: 448px; flex-shrink: 0;
+           border-radius: 10px; overflow: hidden; box-shadow: 0 0 24px #40208055 inset, 0 0 12px #223; }
+  .stars { position: absolute; inset: 0; }
+  .lanerow { position: absolute; left: 0; right: 0; overflow: hidden; }
+  .mothership-row { background: linear-gradient(180deg,#1a0f33,#0d0722); }
+  .safe-row { background: linear-gradient(180deg,#0a1f14,#07160e); }
+
+  .hero { position: absolute; width: 40px; height: 40px; z-index: 20;
+          transition: left .09s ease, top .09s ease; will-change: left, top; }
+  .hero .frog { font-size: 30px; line-height: 40px; text-align: center; display: block;
+                filter: drop-shadow(0 0 4px #6f6); transform-origin: 50% 80%; }
+  .hop { animation: hop .18s ease; }
+  @keyframes hop { 0%{transform:scale(1,1)} 35%{transform:scale(.75,1.3)} 70%{transform:scale(1.25,.7)} 100%{transform:scale(1,1)} }
+  .splat .frog { animation: splat .5s forwards; }
+  @keyframes splat { 0%{transform:scale(1);filter:drop-shadow(0 0 4px #6f6)}
+                     100%{transform:scale(2.6);opacity:0;filter:drop-shadow(0 0 10px #f22) hue-rotate(-90deg) saturate(3)} }
+
+  .safepulse { position: absolute; z-index: 15; width: 44px; height: 44px; border-radius: 50%;
+               border: 3px solid #6f9; pointer-events: none; animation: sp .5s ease-out forwards; }
+  @keyframes sp { 0%{transform:scale(.4);opacity:.9} 100%{transform:scale(1.6);opacity:0} }
+
+  .obstacle { position: absolute; will-change: left; display: flex; align-items: center; justify-content: center; }
+  .ufo { font-size: 26px; filter: drop-shadow(0 0 6px #b6f); }
+  .laser { border-radius: 4px; background: linear-gradient(90deg,#f33,#f88,#f33);
+           box-shadow: 0 0 8px #f44, 0 0 14px #f22; }
+  .laser.off { opacity: .12; box-shadow: none; }
+  .meteor { font-size: 24px; animation: spin 1.2s linear infinite; filter: drop-shadow(0 0 4px #aaa); }
+  @keyframes spin { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+
+  .plusone { position: absolute; z-index: 30; color: #8fe; font-size: 26px; font-weight: 800;
+             pointer-events: none; text-shadow: 0 0 8px #4c8; animation: pf .9s ease-out forwards; }
+  @keyframes pf { 0%{transform:translateY(0);opacity:1} 100%{transform:translateY(-40px);opacity:0} }
+
+  .beam { position: absolute; z-index: 18; top: 0; width: 60px; pointer-events: none;
+          background: linear-gradient(180deg,#cfffe8cc,#8fe0ff22); animation: beam .5s ease-out forwards; }
+  @keyframes beam { 0%{opacity:.9} 100%{opacity:0} }
+
+  .overlay { position: absolute; inset: 0; z-index: 40; display: none; flex-direction: column;
+             align-items: center; justify-content: center; background: #0008; text-align: center; }
+  .overlay.show { display: flex; }
+  .overlay .big { font-size: 44px; font-weight: 900; color: #f55; text-shadow: 0 0 12px #f22; }
+  .overlay .sub { font-size: 22px; color: #fed; margin-top: 8px; }
+  .overlay .hint { font-size: 15px; color: #aab; margin-top: 12px; }
+  .ship { font-size: 24px; position: absolute; z-index: 10; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;🐸 Space Frog Escape 🛸&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Use the arrow keys to hop the frog upward, dodging UFOs, laser beams, and meteors. Reach the mothership at the top to beam up and score — press Start below to play.&lt;/p&gt;
+  &lt;div class=&quot;score&quot;&gt;Score: &lt;b id=&quot;score&quot;&gt;0&lt;/b&gt; &amp;nbsp;·&amp;nbsp; Best: &lt;b id=&quot;best&quot;&gt;0&lt;/b&gt;&lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;
+    &lt;div class=&quot;stars&quot; id=&quot;stars&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;overlay&quot; id=&quot;overlay&quot;&gt;
+      &lt;div class=&quot;big&quot;&gt;SPLAT!&lt;/div&gt;
+      &lt;div class=&quot;sub&quot; id=&quot;finalScore&quot;&gt;Final Score: 0&lt;/div&gt;
+      &lt;div class=&quot;hint&quot;&gt;Press Start below to try again.&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var CELL = 44, COLS = 14, LANES = 7, ROWS = LANES + 2;
+  var FIELD_W = 620, FIELD_H = 448;
+  CELL = Math.floor(FIELD_H / ROWS);            // ~49
+  var COLW = FIELD_W / COLS;                     // column width
+  var HERO = 40;
+  var running = false, animId = null;
+  var score = 0, best = 0;
+  var hero = { col: Math.floor(COLS/2), row: ROWS-1 };
+  var lanes = [];
+  var speedMul = 1;
+
+  var field = document.getElementById(&#x27;field&#x27;);
+  var starsEl = document.getElementById(&#x27;stars&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var bestEl = document.getElementById(&#x27;best&#x27;);
+  var overlay = document.getElementById(&#x27;overlay&#x27;);
+  var finalScoreEl = document.getElementById(&#x27;finalScore&#x27;);
+  var heroEl = null;
+
+  // ---- Audio ----
+  var actx = null;
+  function beep(type, freq, dur, vol) {
+    try {
+      if (!actx) actx = new (window.AudioContext||window.webkitAudioContext)();
+      var o = actx.createOscillator(), g = actx.createGain();
+      o.type = type; o.frequency.value = freq;
+      o.connect(g); g.connect(actx.destination);
+      g.gain.setValueAtTime(vol, actx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + dur);
+      o.start(); o.stop(actx.currentTime + dur);
+    } catch (_) {}
+  }
+  function zap() {
+    try {
+      if (!actx) actx = new (window.AudioContext||window.webkitAudioContext)();
+      var o = actx.createOscillator(), g = actx.createGain();
+      o.type = &#x27;sawtooth&#x27;;
+      o.frequency.setValueAtTime(220, actx.currentTime);
+      o.frequency.exponentialRampToValueAtTime(1400, actx.currentTime + 0.25);
+      o.connect(g); g.connect(actx.destination);
+      g.gain.setValueAtTime(0.2, actx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + 0.3);
+      o.start(); o.stop(actx.currentTime + 0.3);
+    } catch (_) {}
+  }
+  function splatSound() {
+    beep(&#x27;square&#x27;, 160, 0.18, 0.25);
+    setTimeout(function(){ beep(&#x27;square&#x27;, 90, 0.3, 0.22); }, 60);
+  }
+
+  // ---- Starfield ----
+  function buildStars() {
+    starsEl.innerHTML = &#x27;&#x27;;
+    for (var i = 0; i &lt; 70; i++) {
+      var s = document.createElement(&#x27;div&#x27;);
+      var sz = Math.random() &lt; 0.7 ? 1 : 2;
+      s.style.position = &#x27;absolute&#x27;;
+      s.style.width = sz + &#x27;px&#x27;; s.style.height = sz + &#x27;px&#x27;;
+      s.style.borderRadius = &#x27;50%&#x27;;
+      s.style.background = [&#x27;#fff&#x27;,&#x27;#bcf&#x27;,&#x27;#dff&#x27;][i%3];
+      s.style.left = Math.random()*FIELD_W + &#x27;px&#x27;;
+      s.style.top = Math.random()*FIELD_H + &#x27;px&#x27;;
+      s.style.opacity = 0.3 + Math.random()*0.6;
+      s._sp = 0.15 + Math.random()*0.6;
+      starsEl.appendChild(s);
+    }
+  }
+  function scrollStars() {
+    var kids = starsEl.children;
+    for (var i = 0; i &lt; kids.length; i++) {
+      var s = kids[i];
+      var t = parseFloat(s.style.top) + s._sp;
+      if (t &gt; FIELD_H) { t = -2; s.style.left = Math.random()*FIELD_W + &#x27;px&#x27;; }
+      s.style.top = t + &#x27;px&#x27;;
+    }
+  }
+
+  // ---- Lanes ----
+  var THEMES = [
+    { type:&#x27;ufo&#x27; },
+    { type:&#x27;laser&#x27; },
+    { type:&#x27;meteor&#x27; },
+    { type:&#x27;ufo&#x27; },
+    { type:&#x27;meteor&#x27; },
+    { type:&#x27;laser&#x27; },
+    { type:&#x27;ufo&#x27; }
+  ];
+
+  function buildLanes() {
+    // remove old lane rows
+    var old = field.querySelectorAll(&#x27;.lanerow, .safe-row, .mothership-row, .ship&#x27;);
+    old.forEach(function(n){ n.remove(); });
+    lanes = [];
+
+    for (var r = 0; r &lt; ROWS; r++) {
+      var row = document.createElement(&#x27;div&#x27;);
+      row.style.top = (r*CELL) + &#x27;px&#x27;;
+      row.style.height = CELL + &#x27;px&#x27;;
+      if (r === 0) {
+        row.className = &#x27;lanerow mothership-row&#x27;;
+        var ship = document.createElement(&#x27;div&#x27;);
+        ship.className = &#x27;ship&#x27;;
+        ship.textContent = &#x27;🛸&#x27;;
+        ship.style.left = (FIELD_W/2 - 12) + &#x27;px&#x27;;
+        ship.style.top = (r*CELL + CELL/2 - 14) + &#x27;px&#x27;;
+        field.insertBefore(ship, starsEl.nextSibling);
+      } else if (r === ROWS-1) {
+        row.className = &#x27;lanerow safe-row&#x27;;
+      } else {
+        row.className = &#x27;lanerow&#x27;;
+      }
+      field.insertBefore(row, starsEl.nextSibling);
+    }
+
+    for (var i = 0; i &lt; LANES; i++) {
+      var laneRow = i + 1;
+      var theme = THEMES[i].type;
+      var dir = (i % 2 === 0) ? 1 : -1;
+      var baseSpeed = 0.7 + (i % 3) * 0.35;
+      var count = 2 + (i % 3);            // 2..4 obstacles
+      var lane = { row: laneRow, type: theme, dir: dir, baseSpeed: baseSpeed,
+                   y: laneRow*CELL, obstacles: [], variant: false };
+      var gap = FIELD_W / count;
+      for (var j = 0; j &lt; count; j++) {
+        lane.obstacles.push(makeObstacle(theme, j*gap + Math.random()*20, laneRow));
+      }
+      lanes.push(lane);
+    }
+  }
+
+  function makeObstacle(type, x, laneRow) {
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;obstacle&#x27;;
+    var w, h;
+    var top = laneRow*CELL;
+    if (type === &#x27;ufo&#x27;) {
+      w = 46; h = CELL;
+      el.classList.add(&#x27;ufo&#x27;);
+      el.textContent = &#x27;🛸&#x27;;
+    } else if (type === &#x27;meteor&#x27;) {
+      w = 40; h = CELL;
+      var m = document.createElement(&#x27;span&#x27;);
+      m.className = &#x27;meteor&#x27;; m.textContent = &#x27;☄️&#x27;;
+      el.appendChild(m);
+    } else { // laser
+      w = 60; h = 10;
+      el.classList.add(&#x27;laser&#x27;);
+      top = laneRow*CELL + (CELL-h)/2;
+    }
+    el.style.width = w + &#x27;px&#x27;;
+    el.style.height = (type===&#x27;laser&#x27;? h : CELL) + &#x27;px&#x27;;
+    el.style.top = top + &#x27;px&#x27;;
+    el.style.left = x + &#x27;px&#x27;;
+    field.insertBefore(el, overlay);
+    return { x: x, w: w, el: el, type: type, blinkT: Math.random()*60, on: true };
+  }
+
+  // ---- Hero ----
+  function makeHero() {
+    if (heroEl) heroEl.remove();
+    heroEl = document.createElement(&#x27;div&#x27;);
+    heroEl.className = &#x27;hero&#x27;;
+    var f = document.createElement(&#x27;span&#x27;);
+    f.className = &#x27;frog&#x27;; f.textContent = &#x27;🐸&#x27;;
+    heroEl.appendChild(f);
+    field.insertBefore(heroEl, overlay);
+  }
+  function heroX() { return hero.col*COLW + (COLW-HERO)/2; }
+  function heroY() { return hero.row*CELL + (CELL-HERO)/2; }
+  function paintHero() {
+    heroEl.style.left = heroX() + &#x27;px&#x27;;
+    heroEl.style.top = heroY() + &#x27;px&#x27;;
+  }
+  function resetHero() {
+    hero.col = Math.floor(COLS/2);
+    hero.row = ROWS-1;
+    paintHero();
+  }
+  function doHop() {
+    heroEl.classList.remove(&#x27;hop&#x27;); void heroEl.offsetWidth; heroEl.classList.add(&#x27;hop&#x27;);
+  }
+
+  function safePulse() {
+    var p = document.createElement(&#x27;div&#x27;);
+    p.className = &#x27;safepulse&#x27;;
+    p.style.left = (heroX()-2) + &#x27;px&#x27;;
+    p.style.top = (heroY()-2) + &#x27;px&#x27;;
+    field.insertBefore(p, overlay);
+    setTimeout(function(){ p.remove(); }, 500);
+  }
+
+  function beamUp() {
+    var b = document.createElement(&#x27;div&#x27;);
+    b.className = &#x27;beam&#x27;;
+    b.style.left = (heroX()-10) + &#x27;px&#x27;;
+    b.style.height = heroY() + &#x27;px&#x27;;
+    field.insertBefore(b, overlay);
+    setTimeout(function(){ b.remove(); }, 500);
+    var p = document.createElement(&#x27;div&#x27;);
+    p.className = &#x27;plusone&#x27;; p.textContent = &#x27;+1&#x27;;
+    p.style.left = heroX() + &#x27;px&#x27;;
+    p.style.top = (CELL/2) + &#x27;px&#x27;;
+    field.insertBefore(p, overlay);
+    setTimeout(function(){ p.remove(); }, 900);
+  }
+
+  // ---- Difficulty ----
+  function refreshSpeed() {
+    speedMul = 1 + score * 0.08;   // ramps up
+  }
+  function addVariantLane() {
+    // every 3rd crossing, pick a random lane and temporarily add a fast extra obstacle
+    var idx = Math.floor(Math.random()*LANES);
+    var lane = lanes[idx];
+    var ob = makeObstacle(lane.type, lane.dir&gt;0? -60 : FIELD_W, lane.row);
+    ob.temp = true; ob.fast = true;
+    lane.obstacles.push(ob);
+    setTimeout(function(){
+      var k = lane.obstacles.indexOf(ob);
+      if (k &gt;= 0) { ob.el.remove(); lane.obstacles.splice(k,1); }
+    }, 6000);
+  }
+
+  // ---- Loop ----
+  function tick() {
+    if (!running) return;
+    scrollStars();
+    for (var i = 0; i &lt; lanes.length; i++) {
+      var lane = lanes[i];
+      var sp = lane.baseSpeed * speedMul;
+      for (var j = 0; j &lt; lane.obstacles.length; j++) {
+        var o = lane.obstacles[j];
+        var os = sp * (o.fast ? 1.9 : 1);
+        o.x += lane.dir * os;
+        if (lane.dir &gt; 0 &amp;&amp; o.x &gt; FIELD_W) o.x = -o.w;
+        else if (lane.dir &lt; 0 &amp;&amp; o.x + o.w &lt; 0) o.x = FIELD_W;
+        o.el.style.left = o.x + &#x27;px&#x27;;
+        if (o.type === &#x27;laser&#x27;) {
+          o.blinkT -= 1;
+          if (o.blinkT &lt;= 0) { o.on = !o.on; o.blinkT = o.on? 45 : 25; o.el.classList.toggle(&#x27;off&#x27;, !o.on); }
+        }
+      }
+    }
+    // collision
+    var laneIdx = hero.row - 1;
+    if (laneIdx &gt;= 0 &amp;&amp; laneIdx &lt; LANES) {
+      var hx = heroX(), hw = HERO;
+      var lane = lanes[laneIdx];
+      for (var k = 0; k &lt; lane.obstacles.length; k++) {
+        var o2 = lane.obstacles[k];
+        if (o2.type === &#x27;laser&#x27; &amp;&amp; !o2.on) continue;
+        var pad = 6;
+        if (hx+pad &lt; o2.x + o2.w &amp;&amp; hx+hw-pad &gt; o2.x) { endGame(); return; }
+      }
+    }
+    animId = requestAnimationFrame(tick);
+  }
+
+  function move(dc, dr) {
+    if (!running) return;
+    hero.col = Math.max(0, Math.min(COLS-1, hero.col + dc));
+    hero.row = Math.max(0, Math.min(ROWS-1, hero.row + dr));
+    paintHero();
+    doHop();
+    beep(&#x27;sine&#x27;, 520, 0.06, 0.08);
+    if (hero.row === ROWS-1) safePulse();
+    if (hero.row === 0) {
+      score += 1;
+      scoreEl.textContent = score;
+      refreshSpeed();
+      zap(); beamUp();
+      if (score % 3 === 0) addVariantLane();
+      setTimeout(resetHero, 200);
+    }
+  }
+
+  function endGame() {
+    running = false;
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+    heroEl.classList.add(&#x27;splat&#x27;);
+    splatSound();
+    if (score &gt; best) { best = score; bestEl.textContent = best; }
+    finalScoreEl.textContent = &#x27;Final Score: &#x27; + score;
+    setTimeout(function(){ overlay.classList.add(&#x27;show&#x27;); }, 400);
+  }
+
+  function startGame() {
+    overlay.classList.remove(&#x27;show&#x27;);
+    score = 0; scoreEl.textContent = &#x27;0&#x27;;
+    refreshSpeed();
+    buildStars();
+    buildLanes();
+    makeHero();
+    resetHero();
+    running = true;
+    if (animId) cancelAnimationFrame(animId);
+    animId = requestAnimationFrame(tick);
+  }
+  function stopGame() {
+    running = false;
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27;) { move(-1,0); e.preventDefault(); }
+    else if (e.key === &#x27;ArrowRight&#x27;) { move(1,0); e.preventDefault(); }
+    else if (e.key === &#x27;ArrowUp&#x27;) { move(0,-1); e.preventDefault(); }
+    else if (e.key === &#x27;ArrowDown&#x27;) { move(0,1); e.preventDefault(); }
+  });
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage({ type: &#x27;game_input&#x27;, kind: t, key: e.key || null }, &#x27;*&#x27;);
+      } catch (_) {}
+    }, true);
+  });
+
+  // Initial static paint
+  buildStars();
+  buildLanes();
+  makeHero();
+  paintHero();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  // Suppress in-iframe scrollbars. The parent fits the iframe layout
+  // box to match the content size, so internal scroll is redundant —
+  // and if the LLM&#x27;s CSS sets body overflow: auto, the scrollbar shows
+  // briefly before the fit lands. Force hidden so it never appears.
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  // Iframe-internal JS error capture. window.onerror inside a sandboxed
+  // iframe can&#x27;t post to /api/js_error directly, so we relay to the
+  // parent via postMessage; parent&#x27;s error_logger.js forwards to the
+  // server. Catches LLM-emitted broken HTML (invalid hex, undefined
+  // variables, etc.) that would otherwise fail silently inside the
+  // iframe.
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      // Debounce: don&#x27;t fire more than ~10× per second. ResizeObserver
+      // fires repeatedly during layout/font load; we only need the latest.
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      // Clamp: reject obviously bogus dimensions. Any browser-game viewport
+      // is well under 4000×4000 logical px; readings beyond that are layout
+      // noise during load/visibility transitions.
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  // Parent posts wd_remeasure when it makes the iframe visible (the body&#x27;s
+  // ResizeObserver doesn&#x27;t fire on display:none→block of an outer ancestor
+  // because the iframe document didn&#x27;t actually resize). Wait a frame for
+  // layout to settle before measuring.
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

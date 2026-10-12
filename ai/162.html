@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🐸 Frog Dash</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html#ai">&larr; All games</a> &middot; <b>🐸 Frog Dash</b></div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #cceeff; color: #144; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 12px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  h1 { margin: 0; font-size: 28px; font-weight: 800; color: #1976d2; text-shadow: 1px 1px 0 #fff; }
+  .instructions { font-size: 16px; color: #145; max-width: 620px; margin: 0; line-height: 1.35; text-align: center; }
+  .score { font-size: 22px; font-weight: 800; color: #0d6b3f; margin: 0; display: flex; gap: 22px; }
+  .score span { color: #b8860b; }
+  .field {
+    position: relative; width: 620px; height: 460px; flex-shrink: 0;
+    border-radius: 12px; overflow: hidden; border: 4px solid #0d47a1;
+    background: linear-gradient(180deg, #2196f3, #1565c0, #2196f3);
+    background-size: 100% 200%;
+    animation: ripple 6s ease-in-out infinite;
+  }
+  @keyframes ripple { 0%{background-position:0 0;} 50%{background-position:0 100%;} 100%{background-position:0 0;} }
+  .lane-band { position:absolute; left:0; right:0; }
+  .safe { background: rgba(102,187,106,0.35); }
+  .obstacle { position: absolute; display:flex; align-items:center; justify-content:center; font-size: 34px; }
+  .log { position:absolute; background: linear-gradient(180deg,#a1673a,#7a4a26); border-radius:8px; box-shadow: inset 0 2px 3px rgba(255,255,255,.3); border:2px solid #5c3818; }
+  .coin { position:absolute; font-size:26px; }
+  .hero { position: absolute; font-size: 34px; z-index:5; transition: left .09s, top .09s; }
+  .hero.hop { animation: squash .16s ease; }
+  @keyframes squash { 0%{transform:scale(1,1);} 40%{transform:scale(.7,1.3);} 100%{transform:scale(1,1);} }
+  .goal { position:absolute; font-size: 32px; z-index:2; }
+  .whirl { animation: spin 1.5s linear infinite; }
+  @keyframes spin { from{transform:rotate(0);} to{transform:rotate(360deg);} }
+  .overlay { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; background:rgba(13,71,161,.6); color:#fff; font-size:26px; font-weight:800; z-index:20; text-align:center; padding:20px; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;🐸 Frog Dash&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Use the arrow keys to hop the frog across the river to the 🏆 trophy at the top, dodging boats, crocs and whirlpools. Ride the logs (hop off before you drift off-screen) and grab coins for bonus points!&lt;/p&gt;
+  &lt;div class=&quot;score&quot;&gt;Crossings: &lt;span id=&quot;cross&quot;&gt;0&lt;/span&gt; &amp;nbsp; Coins: &lt;span id=&quot;coins&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;
+    &lt;div class=&quot;overlay&quot; id=&quot;overlay&quot;&gt;Press Start below to play!&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var CELL = 46;
+  var COLS = 13;
+  var ROWS = 10; // row0 goal, rows1-... hazards, last row start
+  var FIELD_W = 620, FIELD_H = 460;
+  COLS = Math.floor(FIELD_W / CELL); // 13
+  ROWS = Math.floor(FIELD_H / CELL); // 10
+  var HERO = 34;
+
+  var field = document.getElementById(&#x27;field&#x27;);
+  var overlay = document.getElementById(&#x27;overlay&#x27;);
+  var crossEl = document.getElementById(&#x27;cross&#x27;);
+  var coinsEl = document.getElementById(&#x27;coins&#x27;);
+
+  var running = false, animId = null;
+  var crossings = 0, coins = 0;
+  var hero = { col: 6, row: ROWS - 1, onLog: null };
+  var heroEl = null, goalEl = null;
+  var lanes = []; // {row, type, items:[{x,w,el,size?}], dir, speed}
+  var coinItems = []; // {row, el, active, respawn}
+
+  var audioCtx = null;
+  function bloop(freq) {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+      var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type=&#x27;sine&#x27;; o.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      o.frequency.exponentialRampToValueAtTime(freq*1.5, audioCtx.currentTime+0.1);
+      g.gain.setValueAtTime(0.25, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+0.15);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(); o.stop(audioCtx.currentTime+0.16);
+    } catch(_){}
+  }
+  function coinSound() {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+      [880,1320].forEach(function(f,i){
+        var o=audioCtx.createOscillator(),g=audioCtx.createGain();
+        o.type=&#x27;square&#x27;; o.frequency.value=f;
+        var t=audioCtx.currentTime+i*0.08;
+        g.gain.setValueAtTime(0.2,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.12);
+        o.connect(g); g.connect(audioCtx.destination); o.start(t); o.stop(t+0.13);
+      });
+    } catch(_){}
+  }
+  function splat() {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+      var o=audioCtx.createOscillator(),g=audioCtx.createGain();
+      o.type=&#x27;sawtooth&#x27;; o.frequency.setValueAtTime(300,audioCtx.currentTime);
+      o.frequency.exponentialRampToValueAtTime(60,audioCtx.currentTime+0.3);
+      g.gain.setValueAtTime(0.3,audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.35);
+      o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+0.36);
+    } catch(_){}
+  }
+
+  // Lane layout: row -&gt; config. rows counted from top.
+  // row 0: goal/safe. rows 1-8 mix. last row start(safe).
+  var laneConfig = [
+    {type:&#x27;safe&#x27;},                              // 0 goal
+    {type:&#x27;boat&#x27;, emoji:&#x27;🚤&#x27;, dir:1, speed:1.6, count:2}, // fast boats
+    {type:&#x27;log&#x27;, dir:-1, speed:1.0},
+    {type:&#x27;croc&#x27;, emoji:&#x27;🐊&#x27;, dir:1, speed:0.9, count:2},
+    {type:&#x27;log&#x27;, dir:1, speed:1.3},
+    {type:&#x27;whirl&#x27;, emoji:&#x27;🌀&#x27;, dir:-1, speed:1.1, count:3},
+    {type:&#x27;log&#x27;, dir:-1, speed:0.8},
+    {type:&#x27;boat&#x27;, emoji:&#x27;⛵&#x27;, dir:-1, speed:1.8, count:2}, // orange/other boats
+    {type:&#x27;croc&#x27;, emoji:&#x27;🐊&#x27;, dir:1, speed:1.0, count:2},
+    {type:&#x27;safe&#x27;}                               // last start
+  ];
+
+  function build() {
+    field.innerHTML = &#x27;&#x27;;
+    field.appendChild(overlay);
+    lanes = []; coinItems = [];
+    for (var r=0; r&lt;ROWS; r++) {
+      var cfg = laneConfig[r] || {type:&#x27;safe&#x27;};
+      var y = r*CELL;
+      // safe band shading
+      if (cfg.type===&#x27;safe&#x27;) {
+        var band = document.createElement(&#x27;div&#x27;);
+        band.className=&#x27;lane-band safe&#x27;;
+        band.style.top=y+&#x27;px&#x27;; band.style.height=CELL+&#x27;px&#x27;;
+        field.appendChild(band);
+      }
+      var lane = {row:r, type:cfg.type, dir:cfg.dir||1, speed:cfg.speed||1, items:[]};
+      if (cfg.type===&#x27;boat&#x27; || cfg.type===&#x27;croc&#x27; || cfg.type===&#x27;whirl&#x27;) {
+        var count = cfg.count||2;
+        var gap = FIELD_W/count;
+        for (var j=0;j&lt;count;j++){
+          var el=document.createElement(&#x27;div&#x27;);
+          el.className=&#x27;obstacle&#x27;+(cfg.type===&#x27;whirl&#x27;?&#x27; whirl&#x27;:&#x27;&#x27;);
+          el.textContent=cfg.emoji;
+          el.style.top=(y+2)+&#x27;px&#x27;;
+          var w = cfg.type===&#x27;croc&#x27;?CELL*1.6:CELL;
+          var x = j*gap + (r*40)%gap;
+          el.style.left=x+&#x27;px&#x27;;
+          el.style.width=CELL+&#x27;px&#x27;; el.style.height=CELL+&#x27;px&#x27;;
+          if (cfg.type===&#x27;whirl&#x27;) { el.dataset.phase = (j*1.3); }
+          field.appendChild(el);
+          lane.items.push({x:x, w:cfg.type===&#x27;croc&#x27;?CELL*1.4:CELL*0.7, el:el, phase:j*1.3, base:1});
+        }
+      } else if (cfg.type===&#x27;log&#x27;) {
+        var lgap = FIELD_W/2;
+        for (var k=0;k&lt;2;k++){
+          var lel=document.createElement(&#x27;div&#x27;);
+          lel.className=&#x27;log&#x27;;
+          var lw = CELL*2.2;
+          lel.style.width=lw+&#x27;px&#x27;; lel.style.height=(CELL-14)+&#x27;px&#x27;;
+          lel.style.top=(y+7)+&#x27;px&#x27;;
+          var lx = k*lgap + (r*30)%lgap;
+          lel.style.left=lx+&#x27;px&#x27;;
+          field.appendChild(lel);
+          lane.items.push({x:lx, w:lw, el:lel});
+        }
+      }
+      // coin per hazard/log lane
+      if (cfg.type!==&#x27;safe&#x27;) {
+        var cel=document.createElement(&#x27;div&#x27;);
+        cel.className=&#x27;coin&#x27;; cel.textContent=&#x27;🪙&#x27;;
+        var ccol = 2 + (r*3)%(COLS-4);
+        cel.style.left=(ccol*CELL+CELL/2-13)+&#x27;px&#x27;;
+        cel.style.top=(y+CELL/2-13)+&#x27;px&#x27;;
+        field.appendChild(cel);
+        coinItems.push({row:r, col:ccol, el:cel, active:true, timer:0});
+      }
+      lanes.push(lane);
+    }
+    // goal trophy
+    goalEl=document.createElement(&#x27;div&#x27;);
+    goalEl.className=&#x27;goal&#x27;; goalEl.textContent=&#x27;🏆&#x27;;
+    goalEl.style.left=(hero.col*CELL+CELL/2-16)+&#x27;px&#x27;;
+    goalEl.style.top=&#x27;4px&#x27;;
+    // place trophy center top
+    goalEl.style.left=(Math.floor(COLS/2)*CELL+CELL/2-16)+&#x27;px&#x27;;
+    field.appendChild(goalEl);
+    // hero
+    heroEl=document.createElement(&#x27;div&#x27;);
+    heroEl.className=&#x27;hero&#x27;; heroEl.textContent=&#x27;🐸&#x27;;
+    field.appendChild(heroEl);
+    paintHero();
+  }
+
+  function paintHero() {
+    var x = hero.col*CELL + (CELL-HERO)/2;
+    var y = hero.row*CELL + (CELL-HERO)/2;
+    heroEl.style.left=x+&#x27;px&#x27;;
+    heroEl.style.top=y+&#x27;px&#x27;;
+  }
+
+  function resetHero() {
+    hero.col=Math.floor(COLS/2);
+    hero.row=ROWS-1;
+    hero.onLog=null;
+    paintHero();
+  }
+
+  function hopAnim() {
+    heroEl.classList.remove(&#x27;hop&#x27;);
+    void heroEl.offsetWidth;
+    heroEl.classList.add(&#x27;hop&#x27;);
+  }
+
+  function tick() {
+    if (!running) return;
+    // move lane items
+    for (var i=0;i&lt;lanes.length;i++){
+      var lane=lanes[i];
+      if (lane.type===&#x27;safe&#x27;) continue;
+      for (var j=0;j&lt;lane.items.length;j++){
+        var it=lane.items[j];
+        it.x += lane.dir*lane.speed;
+        var w = it.el.offsetWidth || it.w;
+        if (lane.dir&gt;0 &amp;&amp; it.x &gt; FIELD_W) it.x = -w;
+        else if (lane.dir&lt;0 &amp;&amp; it.x + w &lt; 0) it.x = FIELD_W;
+        it.el.style.left=it.x+&#x27;px&#x27;;
+        // whirlpool grow/shrink
+        if (lane.type===&#x27;whirl&#x27;) {
+          it.phase += 0.04;
+          var s = 0.6 + 0.5*(0.5+0.5*Math.sin(it.phase));
+          it.el.style.transform = &#x27;scale(&#x27;+s+&#x27;)&#x27;;
+        }
+      }
+    }
+    // coin respawn
+    for (var c=0;c&lt;coinItems.length;c++){
+      var ci=coinItems[c];
+      if (!ci.active) {
+        ci.timer--;
+        if (ci.timer&lt;=0) { ci.active=true; ci.el.style.display=&#x27;&#x27;; }
+      }
+    }
+
+    // frog riding log
+    var laneNow = lanes[hero.row];
+    hero.onLog=null;
+    if (laneNow &amp;&amp; laneNow.type===&#x27;log&#x27;) {
+      var hx = hero.col*CELL + (CELL-HERO)/2;
+      var onAny=false;
+      for (var l=0;l&lt;laneNow.items.length;l++){
+        var lo=laneNow.items[l];
+        if (hx+HERO/2 &gt; lo.x &amp;&amp; hx+HERO/2 &lt; lo.x+lo.w) { onAny=true; hero.onLog=lo;
+          // carry frog
+          var newX = hx + laneNow.dir*laneNow.speed;
+          hero.col = (newX + HERO/2)/CELL - 0.5;
+          heroEl.style.left = newX + &#x27;px&#x27;;
+          break;
+        }
+      }
+      if (!onAny) { die(); return; }
+      // swept off screen
+      var curLeft = parseFloat(heroEl.style.left);
+      if (curLeft &lt; -HERO || curLeft &gt; FIELD_W) { die(); return; }
+    }
+
+    // collision with hazards
+    if (laneNow &amp;&amp; (laneNow.type===&#x27;boat&#x27;||laneNow.type===&#x27;croc&#x27;||laneNow.type===&#x27;whirl&#x27;)) {
+      var hcx = hero.col*CELL + CELL/2;
+      var hcy = hero.row*CELL + CELL/2;
+      for (var m=0;m&lt;laneNow.items.length;m++){
+        var ob=laneNow.items[m];
+        var ow = ob.el.offsetWidth || ob.w;
+        var ocx = ob.x + ow/2;
+        var half = (laneNow.type===&#x27;croc&#x27;? ow*0.42 : CELL*0.35);
+        if (Math.abs(hcx-ocx) &lt; half + HERO*0.35) { die(); return; }
+      }
+    }
+
+    // coin collect
+    for (var cc=0;cc&lt;coinItems.length;cc++){
+      var co=coinItems[cc];
+      if (co.active &amp;&amp; co.row===Math.round(hero.row) &amp;&amp; co.col===Math.round(hero.col)) {
+        co.active=false; co.el.style.display=&#x27;none&#x27;; co.timer=180;
+        coins++; coinsEl.textContent=coins; coinSound();
+      }
+    }
+
+    animId=requestAnimationFrame(tick);
+  }
+
+  function die() {
+    splat();
+    heroEl.textContent=&#x27;💥&#x27;;
+    running=false;
+    if (animId){cancelAnimationFrame(animId);animId=null;}
+    overlay.style.display=&#x27;flex&#x27;;
+    overlay.innerHTML=&#x27;Splat! You were caught.&lt;br&gt;Crossings: &#x27;+crossings+&#x27; &amp;nbsp; Coins: &#x27;+coins+&#x27;&lt;br&gt;&lt;span style=&quot;font-size:18px&quot;&gt;Press Start below to play again&lt;/span&gt;&#x27;;
+  }
+
+  function move(dc,dr){
+    if (!running) return;
+    var nc = hero.col + dc;
+    var nr = hero.row + dr;
+    if (nc&lt;0||nc&gt;COLS-1||nr&lt;0||nr&gt;ROWS-1) return;
+    hero.col = Math.round(nc);
+    hero.row = Math.round(nr);
+    paintHero();
+    hopAnim();
+    bloop(dr&lt;0?520:dr&gt;0?360:440);
+    if (hero.row===0) {
+      crossings++; crossEl.textContent=crossings;
+      coinSound();
+      resetHero();
+    }
+  }
+
+  function startGame() {
+    crossings=0; coins=0;
+    crossEl.textContent=&#x27;0&#x27;; coinsEl.textContent=&#x27;0&#x27;;
+    hero.col=Math.floor(COLS/2); hero.row=ROWS-1; hero.onLog=null;
+    build();
+    overlay.style.display=&#x27;none&#x27;;
+    running=true;
+    animId=requestAnimationFrame(tick);
+  }
+  function stopGame() {
+    running=false;
+    if (animId){cancelAnimationFrame(animId);animId=null;}
+    overlay.style.display=&#x27;flex&#x27;;
+    overlay.textContent=&#x27;Paused — press Start below.&#x27;;
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function(e){
+    if (e.key===&#x27;ArrowLeft&#x27;){move(-1,0);e.preventDefault();}
+    else if (e.key===&#x27;ArrowRight&#x27;){move(1,0);e.preventDefault();}
+    else if (e.key===&#x27;ArrowUp&#x27;){move(0,-1);e.preventDefault();}
+    else if (e.key===&#x27;ArrowDown&#x27;){move(0,1);e.preventDefault();}
+  });
+  window.addEventListener(&#x27;message&#x27;, function(e){
+    if (!e.data||typeof e.data!==&#x27;object&#x27;) return;
+    if (e.data.type===&#x27;wd_start&#x27;) startGame();
+    else if (e.data.type===&#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  // Initial static paint
+  build();
+  overlay.style.display=&#x27;flex&#x27;;
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  // Suppress in-iframe scrollbars. The parent fits the iframe layout
+  // box to match the content size, so internal scroll is redundant —
+  // and if the LLM&#x27;s CSS sets body overflow: auto, the scrollbar shows
+  // briefly before the fit lands. Force hidden so it never appears.
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  // Iframe-internal JS error capture. window.onerror inside a sandboxed
+  // iframe can&#x27;t post to /api/js_error directly, so we relay to the
+  // parent via postMessage; parent&#x27;s error_logger.js forwards to the
+  // server. Catches LLM-emitted broken HTML (invalid hex, undefined
+  // variables, etc.) that would otherwise fail silently inside the
+  // iframe.
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      // Debounce: don&#x27;t fire more than ~10× per second. ResizeObserver
+      // fires repeatedly during layout/font load; we only need the latest.
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      // Clamp: reject obviously bogus dimensions. Any browser-game viewport
+      // is well under 4000×4000 logical px; readings beyond that are layout
+      // noise during load/visibility transitions.
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  // Parent posts wd_remeasure when it makes the iframe visible (the body&#x27;s
+  // ResizeObserver doesn&#x27;t fire on display:none→block of an outer ancestor
+  // because the iframe document didn&#x27;t actually resize). Wait a frame for
+  // layout to settle before measuring.
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

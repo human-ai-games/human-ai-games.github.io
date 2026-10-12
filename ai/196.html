@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🧪 Mad Lab Mutants 🧪</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html#ai">&larr; All games</a> &middot; <b>🧪 Mad Lab Mutants 🧪</b></div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; margin: 0; padding: 0; }
+  body { font-family: system-ui, -apple-system, sans-serif; background: #0a1030; color: #eef; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 12px; box-sizing: border-box; height: 100%; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: 1px; text-shadow: 0 0 8px #6cf, 0 0 16px #48f; }
+  .instructions { font-size: 16px; color: #bcd; max-width: 620px; margin: 0; line-height: 1.35; }
+  .hud { display: flex; gap: 28px; align-items: center; justify-content: center; margin: 2px 0; }
+  .score, .combo { font-size: 24px; font-weight: 800; }
+  .score span { color: #9f9; text-shadow: 0 0 10px #4f6; }
+  .combo span { color: #fc6; text-shadow: 0 0 10px #f83; display: inline-block; }
+  .pulse { animation: pulse .3s ease; }
+  @keyframes pulse { 0%{transform:scale(1);} 50%{transform:scale(1.5);} 100%{transform:scale(1);} }
+
+  #stage { position: relative; }
+  .board { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); gap: 14px; width: 480px; height: 480px; padding: 16px; box-sizing: border-box; border-radius: 18px; background: rgba(255,255,255,0.05); box-shadow: inset 0 0 30px rgba(0,0,0,0.4); }
+  .shake { animation: shake .18s ease; }
+  @keyframes shake { 0%{transform:translate(0,0);} 25%{transform:translate(-6px,4px);} 50%{transform:translate(5px,-5px);} 75%{transform:translate(-4px,-3px);} 100%{transform:translate(0,0);} }
+
+  .tube { position: relative; border-radius: 12px 12px 20px 20px; background: linear-gradient(to bottom, rgba(255,255,255,0.10), rgba(120,200,255,0.18)); border: 2px solid rgba(180,230,255,0.35); overflow: hidden; display: flex; align-items: flex-end; justify-content: center; }
+  .tube::before { content:&#x27;&#x27;; position:absolute; bottom:0; left:0; right:0; height:38%; background: linear-gradient(to top, rgba(80,200,255,0.55), rgba(80,200,255,0.15)); }
+  .glow { position:absolute; bottom:-10px; left:50%; transform:translateX(-50%); width:70%; height:24px; border-radius:50%; background: radial-gradient(rgba(120,230,255,0.7), transparent 70%); filter: blur(4px); }
+
+  .creature { position: relative; z-index: 2; font-size: 52px; line-height: 1; cursor: pointer; user-select: none; transform: translateY(120%); transition: none; filter: drop-shadow(0 3px 4px rgba(0,0,0,0.4)); }
+  .creature.up { animation: rise .35s ease-out forwards, wobble 1.1s ease-in-out .35s infinite; }
+  .creature.down { animation: sink .3s ease-in forwards; }
+  @keyframes rise { from{transform:translateY(120%);} to{transform:translateY(-6%);} }
+  @keyframes sink { from{transform:translateY(-6%);} to{transform:translateY(120%);} }
+  @keyframes wobble { 0%,100%{transform:translateY(-6%) rotate(-7deg);} 50%{transform:translateY(-14%) rotate(7deg);} }
+
+  .splat { position:absolute; z-index:5; font-size:48px; pointer-events:none; animation: splat .4s ease-out forwards; }
+  @keyframes splat { 0%{transform:scale(.6);opacity:1;} 100%{transform:scale(2.2);opacity:0;} }
+  .comboPop { position:absolute; z-index:6; font-size:34px; font-weight:900; color:#fd5; pointer-events:none; text-shadow:0 0 8px #f70, 0 2px 3px #400; animation: comboPop .7s ease-out forwards; }
+  @keyframes comboPop { 0%{transform:translate(-50%,-50%) scale(.4);opacity:0;} 25%{transform:translate(-50%,-90%) scale(1.4);opacity:1;} 100%{transform:translate(-50%,-160%) scale(1);opacity:0;} }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;🧪 Mad Lab Mutants 🧪&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Click the mutant creatures the instant they bubble up from the tubes to splat them and score. Hit them in quick succession to build a combo — but let one sink away and your combo resets.&lt;/p&gt;
+  &lt;div class=&quot;hud&quot;&gt;
+    &lt;div class=&quot;score&quot;&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;combo&quot;&gt;Combo: &lt;span id=&quot;combo&quot;&gt;x1&lt;/span&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div id=&quot;stage&quot;&gt;
+    &lt;div class=&quot;board&quot; id=&quot;board&quot;&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var CREATURES = [&#x27;🦠&#x27;,&#x27;🦇&#x27;,&#x27;😈&#x27;,&#x27;👾&#x27;,&#x27;👹&#x27;,&#x27;🐙&#x27;,&#x27;🧫&#x27;,&#x27;🐍&#x27;,&#x27;👻&#x27;];
+  var board = document.getElementById(&#x27;board&#x27;);
+  var stage = document.getElementById(&#x27;stage&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var comboEl = document.getElementById(&#x27;combo&#x27;);
+
+  var tubes = [];
+  for (var i = 0; i &lt; 9; i++) {
+    var tube = document.createElement(&#x27;div&#x27;);
+    tube.className = &#x27;tube&#x27;;
+    var glow = document.createElement(&#x27;div&#x27;);
+    glow.className = &#x27;glow&#x27;;
+    tube.appendChild(glow);
+    board.appendChild(tube);
+    tubes.push({ el: tube, busy: false });
+  }
+
+  var running = false, score = 0, combo = 1, elapsed = 0;
+  var spawnTimer = null, tickTimer = null;
+  var audioCtx = null;
+
+  function beep(freq, dur, type) {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = type || &#x27;square&#x27;; o.frequency.value = freq;
+      o.connect(g); g.connect(audioCtx.destination);
+      g.gain.setValueAtTime(0.15, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+      o.start(); o.stop(audioCtx.currentTime + dur);
+    } catch (_) {}
+  }
+
+  function updateBg() {
+    // 0 = cool blue, 1 = fiery red. Ramp over ~60s.
+    var t = Math.min(elapsed / 60000, 1);
+    var r = Math.round(10 + t * 90);
+    var g = Math.round(16 + t * 6);
+    var b = Math.round(48 - t * 40);
+    document.body.style.background = &#x27;rgb(&#x27; + r + &#x27;,&#x27; + g + &#x27;,&#x27; + b + &#x27;)&#x27;;
+  }
+
+  function lifeSpan() {
+    var t = Math.min(elapsed / 60000, 1);
+    return 1400 - t * 900; // 1400ms -&gt; 500ms
+  }
+  function spawnDelay() {
+    var t = Math.min(elapsed / 60000, 1);
+    return 900 - t * 550;   // 900ms -&gt; 350ms
+  }
+
+  function resetCombo() {
+    combo = 1;
+    comboEl.textContent = &#x27;x1&#x27;;
+  }
+
+  function popCombo(x, y) {
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;comboPop&#x27;;
+    el.style.left = x + &#x27;px&#x27;;
+    el.style.top = y + &#x27;px&#x27;;
+    el.textContent = &#x27;x&#x27; + combo + &#x27;!&#x27;;
+    stage.appendChild(el);
+    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 700);
+  }
+
+  function spawnCreature() {
+    if (!running) return;
+    var free = tubes.filter(function (t) { return !t.busy; });
+    if (free.length === 0) return;
+    var tube = free[Math.floor(Math.random() * free.length)];
+    tube.busy = true;
+
+    var c = document.createElement(&#x27;div&#x27;);
+    c.className = &#x27;creature up&#x27;;
+    c.textContent = CREATURES[Math.floor(Math.random() * CREATURES.length)];
+    tube.el.appendChild(c);
+
+    var life = lifeSpan();
+    var hit = false;
+    var sinkTimer = setTimeout(function () {
+      if (hit) return;
+      // Missed — sink and reset combo.
+      c.className = &#x27;creature down&#x27;;
+      resetCombo();
+      setTimeout(function () {
+        if (c.parentNode) c.parentNode.removeChild(c);
+        tube.busy = false;
+      }, 300);
+    }, life);
+
+    c.addEventListener(&#x27;mousedown&#x27;, function (ev) {
+      if (hit) return;
+      hit = true;
+      clearTimeout(sinkTimer);
+      ev.stopPropagation();
+
+      // Combo up
+      combo = Math.min(combo + 1, 9);
+      var mult = combo;
+      score += 10 * mult;
+      scoreEl.textContent = score;
+      comboEl.textContent = &#x27;x&#x27; + mult;
+      comboEl.classList.remove(&#x27;pulse&#x27;); void comboEl.offsetWidth; comboEl.classList.add(&#x27;pulse&#x27;);
+
+      beep(400 + mult * 60, 0.12, &#x27;square&#x27;);
+
+      // Screen shake
+      board.classList.remove(&#x27;shake&#x27;); void board.offsetWidth; board.classList.add(&#x27;shake&#x27;);
+
+      // Splat burst at creature position
+      var rect = c.getBoundingClientRect();
+      var sRect = stage.getBoundingClientRect();
+      var cx = rect.left - sRect.left + rect.width / 2;
+      var cy = rect.top - sRect.top + rect.height / 2;
+      var splat = document.createElement(&#x27;div&#x27;);
+      splat.className = &#x27;splat&#x27;;
+      splat.textContent = &#x27;💥&#x27;;
+      splat.style.left = (cx - 24) + &#x27;px&#x27;;
+      splat.style.top = (cy - 24) + &#x27;px&#x27;;
+      stage.appendChild(splat);
+      setTimeout(function () { if (splat.parentNode) splat.parentNode.removeChild(splat); }, 400);
+
+      if (mult &gt;= 2) popCombo(cx, cy);
+
+      if (c.parentNode) c.parentNode.removeChild(c);
+      tube.busy = false;
+    });
+  }
+
+  function clearAll() {
+    tubes.forEach(function (t) {
+      t.busy = false;
+      var creatures = t.el.querySelectorAll(&#x27;.creature&#x27;);
+      creatures.forEach(function (n) { n.parentNode.removeChild(n); });
+    });
+    var pops = stage.querySelectorAll(&#x27;.splat, .comboPop&#x27;);
+    pops.forEach(function (n) { n.parentNode.removeChild(n); });
+  }
+
+  function loop() {
+    if (!running) return;
+    spawnCreature();
+    spawnTimer = setTimeout(loop, spawnDelay());
+  }
+
+  function startGame() {
+    if (running) return;
+    running = true;
+    score = 0; combo = 1; elapsed = 0;
+    scoreEl.textContent = &#x27;0&#x27;;
+    comboEl.textContent = &#x27;x1&#x27;;
+    clearAll();
+    updateBg();
+    tickTimer = setInterval(function () { elapsed += 200; updateBg(); }, 200);
+    spawnCreature();
+    spawnTimer = setTimeout(loop, spawnDelay());
+  }
+
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    if (spawnTimer) { clearTimeout(spawnTimer); spawnTimer = null; }
+    if (tickTimer) { clearInterval(tickTimer); tickTimer = null; }
+    clearAll();
+  }
+
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  // Suppress in-iframe scrollbars. The parent fits the iframe layout
+  // box to match the content size, so internal scroll is redundant —
+  // and if the LLM&#x27;s CSS sets body overflow: auto, the scrollbar shows
+  // briefly before the fit lands. Force hidden so it never appears.
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  // Iframe-internal JS error capture. window.onerror inside a sandboxed
+  // iframe can&#x27;t post to /api/js_error directly, so we relay to the
+  // parent via postMessage; parent&#x27;s error_logger.js forwards to the
+  // server. Catches LLM-emitted broken HTML (invalid hex, undefined
+  // variables, etc.) that would otherwise fail silently inside the
+  // iframe.
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      // Debounce: don&#x27;t fire more than ~10× per second. ResizeObserver
+      // fires repeatedly during layout/font load; we only need the latest.
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      // Clamp: reject obviously bogus dimensions. Any browser-game viewport
+      // is well under 4000×4000 logical px; readings beyond that are layout
+      // noise during load/visibility transitions.
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  // Parent posts wd_remeasure when it makes the iframe visible (the body&#x27;s
+  // ResizeObserver doesn&#x27;t fire on display:none→block of an outer ancestor
+  // because the iframe document didn&#x27;t actually resize). Wait a frame for
+  // layout to settle before measuring.
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>
