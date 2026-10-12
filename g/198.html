@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NEON SNAKE</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>NEON SNAKE</b> &middot; Game 198 &middot; Amateur producer &middot; Basic game: Snake</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #000; color: #eee; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 18px; background: #000; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 10px; }
+  h1 { margin: 0; font-size: 28px; font-weight: 700; background: linear-gradient(90deg,#ff004c,#ff9d00,#f6ff00,#00ff66,#00e0ff,#c400ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .instructions { font-size: 16px; color: #bbb; max-width: 600px; margin: 0; line-height: 1.4; text-align: center; }
+  .score { font-size: 22px; color: #eee; margin: 0; }
+  .field { position: relative; width: 600px; height: 440px; flex-shrink: 0; margin: 0; background: #050510; border-radius: 8px; overflow: hidden; box-shadow: inset 0 0 40px rgba(0,255,200,0.15); border: 1px solid #113; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;NEON SNAKE&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Steer the glowing snake with the arrow keys and eat the pizza, ice cream, and donuts scattered around to score. Avoid the red crocodiles, the walls, and your own tail — touching any of them ends the round.&lt;/p&gt;
+  &lt;div class=&quot;score&quot;&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+  &lt;canvas class=&quot;field&quot; id=&quot;field&quot; width=&quot;600&quot; height=&quot;440&quot;&gt;&lt;/canvas&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var CELL = 20;
+  var COLS = 30, ROWS = 22;
+  var TICK_MS = 150;
+  var running = false, tickId = null;
+  var snake = [];
+  var dir = { x: 1, y: 0 };
+  var pendingDir = { x: 1, y: 0 };
+  var foodEmojis = [&#x27;🍕&#x27;,&#x27;🍦&#x27;,&#x27;🍩&#x27;];
+  var foods = [];        // array of {x, y, emoji}
+  var NUM_FOODS = 8;
+  var crocs = [];
+  var NUM_CROCS = 5;
+  var score = 0;
+  var hue = 0;
+  var canvas = document.getElementById(&#x27;field&#x27;);
+  var ctx = canvas.getContext(&#x27;2d&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+
+  function cellOccupied(x, y) {
+    for (var i = 0; i &lt; snake.length; i++) if (snake[i].x === x &amp;&amp; snake[i].y === y) return true;
+    return false;
+  }
+  function isCroc(x, y) {
+    for (var i = 0; i &lt; crocs.length; i++) if (crocs[i].x === x &amp;&amp; crocs[i].y === y) return true;
+    return false;
+  }
+  function isFood(x, y) {
+    for (var i = 0; i &lt; foods.length; i++) if (foods[i].x === x &amp;&amp; foods[i].y === y) return true;
+    return false;
+  }
+
+  function randomFreeCell() {
+    for (var tries = 0; tries &lt; 500; tries++) {
+      var x = Math.floor(Math.random() * COLS);
+      var y = Math.floor(Math.random() * ROWS);
+      if (!cellOccupied(x, y) &amp;&amp; !isCroc(x, y) &amp;&amp; !isFood(x, y)) return { x: x, y: y };
+    }
+    return null;
+  }
+
+  function addFood() {
+    var cell = randomFreeCell();
+    if (cell) {
+      cell.emoji = foodEmojis[Math.floor(Math.random()*foodEmojis.length)];
+      foods.push(cell);
+    }
+  }
+
+  function placeFoods() {
+    foods = [];
+    for (var i = 0; i &lt; NUM_FOODS; i++) addFood();
+  }
+
+  function placeCrocs() {
+    crocs = [];
+    for (var n = 0; n &lt; NUM_CROCS; n++) {
+      for (var tries = 0; tries &lt; 400; tries++) {
+        var x = Math.floor(Math.random() * COLS);
+        var y = Math.floor(Math.random() * ROWS);
+        var nearStart = (y &gt;= 9 &amp;&amp; y &lt;= 11 &amp;&amp; x &lt;= 8);
+        if (!nearStart &amp;&amp; !isCroc(x, y) &amp;&amp; !cellOccupied(x, y)) {
+          crocs.push({ x: x, y: y });
+          break;
+        }
+      }
+    }
+  }
+
+  function initSnake() {
+    snake = [ { x: 5, y: 10 }, { x: 4, y: 10 }, { x: 3, y: 10 } ];
+    dir = { x: 1, y: 0 };
+    pendingDir = { x: 1, y: 0 };
+  }
+
+  function segRadius() {
+    return Math.min(CELL/2 - 1, CELL/2 * 0.45 + score * 0.25);
+  }
+
+  function paint() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.textAlign = &#x27;center&#x27;;
+    ctx.textBaseline = &#x27;middle&#x27;;
+
+    // red crocodiles with red danger glow
+    for (var c = 0; c &lt; crocs.length; c++) {
+      var cx = crocs[c].x*CELL + CELL/2;
+      var cy = crocs[c].y*CELL + CELL/2;
+      ctx.beginPath();
+      ctx.fillStyle = &#x27;rgba(255,20,40,0.35)&#x27;;
+      ctx.shadowBlur = 14;
+      ctx.shadowColor = &#x27;rgba(255,0,0,0.9)&#x27;;
+      ctx.arc(cx, cy, CELL/2, 0, Math.PI*2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.font = &#x27;20px system-ui&#x27;;
+      ctx.fillStyle = &#x27;#fff&#x27;;
+      // tint the croc emoji red by overlaying with multiply-ish blend
+      ctx.fillText(&#x27;🐊&#x27;, cx, cy + 1);
+      ctx.save();
+      ctx.globalCompositeOperation = &#x27;source-atop&#x27;;
+      ctx.fillStyle = &#x27;rgba(255,0,0,0.55)&#x27;;
+      ctx.fillRect(cx - CELL/2, cy - CELL/2, CELL, CELL);
+      ctx.restore();
+    }
+
+    // scattered food
+    ctx.font = &#x27;22px system-ui&#x27;;
+    ctx.fillStyle = &#x27;#fff&#x27;;
+    for (var f = 0; f &lt; foods.length; f++) {
+      ctx.fillText(foods[f].emoji, foods[f].x*CELL + CELL/2, foods[f].y*CELL + CELL/2 + 1);
+    }
+
+    var r = segRadius();
+    for (var i = snake.length - 1; i &gt;= 0; i--) {
+      var s = snake[i];
+      var segHue = (hue + i * 18) % 360;
+      var sx = s.x*CELL + CELL/2;
+      var sy = s.y*CELL + CELL/2;
+      ctx.beginPath();
+      ctx.arc(sx, sy, r, 0, Math.PI*2);
+      ctx.shadowBlur = 16;
+      ctx.shadowColor = &#x27;hsl(&#x27; + segHue + &#x27;,100%,55%)&#x27;;
+      ctx.fillStyle = &#x27;hsl(&#x27; + segHue + &#x27;,100%,60%)&#x27;;
+      ctx.fill();
+    }
+    ctx.shadowBlur = 0;
+
+    var head = snake[0];
+    var hx = head.x*CELL + CELL/2;
+    var hy = head.y*CELL + CELL/2;
+    var ex = dir.x, ey = dir.y;
+    var perpX = -ey, perpY = ex;
+    var off = r * 0.4;
+    var fwd = r * 0.35;
+    for (var e = -1; e &lt;= 1; e += 2) {
+      var eyeX = hx + ex*fwd + perpX*off*e;
+      var eyeY = hy + ey*fwd + perpY*off*e;
+      ctx.beginPath();
+      ctx.fillStyle = &#x27;#fff&#x27;;
+      ctx.arc(eyeX, eyeY, r*0.28, 0, Math.PI*2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.fillStyle = &#x27;#000&#x27;;
+      ctx.arc(eyeX + ex*1.5, eyeY + ey*1.5, r*0.13, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+
+  function tick() {
+    if (!running) return;
+    hue = (hue + 8) % 360;
+    if (!(pendingDir.x === -dir.x &amp;&amp; pendingDir.y === -dir.y)) dir = pendingDir;
+    var head = snake[0];
+    var nx = head.x + dir.x, ny = head.y + dir.y;
+    if (nx &lt; 0 || nx &gt;= COLS || ny &lt; 0 || ny &gt;= ROWS) { endGame(); return; }
+    if (isCroc(nx, ny)) { endGame(); return; }
+
+    // check food eaten
+    var ateIndex = -1;
+    for (var fi = 0; fi &lt; foods.length; fi++) {
+      if (foods[fi].x === nx &amp;&amp; foods[fi].y === ny) { ateIndex = fi; break; }
+    }
+    var ateFood = ateIndex &gt;= 0;
+
+    var body = ateFood ? snake : snake.slice(0, snake.length - 1);
+    for (var i = 0; i &lt; body.length; i++) {
+      if (body[i].x === nx &amp;&amp; body[i].y === ny) { endGame(); return; }
+    }
+    snake.unshift({ x: nx, y: ny });
+    if (ateFood) {
+      score += 1;
+      scoreEl.textContent = score;
+      foods.splice(ateIndex, 1);
+      addFood();
+    } else {
+      snake.pop();
+    }
+    paint();
+  }
+
+  function endGame() {
+    running = false;
+    if (tickId) { clearInterval(tickId); tickId = null; }
+    ctx.fillStyle = &#x27;rgba(0,0,0,0.55)&#x27;;
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = &#x27;#ff2d6b&#x27;;
+    ctx.font = &#x27;bold 34px system-ui&#x27;;
+    ctx.textAlign = &#x27;center&#x27;;
+    ctx.shadowBlur = 20; ctx.shadowColor = &#x27;#ff2d6b&#x27;;
+    ctx.fillText(&#x27;GAME OVER&#x27;, canvas.width/2, canvas.height/2 - 10);
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = &#x27;#eee&#x27;;
+    ctx.font = &#x27;18px system-ui&#x27;;
+    ctx.fillText(&#x27;Score: &#x27; + score, canvas.width/2, canvas.height/2 + 26);
+  }
+
+  function startGame() {
+    if (running) return;
+    score = 0;
+    scoreEl.textContent = &#x27;0&#x27;;
+    initSnake();
+    placeCrocs();
+    placeFoods();
+    paint();
+    running = true;
+    if (tickId) clearInterval(tickId);
+    tickId = setInterval(tick, TICK_MS);
+  }
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    if (tickId) { clearInterval(tickId); tickId = null; }
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27;) { pendingDir = { x: -1, y: 0 }; e.preventDefault(); }
+    else if (e.key === &#x27;ArrowRight&#x27;) { pendingDir = { x: 1, y: 0 }; e.preventDefault(); }
+    else if (e.key === &#x27;ArrowUp&#x27;) { pendingDir = { x: 0, y: -1 }; e.preventDefault(); }
+    else if (e.key === &#x27;ArrowDown&#x27;) { pendingDir = { x: 0, y: 1 }; e.preventDefault(); }
+  });
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  initSnake();
+  placeCrocs();
+  placeFoods();
+  paint();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

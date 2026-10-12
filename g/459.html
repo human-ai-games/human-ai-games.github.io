@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shooter</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>Shooter</b> &middot; Game 459 &middot; Professional producer &middot; Basic game: Space shooter</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #222; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 14px 18px; background: white; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 6px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 600; }
+  .instructions { font-size: 16px; color: #666; max-width: 620px; margin: 0; line-height: 1.35; text-align: center; }
+  .topbar { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; justify-content: center; }
+  .score { font-size: 22px; color: #555; margin: 0; }
+  .weapons { display: flex; gap: 6px; }
+  .weapon { font-size: 13px; padding: 4px 8px; border-radius: 6px; border: 2px solid #ccc; color: #666; background: #f0f0f0; cursor: pointer; user-select: none; }
+  .weapon.active { border-color: #2a7; color: #fff; background: #2a7; }
+  .customize { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; justify-content: center; font-size: 14px; color: #555; }
+  .customize label { display: flex; gap: 6px; align-items: center; }
+  .swatches { display: flex; gap: 5px; }
+  .swatch { width: 20px; height: 20px; border-radius: 50%; cursor: pointer; border: 2px solid #fff; box-shadow: 0 0 0 1px #bbb; }
+  .swatch.sel { box-shadow: 0 0 0 2px #222; }
+  .shapes { display: flex; gap: 5px; }
+  .shapebtn { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid #ccc; border-radius: 6px; background: #f0f0f0; }
+  .shapebtn.sel { border-color: #222; background: #fff; }
+  .shapebtn .mini { width: 16px; height: 14px; background: #555; }
+  .mini.sq { border-radius: 0; }
+  .mini.round { border-radius: 5px; }
+  .mini.tri { width:0; height:0; background:transparent; border-left:8px solid transparent; border-right:8px solid transparent; border-bottom:14px solid #555; }
+  .mini.dia { width:14px; height:14px; background:#555; transform: rotate(45deg); }
+  .field { position: relative; width: 620px; height: 380px; flex-shrink: 0; margin: 0; background: #ececec; border-radius: 8px; overflow: hidden; }
+  .ship { position: absolute; width: 30px; height: 24px; bottom: 12px; }
+  .bullet { position: absolute; border-radius: 2px; }
+  .enemy { position: absolute; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .drone { background: #2b8; border-radius: 50%; }
+  .zipper { background: #e24; border-radius: 6px; }
+  .tank { background: #4a4; border-radius: 8px; box-shadow: inset 0 0 0 3px rgba(255,255,255,0.35); }
+  .hpbar { position: absolute; bottom: -6px; left: 0; height: 3px; background: #f60; border-radius: 2px; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;Shooter&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Move with &lt;strong&gt;&amp;larr; &amp;rarr;&lt;/strong&gt;, press &lt;strong&gt;Space&lt;/strong&gt; to shoot, and press &lt;strong&gt;1&lt;/strong&gt;/&lt;strong&gt;2&lt;/strong&gt;/&lt;strong&gt;3&lt;/strong&gt; to switch weapons. Customize your ship below, then use the &lt;strong&gt;Start&lt;/strong&gt;/&lt;strong&gt;Restart&lt;/strong&gt; button.&lt;/p&gt;
+  &lt;div class=&quot;customize&quot;&gt;
+    &lt;label&gt;Color:
+      &lt;span class=&quot;swatches&quot; id=&quot;swatches&quot;&gt;&lt;/span&gt;
+    &lt;/label&gt;
+    &lt;label&gt;Shape:
+      &lt;span class=&quot;shapes&quot; id=&quot;shapes&quot;&gt;
+        &lt;span class=&quot;shapebtn sel&quot; data-shape=&quot;round&quot;&gt;&lt;span class=&quot;mini round&quot;&gt;&lt;/span&gt;&lt;/span&gt;
+        &lt;span class=&quot;shapebtn&quot; data-shape=&quot;sq&quot;&gt;&lt;span class=&quot;mini sq&quot;&gt;&lt;/span&gt;&lt;/span&gt;
+        &lt;span class=&quot;shapebtn&quot; data-shape=&quot;tri&quot;&gt;&lt;span class=&quot;mini tri&quot;&gt;&lt;/span&gt;&lt;/span&gt;
+        &lt;span class=&quot;shapebtn&quot; data-shape=&quot;dia&quot;&gt;&lt;span class=&quot;mini dia&quot;&gt;&lt;/span&gt;&lt;/span&gt;
+      &lt;/span&gt;
+    &lt;/label&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;topbar&quot;&gt;
+    &lt;div class=&quot;score&quot;&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;weapons&quot;&gt;
+      &lt;div class=&quot;weapon active&quot; data-w=&quot;0&quot;&gt;1 · Rapid&lt;/div&gt;
+      &lt;div class=&quot;weapon&quot; data-w=&quot;1&quot;&gt;2 · Spread&lt;/div&gt;
+      &lt;div class=&quot;weapon&quot; data-w=&quot;2&quot;&gt;3 · Power&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;
+    &lt;div class=&quot;ship&quot; id=&quot;ship&quot;&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var FIELD_W = 620, FIELD_H = 380;
+  var SHIP_W = 30, SHIP_H = 24, SHIP_BOTTOM = 12, SHIP_SPEED = 6;
+  var SPAWN_INTERVAL = 1100;
+  var running = false, animId = null, spawnId = null;
+  var keysDown = {};
+  var shipX = (FIELD_W - SHIP_W) / 2;
+  var bullets = [], enemies = [];
+  var score = 0;
+  var lastShot = 0;
+  var currentWeapon = 0;
+  var field = document.getElementById(&#x27;field&#x27;);
+  var ship = document.getElementById(&#x27;ship&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var weaponEls = document.querySelectorAll(&#x27;.weapon&#x27;);
+
+  // Ship appearance
+  var shipColor = &#x27;#555&#x27;;
+  var shipShape = &#x27;round&#x27;;
+  var COLORS = [&#x27;#555&#x27;, &#x27;#e74c3c&#x27;, &#x27;#3498db&#x27;, &#x27;#2ecc71&#x27;, &#x27;#9b59b6&#x27;, &#x27;#f39c12&#x27;, &#x27;#ff4fa3&#x27;];
+
+  var WEAPONS = [
+    { name: &#x27;Rapid&#x27;,  color: &#x27;#e05&#x27;, w: 5,  h: 14, speed: 9,   cooldown: 180, dmg: 1,
+      shots: [ { dx: 0, vx: 0 } ] },
+    { name: &#x27;Spread&#x27;, color: &#x27;#08c&#x27;, w: 6,  h: 12, speed: 7,   cooldown: 380, dmg: 1,
+      shots: [ { dx: 0, vx: 0 }, { dx: 0, vx: -2.2 }, { dx: 0, vx: 2.2 } ] },
+    { name: &#x27;Power&#x27;,  color: &#x27;#f80&#x27;, w: 18, h: 22, speed: 4.5, cooldown: 650, dmg: 3,
+      shots: [ { dx: 0, vx: 0 } ] }
+  ];
+
+  var ENEMY_TYPES = [
+    { key: &#x27;drone&#x27;,  cls: &#x27;drone&#x27;,  size: 34, hp: 1, speed: 1.7, points: 1,  emoji: &#x27;🛸&#x27;, weight: 5, sway: 0 },
+    { key: &#x27;zipper&#x27;, cls: &#x27;zipper&#x27;, size: 24, hp: 1, speed: 4.2, points: 3,  emoji: &#x27;⚡&#x27;, weight: 3, sway: 1.6 },
+    { key: &#x27;tank&#x27;,   cls: &#x27;tank&#x27;,   size: 44, hp: 5, speed: 1.0, points: 6,  emoji: &#x27;🛡️&#x27;, weight: 2, sway: 0 }
+  ];
+  var WEIGHT_TOTAL = ENEMY_TYPES.reduce(function (s, t) { return s + t.weight; }, 0);
+
+  // Build swatches
+  var swatchWrap = document.getElementById(&#x27;swatches&#x27;);
+  COLORS.forEach(function (c, idx) {
+    var s = document.createElement(&#x27;span&#x27;);
+    s.className = &#x27;swatch&#x27; + (idx === 0 ? &#x27; sel&#x27; : &#x27;&#x27;);
+    s.style.background = c;
+    s.addEventListener(&#x27;click&#x27;, function () {
+      shipColor = c;
+      document.querySelectorAll(&#x27;.swatch&#x27;).forEach(function (x) { x.classList.remove(&#x27;sel&#x27;); });
+      s.classList.add(&#x27;sel&#x27;);
+      applyShipStyle();
+    });
+    swatchWrap.appendChild(s);
+  });
+  document.querySelectorAll(&#x27;.shapebtn&#x27;).forEach(function (btn) {
+    btn.addEventListener(&#x27;click&#x27;, function () {
+      shipShape = btn.dataset.shape;
+      document.querySelectorAll(&#x27;.shapebtn&#x27;).forEach(function (x) { x.classList.remove(&#x27;sel&#x27;); });
+      btn.classList.add(&#x27;sel&#x27;);
+      applyShipStyle();
+    });
+  });
+
+  function applyShipStyle() {
+    ship.style.width = SHIP_W + &#x27;px&#x27;;
+    ship.style.height = SHIP_H + &#x27;px&#x27;;
+    ship.style.background = &#x27;transparent&#x27;;
+    ship.style.borderRadius = &#x27;0&#x27;;
+    ship.style.border = &#x27;none&#x27;;
+    ship.style.transform = &#x27;none&#x27;;
+    ship.style.clipPath = &#x27;none&#x27;;
+    if (shipShape === &#x27;sq&#x27;) {
+      ship.style.background = shipColor;
+    } else if (shipShape === &#x27;round&#x27;) {
+      ship.style.background = shipColor;
+      ship.style.borderRadius = &#x27;6px&#x27;;
+    } else if (shipShape === &#x27;tri&#x27;) {
+      ship.style.background = shipColor;
+      ship.style.clipPath = &#x27;polygon(50% 0, 100% 100%, 0 100%)&#x27;;
+    } else if (shipShape === &#x27;dia&#x27;) {
+      ship.style.background = shipColor;
+      ship.style.clipPath = &#x27;polygon(50% 0, 100% 50%, 50% 100%, 0 50%)&#x27;;
+    }
+  }
+
+  function paintShip() { ship.style.left = shipX + &#x27;px&#x27;; }
+
+  function setWeapon(i) {
+    currentWeapon = i;
+    for (var w = 0; w &lt; weaponEls.length; w++) {
+      weaponEls[w].classList.toggle(&#x27;active&#x27;, w === i);
+    }
+  }
+  weaponEls.forEach(function (el) {
+    el.addEventListener(&#x27;click&#x27;, function () { setWeapon(parseInt(el.dataset.w, 10)); });
+  });
+
+  function pickType() {
+    var r = Math.random() * WEIGHT_TOTAL;
+    for (var i = 0; i &lt; ENEMY_TYPES.length; i++) {
+      r -= ENEMY_TYPES[i].weight;
+      if (r &lt;= 0) return ENEMY_TYPES[i];
+    }
+    return ENEMY_TYPES[0];
+  }
+
+  function spawnEnemy() {
+    var type = pickType();
+    var e = {
+      type: type, size: type.size,
+      x: Math.random() * (FIELD_W - type.size), y: -type.size,
+      hp: type.hp, maxhp: type.hp,
+      phase: Math.random() * Math.PI * 2,
+      el: null, hpEl: null
+    };
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;enemy &#x27; + type.cls;
+    el.style.width = type.size + &#x27;px&#x27;;
+    el.style.height = type.size + &#x27;px&#x27;;
+    el.style.left = e.x + &#x27;px&#x27;;
+    el.style.top = e.y + &#x27;px&#x27;;
+    el.textContent = type.emoji;
+    if (type.hp &gt; 1) {
+      var hp = document.createElement(&#x27;div&#x27;);
+      hp.className = &#x27;hpbar&#x27;;
+      hp.style.width = type.size + &#x27;px&#x27;;
+      el.appendChild(hp);
+      e.hpEl = hp;
+    }
+    field.appendChild(el);
+    e.el = el;
+    enemies.push(e);
+  }
+
+  function spawnBullet() {
+    var wpn = WEAPONS[currentWeapon];
+    var now = Date.now();
+    if (now - lastShot &lt; wpn.cooldown) return;
+    lastShot = now;
+    var centerX = shipX + SHIP_W / 2;
+    var topY = FIELD_H - SHIP_BOTTOM - SHIP_H - wpn.h;
+    for (var s = 0; s &lt; wpn.shots.length; s++) {
+      var shot = wpn.shots[s];
+      var b = {
+        x: centerX - wpn.w / 2 + shot.dx, y: topY,
+        vx: shot.vx, speed: wpn.speed,
+        w: wpn.w, h: wpn.h, dmg: wpn.dmg,
+        power: wpn.name === &#x27;Power&#x27;, el: null
+      };
+      var el = document.createElement(&#x27;div&#x27;);
+      el.className = &#x27;bullet&#x27;;
+      el.style.width = wpn.w + &#x27;px&#x27;;
+      el.style.height = wpn.h + &#x27;px&#x27;;
+      el.style.background = wpn.color;
+      el.style.left = b.x + &#x27;px&#x27;;
+      el.style.top = b.y + &#x27;px&#x27;;
+      field.appendChild(el);
+      b.el = el;
+      bullets.push(b);
+    }
+  }
+
+  function removeEnemy(idx) {
+    var e = enemies[idx];
+    if (e.el.parentNode) e.el.parentNode.removeChild(e.el);
+    enemies.splice(idx, 1);
+  }
+
+  function tick() {
+    if (!running) return;
+    if (keysDown[&#x27;ArrowLeft&#x27;]) shipX -= SHIP_SPEED;
+    if (keysDown[&#x27;ArrowRight&#x27;]) shipX += SHIP_SPEED;
+    shipX = Math.max(0, Math.min(FIELD_W - SHIP_W, shipX));
+    paintShip();
+    for (var i = bullets.length - 1; i &gt;= 0; i--) {
+      var b = bullets[i];
+      b.y -= b.speed; b.x += b.vx;
+      if (b.y + b.h &lt; 0 || b.x + b.w &lt; 0 || b.x &gt; FIELD_W) {
+        field.removeChild(b.el); bullets.splice(i, 1); continue;
+      }
+      b.el.style.top = b.y + &#x27;px&#x27;;
+      b.el.style.left = b.x + &#x27;px&#x27;;
+    }
+    for (var j = enemies.length - 1; j &gt;= 0; j--) {
+      var en = enemies[j];
+      en.y += en.type.speed;
+      if (en.type.sway) {
+        en.phase += 0.08;
+        en.x += Math.sin(en.phase) * en.type.sway;
+        en.x = Math.max(0, Math.min(FIELD_W - en.size, en.x));
+        en.el.style.left = en.x + &#x27;px&#x27;;
+      }
+      if (en.y &gt; FIELD_H) { removeEnemy(j); continue; }
+      en.el.style.top = en.y + &#x27;px&#x27;;
+    }
+    for (var i2 = bullets.length - 1; i2 &gt;= 0; i2--) {
+      var b2 = bullets[i2];
+      var consumed = false;
+      for (var j2 = enemies.length - 1; j2 &gt;= 0; j2--) {
+        var e2 = enemies[j2];
+        if (b2.x &lt; e2.x + e2.size &amp;&amp; b2.x + b2.w &gt; e2.x &amp;&amp;
+            b2.y &lt; e2.y + e2.size &amp;&amp; b2.y + b2.h &gt; e2.y) {
+          e2.hp -= b2.dmg;
+          if (e2.hpEl) e2.hpEl.style.width = (e2.size * Math.max(0, e2.hp) / e2.maxhp) + &#x27;px&#x27;;
+          if (e2.hp &lt;= 0) {
+            score += e2.type.points;
+            scoreEl.textContent = score;
+            removeEnemy(j2);
+          }
+          if (!b2.power) { consumed = true; break; }
+        }
+      }
+      if (consumed) { field.removeChild(b2.el); bullets.splice(i2, 1); }
+    }
+    animId = requestAnimationFrame(tick);
+  }
+
+  function clearAll() {
+    bullets.forEach(function (b) { if (b.el.parentNode) b.el.parentNode.removeChild(b.el); });
+    enemies.forEach(function (e) { if (e.el.parentNode) e.el.parentNode.removeChild(e.el); });
+    bullets = []; enemies = [];
+  }
+
+  function startGame() {
+    if (running) return;
+    clearAll();
+    score = 0;
+    scoreEl.textContent = &#x27;0&#x27;;
+    shipX = (FIELD_W - SHIP_W) / 2;
+    for (var k in keysDown) keysDown[k] = false;
+    lastShot = 0;
+    setWeapon(0);
+    applyShipStyle();
+    paintShip();
+    running = true;
+    spawnEnemy();
+    animId = requestAnimationFrame(tick);
+    spawnId = setInterval(spawnEnemy, SPAWN_INTERVAL);
+  }
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+    if (spawnId) { clearInterval(spawnId); spawnId = null; }
+    clearAll();
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27; || e.key === &#x27;ArrowRight&#x27;) {
+      keysDown[e.key] = true; e.preventDefault();
+    } else if (e.key === &#x27; &#x27; || e.code === &#x27;Space&#x27;) {
+      if (running) spawnBullet(); e.preventDefault();
+    } else if (e.key === &#x27;1&#x27;) { setWeapon(0); }
+    else if (e.key === &#x27;2&#x27;) { setWeapon(1); }
+    else if (e.key === &#x27;3&#x27;) { setWeapon(2); }
+  });
+  window.addEventListener(&#x27;keyup&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27; || e.key === &#x27;ArrowRight&#x27;) keysDown[e.key] = false;
+  });
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  applyShipStyle();
+  paintShip();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

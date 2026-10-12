@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🚀 STAR CHOMPERS</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>🚀 STAR CHOMPERS</b> &middot; Game 362 &middot; Amateur producer &middot; Basic game: Space shooter</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #05060f; color: #e8e8ff; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 14px; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 600; letter-spacing: 1px; }
+  .instructions { font-size: 16px; color: #aab; max-width: 620px; margin: 0; line-height: 1.4; text-align: center; }
+  .hud { font-size: 20px; color: #cde; margin: 0; display: flex; gap: 18px; }
+  .hud b { color: #ffd54a; }
+  .field { position: relative; width: 640px; height: 430px; flex-shrink: 0; background: radial-gradient(circle at 50% 30%, #0d1030, #04050d 80%); border-radius: 8px; overflow: hidden; border: 1px solid #222848; }
+  .ship { position: absolute; width: 38px; height: 30px; bottom: 12px; }
+  .bullet { position: absolute; width: 4px; height: 14px; background: #ffef7a; border-radius: 2px; box-shadow: 0 0 6px #ffef7a; }
+  .target { position: absolute; width: 38px; height: 38px; }
+  .deathstar { position: absolute; width: 150px; height: 150px; }
+  .dsbar { position: absolute; height: 5px; background: #333; border-radius: 3px; overflow: hidden; }
+  .dsbar i { display: block; height: 100%; }
+  .shieldbar i { background: linear-gradient(90deg,#4ad0ff,#88e0ff); }
+  .hullbar i { background: linear-gradient(90deg,#4aff6a,#ffef4a,#ff4a4a); }
+  .trophies { position: absolute; top: 8px; left: 8px; display: flex; flex-direction: column; gap: 2px; font-size: 22px; opacity: 0.85; z-index: 5; }
+  .star { position: absolute; background: #fff; border-radius: 50%; }
+  .boom { position: absolute; pointer-events: none; border-radius: 50%; }
+  .shard { position: absolute; pointer-events: none; }
+  .bombs { color: #ff8a5a; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;🚀 STAR CHOMPERS&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Move with &lt;strong&gt;&amp;larr; &amp;rarr;&lt;/strong&gt;, press or hold &lt;strong&gt;Space&lt;/strong&gt; to fire, &lt;strong&gt;Delete&lt;/strong&gt; for a smart bomb. Every 25 enemies a shielded Death Star drops — shoot down its shield (40 hits) then blast the hull (30 hits) to shatter it!&lt;/p&gt;
+  &lt;div class=&quot;hud&quot;&gt;
+    &lt;span&gt;Score: &lt;b id=&quot;score&quot;&gt;0&lt;/b&gt;&lt;/span&gt;
+    &lt;span class=&quot;bombs&quot;&gt;💣 &lt;b id=&quot;bombs&quot;&gt;3&lt;/b&gt;&lt;/span&gt;
+    &lt;span&gt;Cleared: &lt;b id=&quot;cleared&quot;&gt;0&lt;/b&gt;&lt;/span&gt;
+    &lt;span&gt;Ships: &lt;b id=&quot;ships&quot;&gt;1&lt;/b&gt;&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;
+    &lt;div class=&quot;trophies&quot; id=&quot;trophies&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;ship&quot; id=&quot;ship&quot;&gt;
+      &lt;svg viewBox=&quot;0 0 38 30&quot; width=&quot;38&quot; height=&quot;30&quot;&gt;
+        &lt;polygon points=&quot;19,0 30,26 8,26&quot; fill=&quot;#7fd4ff&quot; stroke=&quot;#cdeeff&quot; stroke-width=&quot;1.5&quot;/&gt;
+        &lt;polygon points=&quot;19,4 25,24 13,24&quot; fill=&quot;#3a8fd0&quot;/&gt;
+        &lt;circle cx=&quot;19&quot; cy=&quot;16&quot; r=&quot;4&quot; fill=&quot;#fff&quot; opacity=&quot;0.9&quot;/&gt;
+        &lt;polygon points=&quot;8,26 2,30 10,26&quot; fill=&quot;#ff8a5a&quot;/&gt;
+        &lt;polygon points=&quot;30,26 36,30 28,26&quot; fill=&quot;#ff8a5a&quot;/&gt;
+        &lt;polygon points=&quot;16,26 19,32 22,26&quot; fill=&quot;#ffd54a&quot;/&gt;
+      &lt;/svg&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var FIELD_W = 640, FIELD_H = 430;
+  var SHIP_W = 38, SHIP_H = 30, SHIP_BOTTOM = 12, SHIP_SPEED = 6;
+  var BULLET_W = 4, BULLET_H = 14, BULLET_SPEED = 9;
+  var TARGET_SIZE = 38, TARGET_SPEED = 1.6;
+  var DS_SIZE = 150, DS_CORE = 114, DS_SPEED = 0.7, DS_HP = 30, DS_SHIELD = 40;
+  var SPAWN_INTERVAL = 1000;
+  var BURST_COUNT = 8, BURST_GAP = 45, BURST_COOLDOWN = 90;
+  var WING_OFFSET = 48;
+  var running = false, animId = null, spawnId = null;
+  var keysDown = {};
+  var shipX = (FIELD_W - SHIP_W) / 2;
+  var bullets = [], targets = [], shards = [];
+  var deathstar = null;
+  var score = 0, bombs = 3, cleared = 0;
+  var burstShotsLeft = 0, lastBurstShot = 0, lastBurstStart = 0;
+  var spawnedAny = false;
+  var spawnCount = 0;
+  var hasWingman = false;
+
+  var field = document.getElementById(&#x27;field&#x27;);
+  var ship = document.getElementById(&#x27;ship&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var bombsEl = document.getElementById(&#x27;bombs&#x27;);
+  var clearedEl = document.getElementById(&#x27;cleared&#x27;);
+  var shipsEl = document.getElementById(&#x27;ships&#x27;);
+  var trophiesEl = document.getElementById(&#x27;trophies&#x27;);
+
+  var wingman = document.createElement(&#x27;div&#x27;);
+  wingman.className = &#x27;ship&#x27;;
+  wingman.style.display = &#x27;none&#x27;;
+  wingman.innerHTML = &#x27;&lt;svg viewBox=&quot;0 0 38 30&quot; width=&quot;38&quot; height=&quot;30&quot;&gt;&#x27;+
+    &#x27;&lt;polygon points=&quot;19,0 30,26 8,26&quot; fill=&quot;#a0ffb0&quot; stroke=&quot;#e0ffe8&quot; stroke-width=&quot;1.5&quot;/&gt;&#x27;+
+    &#x27;&lt;polygon points=&quot;19,4 25,24 13,24&quot; fill=&quot;#3ad06a&quot;/&gt;&#x27;+
+    &#x27;&lt;circle cx=&quot;19&quot; cy=&quot;16&quot; r=&quot;4&quot; fill=&quot;#fff&quot; opacity=&quot;0.9&quot;/&gt;&#x27;+
+    &#x27;&lt;polygon points=&quot;8,26 2,30 10,26&quot; fill=&quot;#ff8a5a&quot;/&gt;&#x27;+
+    &#x27;&lt;polygon points=&quot;30,26 36,30 28,26&quot; fill=&quot;#ff8a5a&quot;/&gt;&#x27;+
+    &#x27;&lt;polygon points=&quot;16,26 19,32 22,26&quot; fill=&quot;#ffd54a&quot;/&gt;&lt;/svg&gt;&#x27;;
+  field.appendChild(wingman);
+
+  var stars = [];
+  (function makeStars(){
+    for (var i=0;i&lt;70;i++){
+      var s = document.createElement(&#x27;div&#x27;);
+      s.className = &#x27;star&#x27;;
+      var sz = Math.random()*2+1;
+      s.style.width = sz+&#x27;px&#x27;; s.style.height = sz+&#x27;px&#x27;;
+      s.style.left = Math.random()*FIELD_W+&#x27;px&#x27;;
+      s.style.top = Math.random()*FIELD_H+&#x27;px&#x27;;
+      s.style.opacity = (Math.random()*0.6+0.3);
+      var sp = Math.random()*0.6+0.2;
+      field.appendChild(s);
+      stars.push({el:s, y:parseFloat(s.style.top), sp:sp});
+    }
+  })();
+
+  function paintShip() {
+    ship.style.left = shipX + &#x27;px&#x27;;
+    if (hasWingman) wingman.style.left = wingmanX() + &#x27;px&#x27;;
+  }
+  function wingmanX() {
+    var wx = shipX + WING_OFFSET;
+    if (wx &gt; FIELD_W - SHIP_W) wx = shipX - WING_OFFSET;
+    return wx;
+  }
+
+  var mouthPhase = 0;
+
+  function spawnTarget() {
+    spawnCount++;
+    if (spawnCount % 25 === 0 &amp;&amp; !deathstar) { spawnDeathStar(); return; }
+    spawnedAny = true;
+    var hue = Math.floor(Math.random()*360);
+    var t = { x: Math.random() * (FIELD_W - TARGET_SIZE), y: -TARGET_SIZE, el: null, phase: Math.random()*Math.PI*2, hue: hue };
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;target&#x27;;
+    el.style.left = t.x + &#x27;px&#x27;;
+    el.style.top = t.y + &#x27;px&#x27;;
+    el.innerHTML = targetSVG(hue, 20);
+    field.appendChild(el);
+    t.el = el; t.mouth = el.querySelector(&#x27;.mouth&#x27;);
+    targets.push(t);
+  }
+
+  function spawnDeathStar() {
+    spawnedAny = true;
+    var ds = { x: (FIELD_W-DS_SIZE)/2, y: -DS_SIZE, hp: DS_HP, shield: DS_SHIELD, el:null };
+    var off = (DS_SIZE-DS_CORE)/2;
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;deathstar&#x27;;
+    el.style.left = ds.x+&#x27;px&#x27;; el.style.top = ds.y+&#x27;px&#x27;;
+    el.innerHTML = &#x27;&lt;svg viewBox=&quot;0 0 150 150&quot; width=&quot;150&quot; height=&quot;150&quot;&gt;&#x27;+
+      &#x27;&lt;defs&gt;&lt;radialGradient id=&quot;dsg&quot; cx=&quot;38%&quot; cy=&quot;35%&quot; r=&quot;70%&quot;&gt;&#x27;+
+        &#x27;&lt;stop offset=&quot;0%&quot; stop-color=&quot;#c8ccd4&quot;/&gt;&lt;stop offset=&quot;60%&quot; stop-color=&quot;#7d828c&quot;/&gt;&lt;stop offset=&quot;100%&quot; stop-color=&quot;#3a3d45&quot;/&gt;&#x27;+
+      &#x27;&lt;/radialGradient&gt;&#x27;+
+      &#x27;&lt;radialGradient id=&quot;shg&quot; cx=&quot;50%&quot; cy=&quot;50%&quot; r=&quot;50%&quot;&gt;&#x27;+
+        &#x27;&lt;stop offset=&quot;70%&quot; stop-color=&quot;rgba(90,200,255,0)&quot;/&gt;&#x27;+
+        &#x27;&lt;stop offset=&quot;90%&quot; stop-color=&quot;rgba(90,200,255,0.35)&quot;/&gt;&#x27;+
+        &#x27;&lt;stop offset=&quot;100%&quot; stop-color=&quot;rgba(140,224,255,0.7)&quot;/&gt;&#x27;+
+      &#x27;&lt;/radialGradient&gt;&lt;/defs&gt;&#x27;+
+      // core
+      &#x27;&lt;g&gt;&#x27;+
+      &#x27;&lt;circle cx=&quot;75&quot; cy=&quot;75&quot; r=&quot;&#x27;+(DS_CORE/2)+&#x27;&quot; fill=&quot;url(#dsg)&quot; stroke=&quot;#2a2c33&quot; stroke-width=&quot;2&quot;/&gt;&#x27;+
+      &#x27;&lt;circle cx=&quot;60&quot; cy=&quot;58&quot; r=&quot;16&quot; fill=&quot;#4a4e57&quot;/&gt;&#x27;+
+      &#x27;&lt;circle cx=&quot;60&quot; cy=&quot;58&quot; r=&quot;8&quot; fill=&quot;#2a2c33&quot;/&gt;&#x27;+
+      &#x27;&lt;circle cx=&quot;60&quot; cy=&quot;58&quot; r=&quot;3&quot; fill=&quot;#88e0ff&quot;/&gt;&#x27;+
+      &#x27;&lt;line x1=&quot;20&quot; y1=&quot;64&quot; x2=&quot;130&quot; y2=&quot;64&quot; stroke=&quot;#2a2c33&quot; stroke-width=&quot;1.5&quot;/&gt;&#x27;+
+      &#x27;&lt;line x1=&quot;24&quot; y1=&quot;88&quot; x2=&quot;126&quot; y2=&quot;88&quot; stroke=&quot;#4a4e57&quot; stroke-width=&quot;1&quot;/&gt;&#x27;+
+      &#x27;&lt;line x1=&quot;30&quot; y1=&quot;106&quot; x2=&quot;120&quot; y2=&quot;106&quot; stroke=&quot;#4a4e57&quot; stroke-width=&quot;1&quot;/&gt;&#x27;+
+      &#x27;&lt;/g&gt;&#x27;+
+      // shield
+      &#x27;&lt;circle class=&quot;shield&quot; cx=&quot;75&quot; cy=&quot;75&quot; r=&quot;72&quot; fill=&quot;url(#shg)&quot; stroke=&quot;rgba(140,224,255,0.8)&quot; stroke-width=&quot;2&quot;/&gt;&#x27;+
+      &#x27;&lt;/svg&gt;&#x27;;
+    field.appendChild(el);
+
+    var sbar = document.createElement(&#x27;div&#x27;);
+    sbar.className = &#x27;dsbar shieldbar&#x27;;
+    sbar.style.width = DS_SIZE+&#x27;px&#x27;;
+    sbar.innerHTML = &#x27;&lt;i style=&quot;width:100%&quot;&gt;&lt;/i&gt;&#x27;;
+    field.appendChild(sbar);
+    var hbar = document.createElement(&#x27;div&#x27;);
+    hbar.className = &#x27;dsbar hullbar&#x27;;
+    hbar.style.width = DS_SIZE+&#x27;px&#x27;;
+    hbar.innerHTML = &#x27;&lt;i style=&quot;width:100%&quot;&gt;&lt;/i&gt;&#x27;;
+    field.appendChild(hbar);
+
+    ds.el = el;
+    ds.shieldEl = el.querySelector(&#x27;.shield&#x27;);
+    ds.sbar = sbar; ds.sfill = sbar.querySelector(&#x27;i&#x27;);
+    ds.hbar = hbar; ds.hfill = hbar.querySelector(&#x27;i&#x27;);
+    deathstar = ds;
+  }
+
+  function targetSVG(hue, open){
+    var c = &#x27;hsl(&#x27;+hue+&#x27;,70%,55%)&#x27;;
+    var d = &#x27;hsl(&#x27;+hue+&#x27;,70%,38%)&#x27;;
+    return &#x27;&lt;svg viewBox=&quot;0 0 38 38&quot; width=&quot;38&quot; height=&quot;38&quot;&gt;&#x27;+
+      &#x27;&lt;circle cx=&quot;19&quot; cy=&quot;19&quot; r=&quot;18&quot; fill=&quot;&#x27;+c+&#x27;&quot; stroke=&quot;&#x27;+d+&#x27;&quot; stroke-width=&quot;2&quot;/&gt;&#x27;+
+      &#x27;&lt;circle cx=&quot;12&quot; cy=&quot;13&quot; r=&quot;3.2&quot; fill=&quot;#fff&quot;/&gt;&lt;circle cx=&quot;12&quot; cy=&quot;13&quot; r=&quot;1.6&quot; fill=&quot;#111&quot;/&gt;&#x27;+
+      &#x27;&lt;circle cx=&quot;26&quot; cy=&quot;13&quot; r=&quot;3.2&quot; fill=&quot;#fff&quot;/&gt;&lt;circle cx=&quot;26&quot; cy=&quot;13&quot; r=&quot;1.6&quot; fill=&quot;#111&quot;/&gt;&#x27;+
+      &#x27;&lt;path class=&quot;mouth&quot; d=&quot;&#x27;+mouthPath(open)+&#x27;&quot; fill=&quot;#3a0d0d&quot;/&gt;&#x27;+
+      &#x27;&lt;path class=&quot;tooth&quot; d=&quot;M11,24 L14,24 L12.5,26 Z M24,24 L27,24 L25.5,26 Z&quot; fill=&quot;#fff&quot;/&gt;&#x27;+
+      &#x27;&lt;/svg&gt;&#x27;;
+  }
+  function mouthPath(open){
+    var w=11, h=open;
+    return &#x27;M&#x27;+(19-w/2)+&#x27;,26 Q19,&#x27;+(26-h/2)+&#x27; &#x27;+(19+w/2)+&#x27;,26 Q19,&#x27;+(26+h)+&#x27; &#x27;+(19-w/2)+&#x27;,26 Z&#x27;;
+  }
+
+  function fireBulletAt(cx) {
+    var b = { x: cx - BULLET_W / 2, y: FIELD_H - SHIP_BOTTOM - SHIP_H - BULLET_H, el: null };
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;bullet&#x27;;
+    el.style.left = b.x + &#x27;px&#x27;;
+    el.style.top = b.y + &#x27;px&#x27;;
+    field.appendChild(el);
+    b.el = el;
+    bullets.push(b);
+  }
+  function fireVolley() {
+    fireBulletAt(shipX + SHIP_W/2);
+    if (hasWingman) fireBulletAt(wingmanX() + SHIP_W/2);
+  }
+
+  function triggerBurst() {
+    var now = Date.now();
+    if (burstShotsLeft &gt; 0) return;
+    if (now - lastBurstStart &lt; BURST_COOLDOWN + BURST_COUNT*BURST_GAP) return;
+    burstShotsLeft = BURST_COUNT;
+    lastBurstStart = now;
+    lastBurstShot = 0;
+  }
+
+  function explosion(cx, cy, big) {
+    var rings = big===true ? 4 : (big===&#x27;huge&#x27;?8:2);
+    for (var r=0;r&lt;rings;r++){
+      (function(r){
+        setTimeout(function(){
+          var b = document.createElement(&#x27;div&#x27;);
+          b.className = &#x27;boom&#x27;;
+          var size = big===&#x27;huge&#x27; ? (90+r*50) : (big ? (60+r*40) : (20+r*14));
+          b.style.width = size+&#x27;px&#x27;; b.style.height = size+&#x27;px&#x27;;
+          b.style.left = (cx-size/2)+&#x27;px&#x27;; b.style.top = (cy-size/2)+&#x27;px&#x27;;
+          var col = [&#x27;#fffbe0&#x27;,&#x27;#ffd54a&#x27;,&#x27;#ff8a3a&#x27;,&#x27;#ff4a4a&#x27;][r%4];
+          b.style.background = &#x27;radial-gradient(circle,&#x27;+col+&#x27; 0%, rgba(255,120,40,0.5) 50%, rgba(255,0,0,0) 75%)&#x27;;
+          b.style.opacity = &#x27;1&#x27;;
+          b.style.transition = &#x27;transform 0.5s ease-out, opacity 0.5s ease-out&#x27;;
+          field.appendChild(b);
+          requestAnimationFrame(function(){
+            b.style.transform = &#x27;scale(&#x27;+(big===&#x27;huge&#x27;?2.6:1.8)+&#x27;)&#x27;;
+            b.style.opacity = &#x27;0&#x27;;
+          });
+          setTimeout(function(){ if(b.parentNode) b.parentNode.removeChild(b); }, 550);
+        }, r*70);
+      })(r);
+    }
+  }
+
+  function shatter(cx, cy) {
+    for (var k=0;k&lt;16;k++){
+      var el = document.createElement(&#x27;div&#x27;);
+      el.className = &#x27;shard&#x27;;
+      var sz = 8 + Math.random()*22;
+      el.style.width = sz+&#x27;px&#x27;; el.style.height = sz+&#x27;px&#x27;;
+      var pts = &#x27;M0,0 L&#x27;+sz+&#x27;,&#x27;+(sz*0.3)+&#x27; L&#x27;+(sz*0.7)+&#x27;,&#x27;+sz+&#x27; L&#x27;+(sz*0.2)+&#x27;,&#x27;+(sz*0.6)+&#x27; Z&#x27;;
+      el.innerHTML = &#x27;&lt;svg viewBox=&quot;0 0 &#x27;+sz+&#x27; &#x27;+sz+&#x27;&quot; width=&quot;&#x27;+sz+&#x27;&quot; height=&quot;&#x27;+sz+&#x27;&quot;&gt;&lt;path d=&quot;&#x27;+pts+&#x27;&quot; fill=&quot;&#x27;+(Math.random()&lt;0.5?&#x27;#7d828c&#x27;:&#x27;#4a4e57&#x27;)+&#x27;&quot; stroke=&quot;#2a2c33&quot;/&gt;&lt;/svg&gt;&#x27;;
+      el.style.left = cx+&#x27;px&#x27;; el.style.top = cy+&#x27;px&#x27;;
+      field.appendChild(el);
+      var ang = Math.random()*Math.PI*2;
+      var spd = 2 + Math.random()*5;
+      shards.push({ el:el, x:cx, y:cy, vx:Math.cos(ang)*spd, vy:Math.sin(ang)*spd - 1, rot:Math.random()*360, vr:(Math.random()-0.5)*20, life:60 });
+    }
+  }
+
+  function destroyDeathStar() {
+    var cx = deathstar.x+DS_SIZE/2, cy = deathstar.y+DS_SIZE/2;
+    explosion(cx, cy, &#x27;huge&#x27;);
+    shatter(cx, cy);
+    for (var k=0;k&lt;6;k++){
+      (function(k){ setTimeout(function(){
+        explosion(cx + (Math.random()-0.5)*140, cy + (Math.random()-0.5)*140, false);
+      }, k*80); })(k);
+    }
+    if (deathstar.el.parentNode) deathstar.el.parentNode.removeChild(deathstar.el);
+    if (deathstar.sbar.parentNode) deathstar.sbar.parentNode.removeChild(deathstar.sbar);
+    if (deathstar.hbar.parentNode) deathstar.hbar.parentNode.removeChild(deathstar.hbar);
+    deathstar = null;
+    score += 50; scoreEl.textContent = score;
+    if (!hasWingman) {
+      hasWingman = true;
+      wingman.style.display = &#x27;block&#x27;;
+      shipsEl.textContent = &#x27;2&#x27;;
+    }
+  }
+
+  function hitDeathStar(bx, by) {
+    // returns true if bullet consumed
+    var dcx = deathstar.x+DS_SIZE/2, dcy = deathstar.y+DS_SIZE/2;
+    if (deathstar.shield &gt; 0) {
+      var sr = 72;
+      if ((bx-dcx)*(bx-dcx)+(by-dcy)*(by-dcy) &lt; sr*sr) {
+        deathstar.shield--;
+        deathstar.sfill.style.width = (deathstar.shield/DS_SHIELD*100)+&#x27;%&#x27;;
+        // shield ripple flash
+        var ripple = document.createElement(&#x27;div&#x27;);
+        ripple.className = &#x27;boom&#x27;;
+        ripple.style.width=&#x27;26px&#x27;; ripple.style.height=&#x27;26px&#x27;;
+        ripple.style.left=(bx-13)+&#x27;px&#x27;; ripple.style.top=(by-13)+&#x27;px&#x27;;
+        ripple.style.background=&#x27;radial-gradient(circle, rgba(140,224,255,0.9), rgba(90,200,255,0) 70%)&#x27;;
+        ripple.style.transition=&#x27;opacity 0.3s&#x27;;
+        field.appendChild(ripple);
+        requestAnimationFrame(function(){ ripple.style.opacity=&#x27;0&#x27;; });
+        setTimeout(function(){ if(ripple.parentNode) ripple.parentNode.removeChild(ripple); }, 320);
+        if (deathstar.shield &lt;= 0) {
+          deathstar.shieldEl.style.display = &#x27;none&#x27;;
+          deathstar.sbar.style.display = &#x27;none&#x27;;
+        }
+        return true;
+      }
+      return false;
+    } else {
+      var dr = DS_CORE/2;
+      if ((bx-dcx)*(bx-dcx)+(by-dcy)*(by-dcy) &lt; dr*dr) {
+        explosion(bx, by, false);
+        deathstar.hp--;
+        deathstar.hfill.style.width = (deathstar.hp/DS_HP*100)+&#x27;%&#x27;;
+        if (deathstar.hp &lt;= 0) destroyDeathStar();
+        return true;
+      }
+      return false;
+    }
+  }
+
+  function smartBomb() {
+    if (!running || bombs &lt;= 0) return;
+    bombs--;
+    bombsEl.textContent = bombs;
+    var flash = document.createElement(&#x27;div&#x27;);
+    flash.className = &#x27;boom&#x27;;
+    flash.style.left=&#x27;0&#x27;; flash.style.top=&#x27;0&#x27;;
+    flash.style.width=FIELD_W+&#x27;px&#x27;; flash.style.height=FIELD_H+&#x27;px&#x27;;
+    flash.style.borderRadius=&#x27;8px&#x27;;
+    flash.style.background=&#x27;radial-gradient(circle, rgba(255,255,255,0.95), rgba(255,200,80,0.6), rgba(255,80,40,0) 75%)&#x27;;
+    flash.style.transition=&#x27;opacity 0.5s ease-out&#x27;;
+    field.appendChild(flash);
+    requestAnimationFrame(function(){ flash.style.opacity=&#x27;0&#x27;; });
+    setTimeout(function(){ if(flash.parentNode) flash.parentNode.removeChild(flash); }, 520);
+    for (var j=targets.length-1;j&gt;=0;j--){
+      var t = targets[j];
+      explosion(t.x+TARGET_SIZE/2, t.y+TARGET_SIZE/2, false);
+      if (t.el.parentNode) t.el.parentNode.removeChild(t.el);
+      score++;
+      targets.splice(j,1);
+    }
+    // bomb hits death star: drops shield hard, then hull
+    if (deathstar) {
+      if (deathstar.shield &gt; 0) {
+        deathstar.shield -= 15;
+        if (deathstar.shield &lt;= 0) {
+          deathstar.shield = 0;
+          deathstar.shieldEl.style.display = &#x27;none&#x27;;
+          deathstar.sbar.style.display = &#x27;none&#x27;;
+        }
+        deathstar.sfill.style.width = (deathstar.shield/DS_SHIELD*100)+&#x27;%&#x27;;
+      } else {
+        deathstar.hp -= 10;
+        if (deathstar.hp &lt;= 0) destroyDeathStar();
+        else deathstar.hfill.style.width = (deathstar.hp/DS_HP*100)+&#x27;%&#x27;;
+      }
+    }
+    scoreEl.textContent = score;
+    checkClear();
+  }
+
+  function checkClear() {
+    if (spawnedAny &amp;&amp; targets.length === 0 &amp;&amp; !deathstar) {
+      cleared++;
+      clearedEl.textContent = cleared;
+      var tr = document.createElement(&#x27;div&#x27;);
+      tr.textContent = &#x27;🏆&#x27;;
+      trophiesEl.appendChild(tr);
+      spawnedAny = false;
+    }
+  }
+
+  function tick() {
+    if (!running) return;
+    var now = Date.now();
+    if (keysDown[&#x27;ArrowLeft&#x27;]) shipX -= SHIP_SPEED;
+    if (keysDown[&#x27;ArrowRight&#x27;]) shipX += SHIP_SPEED;
+    shipX = Math.max(0, Math.min(FIELD_W - SHIP_W, shipX));
+    paintShip();
+
+    if (keysDown[&#x27;Space&#x27;] &amp;&amp; burstShotsLeft === 0) triggerBurst();
+    if (burstShotsLeft &gt; 0 &amp;&amp; now - lastBurstShot &gt;= BURST_GAP) {
+      fireVolley();
+      burstShotsLeft--;
+      lastBurstShot = now;
+    }
+
+    for (var s=0;s&lt;stars.length;s++){
+      var st=stars[s];
+      st.y += st.sp;
+      if (st.y &gt; FIELD_H) { st.y = 0; st.el.style.left = Math.random()*FIELD_W+&#x27;px&#x27;; }
+      st.el.style.top = st.y+&#x27;px&#x27;;
+    }
+
+    mouthPhase += 0.25;
+
+    // shards physics
+    for (var sh=shards.length-1; sh&gt;=0; sh--){
+      var p = shards[sh];
+      p.x += p.vx; p.y += p.vy; p.vy += 0.15; p.rot += p.vr; p.life--;
+      p.el.style.left = p.x+&#x27;px&#x27;; p.el.style.top = p.y+&#x27;px&#x27;;
+      p.el.style.transform = &#x27;rotate(&#x27;+p.rot+&#x27;deg)&#x27;;
+      p.el.style.opacity = Math.max(0, p.life/60);
+      if (p.life &lt;= 0) { if(p.el.parentNode) p.el.parentNode.removeChild(p.el); shards.splice(sh,1); }
+    }
+
+    for (var i = bullets.length - 1; i &gt;= 0; i--) {
+      var b = bullets[i];
+      b.y -= BULLET_SPEED;
+      if (b.y + BULLET_H &lt; 0) { field.removeChild(b.el); bullets.splice(i, 1); continue; }
+      b.el.style.top = b.y + &#x27;px&#x27;;
+    }
+    for (var j = targets.length - 1; j &gt;= 0; j--) {
+      var t = targets[j];
+      t.y += TARGET_SPEED;
+      if (t.y &gt; FIELD_H) { field.removeChild(t.el); targets.splice(j, 1); continue; }
+      t.el.style.top = t.y + &#x27;px&#x27;;
+      if (t.mouth) {
+        var open = 3 + (Math.sin(mouthPhase + t.phase)*0.5+0.5)*10;
+        t.mouth.setAttribute(&#x27;d&#x27;, mouthPath(open));
+      }
+    }
+
+    if (deathstar) {
+      if (deathstar.y &lt; 20) deathstar.y += DS_SPEED*2;
+      else if (deathstar.y &lt; FIELD_H*0.22) deathstar.y += DS_SPEED;
+      deathstar.el.style.top = deathstar.y+&#x27;px&#x27;;
+      deathstar.sbar.style.left = deathstar.x+&#x27;px&#x27;;
+      deathstar.sbar.style.top = (deathstar.y-14)+&#x27;px&#x27;;
+      deathstar.hbar.style.left = deathstar.x+&#x27;px&#x27;;
+      deathstar.hbar.style.top = (deathstar.y-6)+&#x27;px&#x27;;
+    }
+
+    for (var i2 = bullets.length - 1; i2 &gt;= 0; i2--) {
+      var b2 = bullets[i2];
+      var bx = b2.x+BULLET_W/2, by = b2.y+BULLET_H/2;
+      if (deathstar &amp;&amp; hitDeathStar(bx, by)) {
+        field.removeChild(b2.el); bullets.splice(i2,1);
+        continue;
+      }
+      var hit = false;
+      for (var j2 = targets.length - 1; j2 &gt;= 0; j2--) {
+        var t2 = targets[j2];
+        if (b2.x &lt; t2.x + TARGET_SIZE &amp;&amp; b2.x + BULLET_W &gt; t2.x &amp;&amp;
+            b2.y &lt; t2.y + TARGET_SIZE &amp;&amp; b2.y + BULLET_H &gt; t2.y) {
+          explosion(t2.x+TARGET_SIZE/2, t2.y+TARGET_SIZE/2, false);
+          field.removeChild(b2.el); bullets.splice(i2, 1);
+          field.removeChild(t2.el); targets.splice(j2, 1);
+          score += 1; scoreEl.textContent = score;
+          hit = true;
+          break;
+        }
+      }
+      if (hit) { checkClear(); }
+    }
+    animId = requestAnimationFrame(tick);
+  }
+
+  function clearAll() {
+    bullets.forEach(function (b) { if (b.el.parentNode) b.el.parentNode.removeChild(b.el); });
+    targets.forEach(function (t) { if (t.el.parentNode) t.el.parentNode.removeChild(t.el); });
+    shards.forEach(function (p) { if (p.el.parentNode) p.el.parentNode.removeChild(p.el); });
+    bullets = []; targets = []; shards = [];
+    if (deathstar) {
+      if (deathstar.el.parentNode) deathstar.el.parentNode.removeChild(deathstar.el);
+      if (deathstar.sbar.parentNode) deathstar.sbar.parentNode.removeChild(deathstar.sbar);
+      if (deathstar.hbar.parentNode) deathstar.hbar.parentNode.removeChild(deathstar.hbar);
+      deathstar = null;
+    }
+  }
+
+  function startGame() {
+    if (running) return;
+    clearAll();
+    score = 0; bombs = 3; cleared = 0; spawnCount = 0;
+    burstShotsLeft = 0; lastBurstStart = 0; lastBurstShot = 0; spawnedAny = false;
+    hasWingman = false; wingman.style.display = &#x27;none&#x27;;
+    scoreEl.textContent = &#x27;0&#x27;; bombsEl.textContent = &#x27;3&#x27;; clearedEl.textContent = &#x27;0&#x27;; shipsEl.textContent = &#x27;1&#x27;;
+    trophiesEl.innerHTML = &#x27;&#x27;;
+    shipX = (FIELD_W - SHIP_W) / 2;
+    for (var k in keysDown) keysDown[k] = false;
+    paintShip();
+    running = true;
+    spawnTarget();
+    animId = requestAnimationFrame(tick);
+    spawnId = setInterval(spawnTarget, SPAWN_INTERVAL);
+  }
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+    if (spawnId) { clearInterval(spawnId); spawnId = null; }
+    clearAll();
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27; || e.key === &#x27;ArrowRight&#x27;) {
+      keysDown[e.key] = true; e.preventDefault();
+    } else if (e.key === &#x27; &#x27; || e.code === &#x27;Space&#x27;) {
+      keysDown[&#x27;Space&#x27;] = true;
+      if (running) triggerBurst();
+      e.preventDefault();
+    } else if (e.key === &#x27;Delete&#x27;) {
+      smartBomb(); e.preventDefault();
+    }
+  });
+  window.addEventListener(&#x27;keyup&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27; || e.key === &#x27;ArrowRight&#x27;) keysDown[e.key] = false;
+    else if (e.key === &#x27; &#x27; || e.code === &#x27;Space&#x27;) keysDown[&#x27;Space&#x27;] = false;
+  });
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  paintShip();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

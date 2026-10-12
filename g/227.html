@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Porcupine Ball</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>Porcupine Ball</b> &middot; Game 227 &middot; Amateur producer &middot; Basic game: Paddle and ball</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #222; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 14px; background: white; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 8px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 600; }
+  .instructions { font-size: 16px; color: #666; max-width: 600px; margin: 0; line-height: 1.4; text-align: center; }
+  .topbar { display: flex; gap: 16px; align-items: center; }
+  .score { font-size: 20px; color: #555; margin: 0; }
+  .modes { display: flex; gap: 6px; }
+  .modes button { font-size: 15px; padding: 5px 12px; border: 2px solid #999; background: #fff; border-radius: 6px; cursor: pointer; color: #333; }
+  .modes button.active { background: #444; color: #fff; border-color: #444; }
+  .field { position: relative; width: 620px; height: 420px; flex-shrink: 0; margin: 0; background: #0d1b2a; border-radius: 8px; overflow: hidden; }
+  .paddle { position: absolute; width: 110px; height: 40px; bottom: 4px; }
+  .paddle svg { width: 100%; height: 100%; display: block; }
+  /* the &quot;ball&quot; is now a tumbling person */
+  .ball { position: absolute; width: 24px; height: 24px; font-size: 22px; line-height: 24px; text-align: center; }
+  .boom { position: absolute; font-size: 30px; line-height: 1; transform: translate(-50%, -50%); pointer-events: none; animation: boomPop 0.45s ease-out forwards; }
+  @keyframes boomPop {
+    0%   { transform: translate(-50%, -50%) scale(0.3); opacity: 1; }
+    60%  { transform: translate(-50%, -50%) scale(1.3); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1.7); opacity: 0; }
+  }
+  .ship { position: absolute; bottom: 10px; font-size: 30px; line-height: 1; transform: translateX(-50%); }
+  .bullet { position: absolute; width: 4px; height: 14px; background: #ffd166; border-radius: 2px; }
+  .invader { position: absolute; font-size: 26px; line-height: 1; transform: translateX(-50%); }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1 id=&quot;title&quot;&gt;Porcupine Ball&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot; id=&quot;instructions&quot;&gt;Move the porcupine with the &lt;strong&gt;&amp;larr;&lt;/strong&gt; and &lt;strong&gt;&amp;rarr;&lt;/strong&gt; arrow keys and catch the falling person on its spikes to score. Use the &lt;strong&gt;Start&lt;/strong&gt;/&lt;strong&gt;Restart&lt;/strong&gt; button below the game.&lt;/p&gt;
+  &lt;div class=&quot;topbar&quot;&gt;
+    &lt;div class=&quot;modes&quot;&gt;
+      &lt;button id=&quot;modePaddle&quot; class=&quot;active&quot;&gt;Paddle&lt;/button&gt;
+      &lt;button id=&quot;modeShooter&quot;&gt;Shooter&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;score&quot;&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;
+    &lt;div class=&quot;paddle&quot; id=&quot;paddle&quot;&gt;
+      &lt;svg viewBox=&quot;0 0 110 40&quot; preserveAspectRatio=&quot;none&quot;&gt;
+        &lt;g fill=&quot;#5a4632&quot;&gt;
+          &lt;polygon points=&quot;6,20 10,2 14,20&quot;/&gt;
+          &lt;polygon points=&quot;16,20 20,0 24,20&quot;/&gt;
+          &lt;polygon points=&quot;26,20 30,3 34,20&quot;/&gt;
+          &lt;polygon points=&quot;36,20 40,-1 44,20&quot;/&gt;
+          &lt;polygon points=&quot;46,20 50,2 54,20&quot;/&gt;
+          &lt;polygon points=&quot;56,20 60,0 64,20&quot;/&gt;
+          &lt;polygon points=&quot;66,20 70,3 74,20&quot;/&gt;
+          &lt;polygon points=&quot;76,20 80,1 84,20&quot;/&gt;
+          &lt;polygon points=&quot;86,20 90,3 94,20&quot;/&gt;
+          &lt;polygon points=&quot;96,20 100,5 104,20&quot;/&gt;
+        &lt;/g&gt;
+        &lt;rect x=&quot;4&quot; y=&quot;18&quot; width=&quot;102&quot; height=&quot;18&quot; rx=&quot;9&quot; fill=&quot;#8a6d4b&quot;/&gt;
+        &lt;circle cx=&quot;98&quot; cy=&quot;20&quot; r=&quot;4&quot; fill=&quot;#6f5638&quot;/&gt;
+        &lt;circle cx=&quot;96&quot; cy=&quot;27&quot; r=&quot;2.4&quot; fill=&quot;#1a1a1a&quot;/&gt;
+        &lt;circle cx=&quot;96.8&quot; cy=&quot;26.2&quot; r=&quot;0.8&quot; fill=&quot;#fff&quot;/&gt;
+        &lt;circle cx=&quot;106&quot; cy=&quot;29&quot; r=&quot;2.6&quot; fill=&quot;#3a2b1c&quot;/&gt;
+      &lt;/svg&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;ball&quot; id=&quot;ball&quot;&gt;🧍&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var FIELD_W = 620, FIELD_H = 420;
+  var running = false, animId = null;
+  var keysDown = {};
+  var mode = &#x27;paddle&#x27;;
+  var score = 0;
+
+  var field = document.getElementById(&#x27;field&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var titleEl = document.getElementById(&#x27;title&#x27;);
+  var instrEl = document.getElementById(&#x27;instructions&#x27;);
+  var modePaddleBtn = document.getElementById(&#x27;modePaddle&#x27;);
+  var modeShooterBtn = document.getElementById(&#x27;modeShooter&#x27;);
+
+  /* ---------- PADDLE MODE ---------- */
+  var PADDLE_W = 110, PADDLE_H = 40, PADDLE_BOTTOM = 4, PADDLE_SPEED = 6;
+  var COLLIDE_INSET = 16;
+  var BALL_SIZE = 24, BALL_SPEED = 4.0;
+  var PERSON_ICONS = [&#x27;🧍&#x27;,&#x27;🧑&#x27;,&#x27;👩&#x27;,&#x27;👨&#x27;,&#x27;🧑‍🦱&#x27;,&#x27;🧕&#x27;,&#x27;👦&#x27;,&#x27;👧&#x27;];
+  var paddleX = (FIELD_W - PADDLE_W) / 2;
+  var ballX = FIELD_W / 2, ballY = 50, ballVX = BALL_SPEED, ballVY = BALL_SPEED;
+  var ballRot = 0, ballSpin = 6;
+  var paddle = document.getElementById(&#x27;paddle&#x27;);
+  var ball = document.getElementById(&#x27;ball&#x27;);
+
+  function resetBall() {
+    ballX = (FIELD_W - BALL_SIZE) / 2; ballY = 50;
+    ballVX = (Math.random() &lt; 0.5 ? -1 : 1) * BALL_SPEED; ballVY = BALL_SPEED;
+    ballRot = 0; ballSpin = (Math.random() &lt; 0.5 ? -1 : 1) * (5 + Math.random() * 6);
+    ball.textContent = PERSON_ICONS[(Math.random() * PERSON_ICONS.length) | 0];
+    ball.style.display = &#x27;block&#x27;;
+  }
+  function paintPaddle() {
+    paddle.style.left = paddleX + &#x27;px&#x27;;
+    ball.style.left = ballX + &#x27;px&#x27;;
+    ball.style.top = ballY + &#x27;px&#x27;;
+    ball.style.transform = &#x27;rotate(&#x27; + ballRot + &#x27;deg)&#x27;;
+  }
+  function explodeAt(x, y) {
+    var boom = document.createElement(&#x27;div&#x27;);
+    boom.className = &#x27;boom&#x27;;
+    boom.textContent = &#x27;💥&#x27;;
+    boom.style.left = (x + BALL_SIZE / 2) + &#x27;px&#x27;;
+    boom.style.top = (y + BALL_SIZE / 2) + &#x27;px&#x27;;
+    field.appendChild(boom);
+    setTimeout(function () { if (boom.parentNode) boom.remove(); }, 460);
+  }
+  function tickPaddle() {
+    if (keysDown[&#x27;ArrowLeft&#x27;]) paddleX -= PADDLE_SPEED;
+    if (keysDown[&#x27;ArrowRight&#x27;]) paddleX += PADDLE_SPEED;
+    paddleX = Math.max(0, Math.min(FIELD_W - PADDLE_W, paddleX));
+    ballX += ballVX; ballY += ballVY; ballRot += ballSpin;
+    if (ballX &lt;= 0) { ballX = 0; ballVX = -ballVX; }
+    if (ballX + BALL_SIZE &gt;= FIELD_W) { ballX = FIELD_W - BALL_SIZE; ballVX = -ballVX; }
+    if (ballY &lt;= 0) { ballY = 0; ballVY = -ballVY; }
+    var pTop = FIELD_H - PADDLE_BOTTOM - PADDLE_H + COLLIDE_INSET;
+    if (ballVY &gt; 0 &amp;&amp; ballY + BALL_SIZE &gt;= pTop &amp;&amp; ballY + BALL_SIZE &lt;= pTop + 20 &amp;&amp;
+        ballX + BALL_SIZE &gt;= paddleX &amp;&amp; ballX &lt;= paddleX + PADDLE_W) {
+      // spike catch: explode the person, then drop a fresh one
+      explodeAt(ballX, ballY);
+      addScore(1);
+      resetBall();
+    }
+    if (ballY &gt;= FIELD_H) resetBall();
+    paintPaddle();
+  }
+
+  /* ---------- SHOOTER MODE ---------- */
+  var SHIP_SPEED = 6, shipX = FIELD_W / 2;
+  var bullets = [], bulletEls = [];
+  var invaders = [], invaderEls = [];
+  var shipEl = null;
+  var spawnTimer = 0, SPAWN_INTERVAL = 55;
+  var fireCooldown = 0;
+  var INV_ICONS = [&#x27;👾&#x27;,&#x27;👽&#x27;,&#x27;🛸&#x27;,&#x27;🤖&#x27;];
+
+  function makeEl(cls) { var d = document.createElement(&#x27;div&#x27;); d.className = cls; field.appendChild(d); return d; }
+
+  function initShooter() {
+    shipEl = makeEl(&#x27;ship&#x27;); shipEl.textContent = &#x27;🚀&#x27;;
+    shipX = FIELD_W / 2;
+    bullets = []; invaders = [];
+    spawnTimer = 0; fireCooldown = 0;
+    spawnInvader();
+    paintShooter();
+  }
+  function clearShooterEls() {
+    if (shipEl) { shipEl.remove(); shipEl = null; }
+    bulletEls.forEach(function(e){e.remove();}); bulletEls = [];
+    invaderEls.forEach(function(e){e.remove();}); invaderEls = [];
+    bullets = []; invaders = [];
+  }
+  function spawnInvader() {
+    var x = 30 + Math.random() * (FIELD_W - 60);
+    invaders.push({ x: x, y: -20, vy: 1.1 + Math.random() * 1.3, icon: INV_ICONS[(Math.random()*INV_ICONS.length)|0] });
+  }
+  function fire() {
+    if (fireCooldown &gt; 0) return;
+    bullets.push({ x: shipX, y: FIELD_H - 44 });
+    fireCooldown = 12;
+  }
+  function syncEls(list, els, cls) {
+    while (els.length &lt; list.length) els.push(makeEl(cls));
+    while (els.length &gt; list.length) els.pop().remove();
+  }
+  function paintShooter() {
+    shipEl.style.left = shipX + &#x27;px&#x27;;
+    syncEls(bullets, bulletEls, &#x27;bullet&#x27;);
+    for (var i = 0; i &lt; bullets.length; i++) {
+      bulletEls[i].style.left = (bullets[i].x - 2) + &#x27;px&#x27;;
+      bulletEls[i].style.top = bullets[i].y + &#x27;px&#x27;;
+    }
+    syncEls(invaders, invaderEls, &#x27;invader&#x27;);
+    for (var j = 0; j &lt; invaders.length; j++) {
+      invaderEls[j].textContent = invaders[j].icon;
+      invaderEls[j].style.left = invaders[j].x + &#x27;px&#x27;;
+      invaderEls[j].style.top = invaders[j].y + &#x27;px&#x27;;
+    }
+  }
+  function tickShooter() {
+    if (keysDown[&#x27;ArrowLeft&#x27;]) shipX -= SHIP_SPEED;
+    if (keysDown[&#x27;ArrowRight&#x27;]) shipX += SHIP_SPEED;
+    shipX = Math.max(20, Math.min(FIELD_W - 20, shipX));
+    if (fireCooldown &gt; 0) fireCooldown--;
+    if (keysDown[&#x27; &#x27;]) fire();
+
+    for (var i = bullets.length - 1; i &gt;= 0; i--) {
+      bullets[i].y -= 8;
+      if (bullets[i].y &lt; -20) bullets.splice(i, 1);
+    }
+    spawnTimer++;
+    if (spawnTimer &gt;= SPAWN_INTERVAL) { spawnTimer = 0; spawnInvader(); if (SPAWN_INTERVAL &gt; 24) SPAWN_INTERVAL -= 0.5; }
+    for (var k = invaders.length - 1; k &gt;= 0; k--) {
+      invaders[k].y += invaders[k].vy;
+      if (invaders[k].y &gt; FIELD_H + 20) { invaders.splice(k, 1); addScore(-1); }
+    }
+    for (var b = bullets.length - 1; b &gt;= 0; b--) {
+      for (var v = invaders.length - 1; v &gt;= 0; v--) {
+        var dx = bullets[b].x - invaders[v].x;
+        var dy = bullets[b].y - invaders[v].y;
+        if (Math.abs(dx) &lt; 20 &amp;&amp; Math.abs(dy) &lt; 20) {
+          bullets.splice(b, 1); invaders.splice(v, 1);
+          addScore(2);
+          break;
+        }
+      }
+    }
+    paintShooter();
+  }
+
+  /* ---------- SHARED ---------- */
+  function addScore(n) { score = Math.max(0, score + n); scoreEl.textContent = score; }
+
+  function tick() {
+    if (!running) return;
+    if (mode === &#x27;paddle&#x27;) tickPaddle(); else tickShooter();
+    animId = requestAnimationFrame(tick);
+  }
+
+  function showModeElements() {
+    var paddleVis = (mode === &#x27;paddle&#x27;) ? &#x27;block&#x27; : &#x27;none&#x27;;
+    paddle.style.display = paddleVis;
+    ball.style.display = paddleVis;
+  }
+
+  function setMode(m) {
+    stopGame();
+    clearShooterEls();
+    mode = m;
+    modePaddleBtn.classList.toggle(&#x27;active&#x27;, m === &#x27;paddle&#x27;);
+    modeShooterBtn.classList.toggle(&#x27;active&#x27;, m === &#x27;shooter&#x27;);
+    if (m === &#x27;paddle&#x27;) {
+      titleEl.textContent = &#x27;Porcupine Panic&#x27;;
+      instrEl.innerHTML = &#x27;Move the porcupine with the &lt;strong&gt;&amp;larr;&lt;/strong&gt; and &lt;strong&gt;&amp;rarr;&lt;/strong&gt; arrow keys and catch the falling person on its spikes — they explode for a point. Use the &lt;strong&gt;Start&lt;/strong&gt;/&lt;strong&gt;Restart&lt;/strong&gt; button below the game.&#x27;;
+    } else {
+      titleEl.textContent = &#x27;Space Shooter&#x27;;
+      instrEl.innerHTML = &#x27;Steer your ship with &lt;strong&gt;&amp;larr;&lt;/strong&gt; / &lt;strong&gt;&amp;rarr;&lt;/strong&gt; and press &lt;strong&gt;Space&lt;/strong&gt; to shoot the invaders. Hitting one scores +2; letting one escape the bottom loses a point.&#x27;;
+    }
+    showModeElements();
+    score = 0; scoreEl.textContent = &#x27;0&#x27;;
+    if (mode === &#x27;paddle&#x27;) { paddleX = (FIELD_W - PADDLE_W) / 2; resetBall(); paintPaddle(); }
+  }
+
+  function startGame() {
+    if (running) return;
+    score = 0; scoreEl.textContent = &#x27;0&#x27;;
+    for (var kk in keysDown) keysDown[kk] = false;
+    if (mode === &#x27;paddle&#x27;) {
+      paddleX = (FIELD_W - PADDLE_W) / 2; resetBall(); paintPaddle();
+    } else {
+      clearShooterEls(); SPAWN_INTERVAL = 55; initShooter();
+    }
+    running = true;
+    animId = requestAnimationFrame(tick);
+  }
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+  }
+
+  modePaddleBtn.addEventListener(&#x27;click&#x27;, function(){ setMode(&#x27;paddle&#x27;); });
+  modeShooterBtn.addEventListener(&#x27;click&#x27;, function(){ setMode(&#x27;shooter&#x27;); });
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27; || e.key === &#x27;ArrowRight&#x27; || e.key === &#x27; &#x27;) {
+      keysDown[e.key] = true; e.preventDefault();
+    }
+  });
+  window.addEventListener(&#x27;keyup&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27; || e.key === &#x27;ArrowRight&#x27; || e.key === &#x27; &#x27;) keysDown[e.key] = false;
+  });
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage({ type: &#x27;game_input&#x27;, kind: t, key: e.key || null }, &#x27;*&#x27;);
+      } catch (_) {}
+    }, true);
+  });
+
+  setMode(&#x27;paddle&#x27;);
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

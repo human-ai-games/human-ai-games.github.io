@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sky Hopper</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>Sky Hopper</b> &middot; Game 427 &middot; Amateur producer &middot; Basic game: Gravity jumper</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #222; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 14px; background: white; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 8px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 700; color: #1a2a4a; }
+  .instructions { font-size: 16px; color: #666; max-width: 620px; margin: 0; line-height: 1.4; text-align: center; }
+  .hud { display: flex; gap: 20px; font-size: 19px; color: #444; align-items: center; }
+  .hud .val { font-weight: 700; color: #1a2a4a; display: inline-block; }
+  .val.bump { animation: bump 0.3s ease; }
+  @keyframes bump { 0%{transform:scale(1);} 40%{transform:scale(1.5); color:#0a8;} 100%{transform:scale(1);} }
+  .field { position: relative; width: 640px; height: 400px; flex-shrink: 0; margin: 0; background: linear-gradient(#bfe3ff, #eaf6ff 70%, #dff0ff); border-radius: 10px; overflow: hidden; box-shadow: inset 0 0 0 2px #cfe8ff; }
+  .field.shake { animation: shake 0.4s; }
+  @keyframes shake { 0%,100%{transform:translate(0,0);} 20%{transform:translate(-6px,4px);} 40%{transform:translate(6px,-4px);} 60%{transform:translate(-4px,-3px);} 80%{transform:translate(4px,3px);} }
+  .cloud { position: absolute; font-size: 40px; opacity: 0.85; pointer-events: none; }
+  .ground { position: absolute; left: 0; right: 0; bottom: 0; height: 30px; background: linear-gradient(#8bcf6b, #5fa348); overflow: hidden; }
+  .ground-stripes { position: absolute; top: 0; bottom: 0; left: 0; width: 200%; background: repeating-linear-gradient(90deg, transparent 0 30px, rgba(0,0,0,0.06) 30px 60px); }
+  .hero { position: absolute; width: 38px; height: 38px; font-size: 30px; line-height: 38px; text-align: center; }
+  .hero.shielded { filter: drop-shadow(0 0 6px #0cf) drop-shadow(0 0 10px #0af); }
+  .wing { display: inline-block; }
+  .obstacle { position: absolute; width: 30px; bottom: 30px; background: linear-gradient(#c0392b, #7d1f16); border-radius: 4px 4px 0 0; }
+  .powerup { position: absolute; width: 30px; height: 30px; font-size: 26px; line-height: 30px; text-align: center; }
+  .powerup.coin { animation: spin 1s linear infinite; }
+  @keyframes spin { 0%{transform:scaleX(1);} 50%{transform:scaleX(0.15);} 100%{transform:scaleX(1);} }
+  .powerup.shield { animation: wobble 1.2s ease-in-out infinite; }
+  @keyframes wobble { 0%,100%{transform:rotate(-12deg) scale(1);} 50%{transform:rotate(12deg) scale(1.12);} }
+  .msg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 700; color: #1a2a4a; background: rgba(255,255,255,0.55); text-align: center; }
+  .pop { position: absolute; font-size: 16px; font-weight: 700; color: #0a8; pointer-events: none; }
+  .particle { position: absolute; width: 8px; height: 8px; border-radius: 50%; pointer-events: none; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;Sky Hopper&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Tap or hold &lt;strong&gt;Space&lt;/strong&gt; (or click the field) to jump over red spikes. It gets faster the longer you survive — grab 🪙 coins for points and 🛡️ shields for protection.&lt;/p&gt;
+  &lt;div class=&quot;hud&quot;&gt;
+    &lt;div&gt;Score: &lt;span class=&quot;val&quot; id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;div&gt;Best: &lt;span class=&quot;val&quot; id=&quot;best&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;div&gt;Shield: &lt;span class=&quot;val&quot; id=&quot;shield&quot;&gt;—&lt;/span&gt;&lt;/div&gt;
+    &lt;div&gt;Speed: &lt;span class=&quot;val&quot; id=&quot;speed&quot;&gt;1.0x&lt;/span&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;
+    &lt;div class=&quot;cloud&quot; id=&quot;cloud1&quot; style=&quot;top:40px;&quot;&gt;☁️&lt;/div&gt;
+    &lt;div class=&quot;cloud&quot; id=&quot;cloud2&quot; style=&quot;top:110px; font-size:30px;&quot;&gt;☁️&lt;/div&gt;
+    &lt;div class=&quot;cloud&quot; id=&quot;cloud3&quot; style=&quot;top:70px; font-size:52px;&quot;&gt;☁️&lt;/div&gt;
+    &lt;div class=&quot;ground&quot;&gt;&lt;div class=&quot;ground-stripes&quot; id=&quot;stripes&quot;&gt;&lt;/div&gt;&lt;/div&gt;
+    &lt;div class=&quot;hero&quot; id=&quot;hero&quot;&gt;&lt;span class=&quot;wing&quot; id=&quot;wing&quot;&gt;🐤&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;msg&quot; id=&quot;msg&quot;&gt;Press Start to play!&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage({ type: &#x27;game_input&#x27;, kind: t, key: e.key || null }, &#x27;*&#x27;);
+      } catch (_) {}
+    }, true);
+  });
+
+  var FIELD_W = 640, FIELD_H = 400;
+  var GROUND_H = 30, HERO_SIZE = 38;
+  var GRAVITY = 0.62, JUMP_V = -11.5, HOLD_BOOST = -0.55, MAX_HOLD = 12;
+  var OBSTACLE_W = 30;
+  var BASE_SPEED = 4.0, MAX_SPEED = 10.5;
+  var running = false, animId = null;
+  var heroX = 70;
+  var floorY = FIELD_H - GROUND_H - HERO_SIZE;
+  var heroY = floorY, heroVY = 0;
+  var holding = false, holdFrames = 0, onGround = true;
+  var obstacles = [], powerups = [], particles = [];
+  var score = 0, best = 0, shieldTime = 0;
+  var gameOver = false, frame = 0;
+  var groundOffset = 0;
+  var speed = BASE_SPEED;
+  var nextObstacleIn = 0;   // frames until next spawn
+  var nextPowerupIn = 0;
+  var clouds = [];
+
+  var field = document.getElementById(&#x27;field&#x27;);
+  var hero = document.getElementById(&#x27;hero&#x27;);
+  var wing = document.getElementById(&#x27;wing&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var bestEl = document.getElementById(&#x27;best&#x27;);
+  var shieldEl = document.getElementById(&#x27;shield&#x27;);
+  var speedEl = document.getElementById(&#x27;speed&#x27;);
+  var msg = document.getElementById(&#x27;msg&#x27;);
+  var stripes = document.getElementById(&#x27;stripes&#x27;);
+
+  clouds = [
+    { el: document.getElementById(&#x27;cloud1&#x27;), x: 120, sp: 0.4 },
+    { el: document.getElementById(&#x27;cloud2&#x27;), x: 380, sp: 0.7 },
+    { el: document.getElementById(&#x27;cloud3&#x27;), x: 560, sp: 0.25 }
+  ];
+
+  // ---- Sound ----
+  var actx = null;
+  function ac() { if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (_) {} } return actx; }
+  function beep(freq, dur, type, vol) {
+    var c = ac(); if (!c) return;
+    var o = c.createOscillator(), g = c.createGain();
+    o.type = type || &#x27;square&#x27;; o.frequency.value = freq;
+    g.gain.value = vol || 0.15;
+    o.connect(g); g.connect(c.destination);
+    var t = c.currentTime;
+    g.gain.setValueAtTime(vol || 0.15, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o.start(t); o.stop(t + dur);
+  }
+  function sndJump() { beep(520, 0.12, &#x27;square&#x27;, 0.12); }
+  function sndCoin() { beep(880, 0.08, &#x27;triangle&#x27;, 0.18); setTimeout(function(){beep(1180,0.1,&#x27;triangle&#x27;,0.18);},60); }
+  function sndShield() { beep(300, 0.15, &#x27;sawtooth&#x27;, 0.14); setTimeout(function(){beep(600,0.18,&#x27;sawtooth&#x27;,0.14);},80); }
+  function sndCrash() { beep(140, 0.35, &#x27;sawtooth&#x27;, 0.2); }
+
+  function bumpEl(el) { el.classList.remove(&#x27;bump&#x27;); void el.offsetWidth; el.classList.add(&#x27;bump&#x27;); }
+
+  function paintHero() {
+    hero.style.left = heroX + &#x27;px&#x27;;
+    hero.style.top = heroY + &#x27;px&#x27;;
+    var tilt = Math.max(-25, Math.min(25, heroVY * 2));
+    var flap = (!onGround) ? (1 + 0.2 * Math.sin(frame * 0.8)) : 1;
+    hero.style.transform = &#x27;rotate(&#x27; + tilt + &#x27;deg)&#x27;;
+    wing.style.transform = &#x27;scaleY(&#x27; + flap + &#x27;)&#x27;;
+    hero.classList.toggle(&#x27;shielded&#x27;, shieldTime &gt; 0);
+  }
+
+  function spawnObstacle(offsetX) {
+    // taller spikes as speed increases
+    var extra = Math.floor((speed - BASE_SPEED) * 3);
+    var h = 24 + Math.floor(Math.random() * (30 + extra));
+    h = Math.min(h, 90);
+    var o = { x: FIELD_W + (offsetX || 0), h: h, scored: false, el: document.createElement(&#x27;div&#x27;) };
+    o.el.className = &#x27;obstacle&#x27;;
+    o.el.style.left = o.x + &#x27;px&#x27;;
+    o.el.style.height = o.h + &#x27;px&#x27;;
+    field.appendChild(o.el);
+    obstacles.push(o);
+  }
+
+  function spawnPowerup() {
+    var isShield = Math.random() &lt; 0.22; // shields rarer
+    var y = FIELD_H - GROUND_H - HERO_SIZE - 40 - Math.floor(Math.random() * 90);
+    var p = { x: FIELD_W, y: y, type: isShield ? &#x27;shield&#x27; : &#x27;coin&#x27;, el: document.createElement(&#x27;div&#x27;) };
+    p.el.className = &#x27;powerup &#x27; + (isShield ? &#x27;shield&#x27; : &#x27;coin&#x27;);
+    p.el.textContent = isShield ? &#x27;🛡️&#x27; : &#x27;🪙&#x27;;
+    p.el.style.left = p.x + &#x27;px&#x27;;
+    p.el.style.top = p.y + &#x27;px&#x27;;
+    field.appendChild(p.el);
+    powerups.push(p);
+  }
+
+  // spacing (in frames) between obstacles scales down as speed rises,
+  // and there&#x27;s a chance of a quick double-spike combo
+  function scheduleNextObstacle() {
+    var base = Math.max(38, 110 - (speed - BASE_SPEED) * 11);
+    nextObstacleIn = Math.floor(base + Math.random() * 40);
+  }
+  function scheduleNextPowerup() {
+    nextPowerupIn = Math.floor(160 + Math.random() * 120);
+  }
+
+  function burst(x, y, color, n) {
+    for (var i = 0; i &lt; n; i++) {
+      var el = document.createElement(&#x27;div&#x27;);
+      el.className = &#x27;particle&#x27;;
+      el.style.background = color;
+      el.style.left = x + &#x27;px&#x27;;
+      el.style.top = y + &#x27;px&#x27;;
+      field.appendChild(el);
+      var ang = Math.random() * Math.PI * 2;
+      var sp = 2 + Math.random() * 4;
+      particles.push({ el: el, x: x, y: y, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp - 2, life: 30 });
+    }
+  }
+
+  function popText(x, y, txt) {
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;pop&#x27;; el.textContent = txt;
+    el.style.left = x + &#x27;px&#x27;; el.style.top = y + &#x27;px&#x27;;
+    field.appendChild(el);
+    var start = performance.now();
+    (function rise(now) {
+      var t = (now - start) / 600;
+      if (t &gt;= 1) { if (el.parentNode) el.parentNode.removeChild(el); return; }
+      el.style.top = (y - t * 30) + &#x27;px&#x27;;
+      el.style.opacity = String(1 - t);
+      requestAnimationFrame(rise);
+    })(start);
+  }
+
+  function shakeField() { field.classList.remove(&#x27;shake&#x27;); void field.offsetWidth; field.classList.add(&#x27;shake&#x27;); }
+
+  function jumpStart() {
+    if (!running || gameOver) return;
+    if (onGround) { heroVY = JUMP_V; onGround = false; holding = true; holdFrames = 0; sndJump(); }
+  }
+  function jumpEnd() { holding = false; }
+
+  function tick() {
+    if (!running) return;
+    frame++;
+
+    // difficulty ramp: speed climbs slowly over time
+    if (speed &lt; MAX_SPEED) {
+      speed = Math.min(MAX_SPEED, BASE_SPEED + frame * 0.0016);
+    }
+    speedEl.textContent = (speed / BASE_SPEED).toFixed(1) + &#x27;x&#x27;;
+
+    for (var c = 0; c &lt; clouds.length; c++) {
+      var cl = clouds[c];
+      cl.x -= cl.sp * (speed / BASE_SPEED);
+      if (cl.x &lt; -60) cl.x = FIELD_W + 40 + Math.random() * 60;
+      cl.el.style.left = cl.x + &#x27;px&#x27;;
+    }
+    groundOffset = (groundOffset - speed) % 60;
+    stripes.style.transform = &#x27;translateX(&#x27; + groundOffset + &#x27;px)&#x27;;
+
+    if (holding &amp;&amp; holdFrames &lt; MAX_HOLD &amp;&amp; heroVY &lt; 0) { heroVY += HOLD_BOOST; holdFrames++; }
+    heroVY += GRAVITY;
+    heroY += heroVY;
+    if (heroY &gt; floorY) { heroY = floorY; heroVY = 0; onGround = true; }
+    if (heroY &lt; 0) { heroY = 0; heroVY = 0; }
+
+    if (shieldTime &gt; 0) { shieldTime--; if (shieldTime === 0) shieldEl.textContent = &#x27;—&#x27;; else shieldEl.textContent = Math.ceil(shieldTime / 60) + &#x27;s&#x27;; }
+
+    paintHero();
+
+    for (var pi = particles.length - 1; pi &gt;= 0; pi--) {
+      var pt = particles[pi];
+      pt.vy += 0.2; pt.x += pt.vx; pt.y += pt.vy; pt.life--;
+      pt.el.style.left = pt.x + &#x27;px&#x27;; pt.el.style.top = pt.y + &#x27;px&#x27;;
+      pt.el.style.opacity = String(pt.life / 30);
+      if (pt.life &lt;= 0) { if (pt.el.parentNode) pt.el.parentNode.removeChild(pt.el); particles.splice(pi, 1); }
+    }
+
+    for (var i = obstacles.length - 1; i &gt;= 0; i--) {
+      var o = obstacles[i];
+      o.x -= speed;
+      o.el.style.left = o.x + &#x27;px&#x27;;
+      if (o.x + OBSTACLE_W &lt; 0) { field.removeChild(o.el); obstacles.splice(i, 1); continue; }
+      if (!o.scored &amp;&amp; o.x + OBSTACLE_W &lt; heroX) { o.scored = true; score += 1; scoreEl.textContent = score; bumpEl(scoreEl); }
+      var top = FIELD_H - GROUND_H - o.h;
+      if (heroX + HERO_SIZE - 6 &gt; o.x &amp;&amp; heroX + 6 &lt; o.x + OBSTACLE_W &amp;&amp; heroY + HERO_SIZE &gt; top) {
+        if (shieldTime &gt; 0) {
+          shieldTime = 0; shieldEl.textContent = &#x27;—&#x27;;
+          sndShield(); shakeField();
+          burst(o.x + 15, top, &#x27;#0cf&#x27;, 12);
+          field.removeChild(o.el); obstacles.splice(i, 1);
+          popText(heroX, heroY, &#x27;BLOCK!&#x27;);
+        } else { endGame(); return; }
+      }
+    }
+
+    for (var j = powerups.length - 1; j &gt;= 0; j--) {
+      var p = powerups[j];
+      p.x -= speed;
+      p.el.style.left = p.x + &#x27;px&#x27;;
+      if (p.x + 30 &lt; 0) { field.removeChild(p.el); powerups.splice(j, 1); continue; }
+      if (heroX + HERO_SIZE &gt; p.x &amp;&amp; heroX &lt; p.x + 30 &amp;&amp; heroY + HERO_SIZE &gt; p.y &amp;&amp; heroY &lt; p.y + 30) {
+        if (p.type === &#x27;coin&#x27;) { score += 3; scoreEl.textContent = score; bumpEl(scoreEl); sndCoin(); popText(p.x, p.y, &#x27;+3&#x27;); burst(p.x + 15, p.y + 15, &#x27;#f1c40f&#x27;, 10); }
+        else { shieldTime = 240; shieldEl.textContent = &#x27;4s&#x27;; bumpEl(shieldEl); sndShield(); popText(p.x, p.y, &#x27;🛡️&#x27;); burst(p.x + 15, p.y + 15, &#x27;#00cfff&#x27;, 10); }
+        field.removeChild(p.el); powerups.splice(j, 1);
+      }
+    }
+
+    // spawn scheduling
+    nextObstacleIn--;
+    if (nextObstacleIn &lt;= 0) {
+      spawnObstacle(0);
+      // chance for a back-to-back combo once things speed up
+      if (speed &gt; 6 &amp;&amp; Math.random() &lt; 0.3) spawnObstacle(46 + Math.random() * 20);
+      scheduleNextObstacle();
+    }
+    nextPowerupIn--;
+    if (nextPowerupIn &lt;= 0) { spawnPowerup(); scheduleNextPowerup(); }
+
+    animId = requestAnimationFrame(tick);
+  }
+
+  function clearAll() {
+    obstacles.forEach(function (o) { if (o.el.parentNode) o.el.parentNode.removeChild(o.el); });
+    powerups.forEach(function (p) { if (p.el.parentNode) p.el.parentNode.removeChild(p.el); });
+    particles.forEach(function (pt) { if (pt.el.parentNode) pt.el.parentNode.removeChild(pt.el); });
+    obstacles = []; powerups = []; particles = [];
+  }
+
+  function endGame() {
+    gameOver = true;
+    running = false;
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+    sndCrash(); shakeField();
+    burst(heroX + 19, heroY + 19, &#x27;#e74c3c&#x27;, 16);
+    if (score &gt; best) { best = score; bestEl.textContent = best; bumpEl(bestEl); }
+    msg.textContent = &#x27;Game Over — Score &#x27; + score;
+    msg.style.display = &#x27;flex&#x27;;
+  }
+
+  function startGame() {
+    if (running) return;
+    if (ac() &amp;&amp; actx.state === &#x27;suspended&#x27;) actx.resume();
+    clearAll();
+    score = 0; scoreEl.textContent = &#x27;0&#x27;;
+    shieldTime = 0; shieldEl.textContent = &#x27;—&#x27;;
+    speed = BASE_SPEED; speedEl.textContent = &#x27;1.0x&#x27;;
+    heroX = 70; heroY = floorY; heroVY = 0;
+    onGround = true; holding = false; gameOver = false; frame = 0;
+    scheduleNextObstacle(); scheduleNextPowerup();
+    nextObstacleIn = 20; // first spike appears quickly
+    msg.style.display = &#x27;none&#x27;;
+    paintHero();
+    spawnObstacle(0);
+    running = true;
+    animId = requestAnimationFrame(tick);
+  }
+
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+    msg.textContent = &#x27;Paused&#x27;; msg.style.display = &#x27;flex&#x27;;
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27; &#x27; || e.code === &#x27;Space&#x27;) { jumpStart(); e.preventDefault(); }
+  });
+  window.addEventListener(&#x27;keyup&#x27;, function (e) {
+    if (e.key === &#x27; &#x27; || e.code === &#x27;Space&#x27;) { jumpEnd(); e.preventDefault(); }
+  });
+  field.addEventListener(&#x27;mousedown&#x27;, function () { jumpStart(); });
+  field.addEventListener(&#x27;mouseup&#x27;, function () { jumpEnd(); });
+  field.addEventListener(&#x27;mouseleave&#x27;, function () { jumpEnd(); });
+
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  paintHero();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

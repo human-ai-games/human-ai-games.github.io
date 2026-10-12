@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SCENIC PADDLE</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>SCENIC PADDLE</b> &middot; Game 384 &middot; Amateur producer &middot; Basic game: Paddle and ball</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #05050a; color: #fff; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 14px; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 8px; transition: background .6s; }
+  h1 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: 2px; text-shadow: 0 0 10px rgba(0,0,0,.5); }
+  .instructions { font-size: 16px; color: #eee; max-width: 610px; margin: 0; line-height: 1.35; text-align: center; text-shadow: 0 1px 3px rgba(0,0,0,.6); }
+  .hud { display: flex; gap: 26px; font-size: 20px; font-weight: 700; text-shadow: 0 1px 3px rgba(0,0,0,.7); }
+  .hud .lvlname { font-size: 16px; opacity: .9; }
+  .field {
+    position: relative; width: 620px; height: 400px; flex-shrink: 0; margin: 0;
+    border-radius: 12px; overflow: hidden;
+    border: 3px solid rgba(255,255,255,.5);
+    box-shadow: 0 0 25px rgba(0,0,0,.5), inset 0 0 40px rgba(0,0,0,.2);
+    transition: background .6s, border-color .6s;
+  }
+  .paddle {
+    position: absolute; width: 100px; height: 16px; bottom: 10px; border-radius: 8px;
+    box-shadow: 0 0 12px rgba(255,255,255,.4), inset 0 1px 2px rgba(255,255,255,.4);
+    overflow: hidden; transition: background .6s;
+  }
+  .ball {
+    position: absolute; width: 22px; height: 22px; border-radius: 50%;
+    box-shadow: 0 0 16px rgba(255,255,255,.5), inset -4px -4px 8px rgba(0,0,0,.4), inset 3px 3px 6px rgba(255,255,255,.6);
+  }
+  .ball::after {
+    content: &quot;&quot;; position: absolute; left: 4px; top: 3px; width: 6px; height: 5px;
+    border-radius: 50%; background: rgba(255,255,255,.9); filter: blur(1px);
+  }
+
+  /* Hello Kitty celebration popup */
+  .celebrate {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%) scale(0);
+    z-index: 20; text-align: center; pointer-events: none;
+    background: rgba(255,255,255,.95); border: 4px solid #ff5ea1; border-radius: 20px;
+    padding: 16px 22px; box-shadow: 0 8px 30px rgba(0,0,0,.4);
+  }
+  .celebrate.show { animation: pop 2s ease forwards; }
+  @keyframes pop {
+    0% { transform: translate(-50%,-50%) scale(0); }
+    15% { transform: translate(-50%,-50%) scale(1.15); }
+    30% { transform: translate(-50%,-50%) scale(1); }
+    80% { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+    100% { transform: translate(-50%,-50%) scale(.7); opacity: 0; }
+  }
+  .celebrate .msg { color: #ff2ec4; font-weight: 800; font-size: 20px; margin-top: 6px; }
+  .kitty { position: relative; width: 120px; height: 96px; margin: 0 auto; }
+  .kitty .head { position: absolute; left: 10px; top: 14px; width: 100px; height: 78px; background: #fff; border: 3px solid #333; border-radius: 50% 50% 48% 48%; }
+  .kitty .ear { position: absolute; width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent; border-bottom: 30px solid #fff; }
+  .kitty .earL { left: 8px; top: 2px; transform: rotate(-25deg); filter: drop-shadow(0 0 0 #333); }
+  .kitty .earR { right: 8px; top: 2px; transform: rotate(25deg); }
+  .kitty .ear::after { content:&quot;&quot;; position:absolute; left:-14px; top:6px; width:0; height:0; border-left:14px solid transparent; border-right:14px solid transparent; border-bottom:20px solid #333; z-index:-1; }
+  .kitty .eye { position: absolute; top: 44px; width: 8px; height: 11px; background: #333; border-radius: 50%; }
+  .kitty .eyeL { left: 40px; } .kitty .eyeR { right: 40px; }
+  .kitty .nose { position: absolute; left: 55px; top: 58px; width: 10px; height: 7px; background: #ffcc33; border-radius: 50%; }
+  .kitty .bow { position: absolute; right: 14px; top: 30px; width: 0; height: 0;
+    border-top: 13px solid transparent; border-bottom: 13px solid transparent; border-left: 22px solid #ff2ec4; }
+  .kitty .bow::after { content:&quot;&quot;; position:absolute; left:0; top:-13px; border-top:13px solid transparent; border-bottom:13px solid transparent; border-right:22px solid #ff2ec4; }
+  .kitty .bowdot { position: absolute; right: 24px; top: 24px; width: 8px; height: 8px; background:#fff; border-radius:50%; z-index:2; }
+  .whisk { position:absolute; height:2px; background:#333; top:0; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot; id=&quot;game&quot;&gt;
+  &lt;h1 id=&quot;title&quot;&gt;SCENIC PADDLE&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Move the paddle with the &lt;strong&gt;&amp;larr;&lt;/strong&gt; and &lt;strong&gt;&amp;rarr;&lt;/strong&gt; arrow keys to bounce the balls — each hit is +1, each miss is -1. Every 10 points you level up to a new scenic world (and Hello Kitty cheers you on)! Use the &lt;strong&gt;Start&lt;/strong&gt;/&lt;strong&gt;Restart&lt;/strong&gt; button below.&lt;/p&gt;
+  &lt;div class=&quot;hud&quot;&gt;
+    &lt;div&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;div&gt;Level: &lt;span id=&quot;level&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;lvlname&quot; id=&quot;lvlname&quot;&gt;Neon City&lt;/span&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;
+    &lt;div class=&quot;paddle&quot; id=&quot;paddle&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;celebrate&quot; id=&quot;celebrate&quot;&gt;
+      &lt;div class=&quot;kitty&quot;&gt;
+        &lt;div class=&quot;ear earL&quot;&gt;&lt;/div&gt;&lt;div class=&quot;ear earR&quot;&gt;&lt;/div&gt;
+        &lt;div class=&quot;head&quot;&gt;&lt;/div&gt;
+        &lt;div class=&quot;whisk&quot; style=&quot;left:8px;top:56px;width:26px;transform:rotate(8deg);&quot;&gt;&lt;/div&gt;
+        &lt;div class=&quot;whisk&quot; style=&quot;left:6px;top:64px;width:28px;transform:rotate(-6deg);&quot;&gt;&lt;/div&gt;
+        &lt;div class=&quot;whisk&quot; style=&quot;right:8px;top:56px;width:26px;transform:rotate(-8deg);&quot;&gt;&lt;/div&gt;
+        &lt;div class=&quot;whisk&quot; style=&quot;right:6px;top:64px;width:28px;transform:rotate(6deg);&quot;&gt;&lt;/div&gt;
+        &lt;div class=&quot;eye eyeL&quot;&gt;&lt;/div&gt;&lt;div class=&quot;eye eyeR&quot;&gt;&lt;/div&gt;
+        &lt;div class=&quot;nose&quot;&gt;&lt;/div&gt;
+        &lt;div class=&quot;bow&quot;&gt;&lt;/div&gt;&lt;div class=&quot;bowdot&quot;&gt;&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;msg&quot; id=&quot;celebmsg&quot;&gt;10 points! So cute! 🎀&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var FIELD_W = 620, FIELD_H = 400;
+  var PADDLE_W = 100, PADDLE_H = 16, PADDLE_BOTTOM = 10, PADDLE_SPEED = 6;
+  var BALL_SIZE = 22;
+  var BASE_SPEED = 4.0;
+  var MAX_BALLS = 3;
+  var SPAWN_EVERY = 9000;
+
+  // Level themes: background for field, page bg, paddle bg, ball gradient, border
+  var LEVELS = [
+    { name: &quot;Neon City&quot;,
+      page: &quot;linear-gradient(160deg,#0a0a14,#05050a)&quot;,
+      field: &quot;radial-gradient(circle at 50% 120%, rgba(255,46,196,.3), transparent 60%), #06060d&quot;,
+      border: &quot;#ff2ec4&quot;,
+      paddle: &quot;linear-gradient(180deg,#1a1a22,#000)&quot;,
+      ball: &quot;radial-gradient(circle at 32% 30%, #fff 0%, #ff9de6 20%, #ff2ec4 55%, #99005e 100%)&quot; },
+    { name: &quot;Ocean Reef&quot;,
+      page: &quot;linear-gradient(160deg,#012a4a,#013a63)&quot;,
+      field: &quot;linear-gradient(180deg,#2c7da0,#014f86)&quot;,
+      border: &quot;#a9def9&quot;,
+      paddle: &quot;linear-gradient(180deg,#89c2d9,#2a6f97)&quot;,
+      ball: &quot;radial-gradient(circle at 32% 30%, #fff 0%, #caf0f8 20%, #00b4d8 55%, #023e8a 100%)&quot; },
+    { name: &quot;Sunset Dunes&quot;,
+      page: &quot;linear-gradient(160deg,#3a1c1c,#5c2a1e)&quot;,
+      field: &quot;linear-gradient(180deg,#ff9e64,#c1440e)&quot;,
+      border: &quot;#ffd29b&quot;,
+      paddle: &quot;linear-gradient(180deg,#7a3b1e,#3d1c0e)&quot;,
+      ball: &quot;radial-gradient(circle at 32% 30%, #fff 0%, #ffe0a3 20%, #ff8c42 55%, #b23a00 100%)&quot; },
+    { name: &quot;Forest Glade&quot;,
+      page: &quot;linear-gradient(160deg,#0d2818,#14401f)&quot;,
+      field: &quot;linear-gradient(180deg,#52b788,#1b4332)&quot;,
+      border: &quot;#b7e4c7&quot;,
+      paddle: &quot;linear-gradient(180deg,#40916c,#1b4332)&quot;,
+      ball: &quot;radial-gradient(circle at 32% 30%, #fff 0%, #d8f3dc 20%, #52b788 55%, #1b4332 100%)&quot; },
+    { name: &quot;Cosmic Void&quot;,
+      page: &quot;linear-gradient(160deg,#10002b,#240046)&quot;,
+      field: &quot;radial-gradient(circle at 30% 20%, rgba(199,125,255,.4), transparent 50%), #240046&quot;,
+      border: &quot;#c77dff&quot;,
+      paddle: &quot;linear-gradient(180deg,#7b2cbf,#3c096c)&quot;,
+      ball: &quot;radial-gradient(circle at 32% 30%, #fff 0%, #e0aaff 20%, #9d4edd 55%, #3c096c 100%)&quot; },
+    { name: &quot;Candy Sky&quot;,
+      page: &quot;linear-gradient(160deg,#ffafcc,#ffc8dd)&quot;,
+      field: &quot;linear-gradient(180deg,#bde0fe,#ffc8dd)&quot;,
+      border: &quot;#ff85a1&quot;,
+      paddle: &quot;linear-gradient(180deg,#ff85a1,#c9184a)&quot;,
+      ball: &quot;radial-gradient(circle at 32% 30%, #fff 0%, #ffe0ec 20%, #ff5d8f 55%, #c9184a 100%)&quot; }
+  ];
+
+  var running = false, animId = null;
+  var keysDown = {};
+  var paddleX = (FIELD_W - PADDLE_W) / 2;
+  var score = 0, level = 1;
+  var speed = BASE_SPEED;
+  var nextMilestone = 10;
+  var balls = [];
+  var lastSpawn = 0;
+  var celebTimer = null;
+
+  var game = document.getElementById(&#x27;game&#x27;);
+  var field = document.getElementById(&#x27;field&#x27;);
+  var paddle = document.getElementById(&#x27;paddle&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var levelEl = document.getElementById(&#x27;level&#x27;);
+  var lvlNameEl = document.getElementById(&#x27;lvlname&#x27;);
+  var celebrate = document.getElementById(&#x27;celebrate&#x27;);
+  var celebMsg = document.getElementById(&#x27;celebmsg&#x27;);
+  var ballGradient = LEVELS[0].ball;
+
+  function applyTheme(idx) {
+    var t = LEVELS[(idx - 1) % LEVELS.length];
+    game.style.background = t.page;
+    field.style.background = t.field;
+    field.style.borderColor = t.border;
+    paddle.style.background = t.paddle;
+    ballGradient = t.ball;
+    for (var i = 0; i &lt; balls.length; i++) balls[i].el.style.background = t.ball;
+    lvlNameEl.textContent = t.name;
+    levelEl.textContent = idx;
+  }
+
+  function makeBall() {
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;ball&#x27;;
+    el.style.background = ballGradient;
+    field.appendChild(el);
+    var dir = Math.random() &lt; 0.5 ? -1 : 1;
+    return { el: el,
+      x: (FIELD_W - BALL_SIZE) / 2 + (Math.random() * 120 - 60),
+      y: 40 + Math.random() * 40,
+      vx: dir * speed, vy: speed };
+  }
+
+  function clearBalls() {
+    for (var i = 0; i &lt; balls.length; i++) field.removeChild(balls[i].el);
+    balls = [];
+  }
+
+  function paint() {
+    paddle.style.left = paddleX + &#x27;px&#x27;;
+    for (var i = 0; i &lt; balls.length; i++) {
+      balls[i].el.style.left = balls[i].x + &#x27;px&#x27;;
+      balls[i].el.style.top = balls[i].y + &#x27;px&#x27;;
+    }
+  }
+
+  function showCelebrate(pts) {
+    celebMsg.textContent = pts + &quot; points! So cute! 🎀&quot;;
+    celebrate.classList.remove(&#x27;show&#x27;);
+    void celebrate.offsetWidth; // restart animation
+    celebrate.classList.add(&#x27;show&#x27;);
+    if (celebTimer) clearTimeout(celebTimer);
+    celebTimer = setTimeout(function () { celebrate.classList.remove(&#x27;show&#x27;); }, 2000);
+  }
+
+  function reScaleBalls() {
+    // update velocity magnitudes to current speed, preserving direction
+    for (var i = 0; i &lt; balls.length; i++) {
+      var b = balls[i];
+      b.vx = (b.vx &lt; 0 ? -1 : 1) * speed;
+      b.vy = (b.vy &lt; 0 ? -1 : 1) * speed;
+    }
+  }
+
+  function handleMilestone() {
+    while (score &gt;= nextMilestone) {
+      level += 1;
+      speed += 0.6;               // slightly faster each 10 points
+      applyTheme(level);
+      reScaleBalls();
+      showCelebrate(nextMilestone);
+      if (balls.length &lt; MAX_BALLS) balls.push(makeBall());
+      nextMilestone += 10;
+    }
+  }
+
+  function tick(now) {
+    if (!running) return;
+    if (keysDown[&#x27;ArrowLeft&#x27;]) paddleX -= PADDLE_SPEED;
+    if (keysDown[&#x27;ArrowRight&#x27;]) paddleX += PADDLE_SPEED;
+    paddleX = Math.max(0, Math.min(FIELD_W - PADDLE_W, paddleX));
+
+    if (now - lastSpawn &gt;= SPAWN_EVERY &amp;&amp; balls.length &lt; MAX_BALLS) {
+      lastSpawn = now;
+      balls.push(makeBall());
+    }
+
+    var paddleTop = FIELD_H - PADDLE_BOTTOM - PADDLE_H;
+    for (var i = 0; i &lt; balls.length; i++) {
+      var b = balls[i];
+      b.x += b.vx;
+      b.y += b.vy;
+      if (b.x &lt;= 0) { b.x = 0; b.vx = -b.vx; }
+      if (b.x + BALL_SIZE &gt;= FIELD_W) { b.x = FIELD_W - BALL_SIZE; b.vx = -b.vx; }
+      if (b.y &lt;= 0) { b.y = 0; b.vy = -b.vy; }
+      if (b.vy &gt; 0 &amp;&amp;
+          b.y + BALL_SIZE &gt;= paddleTop &amp;&amp;
+          b.y + BALL_SIZE &lt;= paddleTop + PADDLE_H + 6 &amp;&amp;
+          b.x + BALL_SIZE &gt;= paddleX &amp;&amp;
+          b.x &lt;= paddleX + PADDLE_W) {
+        b.vy = -Math.abs(b.vy);
+        b.y = paddleTop - BALL_SIZE;
+        score += 1;
+        scoreEl.textContent = score;
+        handleMilestone();
+      }
+      if (b.y &gt;= FIELD_H) {
+        // missed! lose a point, respawn from top
+        score -= 1;
+        if (score &lt; 0) score = 0;
+        scoreEl.textContent = score;
+        b.x = (FIELD_W - BALL_SIZE) / 2 + (Math.random() * 120 - 60);
+        b.y = 40;
+        b.vx = (Math.random() &lt; 0.5 ? -1 : 1) * speed;
+        b.vy = speed;
+      }
+    }
+    paint();
+    animId = requestAnimationFrame(tick);
+  }
+
+  function startGame() {
+    if (running) return;
+    score = 0; level = 1; speed = BASE_SPEED; nextMilestone = 10;
+    scoreEl.textContent = &#x27;0&#x27;;
+    paddleX = (FIELD_W - PADDLE_W) / 2;
+    for (var k in keysDown) keysDown[k] = false;
+    clearBalls();
+    applyTheme(1);
+    balls.push(makeBall());
+    lastSpawn = performance.now();
+    celebrate.classList.remove(&#x27;show&#x27;);
+    paint();
+    running = true;
+    animId = requestAnimationFrame(tick);
+  }
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27; || e.key === &#x27;ArrowRight&#x27;) {
+      keysDown[e.key] = true;
+      e.preventDefault();
+    }
+  });
+  window.addEventListener(&#x27;keyup&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27; || e.key === &#x27;ArrowRight&#x27;) keysDown[e.key] = false;
+  });
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  applyTheme(1);
+  paint();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

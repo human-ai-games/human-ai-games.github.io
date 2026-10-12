@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Block Builder</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>Block Builder</b> &middot; Game 079 &middot; Professional producer &middot; Basic game: Falling blocks</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #222; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 14px; background: white; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 8px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 600; }
+  .instructions { font-size: 16px; color: #666; max-width: 620px; margin: 0; line-height: 1.35; text-align: center; }
+  .score { font-size: 20px; color: #555; margin: 0; }
+  .field { position: relative; flex-shrink: 0; margin: 0; background: #dfeaf5; border-radius: 8px; overflow: hidden; }
+  .ground { position: absolute; left: 0; right: 0; bottom: 0; background: #8a9a5b; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;Block Builder&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Steer each falling construction block with &lt;strong&gt;&amp;larr;&lt;/strong&gt; / &lt;strong&gt;&amp;rarr;&lt;/strong&gt; and press &lt;strong&gt;&amp;darr;&lt;/strong&gt; to drop faster. Complete any full row OR full column to clear it and score a point. Use the &lt;strong&gt;Start&lt;/strong&gt;/&lt;strong&gt;Restart&lt;/strong&gt; button below the game.&lt;/p&gt;
+  &lt;div class=&quot;score&quot;&gt;Buildings: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  var CELL = 40;
+  var COLS = 8, ROWS = 11;
+  var FIELD_W = COLS * CELL;   // 320
+  var FIELD_H = ROWS * CELL;   // 440
+  var DROP_MS_BASE = 480;
+  var running = false, dropId = null;
+
+  var field = document.getElementById(&#x27;field&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  field.style.width = FIELD_W + &#x27;px&#x27;;
+  field.style.height = FIELD_H + &#x27;px&#x27;;
+
+  // grid[r][c] = 0 empty, 1 placed
+  var grid = [];
+  var piece = null;   // { c, y (px top) }
+  var score = 0;
+
+  function newGrid() {
+    grid = [];
+    for (var r = 0; r &lt; ROWS; r++) {
+      var rr = [];
+      for (var c = 0; c &lt; COLS; c++) rr.push(0);
+      grid.push(rr);
+    }
+  }
+
+  function spawnPiece() { piece = { c: Math.floor(COLS / 2), y: -CELL }; }
+
+  // Lowest empty row in a column, or -1 if full.
+  function landingRow(c) {
+    for (var r = ROWS - 1; r &gt;= 0; r--) if (!grid[r][c]) return r;
+    return -1;
+  }
+
+  function paint() {
+    field.innerHTML = &#x27;&#x27;;
+    // ground strip (thin, just decorative baseline)
+    var g = document.createElement(&#x27;div&#x27;);
+    g.className = &#x27;ground&#x27;;
+    g.style.height = &#x27;6px&#x27;;
+    field.appendChild(g);
+    for (var r = 0; r &lt; ROWS; r++) {
+      for (var c = 0; c &lt; COLS; c++) {
+        if (grid[r][c]) field.appendChild(makeBlock(c * CELL, r * CELL));
+      }
+    }
+    if (piece) field.appendChild(makeBlock(piece.c * CELL, piece.y));
+  }
+
+  // Construction block with brick texture + a window (scaled for small cell).
+  function makeBlock(px, py) {
+    var el = document.createElement(&#x27;div&#x27;);
+    el.style.position = &#x27;absolute&#x27;;
+    el.style.left = px + &#x27;px&#x27;;
+    el.style.top = py + &#x27;px&#x27;;
+    el.style.width = CELL + &#x27;px&#x27;;
+    el.style.height = CELL + &#x27;px&#x27;;
+    el.style.boxSizing = &#x27;border-box&#x27;;
+    el.style.borderRadius = &#x27;3px&#x27;;
+    el.style.border = &#x27;2px solid #7a3b28&#x27;;
+    el.style.background = &#x27;linear-gradient(#c0563a,#a84a30)&#x27;;
+    el.style.overflow = &#x27;hidden&#x27;;
+    el.style.display = &#x27;flex&#x27;;
+    el.style.alignItems = &#x27;center&#x27;;
+    el.style.justifyContent = &#x27;center&#x27;;
+
+    var bricks = document.createElement(&#x27;div&#x27;);
+    bricks.style.position = &#x27;absolute&#x27;;
+    bricks.style.inset = &#x27;0&#x27;;
+    bricks.style.backgroundImage =
+      &#x27;repeating-linear-gradient(0deg, transparent 0 8px, rgba(0,0,0,0.18) 8px 9px),&#x27; +
+      &#x27;repeating-linear-gradient(90deg, transparent 0 14px, rgba(0,0,0,0.12) 14px 15px)&#x27;;
+    el.appendChild(bricks);
+
+    var w = document.createElement(&#x27;div&#x27;);
+    w.style.position = &#x27;relative&#x27;;
+    w.style.width = &#x27;16px&#x27;;
+    w.style.height = &#x27;20px&#x27;;
+    w.style.background = &#x27;linear-gradient(135deg,#bfe3ff,#7fb4e6)&#x27;;
+    w.style.border = &#x27;2px solid #f4efe4&#x27;;
+    w.style.borderRadius = &#x27;2px&#x27;;
+    w.style.boxShadow = &#x27;0 1px 2px rgba(0,0,0,0.3)&#x27;;
+    var barH = document.createElement(&#x27;div&#x27;);
+    barH.style.position = &#x27;absolute&#x27;;
+    barH.style.left = &#x27;0&#x27;; barH.style.right = &#x27;0&#x27;; barH.style.top = &#x27;50%&#x27;;
+    barH.style.height = &#x27;2px&#x27;; barH.style.background = &#x27;#f4efe4&#x27;;
+    barH.style.transform = &#x27;translateY(-50%)&#x27;;
+    var barV = document.createElement(&#x27;div&#x27;);
+    barV.style.position = &#x27;absolute&#x27;;
+    barV.style.top = &#x27;0&#x27;; barV.style.bottom = &#x27;0&#x27;; barV.style.left = &#x27;50%&#x27;;
+    barV.style.width = &#x27;2px&#x27;; barV.style.background = &#x27;#f4efe4&#x27;;
+    barV.style.transform = &#x27;translateX(-50%)&#x27;;
+    w.appendChild(barH); w.appendChild(barV);
+    el.appendChild(w);
+    return el;
+  }
+
+  function placePiece() {
+    var r = landingRow(piece.c);
+    if (r &lt; 0) { piece = null; return false; }  // column full -&gt; game over signal
+    grid[r][piece.c] = 1;
+    piece = null;
+    clearLines();
+    return true;
+  }
+
+  function clearLines() {
+    var cleared = 0;
+    // full rows
+    for (var r = 0; r &lt; ROWS; r++) {
+      var full = true;
+      for (var c = 0; c &lt; COLS; c++) if (!grid[r][c]) { full = false; break; }
+      if (full) { for (var c2 = 0; c2 &lt; COLS; c2++) grid[r][c2] = 0; cleared++; }
+    }
+    // full columns
+    for (var c = 0; c &lt; COLS; c++) {
+      var fullc = true;
+      for (var r2 = 0; r2 &lt; ROWS; r2++) if (!grid[r2][c]) { fullc = false; break; }
+      if (fullc) { for (var r3 = 0; r3 &lt; ROWS; r3++) grid[r3][c] = 0; cleared++; }
+    }
+    if (cleared &gt; 0) {
+      score += cleared;
+      scoreEl.textContent = score;
+      applyGravity();
+      retune();
+    }
+  }
+
+  // After clearing, let floating blocks fall down within each column.
+  function applyGravity() {
+    for (var c = 0; c &lt; COLS; c++) {
+      var stack = [];
+      for (var r = ROWS - 1; r &gt;= 0; r--) if (grid[r][c]) stack.push(1);
+      for (var r2 = ROWS - 1; r2 &gt;= 0; r2--) {
+        grid[r2][c] = (ROWS - 1 - r2) &lt; stack.length ? 1 : 0;
+      }
+    }
+  }
+
+  function currentDropMs() {
+    var ms = DROP_MS_BASE - score * 12;
+    return ms &lt; 140 ? 140 : ms;
+  }
+  function retune() {
+    if (!running) return;
+    if (dropId) clearInterval(dropId);
+    dropId = setInterval(stepDown, currentDropMs());
+  }
+
+  function restYForCol(c) {
+    var r = landingRow(c);
+    return r &lt; 0 ? -CELL : r * CELL;
+  }
+
+  function stepDown() {
+    if (!piece) return;
+    var ny = piece.y + CELL / 2;
+    var rest = restYForCol(piece.c);
+    if (rest &lt; 0) { endGame(); return; }
+    if (ny &gt;= rest) {
+      piece.y = rest;
+      var ok = placePiece();
+      if (running) {
+        spawnPiece();
+        // if the new piece&#x27;s column is already full at top, game over
+        if (landingRow(piece.c) &lt; 0) { endGame(); paint(); return; }
+      }
+    } else {
+      piece.y = ny;
+    }
+    paint();
+  }
+
+  function move(dx) {
+    if (!running || !piece) return;
+    var nc = piece.c + dx;
+    if (nc &lt; 0 || nc &gt;= COLS) return;
+    // don&#x27;t allow moving into a fully-filled column when piece is low
+    piece.c = nc;
+    paint();
+  }
+
+  function endGame() {
+    running = false;
+    if (dropId) { clearInterval(dropId); dropId = null; }
+  }
+
+  function startGame() {
+    if (running) return;
+    score = 0;
+    scoreEl.textContent = &#x27;0&#x27;;
+    newGrid();
+    spawnPiece();
+    paint();
+    running = true;
+    if (dropId) clearInterval(dropId);
+    dropId = setInterval(stepDown, currentDropMs());
+  }
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    if (dropId) { clearInterval(dropId); dropId = null; }
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27;) { move(-1); e.preventDefault(); }
+    else if (e.key === &#x27;ArrowRight&#x27;) { move(1); e.preventDefault(); }
+    else if (e.key === &#x27;ArrowDown&#x27;) { if (running) stepDown(); e.preventDefault(); }
+    else if (e.key === &#x27;ArrowUp&#x27;) { e.preventDefault(); }
+  });
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  // Initial preview
+  newGrid();
+  paint();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

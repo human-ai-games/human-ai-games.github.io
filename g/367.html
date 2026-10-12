@@ -1,0 +1,656 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🐶 Puppy Dash</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>🐶 Puppy Dash</b> &middot; Game 367 &middot; Professional producer &middot; Basic game: Gravity jumper</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #fdf1f6; color: #444; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 14px; background: #fff6fb; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 700; color: #d46a9f; }
+  .instructions { font-size: 16px; color: #8a6b7d; max-width: 620px; margin: 0; line-height: 1.35; text-align: center; }
+  .score { font-size: 20px; color: #b85586; margin: 0; font-weight: 600; }
+  .field { position: relative; width: 640px; height: 420px; flex-shrink: 0; margin: 0; background: linear-gradient(#cdeafd, #eaf7ff); border-radius: 10px; overflow: hidden; border: 3px solid #ffd6e8; }
+  .ground { position: absolute; left: 0; right: 0; bottom: 0; height: 30px; background: #9fd47f; }
+  .sprite { position: absolute; }
+  .win-screen { position:absolute; inset:0; background: linear-gradient(#ffe1ef,#ffd0e6); display:none; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;🐶 Puppy Dash&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Use &lt;strong&gt;←&lt;/strong&gt;/&lt;strong&gt;→&lt;/strong&gt; to move and &lt;strong&gt;Space&lt;/strong&gt; to jump — dodge the vampire kitties and catch falling bones. Collect 20 bones to get adopted, push the ball into the door to go inside, then walk to the lady for pets!&lt;/p&gt;
+  &lt;div class=&quot;score&quot;&gt;Bones: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt; / 20&lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;
+    &lt;div class=&quot;ground&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;win-screen&quot; id=&quot;winScreen&quot;&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage({ type: &#x27;game_input&#x27;, kind: t, key: e.key || null }, &#x27;*&#x27;);
+      } catch (_) {}
+    }, true);
+  });
+
+  var FIELD_W = 640, FIELD_H = 420, GROUND_H = 30;
+  var HERO_W = 54, HERO_H = 44;
+  var GRAVITY = 0.4, JUMP_V = -11;
+  var MOVE_SPEED = 4.5;
+  var KITTY_W = 54, KITTY_H = 40, KITTY_SPEED = 3.2;
+  var BONE_SIZE = 26, BONE_SPEED = 1.4;
+  var GOAL = 20;
+
+  var field = document.getElementById(&#x27;field&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var winScreen = document.getElementById(&#x27;winScreen&#x27;);
+
+  var running = false, animId = null, kittyId = null, boneId = null, meowId = null;
+  var heroX, heroY, heroVY, keys = {}, score = 0, gameOver = false;
+  var phase = &#x27;idle&#x27;; // idle | dash | yard | living
+  var kitties = [], bones = [];
+
+  // ---- SVG sprite helpers ----
+  function puppySVG(flip){
+    return &#x27;&lt;svg width=&quot;54&quot; height=&quot;44&quot; viewBox=&quot;0 0 54 44&quot;&gt;&#x27;
+      + (flip?&#x27;&lt;g transform=&quot;translate(54,0) scale(-1,1)&quot;&gt;&#x27;:&#x27;&lt;g&gt;&#x27;)
+      // full fluffy tail
+      + &#x27;&lt;ellipse cx=&quot;47&quot; cy=&quot;20&quot; rx=&quot;9&quot; ry=&quot;11&quot; fill=&quot;#c8945f&quot;/&gt;&#x27;
+      + &#x27;&lt;ellipse cx=&quot;49&quot; cy=&quot;16&quot; rx=&quot;6&quot; ry=&quot;7&quot; fill=&quot;#dcaa72&quot;/&gt;&#x27;
+      // legs
+      + &#x27;&lt;rect x=&quot;14&quot; y=&quot;32&quot; width=&quot;6&quot; height=&quot;10&quot; rx=&quot;3&quot; fill=&quot;#a9743f&quot;/&gt;&#x27;
+      + &#x27;&lt;rect x=&quot;24&quot; y=&quot;32&quot; width=&quot;6&quot; height=&quot;10&quot; rx=&quot;3&quot; fill=&quot;#a9743f&quot;/&gt;&#x27;
+      + &#x27;&lt;rect x=&quot;34&quot; y=&quot;32&quot; width=&quot;6&quot; height=&quot;10&quot; rx=&quot;3&quot; fill=&quot;#a9743f&quot;/&gt;&#x27;
+      + &#x27;&lt;rect x=&quot;8&quot; y=&quot;32&quot; width=&quot;6&quot; height=&quot;10&quot; rx=&quot;3&quot; fill=&quot;#a9743f&quot;/&gt;&#x27;
+      // body
+      + &#x27;&lt;ellipse cx=&quot;27&quot; cy=&quot;28&quot; rx=&quot;18&quot; ry=&quot;11&quot; fill=&quot;#c8945f&quot;/&gt;&#x27;
+      // head
+      + &#x27;&lt;circle cx=&quot;14&quot; cy=&quot;18&quot; r=&quot;12&quot; fill=&quot;#dcaa72&quot;/&gt;&#x27;
+      // ears
+      + &#x27;&lt;ellipse cx=&quot;5&quot; cy=&quot;10&quot; rx=&quot;4.5&quot; ry=&quot;7&quot; fill=&quot;#a9743f&quot;/&gt;&#x27;
+      + &#x27;&lt;ellipse cx=&quot;22&quot; cy=&quot;9&quot; rx=&quot;4.5&quot; ry=&quot;7&quot; fill=&quot;#a9743f&quot;/&gt;&#x27;
+      // eyes/nose
+      + &#x27;&lt;circle cx=&quot;10&quot; cy=&quot;17&quot; r=&quot;2&quot; fill=&quot;#3a2a1a&quot;/&gt;&#x27;
+      + &#x27;&lt;circle cx=&quot;18&quot; cy=&quot;17&quot; r=&quot;2&quot; fill=&quot;#3a2a1a&quot;/&gt;&#x27;
+      + &#x27;&lt;ellipse cx=&quot;14&quot; cy=&quot;22&quot; rx=&quot;2.6&quot; ry=&quot;2&quot; fill=&quot;#3a2a1a&quot;/&gt;&#x27;
+      + &#x27;&lt;/g&gt;&lt;/svg&gt;&#x27;;
+  }
+  function kittySVG(){
+    return &#x27;&lt;svg width=&quot;54&quot; height=&quot;40&quot; viewBox=&quot;0 0 54 40&quot;&gt;&#x27;
+      // long curvy cat tail
+      + &#x27;&lt;path d=&quot;M44 26 q12 -2 12 -14 q0 -8 -6 -8&quot; stroke=&quot;#1a1a1a&quot; stroke-width=&quot;4&quot; fill=&quot;none&quot; stroke-linecap=&quot;round&quot;/&gt;&#x27;
+      // legs
+      + &#x27;&lt;rect x=&quot;12&quot; y=&quot;28&quot; width=&quot;5&quot; height=&quot;10&quot; rx=&quot;2.5&quot; fill=&quot;#1a1a1a&quot;/&gt;&#x27;
+      + &#x27;&lt;rect x=&quot;20&quot; y=&quot;28&quot; width=&quot;5&quot; height=&quot;10&quot; rx=&quot;2.5&quot; fill=&quot;#1a1a1a&quot;/&gt;&#x27;
+      + &#x27;&lt;rect x=&quot;28&quot; y=&quot;28&quot; width=&quot;5&quot; height=&quot;10&quot; rx=&quot;2.5&quot; fill=&quot;#1a1a1a&quot;/&gt;&#x27;
+      + &#x27;&lt;rect x=&quot;36&quot; y=&quot;28&quot; width=&quot;5&quot; height=&quot;10&quot; rx=&quot;2.5&quot; fill=&quot;#1a1a1a&quot;/&gt;&#x27;
+      // body
+      + &#x27;&lt;ellipse cx=&quot;28&quot; cy=&quot;24&quot; rx=&quot;16&quot; ry=&quot;10&quot; fill=&quot;#1a1a1a&quot;/&gt;&#x27;
+      // ears
+      + &#x27;&lt;polygon points=&quot;8,4 4,16 14,12&quot; fill=&quot;#1a1a1a&quot;/&gt;&#x27;
+      + &#x27;&lt;polygon points=&quot;24,4 28,16 18,12&quot; fill=&quot;#1a1a1a&quot;/&gt;&#x27;
+      // head
+      + &#x27;&lt;circle cx=&quot;16&quot; cy=&quot;16&quot; r=&quot;12&quot; fill=&quot;#1a1a1a&quot;/&gt;&#x27;
+      // eyes red
+      + &#x27;&lt;circle cx=&quot;11&quot; cy=&quot;15&quot; r=&quot;2.6&quot; fill=&quot;#ff2b2b&quot;/&gt;&#x27;
+      + &#x27;&lt;circle cx=&quot;21&quot; cy=&quot;15&quot; r=&quot;2.6&quot; fill=&quot;#ff2b2b&quot;/&gt;&#x27;
+      + &#x27;&lt;circle cx=&quot;11&quot; cy=&quot;15&quot; r=&quot;1&quot; fill=&quot;#800&quot;/&gt;&#x27;
+      + &#x27;&lt;circle cx=&quot;21&quot; cy=&quot;15&quot; r=&quot;1&quot; fill=&quot;#800&quot;/&gt;&#x27;
+      // smile + fangs
+      + &#x27;&lt;path d=&quot;M10 22 q6 5 12 0&quot; stroke=&quot;#ff8fb0&quot; stroke-width=&quot;1.6&quot; fill=&quot;none&quot;/&gt;&#x27;
+      + &#x27;&lt;polygon points=&quot;12,22 14,27 16,22&quot; fill=&quot;#fff&quot;/&gt;&#x27;
+      + &#x27;&lt;polygon points=&quot;17,22 19,27 21,22&quot; fill=&quot;#fff&quot;/&gt;&#x27;
+      + &#x27;&lt;/svg&gt;&#x27;;
+  }
+  var BONE_COLORS = [&#x27;#c9a27a&#x27;,&#x27;#f0e2cf&#x27;,&#x27;#ffc2d6&#x27;,&#x27;#fff3b0&#x27;,&#x27;#ffffff&#x27;];
+  function boneSVG(color){
+    return &#x27;&lt;svg width=&quot;26&quot; height=&quot;26&quot; viewBox=&quot;0 0 26 26&quot;&gt;&#x27;
+      + &#x27;&lt;g fill=&quot;&#x27;+color+&#x27;&quot; stroke=&quot;#b98f6a&quot; stroke-width=&quot;1&quot;&gt;&#x27;
+      + &#x27;&lt;circle cx=&quot;6&quot; cy=&quot;7&quot; r=&quot;4&quot;/&gt;&lt;circle cx=&quot;6&quot; cy=&quot;13&quot; r=&quot;4&quot;/&gt;&#x27;
+      + &#x27;&lt;circle cx=&quot;20&quot; cy=&quot;7&quot; r=&quot;4&quot;/&gt;&lt;circle cx=&quot;20&quot; cy=&quot;13&quot; r=&quot;4&quot;/&gt;&#x27;
+      + &#x27;&lt;rect x=&quot;6&quot; y=&quot;8&quot; width=&quot;14&quot; height=&quot;4&quot;/&gt;&#x27;
+      + &#x27;&lt;/g&gt;&lt;/svg&gt;&#x27;;
+  }
+
+  // ---- hero ----
+  var hero = document.createElement(&#x27;div&#x27;);
+  hero.className = &#x27;sprite&#x27;;
+  hero.style.zIndex = 5;
+  field.appendChild(hero);
+  var facing = 1;
+  function paintHero(){
+    hero.innerHTML = puppySVG(facing &lt; 0);
+    hero.style.left = heroX + &#x27;px&#x27;;
+    hero.style.top = heroY + &#x27;px&#x27;;
+  }
+  function resetHero(){
+    heroX = 60; heroY = FIELD_H - GROUND_H - HERO_H; heroVY = 0; facing = 1;
+  }
+
+  function spawnKitty(){
+    if(!running) return;
+    var o = { x: FIELD_W, el: document.createElement(&#x27;div&#x27;) };
+    o.el.className = &#x27;sprite&#x27;;
+    o.el.innerHTML = kittySVG();
+    o.el.style.left = o.x + &#x27;px&#x27;;
+    o.el.style.top = (FIELD_H - GROUND_H - KITTY_H) + &#x27;px&#x27;;
+    o.el.style.zIndex = 4;
+    field.appendChild(o.el);
+    kitties.push(o);
+  }
+  function spawnBoneWave(){
+    if(!running) return;
+    var n = 3 + Math.floor(Math.random()*3);
+    for(var i=0;i&lt;n;i++){
+      var b = { x: 30 + Math.random()*(FIELD_W-60), y: -20 - Math.random()*80, el: document.createElement(&#x27;div&#x27;) };
+      b.el.className = &#x27;sprite&#x27;;
+      b.el.innerHTML = boneSVG(BONE_COLORS[Math.floor(Math.random()*BONE_COLORS.length)]);
+      b.el.style.left = b.x + &#x27;px&#x27;;
+      b.el.style.top = b.y + &#x27;px&#x27;;
+      b.el.style.zIndex = 3;
+      field.appendChild(b.el);
+      bones.push(b);
+    }
+  }
+  function clearAll(){
+    kitties.forEach(function(o){ if(o.el.parentNode) o.el.parentNode.removeChild(o.el); });
+    bones.forEach(function(o){ if(o.el.parentNode) o.el.parentNode.removeChild(o.el); });
+    kitties = []; bones = [];
+  }
+  function overlap(ax,ay,aw,ah,bx,by,bw,bh){
+    return ax &lt; bx+bw &amp;&amp; ax+aw &gt; bx &amp;&amp; ay &lt; by+bh &amp;&amp; ay+ah &gt; by;
+  }
+
+  function tick(){
+    if(!running || phase!==&#x27;dash&#x27;) return;
+    if(keys.left){ heroX -= MOVE_SPEED; facing = -1; }
+    if(keys.right){ heroX += MOVE_SPEED; facing = 1; }
+    if(heroX &lt; 0) heroX = 0;
+    if(heroX &gt; FIELD_W - HERO_W) heroX = FIELD_W - HERO_W;
+    heroVY += GRAVITY; heroY += heroVY;
+    var floorY = FIELD_H - GROUND_H - HERO_H;
+    if(heroY &gt; floorY){ heroY = floorY; heroVY = 0; }
+    if(heroY &lt; 0){ heroY = 0; heroVY = 0; }
+    paintHero();
+
+    for(var i=kitties.length-1;i&gt;=0;i--){
+      var k = kitties[i];
+      k.x -= KITTY_SPEED;
+      k.el.style.left = k.x + &#x27;px&#x27;;
+      if(k.x + KITTY_W &lt; 0){ field.removeChild(k.el); kitties.splice(i,1); continue; }
+      var ky = FIELD_H - GROUND_H - KITTY_H;
+      if(overlap(heroX+8,heroY+8,HERO_W-18,HERO_H-10, k.x+6,ky+6,KITTY_W-18,KITTY_H-12)){
+        gameOver = true; endDash(false); return;
+      }
+    }
+    for(var j=bones.length-1;j&gt;=0;j--){
+      var b = bones[j];
+      b.y += BONE_SPEED;
+      b.el.style.top = b.y + &#x27;px&#x27;;
+      if(b.y &gt; FIELD_H - GROUND_H - BONE_SIZE){ b.y = FIELD_H - GROUND_H - BONE_SIZE; b.el.style.top = b.y+&#x27;px&#x27;; }
+      if(overlap(heroX,heroY,HERO_W,HERO_H, b.x,b.y,BONE_SIZE,BONE_SIZE)){
+        field.removeChild(b.el); bones.splice(j,1);
+        score++; scoreEl.textContent = score;
+        beep();
+        if(score &gt;= GOAL){ endDash(true); return; }
+      }
+    }
+    animId = requestAnimationFrame(tick);
+  }
+
+  // ---- audio ----
+  var actx;
+  function ac(){ try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); }catch(_){} return actx; }
+  function beep(){
+    var a=ac(); if(!a) return;
+    var o=a.createOscillator(), g=a.createGain();
+    o.frequency.value=660; o.type=&#x27;sine&#x27;; g.gain.value=0.08;
+    o.connect(g); g.connect(a.destination); o.start();
+    o.frequency.exponentialRampToValueAtTime(990, a.currentTime+0.1);
+    g.gain.exponentialRampToValueAtTime(0.001, a.currentTime+0.15);
+    o.stop(a.currentTime+0.16);
+  }
+  function meow(){
+    var a=ac(); if(!a) return;
+    var o=a.createOscillator(), g=a.createGain();
+    o.type=&#x27;sawtooth&#x27;; o.frequency.setValueAtTime(500,a.currentTime);
+    o.frequency.linearRampToValueAtTime(760,a.currentTime+0.12);
+    o.frequency.linearRampToValueAtTime(420,a.currentTime+0.4);
+    g.gain.value=0.06; o.connect(g); g.connect(a.destination); o.start();
+    g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+0.45);
+    o.stop(a.currentTime+0.46);
+  }
+  function pop(){
+    var a=ac(); if(!a) return;
+    var o=a.createOscillator(), g=a.createGain();
+    o.type=&#x27;sine&#x27;; o.frequency.setValueAtTime(900,a.currentTime);
+    o.frequency.exponentialRampToValueAtTime(1500,a.currentTime+0.05);
+    g.gain.value=0.05; o.connect(g); g.connect(a.destination); o.start();
+    g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+0.12);
+    o.stop(a.currentTime+0.13);
+  }
+
+  // ---- overlay text ----
+  var overlayText = document.createElement(&#x27;div&#x27;);
+  overlayText.className = &#x27;sprite&#x27;;
+  overlayText.style.cssText = &#x27;left:0;right:0;top:20px;text-align:center;font-size:20px;font-weight:700;color:#d46a9f;z-index:60;display:none;width:100%&#x27;;
+  field.appendChild(overlayText);
+
+  var ball = { x: 500, y: 0, el:null, vx:0 };
+  var doorRect = { x: 290, y: 270, w: 60, h: 118 };
+
+  // helper: apply gravity/jump for scenes with jumping
+  function heroPhysics(){
+    heroVY += GRAVITY; heroY += heroVY;
+    var floorY = FIELD_H - GROUND_H - HERO_H;
+    if(heroY &gt; floorY){ heroY = floorY; heroVY = 0; }
+    if(heroY &lt; 0){ heroY = 0; heroVY = 0; }
+  }
+
+  // ===== YARD scene =====
+  function buildYard(){
+    winScreen.style.display = &#x27;block&#x27;;
+    winScreen.innerHTML =
+      &#x27;&lt;svg width=&quot;640&quot; height=&quot;420&quot; viewBox=&quot;0 0 640 420&quot; style=&quot;position:absolute;inset:0&quot;&gt;&#x27;
+      + &#x27;&lt;rect width=&quot;640&quot; height=&quot;420&quot; fill=&quot;#ffe1ef&quot;/&gt;&#x27;
+      + &#x27;&lt;polygon points=&quot;320,30 120,150 520,150&quot; fill=&quot;#f2a8c8&quot;/&gt;&#x27;
+      + &#x27;&lt;rect x=&quot;150&quot; y=&quot;150&quot; width=&quot;340&quot; height=&quot;240&quot; fill=&quot;#ffd0e6&quot;/&gt;&#x27;
+      + &#x27;&lt;rect x=&quot;290&quot; y=&quot;270&quot; width=&quot;60&quot; height=&quot;118&quot; fill=&quot;#8a5a44&quot;/&gt;&#x27;
+      + &#x27;&lt;rect x=&quot;290&quot; y=&quot;270&quot; width=&quot;60&quot; height=&quot;118&quot; fill=&quot;none&quot; stroke=&quot;#5f3c2c&quot; stroke-width=&quot;3&quot;/&gt;&#x27;
+      + &#x27;&lt;circle cx=&quot;340&quot; cy=&quot;330&quot; r=&quot;4&quot; fill=&quot;#ffd700&quot;/&gt;&#x27;
+      + &#x27;&lt;rect x=&quot;185&quot; y=&quot;180&quot; width=&quot;60&quot; height=&quot;55&quot; rx=&quot;6&quot; fill=&quot;#fff3f9&quot; stroke=&quot;#e58bb2&quot; stroke-width=&quot;3&quot;/&gt;&#x27;
+      + &#x27;&lt;rect x=&quot;395&quot; y=&quot;180&quot; width=&quot;60&quot; height=&quot;55&quot; rx=&quot;6&quot; fill=&quot;#fff3f9&quot; stroke=&quot;#e58bb2&quot; stroke-width=&quot;3&quot;/&gt;&#x27;
+      + &#x27;&lt;rect x=&quot;0&quot; y=&quot;388&quot; width=&quot;640&quot; height=&quot;32&quot; fill=&quot;#c78fa8&quot;/&gt;&#x27;
+      + &#x27;&lt;ellipse cx=&quot;120&quot; cy=&quot;380&quot; rx=&quot;70&quot; ry=&quot;26&quot; fill=&quot;#ff9ec4&quot;/&gt;&#x27;
+      + &#x27;&lt;ellipse cx=&quot;120&quot; cy=&quot;374&quot; rx=&quot;52&quot; ry=&quot;16&quot; fill=&quot;#ffc9de&quot;/&gt;&#x27;
+      + &#x27;&lt;path d=&quot;M90 350 l-14 -12 v24 z&quot; fill=&quot;#ff5f9e&quot;/&gt;&#x27;
+      + &#x27;&lt;path d=&quot;M90 350 l14 -12 v24 z&quot; fill=&quot;#ff5f9e&quot;/&gt;&#x27;
+      + &#x27;&lt;circle cx=&quot;90&quot; cy=&quot;350&quot; r=&quot;5&quot; fill=&quot;#ff3b83&quot;/&gt;&#x27;
+      + &#x27;&lt;g fill=&quot;#c9a27a&quot; stroke=&quot;#a97e52&quot; stroke-width=&quot;1.5&quot;&gt;&#x27;
+      + &#x27;&lt;circle cx=&quot;430&quot; cy=&quot;360&quot; r=&quot;8&quot;/&gt;&lt;circle cx=&quot;450&quot; cy=&quot;368&quot; r=&quot;8&quot;/&gt;&lt;circle cx=&quot;470&quot; cy=&quot;358&quot; r=&quot;8&quot;/&gt;&#x27;
+      + &#x27;&lt;circle cx=&quot;455&quot; cy=&quot;350&quot; r=&quot;8&quot;/&gt;&lt;circle cx=&quot;490&quot; cy=&quot;366&quot; r=&quot;8&quot;/&gt;&lt;/g&gt;&#x27;
+      + &#x27;&lt;/svg&gt;&#x27;;
+    hero.style.display=&#x27;block&#x27;; hero.style.zIndex=25;
+    heroX=210; heroY=FIELD_H-GROUND_H-HERO_H-4; heroVY=0; facing=1; paintHero();
+    ball.el = document.createElement(&#x27;div&#x27;);
+    ball.el.className=&#x27;sprite&#x27;; ball.el.style.zIndex=24;
+    ball.el.innerHTML=&#x27;&lt;svg width=&quot;34&quot; height=&quot;34&quot; viewBox=&quot;0 0 34 34&quot;&gt;&lt;circle cx=&quot;17&quot; cy=&quot;17&quot; r=&quot;16&quot; fill=&quot;#ff7fb0&quot;/&gt;&lt;path d=&quot;M1 17 h32 M17 1 v32&quot; stroke=&quot;#fff&quot; stroke-width=&quot;2&quot;/&gt;&lt;/svg&gt;&#x27;;
+    ball.x=470; ball.y=FIELD_H-GROUND_H-34; ball.vx=0;
+    ball.el.style.left=ball.x+&#x27;px&#x27;; ball.el.style.top=ball.y+&#x27;px&#x27;;
+    winScreen.appendChild(ball.el);
+    overlayText.textContent=&#x27;🎉 Adopted! Push the ball into the door (jump with Space)!&#x27;;
+    overlayText.style.display=&#x27;block&#x27;;
+    phase=&#x27;yard&#x27;;
+    animId=requestAnimationFrame(yardLoop);
+  }
+  function yardLoop(){
+    if(phase!==&#x27;yard&#x27;) return;
+    if(keys.left){ heroX-=MOVE_SPEED; facing=-1; }
+    if(keys.right){ heroX+=MOVE_SPEED; facing=1; }
+    if(heroX&lt;0) heroX=0; if(heroX&gt;FIELD_W-HERO_W) heroX=FIELD_W-HERO_W;
+    heroPhysics();
+    paintHero();
+    var floorY = FIELD_H-GROUND_H-HERO_H;
+    if(heroY&gt;=floorY-1 &amp;&amp; overlap(heroX,heroY,HERO_W,HERO_H, ball.x,ball.y,34,34)){ ball.vx=facing*5.5; }
+    ball.x+=ball.vx; ball.vx*=0.96;
+    if(Math.abs(ball.vx)&lt;0.1) ball.vx=0;
+    if(ball.x&lt;0){ ball.x=0; ball.vx*=-0.6; }
+    if(ball.x&gt;FIELD_W-34){ ball.x=FIELD_W-34; ball.vx*=-0.6; }
+    ball.el.style.left=ball.x+&#x27;px&#x27;;
+    if(ball.x+17 &gt; doorRect.x &amp;&amp; ball.x+17 &lt; doorRect.x+doorRect.w){
+      enterLivingRoom(); return;
+    }
+    animId=requestAnimationFrame(yardLoop);
+  }
+
+  // ===== LIVING ROOM scene =====
+  var lady = { x: 540, y: 240, w: 70, h: 150 };
+  var hearts = [];
+  var petting = false;
+  function enterLivingRoom(){
+    phase=&#x27;living&#x27;;
+    winScreen.innerHTML =
+      &#x27;&lt;svg width=&quot;640&quot; height=&quot;420&quot; viewBox=&quot;0 0 640 420&quot; style=&quot;position:absolute;inset:0&quot;&gt;&#x27;
+      + &#x27;&lt;rect width=&quot;640&quot; height=&quot;420&quot; fill=&quot;#fff0f6&quot;/&gt;&#x27;
+      // lace ceiling border
+      + &#x27;&lt;rect x=&quot;0&quot; y=&quot;0&quot; width=&quot;640&quot; height=&quot;26&quot; fill=&quot;#ffd9ea&quot;/&gt;&#x27;
+      + &#x27;&lt;g fill=&quot;#ffffff&quot;&gt;&#x27;
+      + &#x27;&lt;circle cx=&quot;30&quot; cy=&quot;26&quot; r=&quot;8&quot;/&gt;&lt;circle cx=&quot;90&quot; cy=&quot;26&quot; r=&quot;8&quot;/&gt;&lt;circle cx=&quot;150&quot; cy=&quot;26&quot; r=&quot;8&quot;/&gt;&#x27;
+      + &#x27;&lt;circle cx=&quot;210&quot; cy=&quot;26&quot; r=&quot;8&quot;/&gt;&lt;circle cx=&quot;270&quot; cy=&quot;26&quot; r=&quot;8&quot;/&gt;&lt;circle cx=&quot;330&quot; cy=&quot;26&quot; r=&quot;8&quot;/&gt;&#x27;
+      + &#x27;&lt;circle cx=&quot;390&quot; cy=&quot;26&quot; r=&quot;8&quot;/&gt;&lt;circle cx=&quot;450&quot; cy=&quot;26&quot; r=&quot;8&quot;/&gt;&lt;circle cx=&quot;510&quot; cy=&quot;26&quot; r=&quot;8&quot;/&gt;&#x27;
+      + &#x27;&lt;circle cx=&quot;570&quot; cy=&quot;26&quot; r=&quot;8&quot;/&gt;&lt;circle cx=&quot;630&quot; cy=&quot;26&quot; r=&quot;8&quot;/&gt;&lt;/g&gt;&#x27;
+      // pink stars hanging from ceiling
+      + hangStar(80, 70) + hangStar(200, 55) + hangStar(340, 78) + hangStar(470, 58) + hangStar(600, 72)
+      // floor
+      + &#x27;&lt;rect x=&quot;0&quot; y=&quot;360&quot; width=&quot;640&quot; height=&quot;60&quot; fill=&quot;#e6c9a8&quot;/&gt;&#x27;
+      // rug
+      + &#x27;&lt;ellipse cx=&quot;300&quot; cy=&quot;392&quot; rx=&quot;185&quot; ry=&quot;30&quot; fill=&quot;#ffb3d1&quot;/&gt;&#x27;
+      + &#x27;&lt;ellipse cx=&quot;300&quot; cy=&quot;392&quot; rx=&quot;145&quot; ry=&quot;20&quot; fill=&quot;#ffd0e6&quot;/&gt;&#x27;
+      // couch touching floor (base to 360)
+      + &#x27;&lt;rect x=&quot;40&quot; y=&quot;280&quot; width=&quot;185&quot; height=&quot;80&quot; rx=&quot;14&quot; fill=&quot;#c98fb8&quot;/&gt;&#x27;
+      + &#x27;&lt;rect x=&quot;40&quot; y=&quot;262&quot; width=&quot;185&quot; height=&quot;42&quot; rx=&quot;14&quot; fill=&quot;#dba6cf&quot;/&gt;&#x27;
+      + &#x27;&lt;rect x=&quot;34&quot; y=&quot;270&quot; width=&quot;24&quot; height=&quot;90&quot; rx=&quot;10&quot; fill=&quot;#b578a5&quot;/&gt;&#x27;
+      + &#x27;&lt;rect x=&quot;207&quot; y=&quot;270&quot; width=&quot;24&quot; height=&quot;90&quot; rx=&quot;10&quot; fill=&quot;#b578a5&quot;/&gt;&#x27;
+      // heart-shaped pillows
+      + heartShape(95, 275, &#x27;#ffe08a&#x27;) + heartShape(155, 275, &#x27;#8ad4ff&#x27;)
+      // pink vintage TV table touching floor
+      + &#x27;&lt;rect x=&quot;285&quot; y=&quot;300&quot; width=&quot;130&quot; height=&quot;60&quot; rx=&quot;6&quot; fill=&quot;#ff9ec4&quot;/&gt;&#x27;
+      + &#x27;&lt;rect x=&quot;285&quot; y=&quot;300&quot; width=&quot;130&quot; height=&quot;10&quot; fill=&quot;#ffb9d6&quot;/&gt;&#x27;
+      + &#x27;&lt;rect x=&quot;292&quot; y=&quot;360&quot; width=&quot;10&quot; height=&quot;0&quot; fill=&quot;#e57fae&quot;/&gt;&#x27;
+      // tv on the table
+      + &#x27;&lt;rect x=&quot;298&quot; y=&quot;215&quot; width=&quot;104&quot; height=&quot;82&quot; rx=&quot;8&quot; fill=&quot;#5a3a2c&quot;/&gt;&#x27;
+      + &#x27;&lt;rect x=&quot;306&quot; y=&quot;223&quot; width=&quot;88&quot; height=&quot;66&quot; rx=&quot;4&quot; fill=&quot;#bde9ff&quot;/&gt;&#x27;
+      // double rainbow inside tv (clipped)
+      + &#x27;&lt;clipPath id=&quot;tvclip&quot;&gt;&lt;rect x=&quot;306&quot; y=&quot;223&quot; width=&quot;88&quot; height=&quot;66&quot; rx=&quot;4&quot;/&gt;&lt;/clipPath&gt;&#x27;
+      + &#x27;&lt;g clip-path=&quot;url(#tvclip)&quot;&gt;&#x27;
+      // outer rainbow
+      + rainbow(350, 300, 62, 6)
+      // inner rainbow
+      + rainbow(350, 300, 40, 4)
+      + &#x27;&lt;/g&gt;&#x27;
+      + &#x27;&lt;rect x=&quot;345&quot; y=&quot;297&quot; width=&quot;10&quot; height=&quot;8&quot; fill=&quot;#4a2e22&quot;/&gt;&#x27;
+      // lady with pink bow tie
+      + &#x27;&lt;g transform=&quot;translate(&#x27;+lady.x+&#x27;,&#x27;+lady.y+&#x27;)&quot;&gt;&#x27;
+      + &#x27;&lt;rect x=&quot;18&quot; y=&quot;60&quot; width=&quot;40&quot; height=&quot;88&quot; rx=&quot;12&quot; fill=&quot;#7ab6e0&quot;/&gt;&#x27;
+      + &#x27;&lt;circle cx=&quot;38&quot; cy=&quot;34&quot; r=&quot;22&quot; fill=&quot;#f6d3b0&quot;/&gt;&#x27;
+      + &#x27;&lt;path d=&quot;M14 34 q-6 -38 24 -34 q30 -4 24 34 q-4 -16 -24 -16 q-20 0 -24 16z&quot; fill=&quot;#8a5a3c&quot;/&gt;&#x27;
+      + &#x27;&lt;circle cx=&quot;30&quot; cy=&quot;34&quot; r=&quot;2.6&quot; fill=&quot;#3a2a1a&quot;/&gt;&lt;circle cx=&quot;46&quot; cy=&quot;34&quot; r=&quot;2.6&quot; fill=&quot;#3a2a1a&quot;/&gt;&#x27;
+      + &#x27;&lt;path d=&quot;M30 44 q8 6 16 0&quot; stroke=&quot;#c0607a&quot; stroke-width=&quot;2&quot; fill=&quot;none&quot;/&gt;&#x27;
+      // pink bow tie
+      + &#x27;&lt;polygon points=&quot;38,58 28,52 28,64&quot; fill=&quot;#ff5f9e&quot;/&gt;&#x27;
+      + &#x27;&lt;polygon points=&quot;38,58 48,52 48,64&quot; fill=&quot;#ff5f9e&quot;/&gt;&#x27;
+      + &#x27;&lt;circle cx=&quot;38&quot; cy=&quot;58&quot; r=&quot;3.5&quot; fill=&quot;#ff3b83&quot;/&gt;&#x27;
+      + &#x27;&lt;rect x=&quot;8&quot; y=&quot;66&quot; width=&quot;14&quot; height=&quot;9&quot; rx=&quot;4&quot; fill=&quot;#f6d3b0&quot;/&gt;&#x27;
+      + &#x27;&lt;/g&gt;&#x27;
+      + &#x27;&lt;/svg&gt;&#x27;;
+    hero.style.display=&#x27;block&#x27;; hero.style.zIndex=25;
+    heroX=60; heroY=FIELD_H-GROUND_H-HERO_H-6; heroVY=0; facing=1; paintHero();
+    overlayText.textContent=&#x27;🏠 Welcome home! Walk to the lady for pets (jump with Space)!&#x27;;
+    overlayText.style.display=&#x27;block&#x27;;
+    hearts=[]; petting=false; heartTimer=0;
+    animId=requestAnimationFrame(livingLoop);
+  }
+  function hangStar(x, y){
+    return &#x27;&lt;line x1=&quot;&#x27;+x+&#x27;&quot; y1=&quot;26&quot; x2=&quot;&#x27;+x+&#x27;&quot; y2=&quot;&#x27;+y+&#x27;&quot; stroke=&quot;#e58bb2&quot; stroke-width=&quot;1.5&quot;/&gt;&#x27;
+      + &#x27;&lt;polygon points=&quot;&#x27;+starPts(x,y+8,10)+&#x27;&quot; fill=&quot;#ff9ec4&quot; stroke=&quot;#ff5f9e&quot; stroke-width=&quot;1&quot;/&gt;&#x27;;
+  }
+  function starPts(cx, cy, r){
+    var pts=[];
+    for(var i=0;i&lt;10;i++){
+      var ang = Math.PI/2 + i*Math.PI/5;
+      var rr = (i%2===0)? r : r*0.45;
+      pts.push((cx+rr*Math.cos(ang)).toFixed(1)+&#x27;,&#x27;+(cy-rr*Math.sin(ang)).toFixed(1));
+    }
+    return pts.join(&#x27; &#x27;);
+  }
+  function heartShape(x, y, color){
+    return &#x27;&lt;path d=&quot;M&#x27;+x+&#x27; &#x27;+(y+26)+&#x27; C&#x27;+(x-18)+&#x27; &#x27;+(y+8)+&#x27; &#x27;+(x-8)+&#x27; &#x27;+y+&#x27; &#x27;+x+&#x27; &#x27;+(y+8)+&#x27; C&#x27;+(x+8)+&#x27; &#x27;+y+&#x27; &#x27;+(x+18)+&#x27; &#x27;+(y+8)+&#x27; &#x27;+x+&#x27; &#x27;+(y+26)+&#x27; Z&quot; fill=&quot;&#x27;+color+&#x27;&quot;/&gt;&#x27;;
+  }
+  function rainbow(cx, cy, r, w){
+    var cols=[&#x27;#ff5f9e&#x27;,&#x27;#ffb14e&#x27;,&#x27;#ffe14e&#x27;,&#x27;#7fe07f&#x27;,&#x27;#7fd4ff&#x27;,&#x27;#b48fff&#x27;];
+    var s=&#x27;&#x27;;
+    for(var i=0;i&lt;cols.length;i++){
+      var rr=r-i*w;
+      s+=&#x27;&lt;path d=&quot;M&#x27;+(cx-rr)+&#x27; &#x27;+cy+&#x27; A&#x27;+rr+&#x27; &#x27;+rr+&#x27; 0 0 1 &#x27;+(cx+rr)+&#x27; &#x27;+cy+&#x27;&quot; stroke=&quot;&#x27;+cols[i]+&#x27;&quot; stroke-width=&quot;&#x27;+w+&#x27;&quot; fill=&quot;none&quot;/&gt;&#x27;;
+    }
+    return s;
+  }
+  function spawnHeart(){
+    var el=document.createElement(&#x27;div&#x27;);
+    el.className=&#x27;sprite&#x27;; el.style.zIndex=40;
+    el.innerHTML=&#x27;&lt;svg width=&quot;22&quot; height=&quot;22&quot; viewBox=&quot;0 0 22 22&quot;&gt;&lt;path d=&quot;M11 20 C-4 9 4 1 11 7 C18 1 26 9 11 20 Z&quot; fill=&quot;#ff5f9e&quot;/&gt;&lt;/svg&gt;&#x27;;
+    var h={ el:el, x: heroX+HERO_W/2-11+(Math.random()*30-15), y: heroY-6, vy: 1.2+Math.random()*0.8, life: 0 };
+    el.style.left=h.x+&#x27;px&#x27;; el.style.top=h.y+&#x27;px&#x27;;
+    winScreen.appendChild(el);
+    hearts.push(h);
+    pop();
+  }
+  var heartTimer=0;
+  function livingLoop(){
+    if(phase!==&#x27;living&#x27;) return;
+    if(keys.left){ heroX-=MOVE_SPEED; facing=-1; }
+    if(keys.right){ heroX+=MOVE_SPEED; facing=1; }
+    if(heroX&lt;0) heroX=0; if(heroX&gt;FIELD_W-HERO_W) heroX=FIELD_W-HERO_W;
+    heroPhysics();
+    paintHero();
+    var nearLady = heroX+HERO_W &gt; lady.x-6;
+    if(nearLady &amp;&amp; !petting){ petting=true; overlayText.textContent=&#x27;💕 She loves you! 💕&#x27;; }
+    if(!nearLady &amp;&amp; petting){ petting=false; overlayText.textContent=&#x27;🏠 Welcome home! Walk to the lady for pets (jump with Space)!&#x27;; }
+    if(petting){
+      heartTimer++;
+      if(heartTimer&gt;=14){ heartTimer=0; spawnHeart(); }
+    }
+    for(var i=hearts.length-1;i&gt;=0;i--){
+      var h=hearts[i];
+      h.y-=h.vy; h.life++;
+      h.el.style.top=h.y+&#x27;px&#x27;;
+      h.el.style.opacity = Math.max(0, 1 - h.life/90);
+      if(h.life&gt;90){ if(h.el.parentNode) h.el.parentNode.removeChild(h.el); hearts.splice(i,1); }
+    }
+    animId=requestAnimationFrame(livingLoop);
+  }
+
+  function endDash(didWin){
+    running=false;
+    if(animId){ cancelAnimationFrame(animId); animId=null; }
+    if(kittyId){ clearInterval(kittyId); kittyId=null; }
+    if(boneId){ clearInterval(boneId); boneId=null; }
+    if(meowId){ clearInterval(meowId); meowId=null; }
+    if(didWin){ clearAll(); running=true; buildYard(); }
+    else{ overlayText.textContent=&#x27;😿 Caught by a kitty! Press Start to try again.&#x27;; overlayText.style.display=&#x27;block&#x27;; }
+  }
+
+  function startGame(){
+    if(running) return;
+    phase=&#x27;dash&#x27;; gameOver=false;
+    score=0; scoreEl.textContent=&#x27;0&#x27;;
+    winScreen.style.display=&#x27;none&#x27;; winScreen.innerHTML=&#x27;&#x27;;
+    overlayText.style.display=&#x27;none&#x27;;
+    if(ball.el &amp;&amp; ball.el.parentNode) ball.el.parentNode.removeChild(ball.el);
+    hearts.forEach(function(h){ if(h.el.parentNode) h.el.parentNode.removeChild(h.el); }); hearts=[];
+    clearAll(); resetHero();
+    hero.style.display=&#x27;block&#x27;; hero.style.zIndex=5; paintHero();
+    running=true;
+    spawnKitty(); spawnBoneWave();
+    animId=requestAnimationFrame(tick);
+    kittyId=setInterval(spawnKitty,2200);
+    boneId=setInterval(spawnBoneWave,1800);
+    meowId=setInterval(meow,7000);
+  }
+  function stopGame(){
+    running=false;
+    if(animId){ cancelAnimationFrame(animId); animId=null; }
+    if(kittyId){ clearInterval(kittyId); kittyId=null; }
+    if(boneId){ clearInterval(boneId); boneId=null; }
+    if(meowId){ clearInterval(meowId); meowId=null; }
+  }
+
+  document.addEventListener(&#x27;keydown&#x27;, function(e){
+    if(e.key===&#x27;ArrowLeft&#x27;){ keys.left=true; e.preventDefault(); }
+    if(e.key===&#x27;ArrowRight&#x27;){ keys.right=true; e.preventDefault(); }
+    if((e.key===&#x27; &#x27;||e.code===&#x27;Space&#x27;)){
+      e.preventDefault();
+      if((phase===&#x27;dash&#x27;||phase===&#x27;yard&#x27;||phase===&#x27;living&#x27;) &amp;&amp; heroY&gt;=FIELD_H-GROUND_H-HERO_H-1) heroVY=JUMP_V;
+    }
+  });
+  document.addEventListener(&#x27;keyup&#x27;, function(e){
+    if(e.key===&#x27;ArrowLeft&#x27;) keys.left=false;
+    if(e.key===&#x27;ArrowRight&#x27;) keys.right=false;
+  });
+
+  window.addEventListener(&#x27;message&#x27;, function(e){
+    if(!e.data || typeof e.data!==&#x27;object&#x27;) return;
+    if(e.data.type===&#x27;wd_start&#x27;) startGame();
+    else if(e.data.type===&#x27;wd_stop&#x27;) stopGame();
+  });
+
+  resetHero();
+  paintHero();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

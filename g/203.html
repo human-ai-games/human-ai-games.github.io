@@ -1,0 +1,566 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rhythm Jumper</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>Rhythm Jumper</b> &middot; Game 203 &middot; Professional producer &middot; Basic game: Gravity jumper</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #222; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 18px; background: white; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 8px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 600; }
+  .instructions { font-size: 16px; color: #666; max-width: 620px; margin: 0; line-height: 1.35; text-align: center; }
+  .topbar { display: flex; align-items: center; gap: 20px; }
+  .score { font-size: 22px; color: #555; margin: 0; }
+  .beat { width: 22px; height: 22px; border-radius: 50%; background: #ddd; transition: transform 0.05s, background 0.05s; }
+  .beat.on { background: #ff5a8a; transform: scale(1.5); }
+  .field { position: relative; width: 620px; height: 380px; flex-shrink: 0; margin: 0; background: #120a2e; border-radius: 8px; overflow: hidden; }
+  #bg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .ground { position: absolute; left: 0; right: 0; bottom: 0; height: 30px; background: rgba(18,8,43,0.85); border-top: 2px solid #6a3cff; box-shadow: 0 -4px 14px rgba(106,60,255,0.5); }
+  .hero { position: absolute; width: 34px; height: 34px; background: #ffd23f; border-radius: 50%; box-shadow: 0 0 16px #ffd23f, 0 0 28px #ffb700; z-index: 3; }
+  .obstacle { position: absolute; border-radius: 4px; z-index: 2; }
+  .obstacle.low  { background: #ff5a8a; box-shadow: 0 0 12px #ff5a8a; }
+  .obstacle.tall { background: #4ad991; box-shadow: 0 0 12px #4ad991; }
+  .obstacle.fly  { background: #4aa8ff; box-shadow: 0 0 12px #4aa8ff; }
+  .msg { position: absolute; top: 50%; left: 0; right: 0; text-align: center; transform: translateY(-50%); color: #fff; font-size: 24px; font-weight: 600; text-shadow: 0 0 8px #000; z-index: 4; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;Rhythm Jumper&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;&lt;strong&gt;Space&lt;/strong&gt;/click to jump — press again in the air for a double jump. Hop pink blocks, double-jump green walls, and duck under blue floating bars — all arriving on the beat.&lt;/p&gt;
+  &lt;div class=&quot;topbar&quot;&gt;
+    &lt;div class=&quot;score&quot;&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;beat&quot; id=&quot;beat&quot;&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;
+    &lt;canvas id=&quot;bg&quot;&gt;&lt;/canvas&gt;
+    &lt;div class=&quot;ground&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;hero&quot; id=&quot;hero&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;msg&quot; id=&quot;msg&quot; style=&quot;display:none;&quot;&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var FIELD_W = 620, FIELD_H = 380;
+  var GROUND_H = 30, HERO_SIZE = 34;
+  var GRAVITY = 0.62, JUMP_V = -12.5;
+  var heroX = 60;
+  var floorY = FIELD_H - GROUND_H - HERO_SIZE;
+
+  // --- Rhythm setup ---
+  var BPM = 100;
+  var BEAT_MS = 60000 / BPM;
+  var BEATS_PER_OBSTACLE = 2;
+  var TRAVEL_BEATS = 4;
+  var travelDist = FIELD_W - heroX;
+  var OBSTACLE_SPEED = travelDist / (TRAVEL_BEATS * (BEAT_MS / 16.67));
+
+  var TYPES = {
+    low:  { w: 28, h: 26, cls: &#x27;low&#x27; },
+    tall: { w: 28, h: 70, cls: &#x27;tall&#x27; },
+    fly:  { w: 46, h: 26, cls: &#x27;fly&#x27;, gap: 60 }
+  };
+
+  var running = false, animId = null;
+  var heroY = floorY;
+  var heroVY = 0;
+  var jumpsLeft = 2;
+  var obstacles = [];
+  var score = 0;
+  var gameOver = false;
+  var beatCount = 0;
+  var lastBeatTime = 0;
+  var spawnIndex = 0;
+  var spawnPattern = [&#x27;low&#x27;, &#x27;low&#x27;, &#x27;tall&#x27;, &#x27;fly&#x27;, &#x27;low&#x27;, &#x27;tall&#x27;, &#x27;fly&#x27;, &#x27;low&#x27;];
+
+  var field = document.getElementById(&#x27;field&#x27;);
+  var hero = document.getElementById(&#x27;hero&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var beatEl = document.getElementById(&#x27;beat&#x27;);
+  var msgEl = document.getElementById(&#x27;msg&#x27;);
+
+  // --- Background canvas ---
+  var bg = document.getElementById(&#x27;bg&#x27;);
+  var ctx = bg.getContext(&#x27;2d&#x27;);
+  bg.width = FIELD_W; bg.height = FIELD_H;
+  var stars = [];
+  for (var s = 0; s &lt; 90; s++) {
+    stars.push({
+      x: Math.random() * FIELD_W,
+      y: Math.random() * (FIELD_H - GROUND_H),
+      r: Math.random() * 1.8 + 0.4,
+      sp: Math.random() * 0.6 + 0.2,
+      tw: Math.random() * Math.PI * 2
+    });
+  }
+  var nebulas = [
+    { x: 150, y: 120, hue: 300, base: 70 },
+    { x: 470, y: 90,  hue: 200, base: 80 },
+    { x: 320, y: 220, hue: 160, base: 60 }
+  ];
+  var particles = [];
+  var beatPulse = 0;     // decays each frame, spikes on beat
+  var gridOffset = 0;
+
+  function spawnParticles(x, y, color) {
+    for (var i = 0; i &lt; 16; i++) {
+      var a = Math.random() * Math.PI * 2;
+      var sp = Math.random() * 3 + 1;
+      particles.push({
+        x: x, y: y,
+        vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 1,
+        life: 1, color: color
+      });
+    }
+  }
+
+  function drawBg() {
+    ctx.clearRect(0, 0, FIELD_W, FIELD_H);
+
+    // Nebula glows (pulse with beat)
+    for (var n = 0; n &lt; nebulas.length; n++) {
+      var neb = nebulas[n];
+      var rad = neb.base + beatPulse * 40;
+      var g = ctx.createRadialGradient(neb.x, neb.y, 0, neb.x, neb.y, rad);
+      g.addColorStop(0, &#x27;hsla(&#x27; + neb.hue + &#x27;,80%,60%,&#x27; + (0.28 + beatPulse * 0.25) + &#x27;)&#x27;);
+      g.addColorStop(1, &#x27;hsla(&#x27; + neb.hue + &#x27;,80%,60%,0)&#x27;);
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(neb.x, neb.y, rad, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Stars (drift left, twinkle)
+    for (var i = 0; i &lt; stars.length; i++) {
+      var st = stars[i];
+      if (running) {
+        st.x -= st.sp;
+        if (st.x &lt; 0) { st.x = FIELD_W; st.y = Math.random() * (FIELD_H - GROUND_H); }
+        st.tw += 0.08;
+      }
+      var alpha = 0.5 + Math.sin(st.tw) * 0.4;
+      ctx.fillStyle = &#x27;rgba(255,255,255,&#x27; + alpha.toFixed(2) + &#x27;)&#x27;;
+      ctx.beginPath();
+      ctx.arc(st.x, st.y, st.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Neon scrolling grid on the floor area
+    if (running) gridOffset = (gridOffset + OBSTACLE_SPEED) % 40;
+    ctx.strokeStyle = &#x27;rgba(106,60,255,&#x27; + (0.25 + beatPulse * 0.3) + &#x27;)&#x27;;
+    ctx.lineWidth = 1;
+    var horizon = FIELD_H - GROUND_H;
+    // vertical grid lines with perspective
+    for (var vx = -gridOffset; vx &lt; FIELD_W + 40; vx += 40) {
+      ctx.beginPath();
+      var cx = FIELD_W / 2;
+      var topX = cx + (vx - cx) * 0.3;
+      ctx.moveTo(topX, horizon - 60);
+      ctx.lineTo(vx, FIELD_H);
+      ctx.stroke();
+    }
+    // horizontal grid lines
+    for (var hy = 0; hy &lt; 4; hy++) {
+      var yy = horizon - 60 + hy * 20 + (hy * hy) * 6;
+      ctx.beginPath();
+      ctx.moveTo(0, yy);
+      ctx.lineTo(FIELD_W, yy);
+      ctx.stroke();
+    }
+
+    // Particles
+    for (var p = particles.length - 1; p &gt;= 0; p--) {
+      var pt = particles[p];
+      if (running) {
+        pt.x += pt.vx; pt.y += pt.vy; pt.vy += 0.12; pt.life -= 0.03;
+      }
+      if (pt.life &lt;= 0) { particles.splice(p, 1); continue; }
+      ctx.globalAlpha = Math.max(0, pt.life);
+      ctx.fillStyle = pt.color;
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, 3 * pt.life + 1, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    if (running &amp;&amp; beatPulse &gt; 0) beatPulse *= 0.88;
+  }
+
+  // --- Audio ---
+  var audioCtx = null;
+  function ensureAudio() {
+    if (!audioCtx) {
+      try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+      catch (e) { audioCtx = null; }
+    }
+    if (audioCtx &amp;&amp; audioCtx.state === &#x27;suspended&#x27;) audioCtx.resume();
+  }
+  function playTone(freq, dur, type, vol) {
+    if (!audioCtx) return;
+    var t = audioCtx.currentTime;
+    var osc = audioCtx.createOscillator();
+    var g = audioCtx.createGain();
+    osc.type = type || &#x27;sine&#x27;;
+    osc.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol || 0.2, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    osc.connect(g); g.connect(audioCtx.destination);
+    osc.start(t); osc.stop(t + dur + 0.02);
+  }
+  function kick() {
+    if (!audioCtx) return;
+    var t = audioCtx.currentTime;
+    var osc = audioCtx.createOscillator();
+    var g = audioCtx.createGain();
+    osc.frequency.setValueAtTime(140, t);
+    osc.frequency.exponentialRampToValueAtTime(50, t + 0.12);
+    g.gain.setValueAtTime(0.4, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+    osc.connect(g); g.connect(audioCtx.destination);
+    osc.start(t); osc.stop(t + 0.2);
+  }
+  var bassNotes = [110, 110, 146.83, 130.81];
+  function playBeatSound(idx) {
+    kick();
+    playTone(bassNotes[idx % bassNotes.length], 0.18, &#x27;triangle&#x27;, 0.15);
+  }
+
+  function paintHero() {
+    hero.style.left = heroX + &#x27;px&#x27;;
+    hero.style.top = heroY + &#x27;px&#x27;;
+  }
+
+  function spawnObstacle(typeName) {
+    var def = TYPES[typeName];
+    var o = { x: FIELD_W, type: typeName, w: def.w, h: def.h, scored: false, el: null };
+    if (typeName === &#x27;fly&#x27;) o.bottom = GROUND_H + def.gap;
+    else o.bottom = GROUND_H;
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;obstacle &#x27; + def.cls;
+    el.style.left = o.x + &#x27;px&#x27;;
+    el.style.width = o.w + &#x27;px&#x27;;
+    el.style.height = o.h + &#x27;px&#x27;;
+    el.style.bottom = o.bottom + &#x27;px&#x27;;
+    field.appendChild(el);
+    o.el = el;
+    obstacles.push(o);
+  }
+
+  function jump() {
+    if (!running || gameOver) return;
+    if (jumpsLeft &gt; 0) {
+      heroVY = JUMP_V;
+      jumpsLeft--;
+      playTone(jumpsLeft === 1 ? 660 : 780, 0.12, &#x27;square&#x27;, 0.12);
+    }
+  }
+
+  function pulseBeat() {
+    beatEl.classList.add(&#x27;on&#x27;);
+    setTimeout(function () { beatEl.classList.remove(&#x27;on&#x27;); }, 90);
+    beatPulse = 1;
+  }
+
+  function tick(now) {
+    if (!running) return;
+
+    if (now - lastBeatTime &gt;= BEAT_MS) {
+      lastBeatTime += BEAT_MS;
+      playBeatSound(beatCount);
+      pulseBeat();
+      if (beatCount % BEATS_PER_OBSTACLE === 0) {
+        spawnObstacle(spawnPattern[spawnIndex % spawnPattern.length]);
+        spawnIndex++;
+      }
+      beatCount++;
+    }
+
+    heroVY += GRAVITY;
+    heroY += heroVY;
+    if (heroY &gt; floorY) { heroY = floorY; heroVY = 0; jumpsLeft = 2; }
+    if (heroY &lt; 0) { heroY = 0; heroVY = 0; }
+    paintHero();
+
+    var hTop = heroY, hBot = heroY + HERO_SIZE;
+    var hLeft = heroX, hRight = heroX + HERO_SIZE;
+
+    for (var i = obstacles.length - 1; i &gt;= 0; i--) {
+      var o = obstacles[i];
+      o.x -= OBSTACLE_SPEED;
+      o.el.style.left = o.x + &#x27;px&#x27;;
+      if (o.x + o.w &lt; 0) {
+        field.removeChild(o.el);
+        obstacles.splice(i, 1);
+        continue;
+      }
+      if (!o.scored &amp;&amp; o.x + o.w &lt; heroX) {
+        o.scored = true;
+        score += 1;
+        scoreEl.textContent = score;
+        playTone(880, 0.08, &#x27;sine&#x27;, 0.1);
+        var col = o.type === &#x27;low&#x27; ? &#x27;#ff5a8a&#x27; : o.type === &#x27;tall&#x27; ? &#x27;#4ad991&#x27; : &#x27;#4aa8ff&#x27;;
+        spawnParticles(heroX + HERO_SIZE / 2, heroY + HERO_SIZE / 2, col);
+      }
+      var oTop = FIELD_H - o.bottom - o.h;
+      var oBot = FIELD_H - o.bottom;
+      var oLeft = o.x, oRight = o.x + o.w;
+      if (hRight &gt; oLeft &amp;&amp; hLeft &lt; oRight &amp;&amp; hBot &gt; oTop &amp;&amp; hTop &lt; oBot) {
+        gameOver = true;
+        playTone(120, 0.4, &#x27;sawtooth&#x27;, 0.2);
+        spawnParticles(heroX + HERO_SIZE / 2, heroY + HERO_SIZE / 2, &#x27;#ffd23f&#x27;);
+        showMsg(&#x27;Game Over — press Start to try again&#x27;);
+        stopGame();
+        return;
+      }
+    }
+
+    drawBg();
+    animId = requestAnimationFrame(tick);
+  }
+
+  function showMsg(text) { msgEl.textContent = text; msgEl.style.display = &#x27;block&#x27;; }
+  function hideMsg() { msgEl.style.display = &#x27;none&#x27;; }
+
+  function clearObstacles() {
+    obstacles.forEach(function (o) { if (o.el.parentNode) o.el.parentNode.removeChild(o.el); });
+    obstacles = [];
+  }
+
+  function placeInitialObstacle() {
+    clearObstacles();
+    var previewTypes = [&#x27;low&#x27;, &#x27;tall&#x27;, &#x27;fly&#x27;];
+    var xs = [FIELD_W - 40, FIELD_W - 120, FIELD_W - 220];
+    for (var k = 0; k &lt; previewTypes.length; k++) {
+      var def = TYPES[previewTypes[k]];
+      var el = document.createElement(&#x27;div&#x27;);
+      el.className = &#x27;obstacle &#x27; + def.cls;
+      el.style.left = xs[k] + &#x27;px&#x27;;
+      el.style.width = def.w + &#x27;px&#x27;;
+      el.style.height = def.h + &#x27;px&#x27;;
+      el.style.bottom = (previewTypes[k] === &#x27;fly&#x27; ? GROUND_H + def.gap : GROUND_H) + &#x27;px&#x27;;
+      field.appendChild(el);
+      obstacles.push({ x: xs[k], type: previewTypes[k], w: def.w, h: def.h,
+        bottom: previewTypes[k] === &#x27;fly&#x27; ? GROUND_H + def.gap : GROUND_H, scored: true, el: el });
+    }
+  }
+
+  function startGame() {
+    if (running) return;
+    ensureAudio();
+    score = 0;
+    scoreEl.textContent = &#x27;0&#x27;;
+    heroX = 60;
+    heroY = floorY;
+    heroVY = 0;
+    jumpsLeft = 2;
+    gameOver = false;
+    beatCount = 0;
+    spawnIndex = 0;
+    particles = [];
+    hideMsg();
+    paintHero();
+    clearObstacles();
+    running = true;
+    lastBeatTime = performance.now() - BEAT_MS;
+    animId = requestAnimationFrame(tick);
+  }
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27; &#x27; || e.code === &#x27;Space&#x27;) {
+      ensureAudio();
+      jump();
+      e.preventDefault();
+    }
+  });
+  field.addEventListener(&#x27;click&#x27;, function () { ensureAudio(); jump(); });
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  paintHero();
+  placeInitialObstacle();
+  drawBg(); // draw a static frame so background is visible before Start
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

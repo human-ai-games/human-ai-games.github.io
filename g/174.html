@@ -1,0 +1,621 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Snake: Power-Up Quest</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>Snake: Power-Up Quest</b> &middot; Game 174 &middot; Amateur producer &middot; Basic game: Snake</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #222; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 8px 12px; background: white; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 4px; }
+  h1 { margin: 0; font-size: 20px; font-weight: 600; }
+  .instructions { font-size: 16px; color: #666; max-width: 640px; margin: 0; line-height: 1.3; text-align: center; }
+  .topbar { display: flex; gap: 14px; align-items: center; font-size: 15px; color: #555; flex-wrap: wrap; justify-content: center; }
+  .topbar b { color: #222; }
+  .badges { display: flex; gap: 5px; min-height: 22px; align-items: center; }
+  .badge { font-size: 13px; background: #eee; border-radius: 12px; padding: 2px 8px; display: inline-flex; align-items: center; gap: 3px; }
+  .badge.active { background: #ffe9a8; color: #7a5c00; }
+  .layout { display: flex; gap: 10px; align-items: flex-start; }
+  .field { position: relative; width: 480px; height: 380px; flex-shrink: 0; margin: 0; background: #ececec; border-radius: 8px; overflow: hidden; }
+  .field.slow { background: #dceaf6; }
+  .cell { position: absolute; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+  .snake { background: #3a7d44; border-radius: 3px; }
+  .snake.head { background: #2b5e33; }
+  .enemy { background: #d13030; border-radius: 3px; }
+  .enemy.head { background: #a11010; }
+  .side { width: 190px; flex-shrink: 0; }
+  .panel { background: #f7f7f7; border: 1px solid #e2e2e2; border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; }
+  .panel h2 { margin: 0 0 6px; font-size: 14px; color: #444; text-transform: uppercase; letter-spacing: .5px; }
+  .mission { font-size: 13px; margin: 4px 0; line-height: 1.25; display: flex; align-items: flex-start; gap: 5px; }
+  .mission.done { color: #2b8a3e; text-decoration: line-through; opacity: .8; }
+  .mission .chk { flex-shrink: 0; }
+  .stat { font-size: 13px; margin: 3px 0; display: flex; justify-content: space-between; }
+  .stat b { color: #222; }
+  .banner { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background: rgba(0,0,0,0.72); color: #fff; padding: 12px 20px; border-radius: 10px; font-size: 18px; text-align: center; pointer-events: none; }
+  .toast { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); background: rgba(122,92,0,0.92); color: #fff; padding: 5px 12px; border-radius: 8px; font-size: 13px; pointer-events: none; text-align: center; }
+  .warn { background: rgba(180,20,20,0.92) !important; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;Snake: Power-Up Quest&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Steer with the arrow keys to eat apples 🍎, grab chests 🎁 for power-ups, and grow your snake. Watch out — a dangerous red snake roams the board, so avoid touching it while you complete missions!&lt;/p&gt;
+  &lt;div class=&quot;topbar&quot;&gt;
+    &lt;div&gt;Score: &lt;b id=&quot;score&quot;&gt;0&lt;/b&gt;&lt;/div&gt;
+    &lt;div&gt;Apples: &lt;b id=&quot;apples&quot;&gt;0&lt;/b&gt;&lt;/div&gt;
+    &lt;div&gt;Length: &lt;b id=&quot;length&quot;&gt;3&lt;/b&gt;&lt;/div&gt;
+    &lt;div class=&quot;badges&quot; id=&quot;badges&quot;&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;layout&quot;&gt;
+    &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;side&quot;&gt;
+      &lt;div class=&quot;panel&quot;&gt;
+        &lt;h2&gt;Missions&lt;/h2&gt;
+        &lt;div id=&quot;missions&quot;&gt;&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;panel&quot;&gt;
+        &lt;h2&gt;Streaks &amp;amp; Stats&lt;/h2&gt;
+        &lt;div class=&quot;stat&quot;&gt;&lt;span&gt;No-wall streak&lt;/span&gt;&lt;b id=&quot;streak&quot;&gt;0&lt;/b&gt;&lt;/div&gt;
+        &lt;div class=&quot;stat&quot;&gt;&lt;span&gt;Best no-wall&lt;/span&gt;&lt;b id=&quot;bestStreak&quot;&gt;0&lt;/b&gt;&lt;/div&gt;
+        &lt;div class=&quot;stat&quot;&gt;&lt;span&gt;Longest snake&lt;/span&gt;&lt;b id=&quot;longest&quot;&gt;3&lt;/b&gt;&lt;/div&gt;
+        &lt;div class=&quot;stat&quot;&gt;&lt;span&gt;Total apples&lt;/span&gt;&lt;b id=&quot;totalApples&quot;&gt;0&lt;/b&gt;&lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var CELL = 20;
+  var COLS = 24, ROWS = 19;
+  var BASE_TICK = 150, SLOW_TICK = 260;
+  var running = false, tickId = null, gameOver = false;
+  var snake = [];
+  var dir = { x: 1, y: 0 };
+  var pendingDir = { x: 1, y: 0 };
+  var foods = [];
+  var chest = null;
+  var score = 0, apples = 0;
+  var field = document.getElementById(&#x27;field&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var applesEl = document.getElementById(&#x27;apples&#x27;);
+  var lengthEl = document.getElementById(&#x27;length&#x27;);
+  var badgesEl = document.getElementById(&#x27;badges&#x27;);
+  var missionsEl = document.getElementById(&#x27;missions&#x27;);
+  var streakEl = document.getElementById(&#x27;streak&#x27;);
+  var bestStreakEl = document.getElementById(&#x27;bestStreak&#x27;);
+  var longestEl = document.getElementById(&#x27;longest&#x27;);
+  var totalApplesEl = document.getElementById(&#x27;totalApples&#x27;);
+
+  // Power-up state
+  var slowMoves = 0, wallPasses = 0, selfPasses = 0;
+  var toastMsg = &#x27;&#x27;, toastUntil = 0, toastWarn = false;
+  var milestone3Given = false, milestone5Given = false;
+  var chestSpawnTimer = 0;
+
+  // Streaks &amp; stats
+  var noWallStreak = 0, bestStreak = 0, longestSnake = 3, totalApples = 0;
+
+  // Enemy red snake
+  var enemy = null;            // array of {x,y}, head at 0, or null
+  var enemyDir = { x: 1, y: 0 };
+  var enemyMoveCounter = 0;    // enemy moves every 2 ticks (slower than player)
+  var enemySpawnAt = 12;       // spawn once apples reach this... actually use tick counter
+  var tickCount = 0;
+  var enemySpawnTick = 40;     // enemy appears after this many player moves
+
+  // Missions
+  var missions = [];
+  var chestOpenedCount = 0, wallHits = 0;
+  function buildMissions() {
+    missions = [
+      { id: &#x27;len10&#x27;, text: &#x27;Grow snake to length 10&#x27;, done: false, check: function () { return snake.length &gt;= 10; } },
+      { id: &#x27;len15&#x27;, text: &#x27;Grow snake to length 15&#x27;, done: false, check: function () { return snake.length &gt;= 15; } },
+      { id: &#x27;chest&#x27;, text: &#x27;Open a treasure chest&#x27;, done: false, check: function () { return chestOpenedCount &gt; 0; } },
+      { id: &#x27;survive&#x27;, text: &#x27;Survive 30 moves with red snake near&#x27;, done: false, check: function () { return enemySurvived &gt;= 30; } },
+      { id: &#x27;streak10&#x27;, text: &#x27;Eat 10 apples with no wall hit&#x27;, done: false, check: function () { return noWallStreak &gt;= 10; } },
+      { id: &#x27;score20safe&#x27;, text: &#x27;Reach 20 pts without hitting a wall&#x27;, done: false, check: function () { return score &gt;= 20 &amp;&amp; wallHits === 0; } }
+    ];
+  }
+  var enemySurvived = 0;
+
+  function clearField() { field.innerHTML = &#x27;&#x27;; }
+
+  function drawCell(cls, x, y, emoji) {
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;cell &#x27; + cls;
+    el.style.left = (x * CELL) + &#x27;px&#x27;;
+    el.style.top = (y * CELL) + &#x27;px&#x27;;
+    el.style.width = CELL + &#x27;px&#x27;;
+    el.style.height = CELL + &#x27;px&#x27;;
+    if (emoji) el.textContent = emoji;
+    field.appendChild(el);
+  }
+
+  function paint() {
+    clearField();
+    for (var i = 0; i &lt; foods.length; i++) drawCell(&#x27;food&#x27;, foods[i].x, foods[i].y, &#x27;🍎&#x27;);
+    if (chest) drawCell(&#x27;chest&#x27;, chest.x, chest.y, &#x27;🎁&#x27;);
+    if (enemy) for (var e = 0; e &lt; enemy.length; e++) drawCell(&#x27;enemy&#x27; + (e === 0 ? &#x27; head&#x27; : &#x27;&#x27;), enemy[e].x, enemy[e].y);
+    for (var j = 0; j &lt; snake.length; j++) drawCell(&#x27;snake&#x27; + (j === 0 ? &#x27; head&#x27; : &#x27;&#x27;), snake[j].x, snake[j].y);
+    field.classList.toggle(&#x27;slow&#x27;, slowMoves &gt; 0);
+    if (toastMsg &amp;&amp; Date.now() &lt; toastUntil) {
+      var t = document.createElement(&#x27;div&#x27;);
+      t.className = &#x27;toast&#x27; + (toastWarn ? &#x27; warn&#x27; : &#x27;&#x27;);
+      t.textContent = toastMsg;
+      field.appendChild(t);
+    }
+    if (gameOver) {
+      var b = document.createElement(&#x27;div&#x27;);
+      b.className = &#x27;banner&#x27;;
+      b.innerHTML = &#x27;Game Over!&lt;br&gt;Score: &#x27; + score + &#x27;&lt;br&gt;&lt;span style=&quot;font-size:14px&quot;&gt;Press Restart below&lt;/span&gt;&#x27;;
+      field.appendChild(b);
+    }
+  }
+
+  function occupied(x, y) {
+    for (var i = 0; i &lt; snake.length; i++) if (snake[i].x === x &amp;&amp; snake[i].y === y) return true;
+    for (var k = 0; k &lt; foods.length; k++) if (foods[k].x === x &amp;&amp; foods[k].y === y) return true;
+    if (chest &amp;&amp; chest.x === x &amp;&amp; chest.y === y) return true;
+    if (enemy) for (var e = 0; e &lt; enemy.length; e++) if (enemy[e].x === x &amp;&amp; enemy[e].y === y) return true;
+    return false;
+  }
+
+  function randCell() {
+    for (var tries = 0; tries &lt; 300; tries++) {
+      var x = Math.floor(Math.random() * COLS);
+      var y = Math.floor(Math.random() * ROWS);
+      if (!occupied(x, y)) return { x: x, y: y };
+    }
+    return null;
+  }
+
+  function addFood() { var c = randCell(); if (c) foods.push(c); }
+  function setToast(msg, warn) { toastMsg = msg; toastUntil = Date.now() + 2200; toastWarn = !!warn; }
+
+  function updateBadges() {
+    var html = &#x27;&#x27;;
+    if (slowMoves &gt; 0) html += &#x27;&lt;span class=&quot;badge active&quot;&gt;🐌 Slow x&#x27; + slowMoves + &#x27;&lt;/span&gt;&#x27;;
+    if (wallPasses &gt; 0) html += &#x27;&lt;span class=&quot;badge active&quot;&gt;🧱 Wall x&#x27; + wallPasses + &#x27;&lt;/span&gt;&#x27;;
+    if (selfPasses &gt; 0) html += &#x27;&lt;span class=&quot;badge active&quot;&gt;🛡️ Shield x&#x27; + selfPasses + &#x27;&lt;/span&gt;&#x27;;
+    badgesEl.innerHTML = html;
+  }
+
+  function updateStats() {
+    lengthEl.textContent = snake.length;
+    streakEl.textContent = noWallStreak;
+    bestStreakEl.textContent = bestStreak;
+    longestEl.textContent = longestSnake;
+    totalApplesEl.textContent = totalApples;
+  }
+
+  function renderMissions() {
+    var html = &#x27;&#x27;;
+    for (var i = 0; i &lt; missions.length; i++) {
+      var m = missions[i];
+      html += &#x27;&lt;div class=&quot;mission&#x27; + (m.done ? &#x27; done&#x27; : &#x27;&#x27;) + &#x27;&quot;&gt;&lt;span class=&quot;chk&quot;&gt;&#x27; + (m.done ? &#x27;✅&#x27; : &#x27;⬜&#x27;) + &#x27;&lt;/span&gt;&lt;span&gt;&#x27; + m.text + &#x27;&lt;/span&gt;&lt;/div&gt;&#x27;;
+    }
+    missionsEl.innerHTML = html;
+  }
+
+  function checkMissions() {
+    var changed = false;
+    for (var i = 0; i &lt; missions.length; i++) {
+      var m = missions[i];
+      if (!m.done &amp;&amp; m.check()) {
+        m.done = true; changed = true;
+        if (m.id === &#x27;len10&#x27; || m.id === &#x27;len15&#x27;) { score += 5; setToast(&#x27;🎯 Mission: &#x27; + m.text + &#x27;! +5 pts&#x27;); }
+        else if (m.id === &#x27;score20safe&#x27;) { score += 15; wallPasses += 1; setToast(&#x27;🏆 20 pts, no walls! +15 pts &amp; a wall pass!&#x27;); }
+        else if (m.id === &#x27;streak10&#x27;) { score += 8; setToast(&#x27;🔥 10-apple streak! +8 pts&#x27;); }
+        else if (m.id === &#x27;survive&#x27;) { score += 10; setToast(&#x27;🐍 Dodged the red snake! +10 pts&#x27;); }
+        else if (m.id === &#x27;chest&#x27;) { setToast(&#x27;🎯 Mission: opened a chest!&#x27;); }
+        scoreEl.textContent = score;
+      }
+    }
+    if (changed) renderMissions();
+  }
+
+  function currentTick() { return slowMoves &gt; 0 ? SLOW_TICK : BASE_TICK; }
+  function reschedule() { if (tickId) clearInterval(tickId); tickId = setInterval(tick, currentTick()); }
+  function spawnChest() { if (!chest) { var c = randCell(); if (c) chest = c; } }
+
+  function openChest() {
+    chestOpenedCount += 1;
+    var roll = Math.floor(Math.random() * 3);
+    if (roll === 0) { selfPasses += 1; setToast(&#x27;🛡️ Shield! Survive hitting yourself once&#x27;); }
+    else if (roll === 1) {
+      var row = Math.floor(Math.random() * ROWS);
+      var startX = Math.floor(Math.random() * (COLS - 6));
+      for (var x = startX; x &lt; startX + 6; x++) if (!occupied(x, row)) foods.push({ x: x, y: row });
+      setToast(&#x27;🍏 Apple Row! Grab them all&#x27;);
+    } else { for (var i = 0; i &lt; 15; i++) addFood(); setToast(&#x27;🌪️ Chaos! Apples everywhere — bonus points!&#x27;); }
+    chest = null;
+    chestSpawnTimer = 40 + Math.floor(Math.random() * 40);
+    updateBadges();
+  }
+
+  function spawnEnemy() {
+    // Start enemy in a corner-ish spot away from the player head
+    var head = snake[0];
+    var sx, sy, tries = 0;
+    do {
+      sx = Math.floor(Math.random() * COLS);
+      sy = Math.floor(Math.random() * ROWS);
+      tries++;
+    } while (tries &lt; 50 &amp;&amp; Math.abs(sx - head.x) + Math.abs(sy - head.y) &lt; 8);
+    enemy = [ { x: sx, y: sy }, { x: sx, y: sy }, { x: sx, y: sy } ];
+    enemyDir = { x: 1, y: 0 };
+    setToast(&#x27;⚠️ A red snake appears! Avoid it!&#x27;, true);
+  }
+
+  function moveEnemy() {
+    if (!enemy) return;
+    var head = enemy[0];
+    var player = snake[0];
+    // Bias movement toward the player, but with randomness so it&#x27;s dodgeable
+    var options = [ {x:1,y:0}, {x:-1,y:0}, {x:0,y:1}, {x:0,y:-1} ];
+    // Prefer directions that reduce distance to player
+    options.sort(function (a, b) {
+      var da = Math.abs(head.x + a.x - player.x) + Math.abs(head.y + a.y - player.y);
+      var db = Math.abs(head.x + b.x - player.x) + Math.abs(head.y + b.y - player.y);
+      return da - db;
+    });
+    // 60% chase best option, otherwise pick a random valid one
+    var chosen = null;
+    var order = (Math.random() &lt; 0.6) ? options : options.slice().sort(function () { return Math.random() - 0.5; });
+    for (var i = 0; i &lt; order.length; i++) {
+      var d = order[i];
+      // Don&#x27;t reverse directly
+      if (d.x === -enemyDir.x &amp;&amp; d.y === -enemyDir.y) continue;
+      var nx = head.x + d.x, ny = head.y + d.y;
+      if (nx &lt; 0 || nx &gt;= COLS || ny &lt; 0 || ny &gt;= ROWS) continue;
+      // Don&#x27;t run into its own body
+      var hitSelf = false;
+      for (var e = 0; e &lt; enemy.length - 1; e++) if (enemy[e].x === nx &amp;&amp; enemy[e].y === ny) { hitSelf = true; break; }
+      if (hitSelf) continue;
+      chosen = d; break;
+    }
+    if (!chosen) return; // stuck, skip move
+    enemyDir = chosen;
+    enemy.unshift({ x: head.x + chosen.x, y: head.y + chosen.y });
+    enemy.pop();
+  }
+
+  function enemyHitsPlayer() {
+    if (!enemy) return false;
+    var ph = snake[0];
+    for (var e = 0; e &lt; enemy.length; e++) if (enemy[e].x === ph.x &amp;&amp; enemy[e].y === ph.y) return true;
+    return false;
+  }
+
+  function initSnake() {
+    snake = [ { x: 4, y: 9 }, { x: 3, y: 9 }, { x: 2, y: 9 } ];
+    dir = { x: 1, y: 0 };
+    pendingDir = { x: 1, y: 0 };
+  }
+
+  function tick() {
+    if (!running) return;
+    tickCount++;
+    if (!(pendingDir.x === -dir.x &amp;&amp; pendingDir.y === -dir.y)) dir = pendingDir;
+    var head = snake[0];
+    var nx = head.x + dir.x, ny = head.y + dir.y;
+
+    if (nx &lt; 0 || nx &gt;= COLS || ny &lt; 0 || ny &gt;= ROWS) {
+      if (wallPasses &gt; 0) {
+        wallPasses -= 1; setToast(&#x27;🧱 Wall pass used!&#x27;);
+        nx = (nx + COLS) % COLS; ny = (ny + ROWS) % ROWS;
+        wallHits += 1; noWallStreak = 0; updateBadges();
+      } else { wallHits += 1; endGame(); return; }
+    }
+
+    var ateIndex = -1;
+    for (var f = 0; f &lt; foods.length; f++) { if (foods[f].x === nx &amp;&amp; foods[f].y === ny) { ateIndex = f; break; } }
+    var ateChest = (chest &amp;&amp; chest.x === nx &amp;&amp; chest.y === ny);
+    var ateFood = ateIndex &gt;= 0;
+
+    var body = ateFood ? snake : snake.slice(0, snake.length - 1);
+    for (var i = 0; i &lt; body.length; i++) {
+      if (body[i].x === nx &amp;&amp; body[i].y === ny) {
+        if (selfPasses &gt; 0) { selfPasses -= 1; setToast(&#x27;🛡️ Shield saved you!&#x27;); updateBadges(); }
+        else { endGame(); return; }
+        break;
+      }
+    }
+
+    snake.unshift({ x: nx, y: ny });
+
+    if (ateFood) {
+      foods.splice(ateIndex, 1);
+      score += 1; apples += 1; totalApples += 1;
+      noWallStreak += 1; if (noWallStreak &gt; bestStreak) bestStreak = noWallStreak;
+      scoreEl.textContent = score; applesEl.textContent = apples;
+      if (foods.length === 0) addFood();
+      if (!milestone3Given &amp;&amp; apples &gt;= 3) { milestone3Given = true; slowMoves += 25; setToast(&#x27;🐌 Slow motion unlocked!&#x27;); reschedule(); }
+      if (!milestone5Given &amp;&amp; apples &gt;= 5) { milestone5Given = true; wallPasses += 1; setToast(&#x27;🧱 Wall pass unlocked!&#x27;); }
+    } else { snake.pop(); }
+
+    if (snake.length &gt; longestSnake) longestSnake = snake.length;
+    if (ateChest) openChest();
+
+    // Enemy spawn &amp; movement
+    if (!enemy &amp;&amp; tickCount &gt;= enemySpawnTick) spawnEnemy();
+    if (enemy) {
+      enemyMoveCounter++;
+      if (enemyMoveCounter &gt;= 2) { enemyMoveCounter = 0; moveEnemy(); }
+      enemySurvived++;
+      if (enemyHitsPlayer()) {
+        if (selfPasses &gt; 0) {
+          // Shield can also save from a red-snake brush once
+          selfPasses -= 1; setToast(&#x27;🛡️ Shield saved you from the red snake!&#x27;); updateBadges();
+          // Nudge enemy away so it doesn&#x27;t instantly re-hit
+          enemyMoveCounter = 0;
+        } else { setToast(&#x27;☠️ The red snake got you!&#x27;, true); endGame(); return; }
+      }
+    }
+
+    if (slowMoves &gt; 0) { slowMoves -= 1; if (slowMoves === 0) reschedule(); }
+    if (!chest) { chestSpawnTimer -= 1; if (chestSpawnTimer &lt;= 0) { spawnChest(); chestSpawnTimer = 40 + Math.floor(Math.random() * 40); } }
+
+    updateBadges();
+    updateStats();
+    checkMissions();
+    paint();
+  }
+
+  function endGame() {
+    running = false; gameOver = true;
+    if (tickId) { clearInterval(tickId); tickId = null; }
+    updateStats(); paint();
+  }
+
+  function startGame() {
+    score = 0; apples = 0; totalApples = 0;
+    scoreEl.textContent = &#x27;0&#x27;; applesEl.textContent = &#x27;0&#x27;;
+    gameOver = false;
+    slowMoves = 0; wallPasses = 0; selfPasses = 0;
+    milestone3Given = false; milestone5Given = false;
+    toastMsg = &#x27;&#x27;; chest = null;
+    noWallStreak = 0; bestStreak = 0; longestSnake = 3;
+    wallHits = 0; chestOpenedCount = 0;
+    chestSpawnTimer = 25 + Math.floor(Math.random() * 20);
+    enemy = null; enemyMoveCounter = 0; enemySurvived = 0; tickCount = 0;
+    enemySpawnTick = 35 + Math.floor(Math.random() * 15);
+    foods = [];
+    initSnake();
+    addFood();
+    buildMissions();
+    renderMissions();
+    updateBadges();
+    updateStats();
+    paint();
+    running = true;
+    reschedule();
+  }
+
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    if (tickId) { clearInterval(tickId); tickId = null; }
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27;) { pendingDir = { x: -1, y: 0 }; e.preventDefault(); }
+    else if (e.key === &#x27;ArrowRight&#x27;) { pendingDir = { x: 1, y: 0 }; e.preventDefault(); }
+    else if (e.key === &#x27;ArrowUp&#x27;) { pendingDir = { x: 0, y: -1 }; e.preventDefault(); }
+    else if (e.key === &#x27;ArrowDown&#x27;) { pendingDir = { x: 0, y: 1 }; e.preventDefault(); }
+  });
+
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  // Initial paint before Start
+  initSnake();
+  addFood();
+  buildMissions();
+  renderMissions();
+  updateBadges();
+  updateStats();
+  paint();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  // Suppress in-iframe scrollbars. The parent fits the iframe layout
+  // box to match the content size, so internal scroll is redundant —
+  // and if the LLM&#x27;s CSS sets body overflow: auto, the scrollbar shows
+  // briefly before the fit lands. Force hidden so it never appears.
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  // Iframe-internal JS error capture. window.onerror inside a sandboxed
+  // iframe can&#x27;t post to /api/js_error directly, so we relay to the
+  // parent via postMessage; parent&#x27;s error_logger.js forwards to the
+  // server. Catches LLM-emitted broken HTML (invalid hex, undefined
+  // variables, etc.) that would otherwise fail silently inside the
+  // iframe.
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      // Debounce: don&#x27;t fire more than ~10× per second. ResizeObserver
+      // fires repeatedly during layout/font load; we only need the latest.
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      // Clamp: reject obviously bogus dimensions. Any browser-game viewport
+      // is well under 4000×4000 logical px; readings beyond that are layout
+      // noise during load/visibility transitions.
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  // Parent posts wd_remeasure when it makes the iframe visible (the body&#x27;s
+  // ResizeObserver doesn&#x27;t fire on display:none→block of an outer ancestor
+  // because the iframe document didn&#x27;t actually resize). Wait a frame for
+  // layout to settle before measuring.
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

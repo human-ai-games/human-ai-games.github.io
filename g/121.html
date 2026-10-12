@@ -1,0 +1,645 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>👹 DEMON SNAKE 👹</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>👹 DEMON SNAKE 👹</b> &middot; Game 121 &middot; Amateur producer &middot; Basic game: Snake</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #0d0018; color: #f3e9ff; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 14px; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 8px; }
+  h1 { margin: 0; font-size: 28px; font-weight: 800; background: linear-gradient(90deg,#ff3ca6,#ffca3a,#8affc1,#7b5cff); -webkit-background-clip: text; background-clip: text; color: transparent; letter-spacing: 1px; }
+  .instructions { font-size: 16px; color: #c9b8e6; max-width: 620px; margin: 0; line-height: 1.4; text-align: center; }
+  .hud { display: flex; gap: 20px; align-items: center; font-size: 20px; }
+  .score { color: #ff9ad1; font-weight: 700; }
+  .stage { color: #ff6b9d; font-weight: 700; }
+  .field { position: relative; width: 600px; height: 420px; flex-shrink: 0; margin: 0; border-radius: 10px; overflow: hidden; border: 2px solid #3a1060; transition: box-shadow .3s, border-color .4s; }
+  .bg { position: absolute; inset: 0; z-index: 0; transition: opacity .4s; }
+  .cell { position: absolute; box-sizing: border-box; z-index: 2; }
+  .seg { border-radius: 4px; }
+  .food { display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .veg { display: flex; align-items: center; justify-content: center; font-size: 16px; filter: drop-shadow(0 0 4px #4dff88); }
+  .door { display: flex; align-items: center; justify-content: center; font-size: 15px; border-radius: 5px; animation: pulse 1s infinite alternate; }
+  @keyframes pulse { from { filter: brightness(0.8); } to { filter: brightness(1.6); } }
+  .speech { min-height: 46px; max-width: 620px; text-align: center; font-size: 18px; font-style: italic; font-weight: 600; padding: 6px 10px; box-sizing: border-box; }
+  .gameover { color: #ff4d6d; font-weight: 800; }
+  /* animated background decorations */
+  .drift { position: absolute; z-index: 1; font-size: 20px; opacity: .5; }
+  @keyframes drift1 { from { transform: translateY(0); } to { transform: translateY(440px); } }
+  @keyframes twinkle { 0%,100% { opacity: .2; } 50% { opacity: .9; } }
+  @keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;👹 DEMON SNAKE 👹&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Steer with the arrow keys to devour the desserts and grow, but avoid the glowing veggies — they shrink you, and shrinking to nothing ends the run! Each upgrade opens a door to a new world with its own treats; use the &lt;strong&gt;Start&lt;/strong&gt;/&lt;strong&gt;Restart&lt;/strong&gt; button below.&lt;/p&gt;
+  &lt;div class=&quot;hud&quot;&gt;
+    &lt;div class=&quot;score&quot;&gt;Treats: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;stage&quot; id=&quot;stage&quot;&gt;Larva&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;
+    &lt;div class=&quot;bg&quot; id=&quot;bg&quot;&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;speech&quot; id=&quot;speech&quot;&gt;A humble little serpent awaits...&lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  var CELL = 20;
+  var COLS = 30, ROWS = 21;
+  var running = false, tickId = null, gameOver = false;
+  var snake = [];
+  var dir = { x: 1, y: 0 };
+  var pendingDir = { x: 1, y: 0 };
+  var food = { x: 10, y: 10, emoji: &#x27;🍩&#x27; };
+  var veg = null;        // {x,y,emoji} vegetable that shrinks
+  var score = 0;
+  var envIndex = 0;
+  var door = null;
+  var curLen = 3;
+  var field = document.getElementById(&#x27;field&#x27;);
+  var bgEl = document.getElementById(&#x27;bg&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var stageEl = document.getElementById(&#x27;stage&#x27;);
+  var speechEl = document.getElementById(&#x27;speech&#x27;);
+
+  // Environments: each has its own background style, treats, and veggies.
+  var ENVS = [
+    {
+      name: &#x27;Candy Meadow&#x27;, border: &#x27;#8affc1&#x27;,
+      bg: &#x27;linear-gradient(180deg,#2e5d34,#153a1a)&#x27;,
+      treats: [&#x27;🍩&#x27;,&#x27;🍪&#x27;,&#x27;🧁&#x27;,&#x27;🍓&#x27;],
+      veggies: [&#x27;🥦&#x27;,&#x27;🥬&#x27;],
+      deco: { chars: [&#x27;🌸&#x27;,&#x27;🍄&#x27;,&#x27;🌿&#x27;,&#x27;🦋&#x27;], anim: &#x27;floaty&#x27; }
+    },
+    {
+      name: &#x27;Sugar Cavern&#x27;, border: &#x27;#7b5cff&#x27;,
+      bg: &#x27;linear-gradient(180deg,#2a1244,#100022)&#x27;,
+      treats: [&#x27;🍫&#x27;,&#x27;🍮&#x27;,&#x27;🍯&#x27;,&#x27;🍬&#x27;],
+      veggies: [&#x27;🍆&#x27;,&#x27;🌽&#x27;],
+      deco: { chars: [&#x27;💎&#x27;,&#x27;🕯️&#x27;,&#x27;🔮&#x27;], anim: &#x27;twinkle&#x27; }
+    },
+    {
+      name: &#x27;Ember Kitchen&#x27;, border: &#x27;#ff8b2c&#x27;,
+      bg: &#x27;linear-gradient(180deg,#5a1e00,#200800)&#x27;,
+      treats: [&#x27;🥧&#x27;,&#x27;🍰&#x27;,&#x27;🍞&#x27;,&#x27;🥐&#x27;],
+      veggies: [&#x27;🥕&#x27;,&#x27;🌶️&#x27;],
+      deco: { chars: [&#x27;🔥&#x27;,&#x27;🍳&#x27;,&#x27;☕&#x27;,&#x27;🥘&#x27;], anim: &#x27;floaty&#x27; }
+    },
+    {
+      name: &#x27;Starry Void&#x27;, border: &#x27;#7b5cff&#x27;,
+      bg: &#x27;linear-gradient(180deg,#0a0a4a,#02020f)&#x27;,
+      treats: [&#x27;🍦&#x27;,&#x27;🍭&#x27;,&#x27;🍨&#x27;,&#x27;🥮&#x27;],
+      veggies: [&#x27;🥒&#x27;,&#x27;🧅&#x27;],
+      deco: { chars: [&#x27;⭐&#x27;,&#x27;🌙&#x27;,&#x27;✨&#x27;,&#x27;💫&#x27;], anim: &#x27;twinkle&#x27; }
+    },
+    {
+      name: &#x27;Hellscape&#x27;, border: &#x27;#ff0000&#x27;,
+      bg: &#x27;linear-gradient(180deg,#6a0000,#150000)&#x27;,
+      treats: [&#x27;🎂&#x27;,&#x27;🍩&#x27;,&#x27;🧇&#x27;,&#x27;🍫&#x27;],
+      veggies: [&#x27;🍅&#x27;,&#x27;🥔&#x27;],
+      deco: { chars: [&#x27;🔥&#x27;,&#x27;💀&#x27;,&#x27;🩸&#x27;,&#x27;😈&#x27;], anim: &#x27;floaty&#x27; }
+    }
+  ];
+
+  var STAGES = [
+    { min: 3,  name: &#x27;Larva&#x27;,        body: &#x27;#8affc1&#x27;, head: &#x27;#5cff9d&#x27;, glow: &#x27;none&#x27;,                                    horns: false, eyes: false },
+    { min: 6,  name: &#x27;Sneaky Snake&#x27;, body: &#x27;#7b5cff&#x27;, head: &#x27;#a98cff&#x27;, glow: &#x27;0 0 12px #7b5cff&#x27;,                         horns: false, eyes: false },
+    { min: 10, name: &#x27;Imp&#x27;,          body: &#x27;#ff6b9d&#x27;, head: &#x27;#ff3ca6&#x27;, glow: &#x27;0 0 20px #ff3ca6&#x27;,                         horns: true,  eyes: true },
+    { min: 15, name: &#x27;Fiend&#x27;,        body: &#x27;#ff8b2c&#x27;, head: &#x27;#ff5a00&#x27;, glow: &#x27;0 0 30px #ff5a00&#x27;,                         horns: true,  eyes: true },
+    { min: 22, name: &#x27;ARCHDEMON&#x27;,    body: &#x27;#ff2d2d&#x27;, head: &#x27;#ff0000&#x27;, glow: &#x27;0 0 44px #ff0000, 0 0 80px #b00000&#x27;,       horns: true,  eyes: true }
+  ];
+
+  var LINES = {
+    0: [&#x27;*hiss* ...more.&#x27;, &#x27;Yum. A humble beginning.&#x27;, &#x27;I hunger.&#x27;],
+    1: [&#x27;I can feel it... power creeps in.&#x27;, &#x27;More sweets, more strength!&#x27;, &#x27;Soon this realm will be MINE.&#x27;],
+    2: [&#x27;My horns! They sprout at last!&#x27;, &#x27;Kneel before the dessert lord!&#x27;, &#x27;Every donut fuels my ascension.&#x27;],
+    3: [&#x27;MORTALS, your sugar is MY dominion!&#x27;, &#x27;I devour reality, one treat at a time!&#x27;, &#x27;The walls tremble at my hunger!&#x27;],
+    4: [&#x27;I AM THE ENDLESS MAW OF THE VOID!!&#x27;, &#x27;ALL CAKE. ALL MINE. FOREVER.&#x27;, &#x27;REALITY IS BUT A SNACK BEFORE ME!!!&#x27;]
+  };
+  var VEG_LINES = [&#x27;GAAH! A VEGETABLE! It weakens me!&#x27;, &#x27;NOOO... broccoli... my one weakness!&#x27;, &#x27;Vile greens! I shrink in disgust!&#x27;, &#x27;A vegetable?! My power drains away!&#x27;];
+
+  var maxStageReached = 0;
+
+  function currentStageIndex() {
+    var idx = 0;
+    for (var i = 0; i &lt; STAGES.length; i++) if (snake.length &gt;= STAGES[i].min) idx = i;
+    return idx;
+  }
+
+  function clearCells() {
+    // remove everything except the bg layer
+    var kids = Array.prototype.slice.call(field.children);
+    for (var i = 0; i &lt; kids.length; i++) {
+      if (kids[i] !== bgEl) field.removeChild(kids[i]);
+    }
+  }
+
+  function buildBackground() {
+    var env = ENVS[envIndex];
+    bgEl.style.background = env.bg;
+    // clear old deco (they are children of field with class drift)
+    // add drifting decorations
+    var chars = env.deco.chars;
+    for (var i = 0; i &lt; 10; i++) {
+      var d = document.createElement(&#x27;div&#x27;);
+      d.className = &#x27;drift&#x27;;
+      d.textContent = chars[Math.floor(Math.random() * chars.length)];
+      d.style.left = Math.floor(Math.random() * 580) + &#x27;px&#x27;;
+      d.style.top = Math.floor(Math.random() * 400) + &#x27;px&#x27;;
+      var dur = (2.5 + Math.random() * 3).toFixed(2);
+      var delay = (Math.random() * 2).toFixed(2);
+      d.style.animation = env.deco.anim + &#x27; &#x27; + dur + &#x27;s ease-in-out &#x27; + delay + &#x27;s infinite&#x27;;
+      d.style.fontSize = (14 + Math.random() * 14) + &#x27;px&#x27;;
+      field.appendChild(d);
+    }
+  }
+
+  function drawCell(cls, x, y, style, content) {
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;cell &#x27; + cls;
+    el.style.left = (x * CELL) + &#x27;px&#x27;;
+    el.style.top = (y * CELL) + &#x27;px&#x27;;
+    el.style.width = CELL + &#x27;px&#x27;;
+    el.style.height = CELL + &#x27;px&#x27;;
+    if (style) for (var k in style) el.style[k] = style[k];
+    if (content) el.textContent = content;
+    field.appendChild(el);
+    return el;
+  }
+
+  function paint() {
+    clearCells();
+    var env = ENVS[envIndex];
+    var st = STAGES[currentStageIndex()];
+    field.style.borderColor = env.border;
+    field.style.boxShadow = st.glow === &#x27;none&#x27; ? &#x27;none&#x27; : &#x27;inset &#x27; + st.glow;
+
+    if (door) {
+      drawCell(&#x27;door&#x27;, door.x, door.y, { background: &#x27;#000&#x27;, border: &#x27;2px solid &#x27; + ENVS[door.dest].border, boxShadow: &#x27;0 0 16px &#x27; + ENVS[door.dest].border }, &#x27;🚪&#x27;);
+    }
+
+    drawCell(&#x27;food&#x27;, food.x, food.y, {}, food.emoji);
+    if (veg) drawCell(&#x27;veg&#x27;, veg.x, veg.y, {}, veg.emoji);
+
+    for (var i = snake.length - 1; i &gt;= 0; i--) {
+      var isHead = (i === 0);
+      var color = isHead ? st.head : st.body;
+      var style = { background: color, boxShadow: st.glow };
+      var el = drawCell(&#x27;seg&#x27;, snake[i].x, snake[i].y, style);
+      if (isHead) {
+        el.style.borderRadius = &#x27;6px&#x27;;
+        if (st.eyes) {
+          el.style.display = &#x27;flex&#x27;;
+          el.style.alignItems = &#x27;center&#x27;;
+          el.style.justifyContent = &#x27;center&#x27;;
+          el.style.fontSize = &#x27;13px&#x27;;
+          el.textContent = &#x27;👀&#x27;;
+        }
+        if (st.horns) {
+          var h1 = document.createElement(&#x27;div&#x27;);
+          h1.className = &#x27;cell&#x27;;
+          h1.style.left = (snake[i].x * CELL + 1) + &#x27;px&#x27;;
+          h1.style.top = (snake[i].y * CELL - 7) + &#x27;px&#x27;;
+          h1.style.width = 0; h1.style.height = 0;
+          h1.style.borderLeft = &#x27;4px solid transparent&#x27;;
+          h1.style.borderRight = &#x27;4px solid transparent&#x27;;
+          h1.style.borderBottom = &#x27;8px solid &#x27; + st.head;
+          field.appendChild(h1);
+          var h2 = h1.cloneNode();
+          h2.style.left = (snake[i].x * CELL + CELL - 9) + &#x27;px&#x27;;
+          field.appendChild(h2);
+        }
+      }
+    }
+  }
+
+  function cellOccupied(x, y) {
+    for (var i = 0; i &lt; snake.length; i++) if (snake[i].x === x &amp;&amp; snake[i].y === y) return true;
+    if (door &amp;&amp; door.x === x &amp;&amp; door.y === y) return true;
+    if (food &amp;&amp; food.x === x &amp;&amp; food.y === y) return true;
+    if (veg &amp;&amp; veg.x === x &amp;&amp; veg.y === y) return true;
+    return false;
+  }
+
+  function randEmptyCell() {
+    for (var tries = 0; tries &lt; 400; tries++) {
+      var x = Math.floor(Math.random() * COLS);
+      var y = Math.floor(Math.random() * ROWS);
+      if (!cellOccupied(x, y)) return { x: x, y: y };
+    }
+    return null;
+  }
+
+  function placeFood() {
+    var env = ENVS[envIndex];
+    var c = randEmptyCell();
+    if (c) food = { x: c.x, y: c.y, emoji: env.treats[Math.floor(Math.random() * env.treats.length)] };
+  }
+
+  function placeVeg() {
+    // ~55% chance a veggie exists at any time
+    if (Math.random() &lt; 0.45) { veg = null; return; }
+    var env = ENVS[envIndex];
+    var c = randEmptyCell();
+    if (c) veg = { x: c.x, y: c.y, emoji: env.veggies[Math.floor(Math.random() * env.veggies.length)] };
+    else veg = null;
+  }
+
+  function spawnDoor() {
+    var dest = (envIndex + 1) % ENVS.length;
+    var side = Math.floor(Math.random() * 4);
+    var x, y;
+    if (side === 0) { x = 2 + Math.floor(Math.random() * (COLS - 4)); y = 0; }
+    else if (side === 1) { x = COLS - 1; y = 2 + Math.floor(Math.random() * (ROWS - 4)); }
+    else if (side === 2) { x = 2 + Math.floor(Math.random() * (COLS - 4)); y = ROWS - 1; }
+    else { x = 0; y = 2 + Math.floor(Math.random() * (ROWS - 4)); }
+    door = { x: x, y: y, side: side, dest: dest };
+  }
+
+  function initSnake() {
+    snake = [ { x: 5, y: 10 }, { x: 4, y: 10 }, { x: 3, y: 10 } ];
+    dir = { x: 1, y: 0 };
+    pendingDir = { x: 1, y: 0 };
+  }
+
+  function updateHud() {
+    var idx = currentStageIndex();
+    stageEl.textContent = STAGES[idx].name + &#x27; · &#x27; + ENVS[envIndex].name;
+    if (idx &gt;= 4) stageEl.style.color = &#x27;#ff2d2d&#x27;;
+    else if (idx &gt;= 2) stageEl.style.color = &#x27;#ff6b9d&#x27;;
+    else stageEl.style.color = &#x27;#8affc1&#x27;;
+  }
+
+  function speak(msg) {
+    var idx = currentStageIndex();
+    if (msg) { speechEl.textContent = msg; }
+    else {
+      var arr = LINES[idx];
+      speechEl.textContent = &#x27;&quot;&#x27; + arr[Math.floor(Math.random() * arr.length)] + &#x27;&quot;&#x27;;
+    }
+    speechEl.style.color = STAGES[idx].head;
+    speechEl.classList.remove(&#x27;gameover&#x27;);
+  }
+
+  function tickInterval() {
+    var idx = currentStageIndex();
+    return Math.max(90, 150 - idx * 12);
+  }
+
+  function enterDoor() {
+    envIndex = door.dest;
+    door = null;
+    warpSound();
+    var midY = Math.floor(ROWS / 2);
+    var len = curLen;
+    var body = [];
+    for (var j = 0; j &lt; len; j++) body.push({ x: Math.max(0, 6 - j), y: midY });
+    snake = body;
+    dir = { x: 1, y: 0 };
+    pendingDir = { x: 1, y: 0 };
+    buildBackground();
+    placeFood();
+    placeVeg();
+    updateHud();
+    speak(&#x27;&quot;A new realm bends to my will... &#x27; + ENVS[envIndex].name + &#x27;!&quot;&#x27;);
+    paint();
+  }
+
+  function tick() {
+    if (!running) return;
+    if (!(pendingDir.x === -dir.x &amp;&amp; pendingDir.y === -dir.y)) dir = pendingDir;
+    var head = snake[0];
+    var nx = head.x + dir.x, ny = head.y + dir.y;
+
+    if (door &amp;&amp; nx === door.x &amp;&amp; ny === door.y) {
+      curLen = snake.length;
+      enterDoor();
+      return;
+    }
+
+    if (nx &lt; 0 || nx &gt;= COLS || ny &lt; 0 || ny &gt;= ROWS) { endGame(); return; }
+
+    var ateFood = (nx === food.x &amp;&amp; ny === food.y);
+    var ateVeg = (veg &amp;&amp; nx === veg.x &amp;&amp; ny === veg.y);
+
+    // self-collision (don&#x27;t drop tail if we&#x27;re growing)
+    var body = ateFood ? snake : snake.slice(0, snake.length - 1);
+    for (var i = 0; i &lt; body.length; i++) {
+      if (body[i].x === nx &amp;&amp; body[i].y === ny) { endGame(); return; }
+    }
+
+    snake.unshift({ x: nx, y: ny });
+
+    if (ateFood) {
+      score += 1;
+      scoreEl.textContent = score;
+      placeFood();
+      placeVeg();
+      var newStage = currentStageIndex();
+      if (newStage &gt; maxStageReached) {
+        maxStageReached = newStage;
+        spawnDoor();
+        speak(&#x27;&quot;I ascend! A door to a new realm opens... find it!&quot;&#x27;);
+      } else {
+        speak();
+      }
+      updateHud();
+      chompSound();
+      if (tickId) { clearInterval(tickId); tickId = setInterval(tick, tickInterval()); }
+    } else if (ateVeg) {
+      // shrink: remove new head-growth AND two more tail segments
+      snake.pop(); // undo growth (head added, no food)
+      snake.pop();
+      snake.pop();
+      veg = null;
+      vegSound();
+      if (snake.length &lt; 2) { endGame(true); return; }
+      speak(&#x27;&quot;&#x27; + VEG_LINES[Math.floor(Math.random() * VEG_LINES.length)] + &#x27;&quot;&#x27;);
+      updateHud();
+      if (Math.random() &lt; 0.5) placeVeg();
+      if (tickId) { clearInterval(tickId); tickId = setInterval(tick, tickInterval()); }
+    } else {
+      snake.pop();
+    }
+    paint();
+  }
+
+  // --- procedural sound ---
+  var actx = null;
+  function ensureAudio() {
+    if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch(_) {} }
+  }
+  function chompSound() {
+    if (!actx) return;
+    var idx = currentStageIndex();
+    var o = actx.createOscillator();
+    var g = actx.createGain();
+    o.type = idx &gt;= 3 ? &#x27;sawtooth&#x27; : &#x27;triangle&#x27;;
+    o.frequency.value = 180 + idx * 40;
+    o.frequency.exponentialRampToValueAtTime(60 + idx * 20, actx.currentTime + 0.15);
+    g.gain.value = 0.15;
+    g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + 0.2);
+    o.connect(g); g.connect(actx.destination);
+    o.start(); o.stop(actx.currentTime + 0.2);
+  }
+  function vegSound() {
+    if (!actx) return;
+    var o = actx.createOscillator();
+    var g = actx.createGain();
+    o.type = &#x27;square&#x27;;
+    o.frequency.value = 300;
+    o.frequency.exponentialRampToValueAtTime(80, actx.currentTime + 0.3);
+    g.gain.value = 0.14;
+    g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + 0.32);
+    o.connect(g); g.connect(actx.destination);
+    o.start(); o.stop(actx.currentTime + 0.32);
+  }
+  function warpSound() {
+    if (!actx) return;
+    var o = actx.createOscillator();
+    var g = actx.createGain();
+    o.type = &#x27;sine&#x27;;
+    o.frequency.value = 120;
+    o.frequency.exponentialRampToValueAtTime(900, actx.currentTime + 0.4);
+    g.gain.value = 0.2;
+    g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + 0.45);
+    o.connect(g); g.connect(actx.destination);
+    o.start(); o.stop(actx.currentTime + 0.45);
+  }
+
+  function endGame(byVeg) {
+    running = false;
+    gameOver = true;
+    if (tickId) { clearInterval(tickId); tickId = null; }
+    if (byVeg) { speechEl.textContent = &#x27;&quot;Withered to nothing... by VEGETABLES?! The shame!&quot;&#x27;; }
+    else {
+      var idx = currentStageIndex();
+      if (idx &gt;= 4) speechEl.textContent = &#x27;&quot;IMPOSSIBLE... a demon of my magnitude, undone?!&quot;&#x27;;
+      else if (idx &gt;= 2) speechEl.textContent = &#x27;&quot;NO! My reign was only beginning!&quot;&#x27;;
+      else speechEl.textContent = &#x27;&quot;Ugh... slain before I could ascend.&quot;&#x27;;
+    }
+    speechEl.classList.add(&#x27;gameover&#x27;);
+  }
+
+  function startGame() {
+    if (running) return;
+    ensureAudio();
+    if (actx &amp;&amp; actx.state === &#x27;suspended&#x27;) actx.resume();
+    score = 0;
+    scoreEl.textContent = &#x27;0&#x27;;
+    gameOver = false;
+    envIndex = 0;
+    door = null;
+    veg = null;
+    maxStageReached = 0;
+    initSnake();
+    buildBackground();
+    placeFood();
+    placeVeg();
+    updateHud();
+    speechEl.textContent = &#x27;&quot;A humble little serpent awakens... but not for long.&quot;&#x27;;
+    speechEl.style.color = &#x27;#8affc1&#x27;;
+    speechEl.classList.remove(&#x27;gameover&#x27;);
+    paint();
+    running = true;
+    if (tickId) clearInterval(tickId);
+    tickId = setInterval(tick, tickInterval());
+  }
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    if (tickId) { clearInterval(tickId); tickId = null; }
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27;) { pendingDir = { x: -1, y: 0 }; e.preventDefault(); }
+    else if (e.key === &#x27;ArrowRight&#x27;) { pendingDir = { x: 1, y: 0 }; e.preventDefault(); }
+    else if (e.key === &#x27;ArrowUp&#x27;) { pendingDir = { x: 0, y: -1 }; e.preventDefault(); }
+    else if (e.key === &#x27;ArrowDown&#x27;) { pendingDir = { x: 0, y: 1 }; e.preventDefault(); }
+  });
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  initSnake();
+  buildBackground();
+  updateHud();
+  paint();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NEON GRID RUNNER</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>NEON GRID RUNNER</b> &middot; Game 482 &middot; Amateur producer &middot; Basic game: Road crossing</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: &#x27;Courier New&#x27;, monospace; margin: 0; padding: 0;
+    background: #03040c; color: #cfe6ff; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 12px; box-sizing: border-box;
+    height: 100%; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: 3px;
+    color: #0ff; text-shadow: 0 0 8px #0ff, 0 0 20px #08a; text-transform: uppercase; }
+  .instructions { font-size: 16px; color: #7fb0ff; max-width: 620px; margin: 0;
+    line-height: 1.35; text-align: center; }
+  .instructions b { color: #ff43e0; }
+  .instructions i { color: #4dfff0; font-style: normal; }
+  .instructions u { color: #ffd400; text-decoration: none; }
+  .hud { display: flex; align-items: center; gap: 20px; }
+  .clock { font-family: &#x27;Courier New&#x27;, monospace; font-size: 32px; font-weight: 700;
+    letter-spacing: 4px; color: #39ff14; background: #000; padding: 4px 14px;
+    border: 2px solid #145c0a; border-radius: 6px;
+    text-shadow: 0 0 8px #39ff14; box-shadow: inset 0 0 12px rgba(57,255,20,0.25); }
+  .clock.flash { color: #fff; text-shadow: 0 0 14px #fff, 0 0 26px #39ff14;
+    box-shadow: inset 0 0 20px rgba(255,255,255,0.5), 0 0 18px #39ff14; }
+  .ghosts { font-size: 20px; letter-spacing: 2px; color: #ffd400;
+    text-shadow: 0 0 8px #ffd400; min-width: 90px; }
+  .status { font-size: 14px; letter-spacing: 2px; color: #4dfff0; min-width: 150px; text-align: left; }
+  .field { position: relative; width: 620px; height: 420px; flex-shrink: 0;
+    background: radial-gradient(ellipse at 50% 120%, #0a1840 0%, #050818 60%, #02030a 100%);
+    border-radius: 10px; overflow: hidden;
+    border: 2px solid #0a2a5c; box-shadow: 0 0 30px rgba(0,120,255,0.25), inset 0 0 40px rgba(0,60,160,0.2); }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;NEON GRID RUNNER&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Pilot your drone up with the arrow keys, dodging the hover-cars — new lanes keep scrolling in so you can climb forever. Grab &lt;u&gt;◉ coins&lt;/u&gt; for ghost charges (survive a crash each), a &lt;b&gt;◆ CLEAR&lt;/b&gt; tile to wipe three lanes, or a &lt;i&gt;❄ SLOW&lt;/i&gt; tile to slow traffic.&lt;/p&gt;
+  &lt;div class=&quot;hud&quot;&gt;
+    &lt;div class=&quot;clock&quot; id=&quot;clock&quot;&gt;00:00&lt;/div&gt;
+    &lt;div class=&quot;ghosts&quot; id=&quot;ghosts&quot;&gt;◉ 0&lt;/div&gt;
+    &lt;div class=&quot;status&quot; id=&quot;status&quot;&gt;STANDBY&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;canvas id=&quot;field&quot; class=&quot;field&quot; width=&quot;620&quot; height=&quot;420&quot;&gt;&lt;/canvas&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var canvas = document.getElementById(&#x27;field&#x27;);
+  var ctx = canvas.getContext(&#x27;2d&#x27;);
+  var clockEl = document.getElementById(&#x27;clock&#x27;);
+  var ghostEl = document.getElementById(&#x27;ghosts&#x27;);
+  var statusEl = document.getElementById(&#x27;status&#x27;);
+
+  var CELL = 42;
+  var COLS = 620 / CELL | 0;          // ~14
+  var FIELD_W = 620, FIELD_H = 420;
+  var ROWS = (FIELD_H / CELL) | 0;    // ~10 visible rows
+
+  var HERO_R = 15;
+  var CAR_W = CELL * 1.6, CAR_H = CELL - 14;
+
+  // COORDINATE MODEL
+  // worldRow increases DOWNWARD (like the screen). The drone starts at a
+  // large worldRow (bottom) and moves UP by DECREASING worldRow.
+  // &quot;progress&quot; = how far up (how much worldRow decreased) from the start.
+  // camTop = worldRow shown at the top edge of the screen.
+
+  var START_WORLD = 100000;   // arbitrary large starting row (bottom)
+  var running = false, animId = null;
+  var hero;              // {col, worldRow}
+  var camTop;            // world row shown at top of screen
+  var lanes = {};        // keyed by worldRow -&gt; lane object
+  var minLaneRow;        // lowest worldRow (topmost) lane generated so far
+  var tokens = [];       // {worldRow, col, type}
+  var score = 0;         // progress upward
+  var ghosts = 0;
+  var slowUntil = 0;
+  var t = 0;
+  var flashTimer = 0;
+  var carColors = [&#x27;#ff2d95&#x27;,&#x27;#00e5ff&#x27;,&#x27;#b14dff&#x27;,&#x27;#ffd400&#x27;,&#x27;#39ff14&#x27;,&#x27;#ff6a00&#x27;];
+
+  function roundRect(x, y, w, h, r){
+    if (r &gt; w/2) r = w/2;
+    if (r &gt; h/2) r = h/2;
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function screenRow(worldRow){ return worldRow - camTop; }
+  function screenY(worldRow){ return screenRow(worldRow) * CELL + CELL/2; }
+
+  function makeLane(worldRow){
+    var progress = START_WORLD - worldRow;      // how high this lane is
+    var i = worldRow;
+    var dir = (i % 2 === 0) ? 1 : -1;
+    var speed = 0.4 + (Math.abs(i) % 3) * 0.18 + Math.min(progress, 40) * 0.015;
+    var count = 2 + (Math.abs(i) % 2);
+    var gap = FIELD_W / count;
+    var cars = [];
+    for (var j = 0; j &lt; count; j++) {
+      cars.push({ x: j * gap + (Math.abs(i) * 37) % gap, color: carColors[(Math.abs(i)+j) % carColors.length] });
+    }
+    return { dir: dir, speed: speed, cars: cars };
+  }
+
+  // Fill all lanes from the topmost needed worldRow down to just below screen.
+  function ensureLanes(){
+    var topNeeded = camTop - 2;              // a bit above the screen
+    var bottomNeeded = camTop + ROWS + 2;    // a bit below the screen
+    for (var wr = Math.floor(topNeeded); wr &lt;= bottomNeeded; wr++){
+      // only create lanes strictly above the start row (bottom safe row = START_WORLD)
+      if (wr &gt;= START_WORLD) continue;
+      if (!lanes.hasOwnProperty(wr)){
+        lanes[wr] = makeLane(wr);
+        maybeSpawnToken(wr);
+      }
+    }
+  }
+
+  function maybeSpawnToken(worldRow){
+    var roll = Math.random();
+    var type = null;
+    if (roll &lt; 0.14) type = &#x27;coin&#x27;;
+    else if (roll &lt; 0.20) type = &#x27;clear&#x27;;
+    else if (roll &lt; 0.26) type = &#x27;slow&#x27;;
+    if (type){
+      tokens.push({ worldRow: worldRow, col: (Math.random()*COLS)|0, type: type });
+    }
+  }
+
+  function heroXY(){
+    return { x: hero.col * CELL + CELL/2, y: screenY(hero.worldRow) };
+  }
+
+  function setStatus(txt){ statusEl.textContent = txt; }
+  function flashClock(){ flashTimer = 12; clockEl.classList.add(&#x27;flash&#x27;); }
+  function updateGhosts(){ ghostEl.textContent = &#x27;◉ &#x27; + ghosts; }
+  function updateClock(){
+    var m = (score / 60 | 0);
+    var s = score % 60;
+    clockEl.textContent = (m&lt;10?&#x27;0&#x27;:&#x27;&#x27;)+m + &#x27;:&#x27; + (s&lt;10?&#x27;0&#x27;:&#x27;&#x27;)+s;
+  }
+
+  function drawPlasma(y, pulse){
+    var grad = ctx.createLinearGradient(0,y,FIELD_W,y);
+    grad.addColorStop(0,&#x27;rgba(180,0,255,&#x27;+(0.15+0.2*pulse)+&#x27;)&#x27;);
+    grad.addColorStop(0.5,&#x27;rgba(0,200,255,&#x27;+(0.25+0.3*pulse)+&#x27;)&#x27;);
+    grad.addColorStop(1,&#x27;rgba(255,0,180,&#x27;+(0.15+0.2*pulse)+&#x27;)&#x27;);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0,y,FIELD_W,CELL);
+    ctx.save();
+    ctx.globalCompositeOperation = &#x27;lighter&#x27;;
+    for (var i=0;i&lt;5;i++){
+      var sx = ((t*2 + i*140) % (FIELD_W+80)) - 40;
+      ctx.fillStyle = &#x27;rgba(120,240,255,0.15)&#x27;;
+      ctx.fillRect(sx, y+6, 40, CELL-12);
+    }
+    ctx.restore();
+  }
+
+  function drawGrid(){
+    ctx.clearRect(0,0,FIELD_W,FIELD_H);
+    var pulse = (Math.sin(t*0.05)+1)/2;
+    // Bottom safe row (the starting row) shows a plasma river if visible.
+    var startScreen = screenRow(START_WORLD);
+    if (startScreen &gt;= 0 &amp;&amp; startScreen &lt; ROWS){
+      drawPlasma(startScreen * CELL, pulse);
+    }
+
+    ctx.lineWidth = 1;
+    for (var c=0;c&lt;=COLS;c++){
+      var gx = c*CELL;
+      ctx.strokeStyle = &#x27;rgba(0,150,255,0.12)&#x27;;
+      ctx.beginPath(); ctx.moveTo(gx,0); ctx.lineTo(gx,FIELD_H); ctx.stroke();
+    }
+    for (var r=0;r&lt;=ROWS;r++){
+      var gy = r*CELL;
+      var glow = 0.10 + 0.18*Math.abs(Math.sin(t*0.03 + r + camTop));
+      ctx.strokeStyle = &#x27;rgba(0,229,255,&#x27;+glow+&#x27;)&#x27;;
+      ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(FIELD_W,gy); ctx.stroke();
+    }
+  }
+
+  function drawCar(car, y, dir){
+    var x = car.x, w = CAR_W, h = CAR_H;
+    if (y &lt; -CELL || y &gt; FIELD_H + CELL) return;
+    ctx.save();
+    ctx.translate(x + w/2, y);
+    ctx.fillStyle = &#x27;rgba(0,200,255,0.18)&#x27;;
+    ctx.beginPath(); ctx.ellipse(0, h/2+6, w/2, 5, 0, 0, Math.PI*2); ctx.fill();
+    ctx.shadowColor = car.color; ctx.shadowBlur = 12;
+    ctx.fillStyle = car.color;
+    roundRect(-w/2, -h/2, w, h, 7); ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = &#x27;rgba(3,5,20,0.75)&#x27;;
+    var cw = w*0.5, ch = h*0.45;
+    roundRect(-cw/2 - dir*w*0.05, -ch/2, cw, ch, 4); ctx.fill();
+    ctx.fillStyle = &#x27;rgba(255,255,255,0.8)&#x27;;
+    ctx.fillRect(dir&gt;0 ? -w/2-3 : w/2, -h*0.18, 3, h*0.36);
+    ctx.restore();
+  }
+
+  function drawToken(tok){
+    var y = screenY(tok.worldRow);
+    if (y &lt; -CELL || y &gt; FIELD_H + CELL) return;
+    var x = tok.col*CELL + CELL/2;
+    var pulse = 0.5 + 0.5*Math.sin(t*0.12);
+    ctx.save();
+    ctx.translate(x,y);
+    if (tok.type === &#x27;clear&#x27;){
+      ctx.shadowColor=&#x27;#c04dff&#x27;; ctx.shadowBlur=14+8*pulse;
+      ctx.fillStyle=&#x27;#c04dff&#x27;;
+      ctx.beginPath();
+      ctx.moveTo(0,-12); ctx.lineTo(12,0); ctx.lineTo(0,12); ctx.lineTo(-12,0); ctx.closePath();
+      ctx.fill();
+    } else if (tok.type === &#x27;slow&#x27;){
+      ctx.shadowColor=&#x27;#4dfff0&#x27;; ctx.shadowBlur=14+8*pulse;
+      ctx.fillStyle=&#x27;#4dfff0&#x27;; ctx.font=&#x27;bold 22px Courier New&#x27;; ctx.textAlign=&#x27;center&#x27;; ctx.textBaseline=&#x27;middle&#x27;;
+      ctx.fillText(&#x27;❄&#x27;,0,1);
+    } else { // coin
+      ctx.shadowColor=&#x27;#ffd400&#x27;; ctx.shadowBlur=14+8*pulse;
+      ctx.strokeStyle=&#x27;#ffd400&#x27;; ctx.lineWidth=3; ctx.fillStyle=&#x27;rgba(255,212,0,0.25)&#x27;;
+      ctx.beginPath(); ctx.arc(0,0,11,0,Math.PI*2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle=&#x27;#ffd400&#x27;; ctx.beginPath(); ctx.arc(0,0,4,0,Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawHero(){
+    var p = heroXY();
+    var isGhost = ghosts &gt; 0;
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    var spin = t*0.04;
+    ctx.rotate(spin);
+    var col = isGhost ? &#x27;#ffd400&#x27; : &#x27;#39ff14&#x27;;
+    ctx.globalAlpha = isGhost ? 0.6 : 1;
+    ctx.shadowColor = col; ctx.shadowBlur = 18;
+    ctx.strokeStyle = col; ctx.lineWidth = 3;
+    ctx.beginPath();
+    for (var i=0;i&lt;3;i++){
+      var a = i * (Math.PI*2/3) - Math.PI/2;
+      var px = Math.cos(a)*HERO_R, py = Math.sin(a)*HERO_R;
+      if (i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+    }
+    ctx.closePath(); ctx.stroke();
+    ctx.rotate(-spin);
+    ctx.shadowBlur = 14; ctx.fillStyle = &#x27;#eaffff&#x27;;
+    ctx.beginPath(); ctx.arc(0,0,5,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  function draw(){
+    drawGrid();
+    tokens.forEach(drawToken);
+    for (var wr in lanes){
+      var lane = lanes[wr];
+      var y = screenY(parseInt(wr,10));
+      if (y &lt; -CELL || y &gt; FIELD_H + CELL) continue;
+      for (var j=0;j&lt;lane.cars.length;j++) drawCar(lane.cars[j], y, lane.dir);
+    }
+    drawHero();
+  }
+
+  function tick(){
+    if (!running) return;
+    t++;
+    var slowFactor = (t &lt; slowUntil) ? 0.3 : 1;
+    if (t &gt;= slowUntil &amp;&amp; slowUntil !== 0 &amp;&amp; statusEl.textContent.indexOf(&#x27;SLOW&#x27;)===0){ setStatus(&#x27;RUNNING&#x27;); slowUntil=0; }
+
+    for (var wr in lanes){
+      var lane = lanes[wr];
+      for (var j=0;j&lt;lane.cars.length;j++){
+        var car = lane.cars[j];
+        car.x += lane.dir * lane.speed * slowFactor;
+        if (lane.dir &gt; 0 &amp;&amp; car.x &gt; FIELD_W) car.x = -CAR_W;
+        else if (lane.dir &lt; 0 &amp;&amp; car.x + CAR_W &lt; 0) car.x = FIELD_W;
+      }
+    }
+
+    // collision in hero&#x27;s world lane
+    var hlane = lanes[hero.worldRow];
+    if (hlane){
+      var p = heroXY();
+      for (var k=0;k&lt;hlane.cars.length;k++){
+        var car = hlane.cars[k];
+        if (p.x + HERO_R*0.7 &gt; car.x &amp;&amp; p.x - HERO_R*0.7 &lt; car.x + CAR_W &amp;&amp;
+            Math.abs(p.y - screenY(hero.worldRow)) &lt; (CAR_H/2 + HERO_R*0.6)){
+          if (ghosts &gt; 0){
+            ghosts--; updateGhosts();
+            setStatus(&#x27;GHOST SAVED!&#x27;);
+            car.x = hlane.dir&gt;0 ? -CAR_W-60 : FIELD_W+60;
+          } else {
+            endGame(); return;
+          }
+        }
+      }
+    }
+
+    if (flashTimer &gt; 0){ flashTimer--; if (flashTimer===0) clockEl.classList.remove(&#x27;flash&#x27;); }
+
+    draw();
+    animId = requestAnimationFrame(tick);
+  }
+
+  function checkTokens(){
+    for (var i=tokens.length-1;i&gt;=0;i--){
+      var tok = tokens[i];
+      if (tok.worldRow === hero.worldRow &amp;&amp; tok.col === hero.col){
+        if (tok.type === &#x27;clear&#x27;){
+          // clear the next three lanes UP (worldRow - 1, -2, -3)
+          for (var d=1; d&lt;=3; d++){
+            var lane = lanes[hero.worldRow - d];
+            if (lane){
+              (function(l){ l.cars.forEach(function(c,ci){ c.x = l.dir&gt;0 ? -CAR_W - ci*200 : FIELD_W + ci*200; }); })(lane);
+            }
+          }
+          setStatus(&#x27;◆ LANES CLEARED&#x27;);
+        } else if (tok.type === &#x27;slow&#x27;){
+          slowUntil = t + 60*4; setStatus(&#x27;SLOW ACTIVE&#x27;);
+        } else {
+          ghosts++; updateGhosts(); setStatus(&#x27;◉ GHOST +1&#x27;);
+        }
+        tokens.splice(i,1);
+      }
+    }
+  }
+
+  function move(dc,dr){
+    if (!running) return;
+    hero.col = Math.max(0, Math.min(COLS-1, hero.col+dc));
+    // dr from key: up = -1, down = +1. worldRow increases downward,
+    // so up (dr=-1) DECREASES worldRow. Don&#x27;t allow going above generated space (unbounded up is fine).
+    var newWorld = hero.worldRow + dr;
+    // Can&#x27;t go below the starting bottom row.
+    if (newWorld &gt; START_WORLD) newWorld = START_WORLD;
+    hero.worldRow = newWorld;
+
+    // Keep the drone in the lower portion of the screen: scroll camera up
+    // (decrease camTop) when the drone climbs into the upper part.
+    var sr = screenRow(hero.worldRow);
+    if (sr &lt; 3){
+      camTop -= (3 - sr);   // move camera up so drone appears lower
+    }
+    ensureLanes();
+
+    checkTokens();
+
+    var prog = START_WORLD - hero.worldRow;
+    if (prog &gt; score){
+      score = prog;
+      updateClock(); flashClock();
+    }
+    draw();
+  }
+
+  function endGame(){
+    running = false;
+    if (animId){ cancelAnimationFrame(animId); animId=null; }
+    setStatus(&#x27;DRONE DESTROYED&#x27;);
+  }
+
+  function startGame(){
+    if (running) return;
+    score = 0; t = 0; slowUntil = 0; flashTimer = 0; ghosts = 0;
+    clockEl.classList.remove(&#x27;flash&#x27;);
+    lanes = {}; tokens = [];
+    hero = { col: (COLS/2)|0, worldRow: START_WORLD };
+    // Position camera so the drone sits near the bottom (screen row ROWS-1).
+    camTop = START_WORLD - (ROWS - 1);
+    ensureLanes();
+    updateClock(); updateGhosts();
+    setStatus(&#x27;RUNNING&#x27;);
+    running = true;
+    animId = requestAnimationFrame(tick);
+  }
+  function stopGame(){
+    if (!running) return;
+    running = false;
+    if (animId){ cancelAnimationFrame(animId); animId=null; }
+    setStatus(&#x27;PAUSED&#x27;);
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function(e){
+    if (e.key === &#x27;ArrowLeft&#x27;){ move(-1,0); e.preventDefault(); }
+    else if (e.key === &#x27;ArrowRight&#x27;){ move(1,0); e.preventDefault(); }
+    else if (e.key === &#x27;ArrowUp&#x27;){ move(0,-1); e.preventDefault(); }
+    else if (e.key === &#x27;ArrowDown&#x27;){ move(0,1); e.preventDefault(); }
+  });
+  window.addEventListener(&#x27;message&#x27;, function(e){
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  // initial static paint (drone at bottom)
+  hero = { col: (COLS/2)|0, worldRow: START_WORLD };
+  camTop = START_WORLD - (ROWS - 1);
+  ensureLanes();
+  updateClock(); updateGhosts(); draw();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  // Suppress in-iframe scrollbars. The parent fits the iframe layout
+  // box to match the content size, so internal scroll is redundant —
+  // and if the LLM&#x27;s CSS sets body overflow: auto, the scrollbar shows
+  // briefly before the fit lands. Force hidden so it never appears.
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  // Iframe-internal JS error capture. window.onerror inside a sandboxed
+  // iframe can&#x27;t post to /api/js_error directly, so we relay to the
+  // parent via postMessage; parent&#x27;s error_logger.js forwards to the
+  // server. Catches LLM-emitted broken HTML (invalid hex, undefined
+  // variables, etc.) that would otherwise fail silently inside the
+  // iframe.
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      // Debounce: don&#x27;t fire more than ~10× per second. ResizeObserver
+      // fires repeatedly during layout/font load; we only need the latest.
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      // Clamp: reject obviously bogus dimensions. Any browser-game viewport
+      // is well under 4000×4000 logical px; readings beyond that are layout
+      // noise during load/visibility transitions.
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  // Parent posts wd_remeasure when it makes the iframe visible (the body&#x27;s
+  // ResizeObserver doesn&#x27;t fire on display:none→block of an outer ancestor
+  // because the iframe document didn&#x27;t actually resize). Wait a frame for
+  // layout to settle before measuring.
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

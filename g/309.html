@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leaf Catcher 🍂</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>Leaf Catcher 🍂</b> &middot; Game 309 &middot; Amateur producer &middot; Basic game: Whack-a-mole</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #222; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 18px; background: linear-gradient(#fff8ef, #fdeede); height: 100%; box-sizing: border-box; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 10px; }
+  h1 { margin: 0; font-size: 28px; font-weight: 600; color: #b5561b; }
+  .instructions { font-size: 16px; color: #666; max-width: 600px; margin: 0; line-height: 1.4; }
+  .statusbar { font-size: 22px; color: #555; margin: 0; display: flex; gap: 22px; align-items: center; }
+  .shieldlabel { font-size: 18px; color: #b8860b; font-weight: 600; }
+  .board { position: relative; width: 620px; height: 440px; flex-shrink: 0; margin: 0; background: linear-gradient(#eaf4dd, #d7ecc4); border-radius: 8px; overflow: hidden; transition: box-shadow 0.2s ease; }
+  .board.shielded { box-shadow: inset 0 0 0 6px #f4c430, 0 0 22px 4px rgba(244,196,48,0.7); }
+  .leaf { position: absolute; width: 56px; height: 56px; cursor: pointer; user-select: none; will-change: transform; }
+  .leaf svg { width: 100%; height: 100%; display: block; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2)); }
+  .pop { transition: transform 0.15s ease, opacity 0.15s ease; transform: scale(1.5) !important; opacity: 0; }
+  .apple { position: absolute; width: 54px; height: 54px; cursor: pointer; user-select: none; will-change: transform; }
+  .apple svg { width: 100%; height: 100%; display: block; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
+  .spider { position: absolute; width: 50px; cursor: pointer; user-select: none; will-change: transform; top: 0; }
+  .spider .string { width: 2px; background: rgba(60,60,60,0.5); margin: 0 auto; }
+  .spider .body { width: 50px; height: 50px; margin-top: -2px; }
+  .spider svg { width: 100%; height: 100%; display: block; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3)); }
+  .gameover { position: absolute; inset: 0; background: rgba(20,20,20,0.82); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; border-radius: 8px; }
+  .gameover h2 { margin: 0; font-size: 34px; }
+  .gameover p { margin: 0; font-size: 20px; }
+  .gameover .hint { font-size: 16px; opacity: 0.8; }
+  .hidden { display: none !important; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;Leaf Catcher 🍂&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Click leaves to score and grab candy apples for a temporary spider shield; clicking a spider unshielded ends the game. Use the &lt;strong&gt;Start&lt;/strong&gt;/&lt;strong&gt;Restart&lt;/strong&gt; button below the game.&lt;/p&gt;
+  &lt;div class=&quot;statusbar&quot;&gt;
+    &lt;div&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;shieldlabel hidden&quot; id=&quot;shieldlabel&quot;&gt;🍎 Shield: &lt;span id=&quot;shieldtime&quot;&gt;0&lt;/span&gt;s&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;board&quot; id=&quot;board&quot;&gt;
+    &lt;div class=&quot;gameover hidden&quot; id=&quot;gameover&quot;&gt;
+      &lt;h2&gt;🕷️ Caught!&lt;/h2&gt;
+      &lt;p&gt;Final Score: &lt;span id=&quot;finalScore&quot;&gt;0&lt;/span&gt;&lt;/p&gt;
+      &lt;p class=&quot;hint&quot;&gt;Press Restart below to play again.&lt;/p&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  var BOARD_W = 620, BOARD_H = 440, LEAF_SIZE = 56, SPIDER_SIZE = 50, APPLE_SIZE = 54;
+  var SPAWN_MS = 850, LEAF_LIFE_MS = 4200;
+  var SPIDER_SPAWN_MS = 2600;
+  var APPLE_SPAWN_MS = 7000, APPLE_LIFE_MS = 3500;
+  var SHIELD_MS = 5000;
+  var score = 0;
+  var spawnId = null, spiderSpawnId = null, appleSpawnId = null, animId = null;
+  var leaves = [];
+  var spiders = [];
+  var apples = [];
+  var running = false;
+  var shieldUntil = 0;
+  var board = document.getElementById(&#x27;board&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var shieldLabel = document.getElementById(&#x27;shieldlabel&#x27;);
+  var shieldTimeEl = document.getElementById(&#x27;shieldtime&#x27;);
+  var gameoverEl = document.getElementById(&#x27;gameover&#x27;);
+  var finalScoreEl = document.getElementById(&#x27;finalScore&#x27;);
+
+  var LEAF_COLORS = [&#x27;#e07b2c&#x27;, &#x27;#c9432b&#x27;, &#x27;#d9a520&#x27;, &#x27;#8f9b2a&#x27;, &#x27;#b5561b&#x27;, &#x27;#e0a92c&#x27;];
+
+  function leafSVG(color) {
+    return &#x27;&lt;svg viewBox=&quot;0 0 100 100&quot;&gt;&#x27; +
+      &#x27;&lt;path d=&quot;M50 5 C20 25 15 55 30 80 C40 95 60 95 70 80 C85 55 80 25 50 5 Z&quot; fill=&quot;&#x27; + color + &#x27;&quot;/&gt;&#x27; +
+      &#x27;&lt;path d=&quot;M50 12 L50 88 M50 40 L30 30 M50 40 L70 30 M50 60 L32 52 M50 60 L68 52&quot; stroke=&quot;rgba(0,0,0,0.25)&quot; stroke-width=&quot;2.5&quot; fill=&quot;none&quot; stroke-linecap=&quot;round&quot;/&gt;&#x27; +
+      &#x27;&lt;/svg&gt;&#x27;;
+  }
+
+  function appleSVG() {
+    return &#x27;&lt;svg viewBox=&quot;0 0 100 100&quot;&gt;&#x27; +
+      &#x27;&lt;rect x=&quot;47&quot; y=&quot;8&quot; width=&quot;6&quot; height=&quot;22&quot; rx=&quot;3&quot; fill=&quot;#6b3d1f&quot;/&gt;&#x27; +
+      &#x27;&lt;path d=&quot;M52 20 Q68 12 72 24 Q60 26 52 22 Z&quot; fill=&quot;#4a7d2c&quot;/&gt;&#x27; +
+      &#x27;&lt;path d=&quot;M50 28 C22 28 18 58 30 80 C40 96 60 96 70 80 C82 58 78 28 50 28 Z&quot; fill=&quot;#c1121f&quot;/&gt;&#x27; +
+      &#x27;&lt;ellipse cx=&quot;40&quot; cy=&quot;52&quot; rx=&quot;9&quot; ry=&quot;14&quot; fill=&quot;rgba(255,255,255,0.45)&quot;/&gt;&#x27; +
+      &#x27;&lt;path d=&quot;M50 32 C26 32 22 58 32 78 C40 92 60 92 68 78 C78 58 74 32 50 32 Z&quot; fill=&quot;none&quot; stroke=&quot;#8a0f1a&quot; stroke-width=&quot;1.5&quot; opacity=&quot;0.5&quot;/&gt;&#x27; +
+      &#x27;&lt;/svg&gt;&#x27;;
+  }
+
+  function spiderSVG() {
+    return &#x27;&lt;svg viewBox=&quot;0 0 100 100&quot;&gt;&#x27; +
+      &#x27;&lt;g stroke=&quot;#1a1a1a&quot; stroke-width=&quot;5&quot; stroke-linecap=&quot;round&quot; fill=&quot;none&quot;&gt;&#x27; +
+      &#x27;&lt;path d=&quot;M50 55 L20 35 M50 55 L15 55 M50 55 L20 78 M50 55 L38 85&quot;/&gt;&#x27; +
+      &#x27;&lt;path d=&quot;M50 55 L80 35 M50 55 L85 55 M50 55 L80 78 M50 55 L62 85&quot;/&gt;&#x27; +
+      &#x27;&lt;/g&gt;&#x27; +
+      &#x27;&lt;ellipse cx=&quot;50&quot; cy=&quot;55&quot; rx=&quot;20&quot; ry=&quot;24&quot; fill=&quot;#2a2a2a&quot;/&gt;&#x27; +
+      &#x27;&lt;circle cx=&quot;43&quot; cy=&quot;48&quot; r=&quot;4&quot; fill=&quot;#e04444&quot;/&gt;&#x27; +
+      &#x27;&lt;circle cx=&quot;57&quot; cy=&quot;48&quot; r=&quot;4&quot; fill=&quot;#e04444&quot;/&gt;&#x27; +
+      &#x27;&lt;/svg&gt;&#x27;;
+  }
+
+  function clearAll() {
+    leaves = [];
+    spiders = [];
+    apples = [];
+    var kids = Array.prototype.slice.call(board.children);
+    kids.forEach(function (c) { if (c !== gameoverEl) board.removeChild(c); });
+  }
+
+  function isShielded() { return performance.now() &lt; shieldUntil; }
+
+  function spawnLeaf() {
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;leaf&#x27;;
+    var color = LEAF_COLORS[Math.floor(Math.random() * LEAF_COLORS.length)];
+    el.innerHTML = leafSVG(color);
+
+    var leaf = {
+      el: el,
+      baseX: Math.random() * (BOARD_W - LEAF_SIZE),
+      y: -LEAF_SIZE,
+      vy: 0.4 + Math.random() * 0.5,
+      swayAmp: 20 + Math.random() * 30,
+      swayFreq: 0.5 + Math.random() * 1.2,
+      phase: Math.random() * Math.PI * 2,
+      rot: Math.random() * 360,
+      vrot: (Math.random() - 0.5) * 1.5,
+      born: performance.now(),
+      hit: false
+    };
+
+    el.addEventListener(&#x27;click&#x27;, function () {
+      if (leaf.hit || !running) return;
+      leaf.hit = true;
+      score += 1;
+      scoreEl.textContent = score;
+      el.className = &#x27;leaf pop&#x27;;
+      setTimeout(function () { removeLeaf(leaf); }, 150);
+    });
+
+    board.appendChild(el);
+    leaves.push(leaf);
+  }
+
+  function removeLeaf(leaf) {
+    var idx = leaves.indexOf(leaf);
+    if (idx !== -1) leaves.splice(idx, 1);
+    if (leaf.el.parentNode === board) board.removeChild(leaf.el);
+  }
+
+  function spawnApple() {
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;apple&#x27;;
+    el.innerHTML = appleSVG();
+
+    var apple = {
+      el: el,
+      baseX: Math.random() * (BOARD_W - APPLE_SIZE),
+      y: -APPLE_SIZE,
+      vy: 0.7 + Math.random() * 0.4,
+      swayAmp: 15 + Math.random() * 20,
+      swayFreq: 0.6 + Math.random() * 0.8,
+      phase: Math.random() * Math.PI * 2,
+      born: performance.now(),
+      taken: false
+    };
+
+    el.addEventListener(&#x27;click&#x27;, function () {
+      if (apple.taken || !running) return;
+      apple.taken = true;
+      shieldUntil = performance.now() + SHIELD_MS;
+      el.className = &#x27;apple pop&#x27;;
+      setTimeout(function () { removeApple(apple); }, 150);
+    });
+
+    board.appendChild(el);
+    apples.push(apple);
+  }
+
+  function removeApple(apple) {
+    var idx = apples.indexOf(apple);
+    if (idx !== -1) apples.splice(idx, 1);
+    if (apple.el.parentNode === board) board.removeChild(apple.el);
+  }
+
+  function spawnSpider() {
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;spider&#x27;;
+    var x = Math.random() * (BOARD_W - SPIDER_SIZE);
+    el.style.left = x + &#x27;px&#x27;;
+    el.innerHTML = &#x27;&lt;div class=&quot;string&quot;&gt;&lt;/div&gt;&lt;div class=&quot;body&quot;&gt;&#x27; + spiderSVG() + &#x27;&lt;/div&gt;&#x27;;
+
+    var spider = {
+      el: el,
+      stringEl: el.querySelector(&#x27;.string&#x27;),
+      targetLen: 60 + Math.random() * (BOARD_H - SPIDER_SIZE - 100),
+      len: 0,
+      descendSpeed: 1.2 + Math.random() * 1.0,
+      state: &#x27;down&#x27;,
+      hangUntil: 0
+    };
+
+    el.addEventListener(&#x27;click&#x27;, function () {
+      if (!running) return;
+      if (isShielded()) {
+        // Shield saves you: spider retreats instead of ending the game.
+        spider.state = &#x27;up&#x27;;
+        return;
+      }
+      endGame();
+    });
+
+    board.appendChild(el);
+    spiders.push(spider);
+  }
+
+  function removeSpider(spider) {
+    var idx = spiders.indexOf(spider);
+    if (idx !== -1) spiders.splice(idx, 1);
+    if (spider.el.parentNode === board) board.removeChild(spider.el);
+  }
+
+  function updateShieldUI(now) {
+    if (now &lt; shieldUntil) {
+      board.classList.add(&#x27;shielded&#x27;);
+      shieldLabel.classList.remove(&#x27;hidden&#x27;);
+      shieldTimeEl.textContent = Math.ceil((shieldUntil - now) / 1000);
+    } else {
+      board.classList.remove(&#x27;shielded&#x27;);
+      shieldLabel.classList.add(&#x27;hidden&#x27;);
+    }
+  }
+
+  function tick(now) {
+    if (!running) return;
+
+    updateShieldUI(now);
+
+    for (var i = leaves.length - 1; i &gt;= 0; i--) {
+      var leaf = leaves[i];
+      if (leaf.hit) continue;
+      var t = (now - leaf.born) / 1000;
+      leaf.y += leaf.vy;
+      leaf.rot += leaf.vrot;
+      var sway = Math.sin(t * leaf.swayFreq + leaf.phase) * leaf.swayAmp;
+      leaf.el.style.transform = &#x27;translate(&#x27; + (leaf.baseX + sway) + &#x27;px,&#x27; + leaf.y + &#x27;px) rotate(&#x27; + leaf.rot + &#x27;deg)&#x27;;
+      if (leaf.y &gt; BOARD_H + LEAF_SIZE || (now - leaf.born) &gt; LEAF_LIFE_MS) {
+        removeLeaf(leaf);
+      }
+    }
+
+    for (var k = apples.length - 1; k &gt;= 0; k--) {
+      var ap = apples[k];
+      if (ap.taken) continue;
+      var at = (now - ap.born) / 1000;
+      ap.y += ap.vy;
+      var asway = Math.sin(at * ap.swayFreq + ap.phase) * ap.swayAmp;
+      ap.el.style.transform = &#x27;translate(&#x27; + (ap.baseX + asway) + &#x27;px,&#x27; + ap.y + &#x27;px)&#x27;;
+      if (ap.y &gt; BOARD_H + APPLE_SIZE || (now - ap.born) &gt; APPLE_LIFE_MS + 4000) {
+        removeApple(ap);
+      }
+    }
+
+    for (var j = spiders.length - 1; j &gt;= 0; j--) {
+      var sp = spiders[j];
+      if (sp.state === &#x27;down&#x27;) {
+        sp.len += sp.descendSpeed;
+        if (sp.len &gt;= sp.targetLen) {
+          sp.len = sp.targetLen;
+          sp.state = &#x27;hang&#x27;;
+          sp.hangUntil = now + 1200;
+        }
+      } else if (sp.state === &#x27;hang&#x27;) {
+        if (now &gt;= sp.hangUntil) sp.state = &#x27;up&#x27;;
+      } else {
+        sp.len -= sp.descendSpeed * 1.4;
+        if (sp.len &lt;= 0) { removeSpider(sp); continue; }
+      }
+      sp.stringEl.style.height = sp.len + &#x27;px&#x27;;
+    }
+
+    animId = requestAnimationFrame(tick);
+  }
+
+  function startGame() {
+    if (running) return;
+    running = true;
+    score = 0;
+    shieldUntil = 0;
+    scoreEl.textContent = &#x27;0&#x27;;
+    gameoverEl.classList.add(&#x27;hidden&#x27;);
+    board.classList.remove(&#x27;shielded&#x27;);
+    shieldLabel.classList.add(&#x27;hidden&#x27;);
+    clearAll();
+    spawnLeaf();
+    spawnId = setInterval(spawnLeaf, SPAWN_MS);
+    spiderSpawnId = setInterval(spawnSpider, SPIDER_SPAWN_MS);
+    appleSpawnId = setInterval(spawnApple, APPLE_SPAWN_MS);
+    setTimeout(function () { if (running) spawnSpider(); }, 1400);
+    setTimeout(function () { if (running) spawnApple(); }, 3000);
+    animId = requestAnimationFrame(tick);
+  }
+
+  function stopTimers() {
+    if (spawnId) { clearInterval(spawnId); spawnId = null; }
+    if (spiderSpawnId) { clearInterval(spiderSpawnId); spiderSpawnId = null; }
+    if (appleSpawnId) { clearInterval(appleSpawnId); appleSpawnId = null; }
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+  }
+
+  function endGame() {
+    if (!running) return;
+    running = false;
+    stopTimers();
+    finalScoreEl.textContent = score;
+    gameoverEl.classList.remove(&#x27;hidden&#x27;);
+  }
+
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    stopTimers();
+    clearAll();
+    board.classList.remove(&#x27;shielded&#x27;);
+    shieldLabel.classList.add(&#x27;hidden&#x27;);
+  }
+
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

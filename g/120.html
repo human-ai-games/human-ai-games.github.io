@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mole Mayhem</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>Mole Mayhem</b> &middot; Game 120 &middot; Amateur producer &middot; Basic game: Whack-a-mole</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #222; overflow-y: auto; -webkit-user-select: none; user-select: none; }
+  .game { max-width: 720px; margin: 0 auto; padding: 12px 14px; background: white; height: 100%; box-sizing: border-box; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 8px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 700; background: linear-gradient(90deg,#3ba55c,#2b7bd6); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .instructions { font-size: 16px; color: #666; max-width: 600px; margin: 0; line-height: 1.35; }
+  .hud { display: flex; gap: 16px; font-size: 17px; color: #555; align-items: center; flex-wrap: wrap; justify-content: center; min-height: 20px; }
+  .hud .label { font-weight: 600; }
+  .hud .round.boss { color: #c0392b; font-weight: 700; }
+  .hud .time.low { color: #c0392b; font-weight: 700; }
+  .board { position: relative; width: 620px; max-width: 100%; height: 396px; flex-shrink: 0; margin: 0; background: #ececec; border-radius: 10px; overflow: hidden; touch-action: manipulation; box-shadow: inset 0 0 0 2px #dcdcdc; }
+  .mole { position: absolute; width: 66px; height: 66px; border-radius: 50%; background: #555; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 30px; touch-action: manipulation; -webkit-tap-highlight-color: transparent; transition: transform .06s ease; }
+  .mole:active { transform: scale(0.92); }
+  .mole.boss { width: 120px; height: 120px; background: #7a2e2e; box-shadow: 0 0 0 4px #c0392b44; font-size: 48px; }
+  .boss-hp { position: absolute; left: 0; bottom: 6px; width: 100%; text-align: center; font-size: 11px; color: #fff; font-weight: 700; }
+  .banner { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background: rgba(0,0,0,.78); color: #fff; padding: 16px 22px; border-radius: 10px; font-size: 22px; font-weight: 600; pointer-events: none; opacity: 0; transition: opacity .25s; text-align: center; max-width: 90%; white-space: pre-line; }
+  .banner.show { opacity: 1; }
+  .overlay { position: absolute; inset: 0; background: linear-gradient(160deg,#1c2833,#2b3a4a); color: #fff; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 20px; box-sizing: border-box; border-radius: 10px; }
+  .overlay.show { display: flex; }
+  .overlay h2 { margin: 0; font-size: 26px; }
+  .overlay p { margin: 0; font-size: 16px; line-height: 1.5; max-width: 460px; }
+  .modebtns { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+  .modecard { background: rgba(255,255,255,.08); border: 2px solid rgba(255,255,255,.25); border-radius: 12px; padding: 14px 18px; width: 190px; cursor: pointer; transition: transform .1s, border-color .1s, background .1s; }
+  .modecard:hover, .modecard.sel { transform: translateY(-3px); border-color: #3ba55c; background: rgba(59,165,92,.18); }
+  .modecard .mtitle { font-size: 19px; font-weight: 700; margin-bottom: 4px; }
+  .modecard .mdesc { font-size: 13px; color: #cdd6df; line-height: 1.35; }
+  .startbtn { font-size: 18px; padding: 11px 30px; border: none; border-radius: 10px; background: #3ba55c; color: #fff; cursor: pointer; font-weight: 700; }
+  .startbtn:disabled { opacity: .4; cursor: default; }
+  .tips { text-align: left; font-size: 15px; line-height: 1.5; margin: 0; padding-left: 20px; max-width: 460px; }
+  .muteRow { position: absolute; top: 8px; right: 10px; font-size: 20px; cursor: pointer; opacity: .6; z-index: 5; }
+  .muteRow:hover { opacity: 1; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;Mole Mayhem&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Pick a mode, then tap or click moles the instant they pop up to score. Endless has boss moles every 5th round; Time Attack is a 45-second frenzy.&lt;/p&gt;
+  &lt;div class=&quot;hud&quot;&gt;
+    &lt;div&gt;&lt;span class=&quot;label&quot;&gt;Score:&lt;/span&gt; &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;div id=&quot;roundWrap&quot;&gt;&lt;span class=&quot;label&quot;&gt;Round:&lt;/span&gt; &lt;span id=&quot;round&quot; class=&quot;round&quot;&gt;1&lt;/span&gt;&lt;/div&gt;
+    &lt;div id=&quot;timeWrap&quot; style=&quot;display:none&quot;&gt;&lt;span class=&quot;label&quot;&gt;Time:&lt;/span&gt; &lt;span id=&quot;time&quot; class=&quot;time&quot;&gt;45&lt;/span&gt;s&lt;/div&gt;
+    &lt;div&gt;&lt;span class=&quot;label&quot;&gt;Combo:&lt;/span&gt; &lt;span id=&quot;combo&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;board&quot; id=&quot;board&quot;&gt;
+    &lt;div class=&quot;muteRow&quot; id=&quot;muteBtn&quot; title=&quot;Toggle sound&quot;&gt;🔊&lt;/div&gt;
+    &lt;div class=&quot;banner&quot; id=&quot;banner&quot;&gt;&lt;/div&gt;
+
+    &lt;div class=&quot;overlay show&quot; id=&quot;menu&quot;&gt;
+      &lt;h2&gt;Choose your mode&lt;/h2&gt;
+      &lt;div class=&quot;modebtns&quot;&gt;
+        &lt;div class=&quot;modecard sel&quot; data-mode=&quot;endless&quot; id=&quot;cardEndless&quot;&gt;
+          &lt;div class=&quot;mtitle&quot;&gt;♾️ Endless&lt;/div&gt;
+          &lt;div class=&quot;mdesc&quot;&gt;Survive rising rounds. Boss mole every 5th round. Play until you stop!&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;modecard&quot; data-mode=&quot;time&quot; id=&quot;cardTime&quot;&gt;
+          &lt;div class=&quot;mtitle&quot;&gt;⏱️ Time Attack&lt;/div&gt;
+          &lt;div class=&quot;mdesc&quot;&gt;45 seconds of non-stop moles. Rack up the highest score you can!&lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+      &lt;button class=&quot;startbtn&quot; id=&quot;playBtn&quot;&gt;Play ▶&lt;/button&gt;
+      &lt;ul class=&quot;tips&quot;&gt;
+        &lt;li&gt;Fast consecutive hits build your &lt;b&gt;combo&lt;/b&gt; for bonus points.&lt;/li&gt;
+        &lt;li&gt;Boss moles need many quick taps before they escape.&lt;/li&gt;
+      &lt;/ul&gt;
+      &lt;p style=&quot;font-size:13px;color:#9fb0bd;&quot;&gt;Use the Start button below the game to begin or restart.&lt;/p&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;overlay&quot; id=&quot;results&quot;&gt;
+      &lt;h2 id=&quot;resTitle&quot;&gt;Time&#x27;s up!&lt;/h2&gt;
+      &lt;p id=&quot;resBody&quot;&gt;&lt;/p&gt;
+      &lt;button class=&quot;startbtn&quot; id=&quot;menuBtn&quot;&gt;Back to modes&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var BOARD_W = 620, BOARD_H = 396, MOLE_SIZE = 66;
+  var running = false, mode = &#x27;endless&#x27;, selectedMode = &#x27;endless&#x27;;
+  var score = 0, round = 1, bestCombo = 0, combo = 0;
+  var molesThisRound = 0, MOLES_PER_ROUND = 6;
+  var spawnTimeout = null, moleTimeouts = [], lastHitTime = 0;
+  var bossActive = false, bossHp = 0, bossTimeout = null;
+  var timeLeft = 45, timerInterval = null, hits = 0;
+
+  var board = document.getElementById(&#x27;board&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var roundEl = document.getElementById(&#x27;round&#x27;);
+  var comboEl = document.getElementById(&#x27;combo&#x27;);
+  var timeEl = document.getElementById(&#x27;time&#x27;);
+  var bannerEl = document.getElementById(&#x27;banner&#x27;);
+  var menuEl = document.getElementById(&#x27;menu&#x27;);
+  var resultsEl = document.getElementById(&#x27;results&#x27;);
+  var roundWrap = document.getElementById(&#x27;roundWrap&#x27;);
+  var timeWrap = document.getElementById(&#x27;timeWrap&#x27;);
+
+  // ---------- Audio ----------
+  var audioCtx = null, muted = false, musicNodes = [], musicTimer = null;
+  function ac() { if (!audioCtx) { try { audioCtx = new (window.AudioContext||window.webkitAudioContext)(); } catch(_){} } return audioCtx; }
+  function beep(freq, dur, type, vol) {
+    if (muted) return; var c = ac(); if (!c) return;
+    try {
+      var o = c.createOscillator(), g = c.createGain();
+      o.type = type||&#x27;sine&#x27;; o.frequency.value = freq;
+      g.gain.value = vol||0.15; o.connect(g); g.connect(c.destination);
+      o.start(); g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + dur);
+      o.stop(c.currentTime + dur);
+    } catch(_){}
+  }
+  // Simple looping background tune
+  var melody = [262,330,392,330,294,349,440,349, 262,392,523,392,330,392,262,196];
+  var mi = 0;
+  function startMusic() {
+    stopMusic();
+    if (muted) return;
+    var c = ac(); if (!c) return;
+    function tick() {
+      if (muted || !c) return;
+      var f = melody[mi % melody.length]; mi++;
+      try {
+        var o = c.createOscillator(), g = c.createGain();
+        o.type = &#x27;triangle&#x27;; o.frequency.value = f;
+        g.gain.value = 0.05; o.connect(g); g.connect(c.destination);
+        o.start(); g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.28);
+        o.stop(c.currentTime + 0.3);
+        // bass
+        var b = c.createOscillator(), bg = c.createGain();
+        b.type=&#x27;sine&#x27;; b.frequency.value = f/2; bg.gain.value=0.04;
+        b.connect(bg); bg.connect(c.destination); b.start();
+        bg.gain.exponentialRampToValueAtTime(0.001, c.currentTime+0.28); b.stop(c.currentTime+0.3);
+      } catch(_){}
+    }
+    musicTimer = setInterval(tick, 230);
+  }
+  function stopMusic() { if (musicTimer) { clearInterval(musicTimer); musicTimer = null; } }
+
+  document.getElementById(&#x27;muteBtn&#x27;).addEventListener(&#x27;click&#x27;, function(e){
+    e.stopPropagation();
+    muted = !muted;
+    this.textContent = muted ? &#x27;🔇&#x27; : &#x27;🔊&#x27;;
+    if (muted) stopMusic(); else if (running) startMusic();
+  });
+
+  // ---------- Mode selection ----------
+  var cards = document.querySelectorAll(&#x27;.modecard&#x27;);
+  cards.forEach(function(card){
+    card.addEventListener(&#x27;click&#x27;, function(){
+      cards.forEach(function(c){ c.classList.remove(&#x27;sel&#x27;); });
+      card.classList.add(&#x27;sel&#x27;);
+      selectedMode = card.getAttribute(&#x27;data-mode&#x27;);
+    });
+  });
+  document.getElementById(&#x27;playBtn&#x27;).addEventListener(&#x27;click&#x27;, function(){
+    if (!running) return; // needs parent Start first
+    menuEl.classList.remove(&#x27;show&#x27;);
+    beginPlay(selectedMode);
+  });
+  document.getElementById(&#x27;menuBtn&#x27;).addEventListener(&#x27;click&#x27;, function(){
+    resultsEl.classList.remove(&#x27;show&#x27;);
+    menuEl.classList.add(&#x27;show&#x27;);
+  });
+
+  // ---------- Helpers ----------
+  function clearMoles() {
+    for (var i=0;i&lt;moleTimeouts.length;i++) clearTimeout(moleTimeouts[i]);
+    moleTimeouts = [];
+    var moles = board.querySelectorAll(&#x27;.mole&#x27;);
+    for (var j=0;j&lt;moles.length;j++) moles[j].remove();
+  }
+  function showBanner(text, ms) {
+    bannerEl.textContent = text; bannerEl.classList.add(&#x27;show&#x27;);
+    setTimeout(function(){ bannerEl.classList.remove(&#x27;show&#x27;); }, ms||1100);
+  }
+  function moleLifeMs() { return mode===&#x27;time&#x27; ? 850 : Math.max(650, 1300 - round*45); }
+  function spawnGapMs() { return mode===&#x27;time&#x27; ? 520 : Math.max(450, 850 - round*30); }
+
+  function attachHit(el, handler) {
+    var fired = false;
+    function go(e){ if(fired)return; fired=true; if(e&amp;&amp;e.preventDefault)e.preventDefault(); handler(); }
+    if (window.PointerEvent) el.addEventListener(&#x27;pointerdown&#x27;, go);
+    else { el.addEventListener(&#x27;touchstart&#x27;, go, {passive:false}); el.addEventListener(&#x27;mousedown&#x27;, go); }
+  }
+
+  // ---------- Core spawn ----------
+  function spawnMole() {
+    if (!running || bossActive) return;
+    var mole = document.createElement(&#x27;div&#x27;);
+    mole.className = &#x27;mole&#x27;; mole.textContent = &#x27;🐹&#x27;;
+    mole.style.left = Math.random()*(BOARD_W-MOLE_SIZE)+&#x27;px&#x27;;
+    mole.style.top = Math.random()*(BOARD_H-MOLE_SIZE)+&#x27;px&#x27;;
+    var hit = false;
+    attachHit(mole, function(){
+      if (hit || !running) return; hit = true; hits++;
+      var now = Date.now();
+      if (now - lastHitTime &lt; 900) combo++; else combo = 1;
+      lastHitTime = now;
+      if (combo &gt; bestCombo) bestCombo = combo;
+      comboEl.textContent = combo;
+      var pts = 1 + Math.floor(combo/3);
+      score += pts; scoreEl.textContent = score;
+      beep(660 + combo*30, 0.08, &#x27;triangle&#x27;);
+      mole.style.background = &#x27;#3ba55c&#x27;; mole.textContent = &#x27;+&#x27;+pts;
+      setTimeout(function(){ mole.remove(); }, 120);
+    });
+    board.appendChild(mole);
+    molesThisRound++;
+    moleTimeouts.push(setTimeout(function(){
+      if (!hit) { mole.remove(); combo = 0; comboEl.textContent = 0; }
+    }, moleLifeMs()));
+
+    if (mode === &#x27;time&#x27;) {
+      spawnTimeout = setTimeout(spawnMole, spawnGapMs());
+    } else if (molesThisRound &gt;= MOLES_PER_ROUND) {
+      spawnTimeout = setTimeout(nextRound, moleLifeMs()+300);
+    } else {
+      spawnTimeout = setTimeout(spawnMole, spawnGapMs());
+    }
+  }
+
+  // Time attack: keep a couple moles going for intensity
+  function spawnMoleTime2() {
+    if (mode===&#x27;time&#x27; &amp;&amp; running) spawnMole();
+  }
+
+  function nextRound() {
+    if (!running) return;
+    round++; roundEl.textContent = round; molesThisRound = 0;
+    if (round % 5 === 0) startBoss();
+    else { roundEl.classList.remove(&#x27;boss&#x27;); showBanner(&#x27;Round &#x27;+round); spawnTimeout = setTimeout(spawnMole, 800); }
+  }
+
+  function startBoss() {
+    bossActive = true; roundEl.classList.add(&#x27;boss&#x27;);
+    showBanner(&#x27;⚠ BOSS ROUND ⚠\nHit it fast!&#x27;, 1400);
+    clearMoles(); setTimeout(spawnBoss, 1200);
+  }
+  function spawnBoss() {
+    if (!running) return;
+    bossHp = 8 + round;
+    var boss = document.createElement(&#x27;div&#x27;);
+    boss.className = &#x27;mole boss&#x27;; boss.textContent = &#x27;👹&#x27;;
+    var hpBar = document.createElement(&#x27;div&#x27;);
+    hpBar.className = &#x27;boss-hp&#x27;; hpBar.textContent = &#x27;HP &#x27;+bossHp; boss.appendChild(hpBar);
+    function reposition(){ boss.style.left = Math.random()*(BOARD_W-120)+&#x27;px&#x27;; boss.style.top = Math.random()*(BOARD_H-120)+&#x27;px&#x27;; }
+    reposition();
+    var moving = false;
+    function hitBoss(e){
+      if (!bossActive) return; if(e&amp;&amp;e.preventDefault)e.preventDefault();
+      bossHp--; combo++; hits++;
+      if (combo&gt;bestCombo) bestCombo=combo; comboEl.textContent = combo;
+      score += 2; scoreEl.textContent = score;
+      beep(300+(10-bossHp)*40, 0.07, &#x27;sawtooth&#x27;);
+      boss.style.transform=&#x27;scale(0.85)&#x27;; setTimeout(function(){boss.style.transform=&#x27;&#x27;;},60);
+      if (bossHp&lt;=0){ clearTimeout(bossTimeout); boss.remove(); endBoss(true); }
+      else { hpBar.textContent=&#x27;HP &#x27;+bossHp; if(!moving){moving=true;reposition();setTimeout(function(){moving=false;},80);} }
+    }
+    if (window.PointerEvent) boss.addEventListener(&#x27;pointerdown&#x27;, hitBoss);
+    else { boss.addEventListener(&#x27;touchstart&#x27;, hitBoss,{passive:false}); boss.addEventListener(&#x27;mousedown&#x27;, hitBoss); }
+    board.appendChild(boss);
+    bossTimeout = setTimeout(function(){ if(bossActive){ boss.remove(); endBoss(false); } }, 9000);
+  }
+  function endBoss(defeated) {
+    bossActive = false;
+    if (defeated){ score+=20; scoreEl.textContent=score; beep(880,0.2,&#x27;triangle&#x27;); showBanner(&#x27;BOSS DEFEATED!\n+20 bonus&#x27;,1400); }
+    else { combo=0; comboEl.textContent=0; showBanner(&#x27;Boss escaped...&#x27;,1200); }
+    spawnTimeout = setTimeout(nextRound, 1600);
+  }
+
+  // ---------- Time attack timer ----------
+  function startTimer() {
+    timeLeft = 45; timeEl.textContent = timeLeft; timeEl.classList.remove(&#x27;low&#x27;);
+    timerInterval = setInterval(function(){
+      timeLeft--; timeEl.textContent = timeLeft;
+      if (timeLeft &lt;= 10) { timeEl.classList.add(&#x27;low&#x27;); if(timeLeft&gt;0) beep(880,0.05,&#x27;square&#x27;,0.08); }
+      if (timeLeft &lt;= 0) { endTimeAttack(); }
+    }, 1000);
+  }
+  function endTimeAttack() {
+    clearInterval(timerInterval); timerInterval = null;
+    freezePlay();
+    beep(200,0.4,&#x27;sawtooth&#x27;);
+    document.getElementById(&#x27;resTitle&#x27;).textContent = &quot;⏱️ Time&#x27;s up!&quot;;
+    document.getElementById(&#x27;resBody&#x27;).innerHTML =
+      &#x27;Final score: &lt;b&gt;&#x27;+score+&#x27;&lt;/b&gt;&lt;br&gt;Moles hit: &#x27;+hits+&#x27;&lt;br&gt;Best combo: &#x27;+bestCombo;
+    resultsEl.classList.add(&#x27;show&#x27;);
+  }
+
+  function freezePlay() {
+    if (spawnTimeout) clearTimeout(spawnTimeout);
+    if (bossTimeout) clearTimeout(bossTimeout);
+    clearMoles(); bossActive = false;
+  }
+
+  // ---------- Begin / start / stop ----------
+  function beginPlay(m) {
+    mode = m;
+    round = 1; score = 0; combo = 0; bestCombo = 0; molesThisRound = 0; hits = 0;
+    scoreEl.textContent = &#x27;0&#x27;; roundEl.textContent = &#x27;1&#x27;; comboEl.textContent = &#x27;0&#x27;;
+    roundEl.classList.remove(&#x27;boss&#x27;);
+    if (spawnTimeout) clearTimeout(spawnTimeout);
+    if (bossTimeout) clearTimeout(bossTimeout);
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    clearMoles(); bossActive = false;
+    if (mode === &#x27;time&#x27;) {
+      roundWrap.style.display = &#x27;none&#x27;; timeWrap.style.display = &#x27;&#x27;;
+      showBanner(&#x27;Go!&#x27;, 700);
+      startTimer();
+      spawnTimeout = setTimeout(spawnMole, 400);
+      setTimeout(spawnMoleTime2, 900);
+    } else {
+      roundWrap.style.display = &#x27;&#x27;; timeWrap.style.display = &#x27;none&#x27;;
+      showBanner(&#x27;Round 1&#x27;, 900);
+      spawnTimeout = setTimeout(spawnMole, 500);
+    }
+    startMusic();
+  }
+
+  function startGame() {
+    if (running) return;
+    running = true;
+    freezePlay();
+    if (timerInterval) { clearInterval(timerInterval); timerInterval=null; }
+    resultsEl.classList.remove(&#x27;show&#x27;);
+    menuEl.classList.add(&#x27;show&#x27;); // show mode menu; first mole appears once mode chosen
+    // Responsiveness: give a little life immediately behind the menu
+    showBanner(&#x27;Choose a mode!&#x27;, 900);
+  }
+
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    freezePlay();
+    if (timerInterval) { clearInterval(timerInterval); timerInterval=null; }
+    stopMusic();
+    menuEl.classList.add(&#x27;show&#x27;);
+    resultsEl.classList.remove(&#x27;show&#x27;);
+  }
+
+  window.addEventListener(&#x27;message&#x27;, function(e){
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  // Suppress in-iframe scrollbars. The parent fits the iframe layout
+  // box to match the content size, so internal scroll is redundant —
+  // and if the LLM&#x27;s CSS sets body overflow: auto, the scrollbar shows
+  // briefly before the fit lands. Force hidden so it never appears.
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  // Iframe-internal JS error capture. window.onerror inside a sandboxed
+  // iframe can&#x27;t post to /api/js_error directly, so we relay to the
+  // parent via postMessage; parent&#x27;s error_logger.js forwards to the
+  // server. Catches LLM-emitted broken HTML (invalid hex, undefined
+  // variables, etc.) that would otherwise fail silently inside the
+  // iframe.
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      // Debounce: don&#x27;t fire more than ~10× per second. ResizeObserver
+      // fires repeatedly during layout/font load; we only need the latest.
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      // Clamp: reject obviously bogus dimensions. Any browser-game viewport
+      // is well under 4000×4000 logical px; readings beyond that are layout
+      // noise during load/visibility transitions.
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  // Parent posts wd_remeasure when it makes the iframe visible (the body&#x27;s
+  // ResizeObserver doesn&#x27;t fire on display:none→block of an outer ancestor
+  // because the iframe document didn&#x27;t actually resize). Wait a frame for
+  // layout to settle before measuring.
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

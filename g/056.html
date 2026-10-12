@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>⚜ Corral the Horse ⚜</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>⚜ Corral the Horse ⚜</b> &middot; Game 056 &middot; Amateur producer &middot; Basic game: Paddle and ball</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: &#x27;Georgia&#x27;, &#x27;Times New Roman&#x27;, serif; margin: 0; padding: 0; background: #3a2416; color: #f4e4c1; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 12px; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 7px; }
+  h1 { margin: 0; font-size: 28px; font-weight: bold; color: #e8c37a; text-shadow: 2px 2px 0 #5a2f14, 3px 3px 0 #2a1608; letter-spacing: 1px; }
+  .instructions { font-size: 16px; color: #e6d3ab; max-width: 630px; margin: 0; line-height: 1.35; text-align: center; }
+  .hud { display: flex; gap: 22px; align-items: center; font-size: 19px; color: #f0dbaa; flex-wrap: wrap; justify-content: center; }
+  .hud b { color: #ffd27a; }
+  .audio { display: flex; align-items: center; gap: 7px; font-size: 15px; color: #e6d3ab; }
+  .audio button { font-family: inherit; font-size: 14px; background: #6b4423; color: #ffe6a8; border: 2px solid #4a2f14; border-radius: 4px; padding: 2px 8px; cursor: pointer; }
+  .audio input[type=range] { width: 90px; accent-color: #c99247; }
+  .field { position: relative; width: 620px; height: 384px; flex-shrink: 0; border-radius: 6px; overflow: hidden;
+    box-sizing: border-box; box-shadow: inset 0 0 40px rgba(0,0,0,0.35), 0 0 0 3px #2a1608; transition: background 0.6s ease; }
+  .fence { position: relative; width: 620px; height: 384px; flex-shrink: 0; padding: 16px; box-sizing: border-box;
+    background: repeating-linear-gradient(90deg, #8a5a2b 0 14px, #7a4c22 14px 28px);
+    border: 4px solid #4a2f14; border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+  }
+  .paddle { position: absolute; height: 18px; bottom: 8px; border-radius: 3px;
+    background: repeating-linear-gradient(90deg, #a06a30 0px, #a06a30 8px, #7a4c22 8px, #7a4c22 16px);
+    border: 2px solid #4a2f14; box-shadow: 0 2px 4px rgba(0,0,0,0.5); box-sizing: border-box; }
+  .horse { position: absolute; font-size: 30px; line-height: 1; user-select: none; }
+  .wild { position: absolute; font-size: 30px; line-height: 1; user-select: none; display: none; filter: drop-shadow(0 0 6px #6fdc6f); }
+  .cow { position: absolute; font-size: 30px; line-height: 1; user-select: none; display: none; filter: drop-shadow(0 0 6px #ffe27a); }
+  .msg { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: rgba(30,18,8,0.72); color: #ffe6a8; font-size: 24px; text-align: center; text-shadow: 2px 2px 0 #2a1608; gap: 10px; }
+  .msg small { font-size: 17px; color: #e6d3ab; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;&amp;#9884; Corral the Horse &amp;#9884;&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Slide the wooden gate with the &lt;strong&gt;&amp;larr;&lt;/strong&gt; &lt;strong&gt;&amp;rarr;&lt;/strong&gt; keys or your mouse to bounce the horse back into the corral. Bounce it into the glowing wild horse for a bonus life or the cow for extra points; miss the fence three times and it escapes.&lt;/p&gt;
+  &lt;div class=&quot;hud&quot;&gt;
+    &lt;span&gt;Level: &lt;b id=&quot;level&quot;&gt;1&lt;/b&gt;&lt;/span&gt;
+    &lt;span&gt;Score: &lt;b id=&quot;score&quot;&gt;0&lt;/b&gt;&lt;/span&gt;
+    &lt;span&gt;Lives: &lt;b id=&quot;lives&quot;&gt;&amp;#128014;&amp;#128014;&amp;#128014;&lt;/b&gt;&lt;/span&gt;
+    &lt;span class=&quot;audio&quot;&gt;
+      &lt;button id=&quot;musicToggle&quot;&gt;&amp;#9834; Music: Off&lt;/button&gt;
+      &lt;input type=&quot;range&quot; id=&quot;vol&quot; min=&quot;0&quot; max=&quot;100&quot; value=&quot;40&quot; title=&quot;Volume&quot;&gt;
+    &lt;/span&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;fence&quot;&gt;
+    &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;
+      &lt;div class=&quot;paddle&quot; id=&quot;paddle&quot;&gt;&lt;/div&gt;
+      &lt;div class=&quot;wild&quot; id=&quot;wild&quot;&gt;&amp;#128014;&lt;/div&gt;
+      &lt;div class=&quot;cow&quot; id=&quot;cow&quot;&gt;&amp;#128004;&lt;/div&gt;
+      &lt;div class=&quot;horse&quot; id=&quot;horse&quot;&gt;&amp;#128014;&lt;/div&gt;
+      &lt;div class=&quot;msg&quot; id=&quot;msg&quot;&gt;Press Start to wrangle!&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var FIELD_W = 588, FIELD_H = 352;
+  var PADDLE_W = 120, PADDLE_H = 18, PADDLE_BOTTOM = 8;
+  var BALL_SIZE = 30, WILD_SIZE = 30, COW_SIZE = 30;
+  var running = false, animId = null;
+  var keysDown = {};
+  var paddleX = (FIELD_W - PADDLE_W) / 2;
+  var ballX = FIELD_W / 2, ballY = 50;
+  var ballVX = 2, ballVY = 2;
+  var score = 0, lives = 3, level = 1;
+  var paddleSpeed = 3.0, ballSpeed = 2.6;
+  var MAX_LIVES = 6;
+
+  var wildActive = false, wildX = 0, wildY = 0, wildTimer = 0;
+  var cowActive = false, cowX = 0, cowY = 0, cowVX = 0, cowTimer = 0;
+
+  var field = document.getElementById(&#x27;field&#x27;);
+  var paddle = document.getElementById(&#x27;paddle&#x27;);
+  var horse = document.getElementById(&#x27;horse&#x27;);
+  var wild = document.getElementById(&#x27;wild&#x27;);
+  var cow = document.getElementById(&#x27;cow&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var livesEl = document.getElementById(&#x27;lives&#x27;);
+  var levelEl = document.getElementById(&#x27;level&#x27;);
+  var msgEl = document.getElementById(&#x27;msg&#x27;);
+
+  // scenic backgrounds, cycled each level
+  var BACKGROUNDS = [
+    // sunrise desert
+    &#x27;linear-gradient(#f6b26b 0%, #f7c98a 25%, #f0d9a0 45%, #e6c179 62%, #d8a95c 80%, #c99247 100%)&#x27;,
+    // high-noon plains
+    &#x27;linear-gradient(#8fd0ea 0%, #bfe3f2 24%, #d8e9a0 44%, #b7cf6b 62%, #a3bd58 80%, #8fa848 100%)&#x27;,
+    // dusty canyon
+    &#x27;linear-gradient(#e2916a 0%, #d98a5c 22%, #c9723f 42%, #b85e33 62%, #9c4b28 80%, #7d3a1f 100%)&#x27;,
+    // purple sunset
+    &#x27;linear-gradient(#6a4a8c 0%, #a05a8c 22%, #e07a72 42%, #f0a066 60%, #d88a4c 80%, #b56b34 100%)&#x27;
+  ];
+  var BG_NAMES = [&#x27;Sunrise Desert&#x27;, &#x27;High-Noon Plains&#x27;, &#x27;Dusty Canyon&#x27;, &#x27;Purple Sunset&#x27;];
+
+  function applyBackground() {
+    var idx = (level - 1) % BACKGROUNDS.length;
+    field.style.background = BACKGROUNDS[idx];
+  }
+
+  paddle.style.width = PADDLE_W + &#x27;px&#x27;;
+
+  function paint() {
+    paddle.style.left = paddleX + &#x27;px&#x27;;
+    horse.style.left = ballX + &#x27;px&#x27;;
+    horse.style.top = ballY + &#x27;px&#x27;;
+    horse.style.transform = ballVX &lt; 0 ? &#x27;scaleX(-1)&#x27; : &#x27;scaleX(1)&#x27;;
+    if (wildActive) { wild.style.display = &#x27;block&#x27;; wild.style.left = wildX + &#x27;px&#x27;; wild.style.top = wildY + &#x27;px&#x27;; }
+    else { wild.style.display = &#x27;none&#x27;; }
+    if (cowActive) {
+      cow.style.display = &#x27;block&#x27;; cow.style.left = cowX + &#x27;px&#x27;; cow.style.top = cowY + &#x27;px&#x27;;
+      cow.style.transform = cowVX &lt; 0 ? &#x27;scaleX(-1)&#x27; : &#x27;scaleX(1)&#x27;;
+    } else { cow.style.display = &#x27;none&#x27;; }
+  }
+
+  function updateLevelSpeeds() {
+    paddleSpeed = 3.0 + (level - 1) * 0.9;
+    ballSpeed = 2.4 + (level - 1) * 0.7;
+  }
+
+  function launchBall() {
+    ballX = (FIELD_W - BALL_SIZE) / 2;
+    ballY = 50;
+    var ang = (Math.random() * 0.6 - 0.3);
+    ballVX = (Math.random() &lt; 0.5 ? -1 : 1) * ballSpeed * (0.7 + Math.abs(ang));
+    ballVY = ballSpeed;
+  }
+
+  function showMsg(html) { msgEl.innerHTML = html; msgEl.style.display = &#x27;flex&#x27;; }
+  function hideMsg() { msgEl.style.display = &#x27;none&#x27;; }
+
+  function setLives(n) {
+    lives = Math.min(MAX_LIVES, n);
+    livesEl.innerHTML = lives &gt; 0 ? &#x27;\uD83D\uDC0E&#x27;.repeat(lives) : &#x27;&amp;mdash;&#x27;;
+  }
+
+  function spawnWild() {
+    wildX = 40 + Math.random() * (FIELD_W - 80 - WILD_SIZE);
+    wildY = 40 + Math.random() * (FIELD_H - 160);
+    wildActive = true;
+    wildTimer = 130 + Math.floor(Math.random() * 90);
+  }
+
+  function spawnCow() {
+    cowX = 40 + Math.random() * (FIELD_W - 80 - COW_SIZE);
+    cowY = 40 + Math.random() * (FIELD_H - 170);
+    cowVX = (Math.random() &lt; 0.5 ? -1 : 1) * (0.8 + Math.random() * 0.8);
+    cowActive = true;
+    cowTimer = 150 + Math.floor(Math.random() * 110);
+  }
+
+  function nextLevel() {
+    level++;
+    levelEl.textContent = level;
+    updateLevelSpeeds();
+    applyBackground();
+    var idx = (level - 1) % BACKGROUNDS.length;
+    showMsg(&#x27;Level &#x27; + level + &#x27;!&lt;small&gt;&#x27; + BG_NAMES[idx] + &#x27; &amp;mdash; the horse gets friskier.&lt;/small&gt;&#x27;);
+    setTimeout(function () { if (running) { hideMsg(); launchBall(); } }, 1200);
+  }
+
+  function overlap(ax, ay, as, bx, by, bs) {
+    return ax &lt; bx + bs &amp;&amp; ax + as &gt; bx &amp;&amp; ay &lt; by + bs &amp;&amp; ay + as &gt; by;
+  }
+
+  function tick() {
+    if (!running) return;
+    if (keysDown[&#x27;ArrowLeft&#x27;]) paddleX -= paddleSpeed;
+    if (keysDown[&#x27;ArrowRight&#x27;]) paddleX += paddleSpeed;
+    paddleX = Math.max(0, Math.min(FIELD_W - PADDLE_W, paddleX));
+
+    ballX += ballVX;
+    ballY += ballVY;
+
+    if (ballX &lt;= 0) { ballX = 0; ballVX = -ballVX; }
+    if (ballX + BALL_SIZE &gt;= FIELD_W) { ballX = FIELD_W - BALL_SIZE; ballVX = -ballVX; }
+    if (ballY &lt;= 0) { ballY = 0; ballVY = -ballVY; }
+
+    var paddleTop = FIELD_H - PADDLE_BOTTOM - PADDLE_H;
+    if (ballVY &gt; 0 &amp;&amp;
+        ballY + BALL_SIZE &gt;= paddleTop &amp;&amp;
+        ballY + BALL_SIZE &lt;= paddleTop + PADDLE_H + 8 &amp;&amp;
+        ballX + BALL_SIZE &gt;= paddleX &amp;&amp;
+        ballX &lt;= paddleX + PADDLE_W) {
+      ballVY = -Math.abs(ballVY);
+      ballY = paddleTop - BALL_SIZE;
+      var hitPos = (ballX + BALL_SIZE / 2 - paddleX) / PADDLE_W - 0.5;
+      ballVX += hitPos * 1.6;
+      var maxVX = ballSpeed * 1.8;
+      if (ballVX &gt; maxVX) ballVX = maxVX;
+      if (ballVX &lt; -maxVX) ballVX = -maxVX;
+      score += 1;
+      scoreEl.textContent = score;
+      playBounce();
+      if (score % 5 === 0) { nextLevel(); ballY = -100; ballVY = 0; ballVX = 0; }
+    }
+
+    // wild horse -&gt; bonus life
+    if (wildActive) {
+      wildTimer--;
+      if (wildTimer &lt;= 0) { wildActive = false; }
+      else if (overlap(ballX, ballY, BALL_SIZE, wildX, wildY, WILD_SIZE)) {
+        wildActive = false;
+        if (lives &lt; MAX_LIVES) {
+          setLives(lives + 1);
+          showMsg(&#x27;Bonus life! &amp;#10084;&amp;#65039;&lt;small&gt;You wrangled a wild one.&lt;/small&gt;&#x27;);
+          playBonus();
+          setTimeout(function () { if (running) hideMsg(); }, 800);
+        } else {
+          score += 3; scoreEl.textContent = score;
+          playBonus();
+        }
+      }
+    } else {
+      if (Math.random() &lt; 0.006) spawnWild();
+    }
+
+    // cow -&gt; extra points, and it wanders
+    if (cowActive) {
+      cowTimer--;
+      cowX += cowVX;
+      if (cowX &lt;= 20) { cowX = 20; cowVX = -cowVX; }
+      if (cowX + COW_SIZE &gt;= FIELD_W - 20) { cowX = FIELD_W - 20 - COW_SIZE; cowVX = -cowVX; }
+      if (cowTimer &lt;= 0) { cowActive = false; }
+      else if (overlap(ballX, ballY, BALL_SIZE, cowX, cowY, COW_SIZE)) {
+        cowActive = false;
+        score += 5;
+        scoreEl.textContent = score;
+        showMsg(&#x27;+5! &amp;#128004;&lt;small&gt;You herded the runaway cow.&lt;/small&gt;&#x27;);
+        playBonus();
+        setTimeout(function () { if (running) hideMsg(); }, 700);
+      }
+    } else {
+      if (Math.random() &lt; 0.005) spawnCow();
+    }
+
+    if (ballY &gt;= FIELD_H) {
+      setLives(lives - 1);
+      playEscape();
+      if (lives &lt;= 0) {
+        running = false;
+        if (animId) { cancelAnimationFrame(animId); animId = null; }
+        showMsg(&#x27;The horse got away! &amp;#128014;&amp;#128168;&lt;small&gt;Final score: &#x27; + score + &#x27; &amp;mdash; press Restart to try again.&lt;/small&gt;&#x27;);
+        return;
+      } else {
+        showMsg(&#x27;Escaped! Lives left: &#x27; + lives + &#x27;&lt;small&gt;Get ready&amp;hellip;&lt;/small&gt;&#x27;);
+        ballY = -100; ballVY = 0; ballVX = 0;
+        setTimeout(function () { if (running) { hideMsg(); launchBall(); } }, 1000);
+      }
+    }
+
+    paint();
+    animId = requestAnimationFrame(tick);
+  }
+
+  function startGame() {
+    score = 0; level = 1;
+    scoreEl.textContent = &#x27;0&#x27;;
+    levelEl.textContent = &#x27;1&#x27;;
+    setLives(3);
+    updateLevelSpeeds();
+    applyBackground();
+    paddleX = (FIELD_W - PADDLE_W) / 2;
+    for (var k in keysDown) keysDown[k] = false;
+    wildActive = false; cowActive = false;
+    hideMsg();
+    launchBall();
+    paint();
+    running = true;
+    if (animId) cancelAnimationFrame(animId);
+    animId = requestAnimationFrame(tick);
+    startMusicIfOn();
+  }
+  function stopGame() {
+    running = false;
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+    stopMusic();
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27; || e.key === &#x27;ArrowRight&#x27;) {
+      keysDown[e.key] = true;
+      e.preventDefault();
+    }
+  });
+  window.addEventListener(&#x27;keyup&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27; || e.key === &#x27;ArrowRight&#x27;) keysDown[e.key] = false;
+  });
+
+  field.addEventListener(&#x27;mousemove&#x27;, function (e) {
+    if (!running) return;
+    var rect = field.getBoundingClientRect();
+    var mx = e.clientX - rect.left;
+    paddleX = Math.max(0, Math.min(FIELD_W - PADDLE_W, mx - PADDLE_W / 2));
+  });
+
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  /* ---------- AUDIO ---------- */
+  var audioCtx = null, masterGain = null, musicOn = false, musicTimer = null;
+  var volume = 0.4;
+  var toggleBtn = document.getElementById(&#x27;musicToggle&#x27;);
+  var volSlider = document.getElementById(&#x27;vol&#x27;);
+
+  function ensureCtx() {
+    if (!audioCtx) {
+      try {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        masterGain = audioCtx.createGain();
+        masterGain.gain.value = volume;
+        masterGain.connect(audioCtx.destination);
+      } catch (_) { audioCtx = null; }
+    }
+    if (audioCtx &amp;&amp; audioCtx.state === &#x27;suspended&#x27;) audioCtx.resume();
+  }
+
+  function pluck(freq, time, dur, gainMul) {
+    if (!audioCtx) return;
+    var osc = audioCtx.createOscillator();
+    var g = audioCtx.createGain();
+    osc.type = &#x27;triangle&#x27;;
+    osc.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, time);
+    g.gain.exponentialRampToValueAtTime(0.28 * (gainMul || 1), time + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+    osc.connect(g); g.connect(masterGain);
+    osc.start(time); osc.stop(time + dur + 0.02);
+  }
+
+  var melody = [
+    392, 392, 494, 587, 494, 392, 330, 392,
+    440, 440, 523, 494, 440, 392, 330, 294
+  ];
+  var bass = [131, 0, 196, 0, 131, 0, 196, 0];
+  var beat = 0;
+  var stepDur = 0.22;
+
+  function scheduleLoop() {
+    if (!musicOn || !audioCtx) return;
+    var now = audioCtx.currentTime;
+    var t = now + 0.05;
+    for (var i = 0; i &lt; 8; i++) {
+      var m = melody[(beat + i) % melody.length];
+      if (m) pluck(m, t + i * stepDur, stepDur * 0.9, 1);
+      var b = bass[(beat + i) % bass.length];
+      if (b) pluck(b, t + i * stepDur, stepDur * 1.3, 0.7);
+    }
+    beat = (beat + 8) % melody.length;
+    musicTimer = setTimeout(scheduleLoop, 8 * stepDur * 1000);
+  }
+
+  function startMusicIfOn() {
+    if (musicOn) { ensureCtx(); if (audioCtx &amp;&amp; !musicTimer) scheduleLoop(); }
+  }
+  function stopMusic() {
+    if (musicTimer) { clearTimeout(musicTimer); musicTimer = null; }
+  }
+
+  toggleBtn.addEventListener(&#x27;click&#x27;, function () {
+    musicOn = !musicOn;
+    toggleBtn.innerHTML = musicOn ? &#x27;&amp;#9834; Music: On&#x27; : &#x27;&amp;#9834; Music: Off&#x27;;
+    if (musicOn) { ensureCtx(); if (audioCtx) { beat = 0; if (!musicTimer) scheduleLoop(); } }
+    else { stopMusic(); }
+  });
+  volSlider.addEventListener(&#x27;input&#x27;, function () {
+    volume = volSlider.value / 100;
+    if (masterGain) masterGain.gain.value = volume;
+  });
+
+  function playBounce() { if (!musicOn &amp;&amp; !audioCtx) return; ensureCtx(); pluck(660, audioCtx.currentTime, 0.1, 0.9); }
+  function playBonus() { if (!audioCtx) ensureCtx(); if (!audioCtx) return; var t = audioCtx.currentTime; pluck(523, t, 0.12, 1); pluck(659, t + 0.08, 0.12, 1); pluck(784, t + 0.16, 0.18, 1); }
+  function playEscape() { if (!audioCtx) ensureCtx(); if (!audioCtx) return; var t = audioCtx.currentTime; pluck(300, t, 0.2, 1); pluck(180, t + 0.12, 0.3, 1); }
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  paint();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🐍 Snake Duel</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>🐍 Snake Duel</b> &middot; Game 353 &middot; Professional producer &middot; Basic game: Snake</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: linear-gradient(135deg, #1a2a6c, #2a5298); color: #fff; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 18px; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 10px; }
+  h1 { margin: 0; font-size: 28px; font-weight: 700; background: linear-gradient(90deg, #ffd200, #f7971e, #56ab2f); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .instructions { font-size: 16px; color: #e0e6ff; max-width: 600px; margin: 0; line-height: 1.4; text-align: center; }
+  .scores { display: flex; gap: 24px; margin: 0; }
+  .score { font-size: 22px; font-weight: 600; text-shadow: 0 1px 3px rgba(0,0,0,.4); }
+  .you { color: #b6ff6b; }
+  .cpu { color: #d89bff; }
+  .field { position: relative; width: 600px; height: 440px; flex-shrink: 0; margin: 0; border-radius: 10px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,.4); }
+  .cell { position: absolute; box-sizing: border-box; }
+  .snake { border-radius: 4px; box-shadow: inset 0 0 4px rgba(0,0,0,.3); }
+  .head { border-radius: 6px; box-shadow: 0 0 10px rgba(255,255,255,.6), inset 0 0 4px rgba(255,255,255,.5); }
+  .food { border-radius: 50%; background: radial-gradient(circle at 35% 30%, #ff7b7b, #d80000); box-shadow: 0 0 10px rgba(255,60,60,.8); }
+  .block { border-radius: 3px; background: linear-gradient(135deg, #8d8d8d, #5a5a5a); box-shadow: inset 0 0 3px rgba(0,0,0,.6), inset 1px 1px 2px rgba(255,255,255,.3); border: 1px solid #444; }
+  .banner { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; flex-direction: column; background: rgba(0,0,0,.55); font-size: 30px; font-weight: 700; text-align: center; }
+  .banner span { font-size: 18px; font-weight: 400; margin-top: 6px; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;🐍 Snake Duel&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Steer your green snake with the arrow keys and race the purple computer snake to the red apples. Dodge the gray stone blocks — hitting a block, wall, yourself, or the other snake ends the round.&lt;/p&gt;
+  &lt;div class=&quot;scores&quot;&gt;
+    &lt;div class=&quot;score you&quot;&gt;You: &lt;span id=&quot;scoreYou&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;score cpu&quot;&gt;CPU: &lt;span id=&quot;scoreCpu&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;
+    &lt;div class=&quot;banner&quot; id=&quot;banner&quot;&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  var CELL = 20;
+  var COLS = 30, ROWS = 22;
+  var TICK_MS = 150;
+  var running = false, tickId = null;
+  var snake = [], dir = { x: 1, y: 0 }, pendingDir = { x: 1, y: 0 };
+  var cpu = [], cpuDir = { x: -1, y: 0 };
+  var food = { x: 10, y: 10 };
+  var blocks = [];
+  var scoreYou = 0, scoreCpu = 0;
+  var field = document.getElementById(&#x27;field&#x27;);
+  var scoreYouEl = document.getElementById(&#x27;scoreYou&#x27;);
+  var scoreCpuEl = document.getElementById(&#x27;scoreCpu&#x27;);
+  var banner = document.getElementById(&#x27;banner&#x27;);
+
+  function drawCell(cls, x, y, bg) {
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;cell &#x27; + cls;
+    el.style.left = (x * CELL) + &#x27;px&#x27;;
+    el.style.top = (y * CELL) + &#x27;px&#x27;;
+    el.style.width = CELL + &#x27;px&#x27;;
+    el.style.height = CELL + &#x27;px&#x27;;
+    if (bg) el.style.background = bg;
+    field.appendChild(el);
+  }
+
+  function paintField() {
+    var bg = document.createElement(&#x27;div&#x27;);
+    bg.style.position = &#x27;absolute&#x27;;
+    bg.style.inset = &#x27;0&#x27;;
+    bg.style.backgroundImage =
+      &#x27;linear-gradient(45deg, #3fa34d 25%, transparent 25%),&#x27; +
+      &#x27;linear-gradient(-45deg, #3fa34d 25%, transparent 25%),&#x27; +
+      &#x27;linear-gradient(45deg, transparent 75%, #3fa34d 75%),&#x27; +
+      &#x27;linear-gradient(-45deg, transparent 75%, #3fa34d 75%)&#x27;;
+    bg.style.backgroundColor = &#x27;#4bb85a&#x27;;
+    bg.style.backgroundSize = (CELL*2) + &#x27;px &#x27; + (CELL*2) + &#x27;px&#x27;;
+    bg.style.backgroundPosition = &#x27;0 0, 0 &#x27; + CELL + &#x27;px, &#x27; + CELL + &#x27;px -&#x27; + CELL + &#x27;px, -&#x27; + CELL + &#x27;px 0&#x27;;
+    field.appendChild(bg);
+  }
+
+  function greenShade(i, total) {
+    var hue = (90 + (i / Math.max(1,total)) * 60) % 360;
+    return &#x27;hsl(&#x27; + hue + &#x27;, 75%, 50%)&#x27;;
+  }
+  function purpleShade(i, total) {
+    var light = 60 - (i / Math.max(1,total)) * 20;
+    return &#x27;hsl(280, 70%, &#x27; + light + &#x27;%)&#x27;;
+  }
+
+  function paint() {
+    field.innerHTML = &#x27;&#x27;;
+    field.appendChild(banner);
+    paintField();
+    for (var b = 0; b &lt; blocks.length; b++) drawCell(&#x27;block&#x27;, blocks[b].x, blocks[b].y);
+    drawCell(&#x27;food&#x27;, food.x, food.y);
+    for (var i = 0; i &lt; cpu.length; i++) {
+      if (i === 0) drawCell(&#x27;snake head&#x27;, cpu[i].x, cpu[i].y, &#x27;radial-gradient(circle at 40% 35%, #e0b6ff, #8a2be2)&#x27;);
+      else drawCell(&#x27;snake&#x27;, cpu[i].x, cpu[i].y, purpleShade(i, cpu.length));
+    }
+    for (var j = 0; j &lt; snake.length; j++) {
+      if (j === 0) drawCell(&#x27;snake head&#x27;, snake[j].x, snake[j].y, &#x27;radial-gradient(circle at 40% 35%, #b6ff6b, #4caf00)&#x27;);
+      else drawCell(&#x27;snake&#x27;, snake[j].x, snake[j].y, greenShade(j, snake.length));
+    }
+  }
+
+  function occupied(list, x, y) {
+    for (var i = 0; i &lt; list.length; i++) if (list[i].x === x &amp;&amp; list[i].y === y) return true;
+    return false;
+  }
+
+  function anyOccupied(x, y) {
+    return occupied(snake, x, y) || occupied(cpu, x, y) || occupied(blocks, x, y);
+  }
+
+  function placeFood() {
+    for (var tries = 0; tries &lt; 400; tries++) {
+      var x = Math.floor(Math.random() * COLS);
+      var y = Math.floor(Math.random() * ROWS);
+      if (!anyOccupied(x, y)) { food = { x: x, y: y }; return; }
+    }
+  }
+
+  // Keep spawn lanes clear so snakes don&#x27;t instantly crash.
+  function inSpawnZone(x, y) {
+    if (y === 16 &amp;&amp; x &gt;= 2 &amp;&amp; x &lt;= 8) return true;      // player start row
+    if (y === 6 &amp;&amp; x &gt;= COLS - 8 &amp;&amp; x &lt;= COLS - 2) return true; // cpu start row
+    return false;
+  }
+
+  function generateBlocks() {
+    blocks = [];
+    var count = 14 + Math.floor(Math.random() * 6); // 14-19 blocks
+    var placed = 0, attempts = 0;
+    while (placed &lt; count &amp;&amp; attempts &lt; 1000) {
+      attempts++;
+      var x = 2 + Math.floor(Math.random() * (COLS - 4));
+      var y = 2 + Math.floor(Math.random() * (ROWS - 4));
+      if (inSpawnZone(x, y)) continue;
+      if (occupied(blocks, x, y)) continue;
+      // sometimes make a small 2-length wall
+      blocks.push({ x: x, y: y });
+      placed++;
+      if (Math.random() &lt; 0.4) {
+        var hx = x + (Math.random() &lt; 0.5 ? 1 : 0);
+        var hy = y + (hx === x ? 1 : 0);
+        if (hx &gt;= 1 &amp;&amp; hx &lt; COLS - 1 &amp;&amp; hy &gt;= 1 &amp;&amp; hy &lt; ROWS - 1 &amp;&amp; !inSpawnZone(hx, hy) &amp;&amp; !occupied(blocks, hx, hy)) {
+          blocks.push({ x: hx, y: hy });
+          placed++;
+        }
+      }
+    }
+  }
+
+  function initSnakes() {
+    snake = [ { x: 5, y: 16 }, { x: 4, y: 16 }, { x: 3, y: 16 } ];
+    dir = { x: 1, y: 0 }; pendingDir = { x: 1, y: 0 };
+    cpu = [ { x: COLS - 6, y: 6 }, { x: COLS - 5, y: 6 }, { x: COLS - 4, y: 6 } ];
+    cpuDir = { x: -1, y: 0 };
+  }
+
+  function chooseCpuDir() {
+    var head = cpu[0];
+    var options = [ {x:1,y:0}, {x:-1,y:0}, {x:0,y:1}, {x:0,y:-1} ];
+    var best = null, bestDist = Infinity;
+    for (var i = 0; i &lt; options.length; i++) {
+      var d = options[i];
+      if (d.x === -cpuDir.x &amp;&amp; d.y === -cpuDir.y) continue;
+      var nx = head.x + d.x, ny = head.y + d.y;
+      if (nx &lt; 0 || nx &gt;= COLS || ny &lt; 0 || ny &gt;= ROWS) continue;
+      var cpuBody = cpu.slice(0, cpu.length - 1);
+      if (occupied(cpuBody, nx, ny)) continue;
+      if (occupied(snake, nx, ny)) continue;
+      if (occupied(blocks, nx, ny)) continue;
+      var dist = Math.abs(nx - food.x) + Math.abs(ny - food.y);
+      if (dist &lt; bestDist) { bestDist = dist; best = d; }
+    }
+    if (!best) {
+      for (var k = 0; k &lt; options.length; k++) {
+        var d2 = options[k];
+        if (d2.x === -cpuDir.x &amp;&amp; d2.y === -cpuDir.y) continue;
+        var mx = head.x + d2.x, my = head.y + d2.y;
+        if (mx &lt; 0 || mx &gt;= COLS || my &lt; 0 || my &gt;= ROWS) continue;
+        if (occupied(blocks, mx, my)) continue;
+        if (occupied(cpu.slice(0, cpu.length - 1), mx, my)) continue;
+        best = d2; break;
+      }
+    }
+    if (best) cpuDir = best;
+  }
+
+  function tick() {
+    if (!running) return;
+
+    if (!(pendingDir.x === -dir.x &amp;&amp; pendingDir.y === -dir.y)) dir = pendingDir;
+    var ph = snake[0];
+    var pnx = ph.x + dir.x, pny = ph.y + dir.y;
+
+    chooseCpuDir();
+    var ch = cpu[0];
+    var cnx = ch.x + cpuDir.x, cny = ch.y + cpuDir.y;
+
+    var pAte = (pnx === food.x &amp;&amp; pny === food.y);
+    var cAte = (cnx === food.x &amp;&amp; cny === food.y);
+
+    var pDead = (pnx &lt; 0 || pnx &gt;= COLS || pny &lt; 0 || pny &gt;= ROWS);
+    var cDead = (cnx &lt; 0 || cnx &gt;= COLS || cny &lt; 0 || cny &gt;= ROWS);
+
+    var pBody = pAte ? snake : snake.slice(0, snake.length - 1);
+    if (!pDead &amp;&amp; (occupied(pBody, pnx, pny) || occupied(cpu, pnx, pny) || occupied(blocks, pnx, pny))) pDead = true;
+    var cBody = cAte ? cpu : cpu.slice(0, cpu.length - 1);
+    if (!cDead &amp;&amp; (occupied(cBody, cnx, cny) || occupied(snake, cnx, cny) || occupied(blocks, cnx, cny))) cDead = true;
+    if (pnx === cnx &amp;&amp; pny === cny) { pDead = true; cDead = true; }
+
+    if (pDead) { endGame(cDead ? &#x27;draw&#x27; : &#x27;lose&#x27;); return; }
+    if (cDead) { endGame(&#x27;win&#x27;); return; }
+
+    snake.unshift({ x: pnx, y: pny });
+    if (pAte) { scoreYou++; scoreYouEl.textContent = scoreYou; }
+    else snake.pop();
+
+    cpu.unshift({ x: cnx, y: cny });
+    if (cAte) { scoreCpu++; scoreCpuEl.textContent = scoreCpu; }
+    else cpu.pop();
+
+    if (pAte || cAte) placeFood();
+
+    paint();
+  }
+
+  function endGame(result) {
+    running = false;
+    if (tickId) { clearInterval(tickId); tickId = null; }
+    var msg = result === &#x27;win&#x27; ? &#x27;🏆 You Win!&#x27; : result === &#x27;lose&#x27; ? &#x27;💥 You Crashed&#x27; : &#x27;🤝 Draw!&#x27;;
+    banner.innerHTML = msg + &#x27;&lt;span&gt;Press Start to play again&lt;/span&gt;&#x27;;
+    banner.style.display = &#x27;flex&#x27;;
+  }
+
+  function startGame() {
+    if (running) return;
+    scoreYou = 0; scoreCpu = 0;
+    scoreYouEl.textContent = &#x27;0&#x27;; scoreCpuEl.textContent = &#x27;0&#x27;;
+    banner.style.display = &#x27;none&#x27;;
+    generateBlocks();
+    initSnakes();
+    placeFood();
+    paint();
+    running = true;
+    if (tickId) clearInterval(tickId);
+    tickId = setInterval(tick, TICK_MS);
+  }
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    if (tickId) { clearInterval(tickId); tickId = null; }
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27;) { pendingDir = { x: -1, y: 0 }; e.preventDefault(); }
+    else if (e.key === &#x27;ArrowRight&#x27;) { pendingDir = { x: 1, y: 0 }; e.preventDefault(); }
+    else if (e.key === &#x27;ArrowUp&#x27;) { pendingDir = { x: 0, y: -1 }; e.preventDefault(); }
+    else if (e.key === &#x27;ArrowDown&#x27;) { pendingDir = { x: 0, y: 1 }; e.preventDefault(); }
+  });
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  generateBlocks();
+  initSnakes();
+  paint();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

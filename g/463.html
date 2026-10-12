@@ -1,0 +1,635 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DINO DASH</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>DINO DASH</b> &middot; Game 463 &middot; Professional producer &middot; Basic game: Gravity jumper</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  * { image-rendering: pixelated; }
+  body { font-family: &#x27;Courier New&#x27;, monospace; margin: 0; padding: 0; background: #1a1228; color: #ffe; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 10px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 900; letter-spacing: 2px; color: #ffd23f;
+       text-shadow: 3px 3px 0 #a13030, 0 0 2px #000; }
+  .instructions { font-size: 16px; color: #b8e0d0; max-width: 640px; margin: 0; line-height: 1.35; text-align: center; }
+  .hud { display: flex; gap: 18px; align-items: center; font-size: 18px; font-weight: bold; }
+  .hud .stars { color: #ffd23f; letter-spacing: 2px; }
+  .hud .lvl { color: #7fd8ff; }
+  canvas { border: 4px solid #4a3a6a; border-radius: 4px; background: #2a2140;
+           box-shadow: 0 0 0 3px #1a1228, 0 6px 0 #120a20; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;DINO DASH&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Press &lt;strong&gt;Space&lt;/strong&gt; or click to jump — tap again in mid-air for a double-jump. Hop up the platforms and grab all 3 mega-stars; use the Start/Restart button below.&lt;/p&gt;
+  &lt;div class=&quot;hud&quot;&gt;
+    &lt;span class=&quot;lvl&quot;&gt;LEVEL &lt;span id=&quot;lvl&quot;&gt;1&lt;/span&gt;&lt;/span&gt;
+    &lt;span class=&quot;stars&quot; id=&quot;stars&quot;&gt;☆ ☆ ☆&lt;/span&gt;
+    &lt;span&gt;SCORE &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;canvas id=&quot;c&quot; width=&quot;620&quot; height=&quot;440&quot;&gt;&lt;/canvas&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage({ type: &#x27;game_input&#x27;, kind: t, key: e.key || null }, &#x27;*&#x27;);
+      } catch (_) {}
+    }, true);
+  });
+
+  var cv = document.getElementById(&#x27;c&#x27;), ctx = cv.getContext(&#x27;2d&#x27;);
+  var W = 620, H = 440, GROUND_Y = 380;
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var starsEl = document.getElementById(&#x27;stars&#x27;);
+  var lvlEl = document.getElementById(&#x27;lvl&#x27;);
+
+  var running = false, animId = null;
+  var score = 0, level = 1;
+  var state = &#x27;idle&#x27;; // idle, play, dance
+  var danceTimer = 0;
+
+  var DINO_W = 30, DINO_H = 32;
+  var dino = { x: 90, y: GROUND_Y - DINO_H, vy: 0, jumps: 0, onGround: true };
+  var GRAVITY = 0.5, JUMP_V = -10.2;
+
+  var scrollSpeed = 2.6;
+  var cameraX = 0;
+  var platforms = [];
+  var obstacles = [];
+  var stars = [];
+  var sparkles = [];   // burst particles when a star is collected
+  var starsCollected = 0;
+  var levelLength = 0;
+  var frame = 0;
+
+  function rand(a,b){ return a + Math.random()*(b-a); }
+  function ri(a,b){ return Math.floor(rand(a,b+1)); }
+
+  function buildLevel() {
+    platforms = []; obstacles = []; stars = []; sparkles = [];
+    starsCollected = 0;
+    updateStarsHud();
+    cameraX = 0;
+    scrollSpeed = 2.6 + level * 0.18;
+
+    var x = 260;
+    var starsPlaced = 0;
+    var heights = [GROUND_Y - 70, GROUND_Y - 130, GROUND_Y - 180];
+    var targetLen = 1500 + level * 120;
+
+    while (x &lt; targetLen) {
+      var pick = ri(0, 2);
+      var py = heights[pick];
+      var pw = ri(70, 120);
+      platforms.push({ x: x, y: py, w: pw });
+
+      if (starsPlaced &lt; 3 &amp;&amp; pick &gt;= 1 &amp;&amp; Math.random() &lt; 0.7) {
+        stars.push({ x: x + pw/2, baseY: py - 32, got: false, phase: rand(0,6.28) });
+        starsPlaced++;
+      }
+
+      if (Math.random() &lt; 0.5) {
+        var t = [&#x27;rock&#x27;,&#x27;egg&#x27;,&#x27;bone&#x27;,&#x27;cactus&#x27;][ri(0,3)];
+        var oh = t===&#x27;cactus&#x27;?38:t===&#x27;rock&#x27;?26:t===&#x27;bone&#x27;?20:24;
+        var ow = t===&#x27;bone&#x27;?30:t===&#x27;egg&#x27;?22:28;
+        obstacles.push({ x: x + pw + ri(70,120), y: GROUND_Y - oh, w: ow, h: oh, type: t });
+      }
+
+      x += pw + ri(120, 190);
+    }
+
+    while (starsPlaced &lt; 3) {
+      var px2 = x;
+      var py2 = heights[ri(1,2)];
+      var pw2 = 100;
+      platforms.push({ x: px2, y: py2, w: pw2 });
+      stars.push({ x: px2 + pw2/2, baseY: py2 - 32, got: false, phase: rand(0,6.28) });
+      starsPlaced++;
+      x += pw2 + 150;
+    }
+    levelLength = x + 400;
+  }
+
+  function updateStarsHud() {
+    var s = &#x27;&#x27;;
+    for (var i=0;i&lt;3;i++) s += (i &lt; starsCollected ? &#x27;★&#x27; : &#x27;☆&#x27;) + (i&lt;2?&#x27; &#x27;:&#x27;&#x27;);
+    starsEl.textContent = s;
+  }
+
+  function respawn() {
+    dino.x = 90; dino.y = GROUND_Y - DINO_H; dino.vy = 0; dino.jumps = 0; dino.onGround = true;
+  }
+
+  function startGame() {
+    if (running) return;
+    score = 0; level = 1;
+    scoreEl.textContent = &#x27;0&#x27;;
+    lvlEl.textContent = &#x27;1&#x27;;
+    state = &#x27;play&#x27;;
+    buildLevel();
+    respawn();
+    running = true;
+    frame = 0;
+    animId = requestAnimationFrame(loop);
+  }
+  function stopGame() {
+    running = false;
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+  }
+
+  function jump() {
+    if (!running || state !== &#x27;play&#x27;) return;
+    if (dino.jumps &lt; 2) {
+      dino.vy = JUMP_V;
+      dino.jumps++;
+      dino.onGround = false;
+      score += 1;
+      scoreEl.textContent = score;
+      beep(dino.jumps === 1 ? 520 : 720, 0.07);
+    }
+  }
+
+  // ---- Audio ----
+  var actx = null;
+  function ac(){ if(!actx){ try{ actx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } return actx; }
+  function beep(f, d, type){
+    var a = ac(); if(!a) return;
+    var o = a.createOscillator(), g = a.createGain();
+    o.type = type || &#x27;square&#x27;; o.frequency.value = f;
+    o.connect(g); g.connect(a.destination);
+    g.gain.setValueAtTime(0.08, a.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, a.currentTime + d);
+    o.start(); o.stop(a.currentTime + d);
+  }
+  function fanfare(){
+    [523,659,784,1047].forEach(function(f,i){ setTimeout(function(){ beep(f,0.14,&#x27;square&#x27;); }, i*110); });
+  }
+
+  function spawnSparkles(wx, wy) {
+    for (var i=0;i&lt;14;i++){
+      var ang = rand(0, 6.28), sp = rand(1.5, 4);
+      sparkles.push({ x: wx, y: wy, vx: Math.cos(ang)*sp, vy: Math.sin(ang)*sp - 1, life: 30, max: 30 });
+    }
+  }
+
+  // ---- Update ----
+  function update() {
+    frame++;
+    if (state === &#x27;play&#x27;) {
+      cameraX += scrollSpeed;
+
+      var prevBottom = dino.y + DINO_H;
+      dino.vy += GRAVITY;
+      if (dino.vy &gt; 12) dino.vy = 12;
+      dino.y += dino.vy;
+      var newBottom = dino.y + DINO_H;
+
+      var dwx = dino.x + cameraX;
+      dino.onGround = false;
+
+      for (var i=0;i&lt;platforms.length;i++){
+        var p = platforms[i];
+        var pl = p.x, pr = p.x + p.w;
+        var dl = dwx, dr = dwx + DINO_W;
+        if (dr &gt; pl + 4 &amp;&amp; dl &lt; pr - 4) {
+          if (dino.vy &gt;= 0 &amp;&amp; prevBottom &lt;= p.y + 2 &amp;&amp; newBottom &gt;= p.y) {
+            dino.y = p.y - DINO_H;
+            dino.vy = 0; dino.onGround = true; dino.jumps = 0;
+          }
+        }
+      }
+      if (dino.y + DINO_H &gt;= GROUND_Y) {
+        dino.y = GROUND_Y - DINO_H; dino.vy = 0; dino.onGround = true; dino.jumps = 0;
+      }
+
+      for (var i=0;i&lt;obstacles.length;i++){
+        var o = obstacles[i];
+        var dl2 = dwx + 5, dr2 = dwx + DINO_W - 5;
+        if (dr2 &gt; o.x &amp;&amp; dl2 &lt; o.x + o.w) {
+          if (dino.y + DINO_H &gt; o.y + 4 &amp;&amp; dino.y &lt; o.y + o.h) {
+            beep(120, 0.25, &#x27;sawtooth&#x27;);
+            buildLevel();
+            respawn();
+            return;
+          }
+        }
+      }
+
+      // GARBAGE COLLECTION: drop things that have scrolled far off the left
+      var cutoff = cameraX - 120;
+      platforms = platforms.filter(function(p){ return p.x + p.w &gt; cutoff; });
+      obstacles = obstacles.filter(function(o){ return o.x + o.w &gt; cutoff; });
+
+      // stars
+      for (var i=0;i&lt;stars.length;i++){
+        var s = stars[i];
+        if (s.got) continue;
+        var sy = s.baseY + Math.sin(s.phase + frame*0.13)*10; // lively bounce
+        var cx = dwx + DINO_W/2, cy = dino.y + DINO_H/2;
+        if (Math.abs(cx - s.x) &lt; 26 &amp;&amp; Math.abs(cy - sy) &lt; 26) {
+          s.got = true; starsCollected++; score += 25;
+          scoreEl.textContent = score; updateStarsHud(); fanfare();
+          spawnSparkles(s.x, sy);
+        }
+      }
+
+      // sparkle particle update
+      for (var i=sparkles.length-1;i&gt;=0;i--){
+        var sp = sparkles[i];
+        sp.x += sp.vx; sp.y += sp.vy; sp.vy += 0.15; sp.life--;
+        if (sp.life &lt;= 0) sparkles.splice(i,1);
+      }
+
+      if (dino.y &gt; H + 40) { buildLevel(); respawn(); return; }
+
+      if (cameraX &gt; levelLength - W + 100) {
+        state = &#x27;dance&#x27;; danceTimer = 0;
+        if (starsCollected === 3) fanfare();
+      }
+    } else if (state === &#x27;dance&#x27;) {
+      danceTimer++;
+      dino.y = (GROUND_Y - DINO_H) - Math.abs(Math.sin(danceTimer*0.18))*22;
+      // keep updating sparkles during dance
+      for (var i=sparkles.length-1;i&gt;=0;i--){
+        var sp = sparkles[i];
+        sp.x += sp.vx; sp.y += sp.vy; sp.vy += 0.15; sp.life--;
+        if (sp.life &lt;= 0) sparkles.splice(i,1);
+      }
+      if (danceTimer &gt; 110) {
+        level++; lvlEl.textContent = level;
+        state = &#x27;play&#x27;;
+        buildLevel(); respawn();
+      }
+    }
+  }
+
+  // ---- Drawing (pixel art) ----
+  function px(x,y,w,h,c){ ctx.fillStyle = c; ctx.fillRect(Math.round(x),Math.round(y),w,h); }
+
+  function drawBg() {
+    var bands = [&#x27;#3a2d5c&#x27;,&#x27;#4a3a6a&#x27;,&#x27;#5a4878&#x27;];
+    for (var i=0;i&lt;3;i++) px(0, i*80, W, 80, bands[i]);
+    var off = (cameraX*0.3) % 200;
+    ctx.fillStyle = &#x27;#2e2450&#x27;;
+    for (var m=-1;m&lt;5;m++){
+      var mx = m*180 - off;
+      ctx.beginPath();
+      ctx.moveTo(mx, GROUND_Y);
+      ctx.lineTo(mx+90, GROUND_Y-90);
+      ctx.lineTo(mx+180, GROUND_Y);
+      ctx.fill();
+    }
+    px(510, 40, 46, 46, &#x27;#ffe9a8&#x27;);
+    px(526, 34, 30, 30, &#x27;#5a4878&#x27;);
+  }
+
+  function drawGround() {
+    px(0, GROUND_Y, W, H-GROUND_Y, &#x27;#3d2a1a&#x27;);
+    var off = cameraX % 40;
+    for (var x=-40;x&lt;W+40;x+=40){
+      px(x-off, GROUND_Y+4, 20, 8, &#x27;#5a3d26&#x27;);
+      px(x-off+20, GROUND_Y+12, 20, 8, &#x27;#5a3d26&#x27;);
+    }
+    px(0, GROUND_Y, W, 6, &#x27;#6b4a2e&#x27;);
+  }
+
+  function drawPlatform(p) {
+    var sx = p.x - cameraX;
+    if (sx &gt; W || sx + p.w &lt; 0) return;
+    px(sx, p.y, p.w, 16, &#x27;#8a5a3a&#x27;);
+    px(sx, p.y, p.w, 5, &#x27;#6bbf5a&#x27;);
+    px(sx+6, p.y+8, 6, 5, &#x27;#6b4530&#x27;);
+    px(sx+p.w-14, p.y+8, 6, 5, &#x27;#6b4530&#x27;);
+    px(sx, p.y+16, p.w, 3, &#x27;#5a3a26&#x27;);
+  }
+
+  function drawDino(x,y) {
+    var run = state===&#x27;play&#x27; ? Math.floor(frame/6)%2 : 0;
+    var body = &#x27;#5bd66a&#x27;, dark = &#x27;#3aa64a&#x27;, belly=&#x27;#c8f2b0&#x27;;
+    px(x-8, y+14, 10, 8, body);
+    px(x-12, y+18, 6, 6, dark);
+    px(x, y+8, 26, 22, body);
+    px(x+4, y+18, 18, 10, belly);
+    px(x+18, y, 18, 16, body);
+    px(x+30, y+4, 6, 6, belly);
+    px(x+28, y+3, 4, 4, &#x27;#111&#x27;);
+    if (dino.onGround &amp;&amp; state===&#x27;play&#x27;) {
+      if (run===0){ px(x+4, y+30, 6, 8, dark); px(x+16, y+28, 6, 10, dark); }
+      else { px(x+4, y+28, 6, 10, dark); px(x+16, y+30, 6, 8, dark); }
+    } else {
+      px(x+4, y+29, 6, 7, dark); px(x+16, y+29, 6, 7, dark);
+    }
+    px(x+6, y+4, 4, 4, dark); px(x+13, y+2, 4, 4, dark);
+  }
+
+  function drawObstacle(o) {
+    var x = o.x - cameraX, y = o.y;
+    if (x &gt; W || x + o.w &lt; 0) return;
+    if (o.type===&#x27;rock&#x27;){
+      px(x, y, o.w, o.h, &#x27;#8a8a9a&#x27;);
+      px(x+4, y+4, o.w-8, o.h-8, &#x27;#a6a6b6&#x27;);
+      px(x+6, y+2, 6, 4, &#x27;#c0c0cc&#x27;);
+    } else if (o.type===&#x27;egg&#x27;){
+      px(x+2, y+2, o.w-4, o.h-2, &#x27;#f0e4c8&#x27;);
+      px(x+4, y+6, o.w-8, 4, &#x27;#d8c49a&#x27;);
+      px(x+6, y+14, 3, 3, &#x27;#b89a6a&#x27;);
+    } else if (o.type===&#x27;bone&#x27;){
+      px(x, y+6, o.w, 6, &#x27;#f2f0e4&#x27;);
+      px(x-2, y+2, 8, 4, &#x27;#f2f0e4&#x27;); px(x-2, y+12, 8, 4, &#x27;#f2f0e4&#x27;);
+      px(x+o.w-6, y+2, 8, 4, &#x27;#f2f0e4&#x27;); px(x+o.w-6, y+12, 8, 4, &#x27;#f2f0e4&#x27;);
+    } else {
+      px(x+8, y, 12, o.h, &#x27;#3a9a4a&#x27;);
+      px(x, y+10, 8, 6, &#x27;#3a9a4a&#x27;); px(x+20, y+16, 8, 6, &#x27;#3a9a4a&#x27;);
+      px(x+10, y+2, 4, 4, &#x27;#5bd66a&#x27;);
+    }
+  }
+
+  function drawStar(s) {
+    if (s.got) return;
+    var x = s.x - cameraX;
+    if (x &gt; W+40 || x &lt; -40) return;
+    var y = s.baseY + Math.sin(s.phase + frame*0.13)*10;
+
+    // pulsing halo
+    var pulse = Math.sin(frame*0.18 + s.phase)*0.5 + 0.5;
+    ctx.save();
+    ctx.globalAlpha = 0.25 + pulse*0.35;
+    px(x-16, y-16, 32, 32, &#x27;#fff2a0&#x27;);
+    ctx.globalAlpha = 0.15 + pulse*0.2;
+    px(x-22, y-22, 44, 44, &#x27;#ffd23f&#x27;);
+    ctx.globalAlpha = 1;
+
+    // star body
+    var c = &#x27;#ffd23f&#x27;;
+    px(x-3, y-14, 6, 28, c);
+    px(x-14, y-3, 28, 6, c);
+    px(x-9, y-9, 18, 18, c);
+    px(x-5, y-5, 10, 10, &#x27;#fff6c0&#x27;);
+
+    // spinning glint that circles the star
+    var ga = frame*0.12 + s.phase;
+    var gx = x + Math.cos(ga)*18, gy = y + Math.sin(ga)*18;
+    px(gx-2, gy-2, 4, 4, &#x27;#ffffff&#x27;);
+    var ga2 = ga + 3.14;
+    px(x + Math.cos(ga2)*18 - 1, y + Math.sin(ga2)*18 - 1, 3, 3, &#x27;#fffbe0&#x27;);
+    ctx.restore();
+  }
+
+  function drawSparkles() {
+    for (var i=0;i&lt;sparkles.length;i++){
+      var sp = sparkles[i];
+      var x = sp.x - cameraX, y = sp.y;
+      var a = sp.life / sp.max;
+      ctx.save();
+      ctx.globalAlpha = a;
+      var cols = [&#x27;#ffffff&#x27;,&#x27;#ffd23f&#x27;,&#x27;#fff6c0&#x27;];
+      px(x-2, y-2, 4, 4, cols[i%3]);
+      ctx.restore();
+    }
+  }
+
+  function drawOverlay() {
+    if (state === &#x27;dance&#x27;) {
+      ctx.fillStyle = &#x27;rgba(20,10,32,0.55)&#x27;;
+      ctx.fillRect(0,0,W,H);
+      ctx.fillStyle = starsCollected===3 ? &#x27;#ffd23f&#x27; : &#x27;#7fd8ff&#x27;;
+      ctx.font = &#x27;bold 34px &quot;Courier New&quot;, monospace&#x27;;
+      ctx.textAlign = &#x27;center&#x27;;
+      ctx.fillText(starsCollected===3 ? &#x27;LEVEL 100%!&#x27; : &#x27;LEVEL CLEAR&#x27;, W/2, H/2-10);
+      ctx.font = &#x27;bold 18px &quot;Courier New&quot;, monospace&#x27;;
+      ctx.fillStyle = &#x27;#fff&#x27;;
+      ctx.fillText(&#x27;Stars: &#x27;+starsCollected+&#x27; / 3  —  next up!&#x27;, W/2, H/2+24);
+      ctx.textAlign = &#x27;left&#x27;;
+    } else if (state === &#x27;idle&#x27;) {
+      ctx.fillStyle = &#x27;#ffd23f&#x27;;
+      ctx.font = &#x27;bold 22px &quot;Courier New&quot;, monospace&#x27;;
+      ctx.textAlign = &#x27;center&#x27;;
+      ctx.fillText(&#x27;Press Start below to play!&#x27;, W/2, H/2);
+      ctx.textAlign = &#x27;left&#x27;;
+    }
+  }
+
+  function draw() {
+    // CRITICAL: clear the whole canvas every frame so nothing &quot;bleeds&quot;.
+    ctx.clearRect(0, 0, W, H);
+    drawBg();
+    platforms.forEach(drawPlatform);
+    stars.forEach(drawStar);
+    drawSparkles();
+    obstacles.forEach(drawObstacle);
+    drawGround();
+    drawDino(dino.x, dino.y);
+    drawOverlay();
+  }
+
+  function loop() {
+    if (!running) return;
+    update();
+    draw();
+    animId = requestAnimationFrame(loop);
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function(e){
+    if (e.key === &#x27; &#x27; || e.code === &#x27;Space&#x27;) { jump(); e.preventDefault(); }
+  });
+  cv.addEventListener(&#x27;click&#x27;, function(){ jump(); });
+  window.addEventListener(&#x27;message&#x27;, function(e){
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  buildLevel();
+  draw();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  // Suppress in-iframe scrollbars. The parent fits the iframe layout
+  // box to match the content size, so internal scroll is redundant —
+  // and if the LLM&#x27;s CSS sets body overflow: auto, the scrollbar shows
+  // briefly before the fit lands. Force hidden so it never appears.
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  // Iframe-internal JS error capture. window.onerror inside a sandboxed
+  // iframe can&#x27;t post to /api/js_error directly, so we relay to the
+  // parent via postMessage; parent&#x27;s error_logger.js forwards to the
+  // server. Catches LLM-emitted broken HTML (invalid hex, undefined
+  // variables, etc.) that would otherwise fail silently inside the
+  // iframe.
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      // Debounce: don&#x27;t fire more than ~10× per second. ResizeObserver
+      // fires repeatedly during layout/font load; we only need the latest.
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      // Clamp: reject obviously bogus dimensions. Any browser-game viewport
+      // is well under 4000×4000 logical px; readings beyond that are layout
+      // noise during load/visibility transitions.
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  // Parent posts wd_remeasure when it makes the iframe visible (the body&#x27;s
+  // ResizeObserver doesn&#x27;t fire on display:none→block of an outer ancestor
+  // because the iframe document didn&#x27;t actually resize). Wait a frame for
+  // layout to settle before measuring.
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

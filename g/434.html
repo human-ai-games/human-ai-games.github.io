@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🎪 Carnival Critter Whack 🎪</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>🎪 Carnival Critter Whack 🎪</b> &middot; Game 434 &middot; Amateur producer &middot; Basic game: Whack-a-mole</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #2a1a4a; color: #222; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 12px; height: 100%; box-sizing: border-box; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 8px;
+    background: repeating-linear-gradient(90deg, #e23b3b 0 40px, #fff 40px 80px); }
+  h1 { margin: 0; font-size: 24px; font-weight: 800; color: #fff; text-shadow: 2px 2px 0 #d11, 0 0 8px #ff0; letter-spacing: 1px; }
+  .instructions { font-size: 16px; color: #fff; max-width: 640px; margin: 0; line-height: 1.35; background: rgba(0,0,0,0.35); padding: 6px 10px; border-radius: 8px; }
+  .hud { display: flex; gap: 16px; align-items: center; font-size: 18px; font-weight: 700; color: #fff; text-shadow: 1px 1px 0 #333; flex-wrap: wrap; justify-content: center; }
+  .lives { font-size: 20px; }
+  .streak { color: #ffe94d; }
+  .level { color: #7cf; }
+  .board { position: relative; width: 640px; height: 400px; flex-shrink: 0; margin: 0; border-radius: 12px; overflow: hidden;
+    background:
+      radial-gradient(ellipse at 50% -10%, #ffd36b 0%, #f2a03a 40%, transparent 70%),
+      linear-gradient(#87c9ff 0 55%, #6fae4d 55% 100%);
+    border: 5px solid #4a2a80; box-shadow: 0 0 20px rgba(0,0,0,0.5) inset; }
+  .board::before {
+    content: &#x27;&#x27;; position: absolute; top: 0; left: 0; right: 0; height: 34px;
+    background: repeating-linear-gradient(90deg, #e23b3b 0 32px, #fff8e0 32px 64px);
+    border-bottom: 3px solid #4a2a80; }
+  .hole { position: absolute; width: 90px; height: 46px; border-radius: 50%;
+    background: radial-gradient(ellipse at 50% 35%, #3a2410 0%, #241608 70%, #1a0f04 100%);
+    box-shadow: 0 6px 0 rgba(0,0,0,0.25); }
+  .critter { position: absolute; width: 62px; height: 62px; font-size: 52px; line-height: 62px; text-align: center; cursor: pointer;
+    transform: translateY(30px) scale(0.4); opacity: 0; transition: transform 0.18s ease-out, opacity 0.18s; user-select: none; }
+  .critter.up { transform: translateY(-18px) scale(1); opacity: 1; }
+  .critter.hit { transform: translateY(-40px) scale(1.4) rotate(20deg); opacity: 0; transition: transform 0.25s ease-out, opacity 0.25s; }
+  .banner { position: absolute; top: 45%; left: 50%; transform: translate(-50%,-50%); font-size: 36px; font-weight: 900;
+    color: #ffe94d; text-shadow: 2px 2px 0 #d11, -2px -2px 0 #4a2a80; opacity: 0; pointer-events: none; z-index: 5; }
+  .banner.show { animation: pop 1.1s ease-out; }
+  @keyframes pop { 0%{opacity:0; transform:translate(-50%,-50%) scale(0.3);} 25%{opacity:1; transform:translate(-50%,-50%) scale(1.2);} 100%{opacity:0; transform:translate(-50%,-70%) scale(1);} }
+  .gameover { position: absolute; inset: 0; background: rgba(20,10,40,0.85); color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; font-size:28px; font-weight:800; opacity:0; pointer-events:none; transition: opacity 0.3s; z-index: 6; }
+  .gameover.show { opacity:1; }
+  .gameover small { font-size:18px; font-weight:600; color:#ffe94d; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;🎪 Carnival Critter Whack 🎪&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Click the animals to score, but don&#x27;t miss — each miss costs a life. Watch out: 🐍 snakes appear from level 4 (costs a life) and 🦝 raccoons from level 6 (instant game over); a 20-hit streak earns back one life.&lt;/p&gt;
+  &lt;div class=&quot;hud&quot;&gt;
+    &lt;div class=&quot;level&quot;&gt;🎯 Level &lt;span id=&quot;level&quot;&gt;1&lt;/span&gt;&lt;/div&gt;
+    &lt;div&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;streak&quot;&gt;🔥 Streak: &lt;span id=&quot;streak&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;lives&quot; id=&quot;lives&quot;&gt;❤️❤️❤️&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;board&quot; id=&quot;board&quot;&gt;
+    &lt;div class=&quot;banner&quot; id=&quot;banner&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;gameover&quot; id=&quot;gameover&quot;&gt;GAME OVER&lt;small id=&quot;finalScore&quot;&gt;&lt;/small&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage({ type: &#x27;game_input&#x27;, kind: t, key: e.key || null }, &#x27;*&#x27;);
+      } catch (_) {}
+    }, true);
+  });
+
+  var BOARD_W = 640, BOARD_H = 400;
+  var ANIMALS = [&#x27;🐰&#x27;,&#x27;🐭&#x27;,&#x27;🦊&#x27;,&#x27;🐻&#x27;,&#x27;🐸&#x27;,&#x27;🐷&#x27;,&#x27;🐵&#x27;,&#x27;🐹&#x27;,&#x27;🐨&#x27;,&#x27;🐮&#x27;];
+  var SNAKE = &#x27;🐍&#x27;, RACCOON = &#x27;🦝&#x27;;
+  var MAX_LIVES = 3, STREAK_BONUS = 20;
+  var LEVEL_UP_HITS = 8;
+  var SNAKE_LEVEL = 4, RACCOON_LEVEL = 6, DOUBLE_LEVEL = 5;
+  var score = 0, streak = 0, lives = MAX_LIVES, level = 1, goodHits = 0, running = false;
+  var spawnTimer = null, moleTimeouts = [];
+  var board = document.getElementById(&#x27;board&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var streakEl = document.getElementById(&#x27;streak&#x27;);
+  var livesEl = document.getElementById(&#x27;lives&#x27;);
+  var levelEl = document.getElementById(&#x27;level&#x27;);
+  var bannerEl = document.getElementById(&#x27;banner&#x27;);
+  var gameoverEl = document.getElementById(&#x27;gameover&#x27;);
+  var finalScoreEl = document.getElementById(&#x27;finalScore&#x27;);
+
+  var HOLES = [];
+  (function(){
+    var cols = 4, rows = 3, mw = 110, mh = 82;
+    var startX = (BOARD_W - cols*mw)/2 + 10;
+    var startY = 50;
+    for (var r=0;r&lt;rows;r++) for(var c=0;c&lt;cols;c++){
+      HOLES.push({ x: startX + c*mw, y: startY + r*mh });
+    }
+  })();
+  HOLES.forEach(function(h){
+    var d = document.createElement(&#x27;div&#x27;);
+    d.className = &#x27;hole&#x27;;
+    d.style.left = h.x + &#x27;px&#x27;;
+    d.style.top = (h.y+28) + &#x27;px&#x27;;
+    board.insertBefore(d, bannerEl);
+  });
+  var occupied = {}; // holeIndex -&gt; true while a critter is up there
+
+  // ---- Audio ----
+  var actx = null, musicTimer = null;
+  function ensureAudio(){
+    if (!actx) { try { actx = new (window.AudioContext||window.webkitAudioContext)(); } catch(_){ actx=null; } }
+    if (actx &amp;&amp; actx.state === &#x27;suspended&#x27;) actx.resume();
+  }
+  function tone(freq, start, dur, type, vol){
+    if(!actx) return;
+    var o = actx.createOscillator(), g = actx.createGain();
+    o.type = type||&#x27;square&#x27;; o.frequency.value = freq;
+    g.gain.setValueAtTime(0, start);
+    g.gain.linearRampToValueAtTime(vol||0.15, start+0.02);
+    g.gain.exponentialRampToValueAtTime(0.001, start+dur);
+    o.connect(g); g.connect(actx.destination);
+    o.start(start); o.stop(start+dur+0.02);
+  }
+  var MELODY = [523,659,784,659,523,659,784,880,784,659,587,659,523,659,784,1047];
+  var melodyIdx = 0, musicInterval = 240;
+  function playMusicStep(){
+    if(!running||!actx) return;
+    var t = actx.currentTime;
+    var n = MELODY[melodyIdx % MELODY.length];
+    tone(n, t, 0.22, &#x27;triangle&#x27;, 0.08);
+    tone(n/4, t, 0.18, &#x27;sawtooth&#x27;, 0.05);
+    if (melodyIdx % 2 === 0) tone(n/2, t+0.12, 0.1, &#x27;square&#x27;, 0.03);
+    melodyIdx++;
+  }
+  function startMusic(){ if(!actx) return; melodyIdx = 0; setMusicTempo(); playMusicStep(); }
+  function setMusicTempo(){
+    if(musicTimer) clearInterval(musicTimer);
+    // music speeds up a little each level for tension
+    musicInterval = Math.max(150, 240 - (level-1)*10);
+    if(running) musicTimer = setInterval(playMusicStep, musicInterval);
+  }
+  function stopMusic(){ if(musicTimer){clearInterval(musicTimer); musicTimer=null;} }
+  function hitSound(){
+    if(!actx) return; var t = actx.currentTime;
+    tone(880, t, 0.08, &#x27;square&#x27;, 0.18);
+    tone(1320, t+0.06, 0.12, &#x27;square&#x27;, 0.16);
+    tone(1760, t+0.12, 0.1, &#x27;triangle&#x27;, 0.12);
+  }
+  function bonusSound(){
+    if(!actx) return; var t = actx.currentTime;
+    [523,659,784,1047,1319].forEach(function(f,i){ tone(f, t+i*0.08, 0.2, &#x27;triangle&#x27;, 0.16); });
+  }
+  function loseSound(){
+    if(!actx) return; var t = actx.currentTime;
+    tone(300, t, 0.15, &#x27;sawtooth&#x27;, 0.15);
+    tone(200, t+0.12, 0.25, &#x27;sawtooth&#x27;, 0.15);
+  }
+  function levelUpSound(){
+    if(!actx) return; var t = actx.currentTime;
+    [659,784,988,1319].forEach(function(f,i){ tone(f, t+i*0.09, 0.18, &#x27;square&#x27;, 0.14); });
+  }
+  function raccoonSound(){
+    if(!actx) return; var t = actx.currentTime;
+    tone(400, t, 0.2, &#x27;sawtooth&#x27;, 0.2);
+    tone(250, t+0.15, 0.3, &#x27;sawtooth&#x27;, 0.2);
+    tone(120, t+0.35, 0.4, &#x27;square&#x27;, 0.2);
+  }
+
+  function updateHud(){
+    scoreEl.textContent = score;
+    streakEl.textContent = streak;
+    levelEl.textContent = level;
+    var hearts = &#x27;&#x27;;
+    for (var i=0;i&lt;MAX_LIVES;i++) hearts += (i&lt;lives ? &#x27;❤️&#x27; : &#x27;🖤&#x27;);
+    livesEl.textContent = hearts;
+  }
+  function showBanner(text){
+    bannerEl.textContent = text;
+    bannerEl.classList.remove(&#x27;show&#x27;);
+    void bannerEl.offsetWidth;
+    bannerEl.classList.add(&#x27;show&#x27;);
+  }
+
+  function clearMoles(){
+    for(var i=0;i&lt;moleTimeouts.length;i++) clearTimeout(moleTimeouts[i]);
+    moleTimeouts = [];
+    var cs = board.querySelectorAll(&#x27;.critter&#x27;);
+    for(var j=0;j&lt;cs.length;j++) cs[j].remove();
+    occupied = {};
+  }
+
+  function loseLife(){
+    if(!running) return;
+    streak = 0;
+    lives--;
+    loseSound();
+    updateHud();
+    if(lives&lt;=0) endGame();
+  }
+
+  function goodHit(){
+    score += 10;
+    streak++;
+    goodHits++;
+    if(streak&gt;0 &amp;&amp; streak % STREAK_BONUS === 0 &amp;&amp; lives &lt; MAX_LIVES){
+      lives++;
+      bonusSound();
+      showBanner(&#x27;+1 LIFE!&#x27;);
+    }
+    if(goodHits &gt;= LEVEL_UP_HITS){
+      goodHits = 0;
+      level++;
+      levelUpSound();
+      setMusicTempo();
+      if(level === SNAKE_LEVEL) showBanner(&#x27;LVL &#x27;+level+&#x27; 🐍!&#x27;);
+      else if(level === RACCOON_LEVEL) showBanner(&#x27;LVL &#x27;+level+&#x27; 🦝!&#x27;);
+      else showBanner(&#x27;LEVEL &#x27; + level + &#x27;!&#x27;);
+    }
+    updateHud();
+  }
+
+  function chooseType(){
+    var r = Math.random();
+    // raccoon frequency ramps from level 6 up
+    if(level &gt;= RACCOON_LEVEL){
+      var rac = Math.min(0.22, 0.12 + (level-RACCOON_LEVEL)*0.02);
+      if(r &lt; rac) return { emoji: RACCOON, kind: &#x27;raccoon&#x27; };
+    }
+    // snake frequency ramps from level 4 up
+    if(level &gt;= SNAKE_LEVEL){
+      var snk = Math.min(0.35, 0.18 + (level-SNAKE_LEVEL)*0.03);
+      if(r &lt; 0.30 + snk*0.001 &amp;&amp; Math.random() &lt; snk) return { emoji: SNAKE, kind: &#x27;snake&#x27; };
+    }
+    return { emoji: ANIMALS[Math.floor(Math.random()*ANIMALS.length)], kind: &#x27;animal&#x27; };
+  }
+
+  function freeHoleIndex(){
+    var free = [];
+    for(var i=0;i&lt;HOLES.length;i++) if(!occupied[i]) free.push(i);
+    if(free.length === 0) return -1;
+    return free[Math.floor(Math.random()*free.length)];
+  }
+
+  function spawnMole(){
+    if(!running) return;
+    var idx = freeHoleIndex();
+    if(idx &lt; 0) return;
+    var slot = HOLES[idx];
+    occupied[idx] = true;
+    var type = chooseType();
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;critter&#x27;;
+    el.textContent = type.emoji;
+    el.style.left = (slot.x + 24) + &#x27;px&#x27;;
+    el.style.top = (slot.y + 8) + &#x27;px&#x27;;
+    board.insertBefore(el, bannerEl);
+    void el.offsetWidth;
+    el.classList.add(&#x27;up&#x27;);
+    var handled = false;
+
+    function release(){ occupied[idx] = false; }
+
+    el.addEventListener(&#x27;mousedown&#x27;, function(){
+      if(handled||!running) return;
+      handled = true;
+      release();
+      if(type.kind === &#x27;raccoon&#x27;){
+        raccoonSound();
+        el.classList.remove(&#x27;up&#x27;); el.classList.add(&#x27;hit&#x27;);
+        showBanner(&#x27;🦝 BUSTED!&#x27;);
+        endGame();
+        return;
+      }
+      if(type.kind === &#x27;snake&#x27;){
+        loseSound();
+        el.classList.remove(&#x27;up&#x27;); el.classList.add(&#x27;hit&#x27;);
+        setTimeout(function(){ el.remove(); }, 260);
+        showBanner(&#x27;🐍 -1 LIFE&#x27;);
+        loseLife();
+        return;
+      }
+      hitSound();
+      el.classList.remove(&#x27;up&#x27;); el.classList.add(&#x27;hit&#x27;);
+      setTimeout(function(){ el.remove(); }, 260);
+      goodHit();
+    });
+
+    // critters get faster to react to as levels rise
+    var life = Math.max(500, 1050 - (level-1)*70) + Math.random()*300;
+    var to = setTimeout(function(){
+      if(!handled){
+        release();
+        el.classList.remove(&#x27;up&#x27;);
+        setTimeout(function(){ el.remove(); }, 180);
+        if(type.kind === &#x27;animal&#x27;) loseLife();
+      }
+    }, life);
+    moleTimeouts.push(to);
+  }
+
+  function scheduleSpawn(){
+    if(!running) return;
+    var delay = Math.max(280, 600 - (level-1)*35) + Math.random()*350;
+    spawnTimer = setTimeout(function(){
+      spawnMole();
+      // From level 5, occasionally spawn a second critter at the same time
+      if(level &gt;= DOUBLE_LEVEL &amp;&amp; Math.random() &lt; Math.min(0.5, 0.2 + (level-DOUBLE_LEVEL)*0.06)){
+        spawnMole();
+      }
+      scheduleSpawn();
+    }, delay);
+  }
+
+  function startGame(){
+    if(running) return;
+    ensureAudio();
+    running = true;
+    score = 0; streak = 0; lives = MAX_LIVES; level = 1; goodHits = 0;
+    updateHud();
+    gameoverEl.classList.remove(&#x27;show&#x27;);
+    clearMoles();
+    startMusic();
+    spawnMole();
+    scheduleSpawn();
+  }
+
+  function endGame(){
+    running = false;
+    if(spawnTimer){ clearTimeout(spawnTimer); spawnTimer=null; }
+    stopMusic();
+    setTimeout(clearMoles, 300);
+    finalScoreEl.textContent = &#x27;Final Score: &#x27; + score + &#x27; • Reached Level &#x27; + level;
+    gameoverEl.classList.add(&#x27;show&#x27;);
+  }
+
+  function stopGame(){
+    if(!running) return;
+    running = false;
+    if(spawnTimer){ clearTimeout(spawnTimer); spawnTimer=null; }
+    stopMusic();
+    clearMoles();
+  }
+
+  updateHud();
+
+  window.addEventListener(&#x27;message&#x27;, function(e){
+    if(!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if(e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if(e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

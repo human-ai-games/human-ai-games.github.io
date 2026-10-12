@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🐍 Jungle Snake</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>🐍 Jungle Snake</b> &middot; Game 086 &middot; Professional producer &middot; Basic game: Snake</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #1c2e14; color: #eaf5e0; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 14px; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 8px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 700; color: #d7f5a3; text-shadow: 0 2px 4px rgba(0,0,0,0.5); letter-spacing: 1px; }
+  .instructions { font-size: 16px; color: #c3e0a8; max-width: 600px; margin: 0; line-height: 1.4; text-align: center; }
+  .hud { display: flex; gap: 18px; align-items: center; font-size: 20px; color: #f0ffdd; font-weight: 600; }
+  .legend { display: flex; gap: 12px; font-size: 14px; color: #c3e0a8; margin: 0; align-items:center; }
+  .legend span { white-space: nowrap; }
+  .mutebtn { background: rgba(255,255,255,0.12); color:#eaf5e0; border:1px solid rgba(255,255,255,0.25); border-radius:6px; padding:2px 8px; font-size:14px; cursor:pointer; }
+  .field { position: relative; width: 600px; height: 440px; flex-shrink: 0; margin: 0; border-radius: 10px; overflow: hidden; box-shadow: inset 0 0 40px rgba(0,0,0,0.5), 0 6px 18px rgba(0,0,0,0.4);
+    background:
+      radial-gradient(circle at 20% 15%, rgba(180,255,120,0.12), transparent 30%),
+      radial-gradient(circle at 80% 75%, rgba(120,220,90,0.12), transparent 35%),
+      repeating-linear-gradient(45deg, rgba(0,0,0,0.05) 0 14px, rgba(255,255,255,0.03) 14px 28px),
+      linear-gradient(160deg, #2f5a1e, #1e3d12 55%, #16300d);
+  }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;🐍 Jungle Snake&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Steer the snake with the arrow keys and eat fruit to grow — rarer fruit is worth more points. Don&#x27;t hit the walls or your own tail. Use the &lt;strong&gt;Start&lt;/strong&gt;/&lt;strong&gt;Restart&lt;/strong&gt; button below the game.&lt;/p&gt;
+  &lt;div class=&quot;hud&quot;&gt;&lt;div&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;
+  &lt;p class=&quot;legend&quot;&gt;
+    &lt;span&gt;🍒 1&lt;/span&gt;&lt;span&gt;🍊 2&lt;/span&gt;&lt;span&gt;🍎 3&lt;/span&gt;&lt;span&gt;🥭 5 (rare)&lt;/span&gt;
+    &lt;button class=&quot;mutebtn&quot; id=&quot;mute&quot;&gt;🔊 Sound&lt;/button&gt;
+  &lt;/p&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;
+    &lt;canvas id=&quot;canvas&quot; width=&quot;600&quot; height=&quot;440&quot;&gt;&lt;/canvas&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var CELL = 20;
+  var COLS = 30, ROWS = 22;
+  var TICK_MS = 150;
+  var running = false, tickId = null, gameOver = false;
+  var snake = [];
+  var dir = { x: 1, y: 0 };
+  var pendingDir = { x: 1, y: 0 };
+  var score = 0;
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var canvas = document.getElementById(&#x27;canvas&#x27;);
+  var ctx = canvas.getContext(&#x27;2d&#x27;);
+
+  // =========================================================
+  // AUDIO (procedural via Web Audio API)
+  // =========================================================
+  var AC = null, masterGain = null, musicGain = null, muted = false;
+  var musicTimer = null, birdTimer = null, musicStep = 0;
+  function initAudio() {
+    if (AC) return;
+    try {
+      AC = new (window.AudioContext || window.webkitAudioContext)();
+      masterGain = AC.createGain();
+      masterGain.gain.value = muted ? 0 : 0.9;
+      masterGain.connect(AC.destination);
+      musicGain = AC.createGain();
+      musicGain.gain.value = 0.5;
+      musicGain.connect(masterGain);
+    } catch (_) { AC = null; }
+  }
+
+  function playTone(freq, dur, type, gainVal, dest, attack) {
+    if (!AC) return;
+    var o = AC.createOscillator();
+    var g = AC.createGain();
+    o.type = type || &#x27;sine&#x27;;
+    o.frequency.value = freq;
+    var now = AC.currentTime;
+    var a = attack || 0.01;
+    g.gain.setValueAtTime(0, now);
+    g.gain.linearRampToValueAtTime(gainVal, now + a);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+    o.connect(g);
+    g.connect(dest || masterGain);
+    o.start(now);
+    o.stop(now + dur + 0.05);
+  }
+
+  // Pentatonic-ish jungle melody + bass loop
+  var BASS = [55, 55, 73.42, 65.41]; // A1, A1, D2, C2
+  var MELODY = [220, 261.63, 293.66, 329.63, 293.66, 261.63, 220, 196];
+  function musicTick() {
+    if (!AC || muted) return;
+    var bassNote = BASS[musicStep % BASS.length];
+    playTone(bassNote, 0.5, &#x27;triangle&#x27;, 0.28, musicGain, 0.02);
+    // melody every other step
+    if (musicStep % 1 === 0) {
+      var mel = MELODY[musicStep % MELODY.length];
+      playTone(mel, 0.35, &#x27;sine&#x27;, 0.14, musicGain, 0.02);
+    }
+    // soft pad
+    if (musicStep % 4 === 0) {
+      playTone(bassNote * 2, 0.9, &#x27;sine&#x27;, 0.08, musicGain, 0.1);
+    }
+    musicStep++;
+  }
+  function birdTick() {
+    if (!AC || muted) return;
+    if (Math.random() &lt; 0.5) {
+      // chirp: quick up-down
+      var base = 1400 + Math.random() * 900;
+      playTone(base, 0.08, &#x27;sine&#x27;, 0.10, masterGain, 0.005);
+      setTimeout(function(){ playTone(base * 1.25, 0.07, &#x27;sine&#x27;, 0.08, masterGain, 0.005); }, 70);
+    }
+    // schedule next bird randomly
+    birdTimer = setTimeout(birdTick, 1500 + Math.random() * 3500);
+  }
+  function startMusic() {
+    if (!AC) return;
+    musicStep = 0;
+    if (musicTimer) clearInterval(musicTimer);
+    musicTick();
+    musicTimer = setInterval(musicTick, 480);
+    if (birdTimer) clearTimeout(birdTimer);
+    birdTimer = setTimeout(birdTick, 1200);
+  }
+  function stopMusic() {
+    if (musicTimer) { clearInterval(musicTimer); musicTimer = null; }
+    if (birdTimer) { clearTimeout(birdTimer); birdTimer = null; }
+  }
+  function sfxEat(points) {
+    if (!AC) return;
+    var base = 440 + points * 40;
+    playTone(base, 0.12, &#x27;square&#x27;, 0.16);
+    setTimeout(function(){ playTone(base * 1.5, 0.12, &#x27;square&#x27;, 0.13); }, 60);
+  }
+  function sfxGolden() {
+    if (!AC) return;
+    var notes = [523, 659, 784, 1047];
+    notes.forEach(function(n, i){ setTimeout(function(){ playTone(n, 0.18, &#x27;triangle&#x27;, 0.16); }, i * 70); });
+  }
+  function sfxGameOver() {
+    if (!AC) return;
+    var notes = [330, 294, 247, 196];
+    notes.forEach(function(n, i){ setTimeout(function(){ playTone(n, 0.3, &#x27;sawtooth&#x27;, 0.16); }, i * 140); });
+  }
+
+  var muteBtn = document.getElementById(&#x27;mute&#x27;);
+  muteBtn.addEventListener(&#x27;click&#x27;, function(){
+    muted = !muted;
+    if (masterGain) masterGain.gain.value = muted ? 0 : 0.9;
+    muteBtn.textContent = muted ? &#x27;🔇 Muted&#x27; : &#x27;🔊 Sound&#x27;;
+  });
+
+  // =========================================================
+  // FRUIT
+  // =========================================================
+  var FRUITS = [
+    { name: &#x27;cherry&#x27;, points: 1, weight: 45, colorIn: &#x27;#ff8a8a&#x27;, colorMid: &#x27;#e83b3b&#x27;, colorOut: &#x27;#a51414&#x27;, r: 0.42 },
+    { name: &#x27;orange&#x27;, points: 2, weight: 28, colorIn: &#x27;#ffd08a&#x27;, colorMid: &#x27;#ff9a2e&#x27;, colorOut: &#x27;#c96a10&#x27;, r: 0.46 },
+    { name: &#x27;apple&#x27;,  points: 3, weight: 20, colorIn: &#x27;#c8ff8a&#x27;, colorMid: &#x27;#6fbf2e&#x27;, colorOut: &#x27;#3a7a14&#x27;, r: 0.46 },
+    { name: &#x27;mango&#x27;,  points: 5, weight: 7,  colorIn: &#x27;#fff3a0&#x27;, colorMid: &#x27;#ffcf33&#x27;, colorOut: &#x27;#c98a00&#x27;, r: 0.48, golden: true }
+  ];
+  var food = { x: 10, y: 10, type: FRUITS[0] };
+
+  function pickFruitType() {
+    var total = 0, i;
+    for (i = 0; i &lt; FRUITS.length; i++) total += FRUITS[i].weight;
+    var r = Math.random() * total;
+    for (i = 0; i &lt; FRUITS.length; i++) { r -= FRUITS[i].weight; if (r &lt;= 0) return FRUITS[i]; }
+    return FRUITS[0];
+  }
+
+  // =========================================================
+  // PARTICLES
+  // =========================================================
+  var particles = [];
+  function spawnParticles(cx, cy, baseColor) {
+    for (var i = 0; i &lt; 16; i++) {
+      var ang = (Math.PI * 2 * i) / 16 + Math.random() * 0.5;
+      var spd = 1.2 + Math.random() * 2.4;
+      particles.push({ x: cx, y: cy, vx: Math.cos(ang)*spd, vy: Math.sin(ang)*spd,
+        life: 1, decay: 0.02 + Math.random()*0.02, size: 2 + Math.random()*3, color: baseColor });
+    }
+  }
+  function updateParticles() {
+    for (var i = particles.length - 1; i &gt;= 0; i--) {
+      var p = particles[i];
+      p.x += p.vx; p.y += p.vy; p.vy += 0.08; p.vx *= 0.96; p.life -= p.decay;
+      if (p.life &lt;= 0) particles.splice(i, 1);
+    }
+  }
+  function drawParticles() {
+    for (var i = 0; i &lt; particles.length; i++) {
+      var p = particles[i];
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.fillStyle = p.color;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // =========================================================
+  // ANIMATED BACKGROUND PLANTS
+  // =========================================================
+  var ferns = [], floatLeaves = [], lightSpots = [];
+  function buildPlants() {
+    ferns = [];
+    // ferns sprouting from bottom edge
+    var fx = 30;
+    while (fx &lt; 600) {
+      ferns.push({
+        x: fx + (Math.random()*20-10),
+        h: 60 + Math.random()*70,
+        fronds: 4 + Math.floor(Math.random()*3),
+        phase: Math.random()*Math.PI*2,
+        speed: 0.6 + Math.random()*0.6,
+        sway: 0.12 + Math.random()*0.12,
+        hue: 90 + Math.random()*30,
+        light: 25 + Math.random()*15
+      });
+      fx += 55 + Math.random()*35;
+    }
+    floatLeaves = [];
+    for (var i = 0; i &lt; 8; i++) {
+      floatLeaves.push({
+        x: Math.random()*600, y: Math.random()*440,
+        r: 8 + Math.random()*10, rot: Math.random()*Math.PI*2,
+        rotSpeed: (Math.random()-0.5)*0.02,
+        vx: 0.15 + Math.random()*0.3, vy: (Math.random()-0.5)*0.15,
+        alpha: 0.06 + Math.random()*0.08
+      });
+    }
+    lightSpots = [];
+    for (var j = 0; j &lt; 5; j++) {
+      lightSpots.push({ x: Math.random()*600, y: Math.random()*440,
+        r: 40 + Math.random()*50, phase: Math.random()*Math.PI*2, speed: 0.3+Math.random()*0.4 });
+    }
+  }
+  buildPlants();
+
+  var bgTime = 0;
+  function drawFern(f) {
+    var sway = Math.sin(bgTime * f.speed + f.phase) * f.sway;
+    ctx.save();
+    ctx.translate(f.x, 440);
+    ctx.rotate(sway);
+    // stem
+    ctx.strokeStyle = &#x27;hsla(&#x27; + f.hue + &#x27;,55%,&#x27; + f.light + &#x27;%,0.5)&#x27;;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.quadraticCurveTo(f.h*0.15, -f.h*0.5, f.h*0.05, -f.h);
+    ctx.stroke();
+    // fronds along stem
+    for (var i = 1; i &lt;= f.fronds; i++) {
+      var t = i / (f.fronds + 1);
+      var sy = -f.h * t;
+      var sx = f.h * 0.05 * t + (f.h*0.15)*(1-t)*t*4*0.3;
+      var flen = (f.h * 0.28) * (1 - t*0.5);
+      var frondSway = Math.sin(bgTime * f.speed + f.phase + i) * 0.08;
+      for (var side = -1; side &lt;= 1; side += 2) {
+        ctx.save();
+        ctx.translate(sx, sy);
+        ctx.rotate(side * (0.7 + frondSway));
+        ctx.fillStyle = &#x27;hsla(&#x27; + f.hue + &#x27;,55%,&#x27; + (f.light + 8) + &#x27;%,0.45)&#x27;;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.quadraticCurveTo(flen*0.5, -flen*0.25, flen, 0);
+        ctx.quadraticCurveTo(flen*0.5, flen*0.12, 0, 0);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+    ctx.restore();
+  }
+
+  function drawFloatLeaf(l) {
+    ctx.save();
+    ctx.translate(l.x, l.y);
+    ctx.rotate(l.rot);
+    ctx.fillStyle = &#x27;rgba(150,220,100,&#x27; + l.alpha + &#x27;)&#x27;;
+    ctx.beginPath();
+    ctx.moveTo(0, -l.r);
+    ctx.quadraticCurveTo(l.r*0.7, 0, 0, l.r);
+    ctx.quadraticCurveTo(-l.r*0.7, 0, 0, -l.r);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawLightSpot(s) {
+    var r = s.r * (0.85 + Math.sin(bgTime * s.speed + s.phase) * 0.15);
+    var g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, r);
+    g.addColorStop(0, &#x27;rgba(220,255,150,0.10)&#x27;);
+    g.addColorStop(1, &#x27;rgba(220,255,150,0)&#x27;);
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(s.x, s.y, r, 0, Math.PI*2); ctx.fill();
+  }
+
+  function updatePlants() {
+    for (var i = 0; i &lt; floatLeaves.length; i++) {
+      var l = floatLeaves[i];
+      l.x += l.vx; l.y += l.vy; l.rot += l.rotSpeed;
+      if (l.x &gt; 615) { l.x = -15; l.y = Math.random()*440; }
+      if (l.y &lt; -15) l.y = 455; if (l.y &gt; 455) l.y = -15;
+    }
+  }
+
+  function drawBackground() {
+    for (var i = 0; i &lt; lightSpots.length; i++) drawLightSpot(lightSpots[i]);
+    for (var j = 0; j &lt; floatLeaves.length; j++) drawFloatLeaf(floatLeaves[j]);
+    for (var k = 0; k &lt; ferns.length; k++) drawFern(ferns[k]);
+  }
+
+  // =========================================================
+  // FOOD DRAW
+  // =========================================================
+  var glowPhase = 0;
+  function drawFood() {
+    var t = food.type;
+    var cx = food.x * CELL + CELL / 2;
+    var cy = food.y * CELL + CELL / 2;
+    var rad = CELL * t.r;
+    ctx.save();
+    if (t.golden) { ctx.shadowColor = &#x27;rgba(255,215,0,0.9)&#x27;; ctx.shadowBlur = 6 + Math.sin(glowPhase)*4; }
+    var grad = ctx.createRadialGradient(cx-3, cy-3, 2, cx, cy, rad);
+    grad.addColorStop(0, t.colorIn); grad.addColorStop(0.5, t.colorMid); grad.addColorStop(1, t.colorOut);
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI*2); ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = &#x27;rgba(255,255,255,0.75)&#x27;;
+    ctx.beginPath(); ctx.arc(cx - rad*0.3, cy - rad*0.35, rad*0.22, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = &#x27;#3fa02f&#x27;;
+    ctx.beginPath(); ctx.ellipse(cx+3, cy-rad+1, 4, 2.5, -0.6, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = &#x27;#6b4218&#x27;; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(cx, cy-rad); ctx.lineTo(cx-1, cy-rad-3); ctx.stroke();
+    ctx.restore();
+  }
+
+  // =========================================================
+  // SNAKE DRAW
+  // =========================================================
+  var tonguePhase = 0;
+  function segRadius(i, len) {
+    var head = CELL * 0.60, tail = CELL * 0.28;
+    var t = i / Math.max(1, len - 1);
+    return head - (head - tail) * t;
+  }
+  function drawSnake() {
+    var len = snake.length;
+    for (var i = len - 1; i &gt;= 1; i--) {
+      var s = snake[i];
+      var cx = s.x*CELL + CELL/2, cy = s.y*CELL + CELL/2;
+      var rad = segRadius(i, len);
+      var grad = ctx.createRadialGradient(cx - rad*0.3, cy - rad*0.3, 1, cx, cy, rad);
+      grad.addColorStop(0, &#x27;#9de85f&#x27;); grad.addColorStop(0.55, &#x27;#54ad30&#x27;); grad.addColorStop(1, &#x27;#2b6b18&#x27;);
+      ctx.fillStyle = grad;
+      ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = (i % 2 === 0) ? &#x27;rgba(30,80,18,0.40)&#x27; : &#x27;rgba(40,100,25,0.30)&#x27;;
+      ctx.beginPath();
+      var r = rad*0.5;
+      ctx.moveTo(cx, cy-r); ctx.lineTo(cx+r, cy); ctx.lineTo(cx, cy+r); ctx.lineTo(cx-r, cy);
+      ctx.closePath(); ctx.fill();
+      ctx.fillStyle = &#x27;rgba(220,255,180,0.22)&#x27;;
+      ctx.beginPath(); ctx.arc(cx - rad*0.35, cy - rad*0.35, rad*0.28, 0, Math.PI*2); ctx.fill();
+    }
+    var h = snake[0];
+    var hx = h.x*CELL + CELL/2, hy = h.y*CELL + CELL/2;
+    var ang = Math.atan2(dir.y, dir.x);
+    var hr = CELL * 0.68;
+    ctx.save();
+    ctx.translate(hx, hy); ctx.rotate(ang);
+    var flick = Math.sin(tonguePhase);
+    var tLen = 9 + flick*6;
+    if (flick &gt; -0.3) {
+      ctx.strokeStyle = &#x27;#e0304a&#x27;; ctx.lineWidth = 2; ctx.lineCap = &#x27;round&#x27;;
+      var base = hr - 1; var forkSpread = 3 + Math.abs(flick)*2.5;
+      ctx.beginPath(); ctx.moveTo(base, 0); ctx.lineTo(base + tLen, 0); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(base + tLen, 0); ctx.lineTo(base + tLen + 5, -forkSpread);
+      ctx.moveTo(base + tLen, 0); ctx.lineTo(base + tLen + 5, forkSpread);
+      ctx.stroke();
+    }
+    var hgrad = ctx.createRadialGradient(-hr*0.2, -hr*0.2, 1, 0, 0, hr);
+    hgrad.addColorStop(0, &#x27;#aef070&#x27;); hgrad.addColorStop(0.55, &#x27;#5cc035&#x27;); hgrad.addColorStop(1, &#x27;#2b6b18&#x27;);
+    ctx.fillStyle = hgrad;
+    ctx.beginPath();
+    ctx.moveTo(hr, 0);
+    ctx.quadraticCurveTo(hr*0.5, -hr*0.85, -hr*0.35, -hr*0.9);
+    ctx.quadraticCurveTo(-hr, -hr*0.5, -hr, 0);
+    ctx.quadraticCurveTo(-hr, hr*0.5, -hr*0.35, hr*0.9);
+    ctx.quadraticCurveTo(hr*0.5, hr*0.85, hr, 0);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = &#x27;rgba(30,80,18,0.20)&#x27;;
+    ctx.beginPath(); ctx.ellipse(-hr*0.1, 0, hr*0.55, hr*0.3, 0, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = &#x27;rgba(20,60,10,0.7)&#x27;;
+    ctx.beginPath(); ctx.arc(hr*0.7, -3, 1.1, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(hr*0.7, 3, 1.1, 0, Math.PI*2); ctx.fill();
+    var ey = 6.5, eR = 4.6;
+    for (var side = -1; side &lt;= 1; side += 2) {
+      ctx.fillStyle = &#x27;#ffdf6b&#x27;;
+      ctx.beginPath(); ctx.arc(0, side*ey, eR, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = &#x27;#161006&#x27;;
+      ctx.beginPath(); ctx.ellipse(1.2, side*ey, 1.1, eR*0.75, 0, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = &#x27;rgba(255,255,255,0.85)&#x27;;
+      ctx.beginPath(); ctx.arc(-1, side*ey - 1.4, 1, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function paint() {
+    ctx.clearRect(0, 0, 600, 440);
+    drawBackground();
+    drawFood();
+    drawSnake();
+    drawParticles();
+  }
+
+  function cellOccupied(x, y) {
+    for (var i = 0; i &lt; snake.length; i++) if (snake[i].x === x &amp;&amp; snake[i].y === y) return true;
+    return false;
+  }
+  function placeFood() {
+    for (var tries = 0; tries &lt; 300; tries++) {
+      var x = Math.floor(Math.random()*COLS), y = Math.floor(Math.random()*ROWS);
+      if (!cellOccupied(x, y)) { food = { x: x, y: y, type: pickFruitType() }; return; }
+    }
+  }
+  function initSnake() {
+    snake = [ { x: 5, y: 10 }, { x: 4, y: 10 }, { x: 3, y: 10 } ];
+    dir = { x: 1, y: 0 }; pendingDir = { x: 1, y: 0 };
+  }
+
+  function tick() {
+    if (!running) return;
+    if (!(pendingDir.x === -dir.x &amp;&amp; pendingDir.y === -dir.y)) dir = pendingDir;
+    var head = snake[0];
+    var nx = head.x + dir.x, ny = head.y + dir.y;
+    if (nx &lt; 0 || nx &gt;= COLS || ny &lt; 0 || ny &gt;= ROWS) { endGame(); return; }
+    var ateFood = (nx === food.x &amp;&amp; ny === food.y);
+    var body = ateFood ? snake : snake.slice(0, snake.length - 1);
+    for (var i = 0; i &lt; body.length; i++) if (body[i].x === nx &amp;&amp; body[i].y === ny) { endGame(); return; }
+    snake.unshift({ x: nx, y: ny });
+    if (ateFood) {
+      score += food.type.points; scoreEl.textContent = score;
+      var pcx = food.x*CELL + CELL/2, pcy = food.y*CELL + CELL/2;
+      spawnParticles(pcx, pcy, food.type.colorMid);
+      if (food.type.golden) { spawnParticles(pcx, pcy, &#x27;#fff3a0&#x27;); sfxGolden(); }
+      else sfxEat(food.type.points);
+      var extraGrow = food.type.points - 1;
+      for (var g = 0; g &lt; extraGrow; g++) snake.push({ x: snake[snake.length-1].x, y: snake[snake.length-1].y });
+      placeFood();
+    } else {
+      snake.pop();
+    }
+  }
+
+  var rafId = null;
+  function loop() {
+    tonguePhase += 0.15; glowPhase += 0.12; bgTime += 0.03;
+    updatePlants(); updateParticles();
+    paint();
+    if (running) rafId = requestAnimationFrame(loop);
+  }
+
+  function endGame() {
+    running = false; gameOver = true;
+    if (tickId) { clearInterval(tickId); tickId = null; }
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+    stopMusic(); sfxGameOver();
+    ctx.fillStyle = &#x27;rgba(0,0,0,0.45)&#x27;; ctx.fillRect(0, 0, 600, 440);
+    ctx.fillStyle = &#x27;#ffe27a&#x27;; ctx.font = &#x27;bold 34px system-ui, sans-serif&#x27;; ctx.textAlign = &#x27;center&#x27;;
+    ctx.fillText(&#x27;Game Over&#x27;, 300, 210);
+    ctx.fillStyle = &#x27;#eaf5e0&#x27;; ctx.font = &#x27;20px system-ui, sans-serif&#x27;;
+    ctx.fillText(&#x27;Score: &#x27; + score, 300, 245);
+  }
+
+  function startGame() {
+    if (running) return;
+    initAudio();
+    if (AC &amp;&amp; AC.state === &#x27;suspended&#x27;) AC.resume();
+    score = 0; scoreEl.textContent = &#x27;0&#x27;; gameOver = false;
+    particles = []; buildDecosOK();
+    initSnake(); placeFood();
+    running = true;
+    if (tickId) clearInterval(tickId);
+    tickId = setInterval(tick, TICK_MS);
+    if (rafId) cancelAnimationFrame(rafId);
+    startMusic();
+    loop();
+  }
+  function buildDecosOK() { buildPlants(); }
+
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    if (tickId) { clearInterval(tickId); tickId = null; }
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+    stopMusic();
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27;) { pendingDir = { x: -1, y: 0 }; e.preventDefault(); }
+    else if (e.key === &#x27;ArrowRight&#x27;) { pendingDir = { x: 1, y: 0 }; e.preventDefault(); }
+    else if (e.key === &#x27;ArrowUp&#x27;) { pendingDir = { x: 0, y: -1 }; e.preventDefault(); }
+    else if (e.key === &#x27;ArrowDown&#x27;) { pendingDir = { x: 0, y: 1 }; e.preventDefault(); }
+  });
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage({ type: &#x27;game_input&#x27;, kind: t, key: e.key || null }, &#x27;*&#x27;);
+      } catch (_) {}
+    }, true);
+  });
+
+  initSnake(); placeFood(); paint();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jumper</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>Jumper</b> &middot; Game 118 &middot; Amateur producer &middot; Basic game: Gravity jumper</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #222; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 18px; background: white; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 10px; }
+  h1 { margin: 0; font-size: 28px; font-weight: 600; }
+  .instructions { font-size: 16px; color: #666; max-width: 600px; margin: 0; line-height: 1.4; text-align: center; }
+  .score { font-size: 22px; color: #555; margin: 0; }
+  .field { position: relative; width: 620px; height: 420px; flex-shrink: 0; margin: 0; background: #eaf3ff; border-radius: 8px; overflow: hidden; }
+  .ground { position: absolute; left: 0; right: 0; bottom: 0; height: 30px; background: #7a9c5a; }
+  .upperseg { position: absolute; height: 12px; background: #b0a06a; box-shadow: 0 2px 0 #8a7a44; border-radius: 2px; }
+  .hero { position: absolute; width: 36px; height: 36px; background: #333; border-radius: 50%; z-index: 5; }
+  .obstacle { position: absolute; width: 28px; background: #c0392b; border-radius: 3px; }
+  .platform { position: absolute; height: 14px; background: #8a6d3b; border-radius: 4px; box-shadow: 0 2px 0 #6b5330; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;Jumper&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Press &lt;strong&gt;Space&lt;/strong&gt; (or click) to jump over red obstacles — the busy lower level scores double. Ride tall platforms up to the calmer upper level, but mind the gaps or you&#x27;ll fall back down. Use the &lt;strong&gt;Start&lt;/strong&gt;/&lt;strong&gt;Restart&lt;/strong&gt; button below.&lt;/p&gt;
+  &lt;div class=&quot;score&quot;&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;
+    &lt;div class=&quot;ground&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;hero&quot; id=&quot;hero&quot;&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var FIELD_W = 620, FIELD_H = 420;
+  var GROUND_H = 30, HERO_SIZE = 36;
+  var GRAVITY = 0.55, JUMP_V = -14;
+  var OBSTACLE_W = 28, OBSTACLE_SPEED = 3.3;
+
+  var lowerFloorTop = FIELD_H - GROUND_H;
+  var upperFloorTop = 170;
+  var floorY = lowerFloorTop - HERO_SIZE;
+  var upperRestY = upperFloorTop - HERO_SIZE;
+
+  // Desired counts on screen
+  var LOWER_MIN = 3, LOWER_MAX = 7;
+  var UPPER_MIN = 2, UPPER_MAX = 4;
+  var UPPER_SEG_MIN = 2, UPPER_SEG_MAX = 4; // segments (with gaps between)
+
+  var running = false, animId = null;
+  var heroX = 60;
+  var heroY = floorY;
+  var heroVY = 0;
+  var onGround = true;
+  var obstacles = [];   // {x,h,scored,el,level,baseTop}
+  var platforms = [];   // climbing platforms {x,y,w,el}
+  var upperSegs = [];   // upper floor pieces {x,w,el}
+  var score = 0;
+  var gameOver = false;
+
+  var field = document.getElementById(&#x27;field&#x27;);
+  var hero = document.getElementById(&#x27;hero&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+
+  function rand(min, max) { return min + Math.random() * (max - min); }
+  function randInt(min, max) { return Math.floor(rand(min, max + 1)); }
+
+  function paintHero() {
+    hero.style.left = heroX + &#x27;px&#x27;;
+    hero.style.top = heroY + &#x27;px&#x27;;
+  }
+
+  function countLower() {
+    var c = 0;
+    for (var i = 0; i &lt; obstacles.length; i++) if (obstacles[i].level === &#x27;lower&#x27;) c++;
+    return c;
+  }
+  function countUpper() {
+    var c = 0;
+    for (var i = 0; i &lt; obstacles.length; i++) if (obstacles[i].level === &#x27;upper&#x27;) c++;
+    return c;
+  }
+
+  // Find rightmost x among a set, to spawn new items with spacing after it
+  function rightmostX(arrEntries) {
+    var m = 0;
+    for (var i = 0; i &lt; arrEntries.length; i++) {
+      var e = arrEntries[i];
+      var right = e.x + (e.w || OBSTACLE_W);
+      if (right &gt; m) m = right;
+    }
+    return m;
+  }
+
+  function spawnObstacle(level, xPos) {
+    var h, baseTop;
+    if (level === &#x27;upper&#x27;) {
+      h = 18 + Math.floor(Math.random() * 16);
+      baseTop = upperFloorTop;
+    } else {
+      h = 22 + Math.floor(Math.random() * 30);
+      baseTop = lowerFloorTop;
+    }
+    var o = { x: xPos, h: h, scored: false, el: null, level: level, baseTop: baseTop, w: OBSTACLE_W };
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;obstacle&#x27;;
+    el.style.left = o.x + &#x27;px&#x27;;
+    el.style.height = o.h + &#x27;px&#x27;;
+    el.style.top = (baseTop - h) + &#x27;px&#x27;;
+    field.appendChild(el);
+    o.el = el;
+    obstacles.push(o);
+  }
+
+  function spawnPlatform(xPos) {
+    var w = 70 + Math.floor(Math.random() * 60);
+    // climbing platform sitting between the two levels
+    var top = upperFloorTop + 45 + Math.random() * 25;
+    var p = { x: xPos, y: top, w: w, el: null };
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;platform&#x27;;
+    el.style.left = p.x + &#x27;px&#x27;;
+    el.style.top = p.y + &#x27;px&#x27;;
+    el.style.width = p.w + &#x27;px&#x27;;
+    field.appendChild(el);
+    p.el = el;
+    platforms.push(p);
+  }
+
+  function spawnUpperSegment(xPos) {
+    var w = 120 + Math.floor(Math.random() * 120); // 120-240 wide segment
+    var s = { x: xPos, w: w, el: null };
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;upperseg&#x27;;
+    el.style.left = s.x + &#x27;px&#x27;;
+    el.style.top = upperFloorTop + &#x27;px&#x27;;
+    el.style.width = s.w + &#x27;px&#x27;;
+    field.appendChild(el);
+    s.el = el;
+    upperSegs.push(s);
+  }
+
+  // Keep obstacle counts topped up as items scroll off / are passed
+  function maintainSpawns() {
+    // Lower obstacles
+    var lowerCount = countLower();
+    var targetLower = LOWER_MAX;
+    if (lowerCount &lt; LOWER_MIN) {
+      var need = randInt(LOWER_MIN, LOWER_MAX) - lowerCount;
+      var startX = Math.max(FIELD_W, rightmostX(obstacles));
+      for (var i = 0; i &lt; need; i++) {
+        startX += 90 + Math.random() * 100; // spacing between lower obstacles
+        spawnObstacle(&#x27;lower&#x27;, startX);
+      }
+    }
+
+    // Upper obstacles (spawned onto existing upper segments)
+    var upperCount = countUpper();
+    if (upperCount &lt; UPPER_MIN &amp;&amp; upperSegs.length &gt; 0) {
+      var needU = randInt(UPPER_MIN, UPPER_MAX) - upperCount;
+      var uStartX = FIELD_W;
+      // place on rightmost segment area
+      for (var j = 0; j &lt; needU; j++) {
+        uStartX += 120 + Math.random() * 120;
+        spawnObstacle(&#x27;upper&#x27;, uStartX);
+      }
+    }
+
+    // Climbing platforms — keep at least one on the way in
+    if (platforms.length &lt; 1) {
+      var pX = Math.max(FIELD_W + 40, rightmostX(platforms) + 250);
+      spawnPlatform(pX);
+    }
+
+    // Upper floor segments with gaps
+    if (upperSegs.length &lt; UPPER_SEG_MIN) {
+      var needS = randInt(UPPER_SEG_MIN, UPPER_SEG_MAX) - upperSegs.length;
+      var sX = Math.max(FIELD_W, rightmostX(upperSegs));
+      for (var k = 0; k &lt; needS; k++) {
+        sX += 60 + Math.random() * 90; // gap between segments
+        spawnUpperSegment(sX);
+        sX = rightmostX(upperSegs);
+      }
+    }
+  }
+
+  function jump() {
+    if (!running || gameOver) return;
+    if (onGround) { heroVY = JUMP_V; onGround = false; }
+  }
+
+  function heroOnUpperSegment() {
+    // is hero horizontally over any upper segment?
+    for (var i = 0; i &lt; upperSegs.length; i++) {
+      var s = upperSegs[i];
+      if (heroX + HERO_SIZE &gt; s.x + 4 &amp;&amp; heroX &lt; s.x + s.w - 4) return s;
+    }
+    return null;
+  }
+
+  function tick() {
+    if (!running) return;
+    heroVY += GRAVITY;
+    var prevBottom = heroY + HERO_SIZE;
+    heroY += heroVY;
+    var newBottom = heroY + HERO_SIZE;
+
+    onGround = false;
+
+    if (heroY &lt; 0) { heroY = 0; heroVY = 0; }
+
+    // Upper floor landing — only if over a segment (gaps let you fall through)
+    var seg = heroOnUpperSegment();
+    if (seg &amp;&amp; heroVY &gt;= 0 &amp;&amp; prevBottom &lt;= upperFloorTop + 2 &amp;&amp; newBottom &gt;= upperFloorTop) {
+      heroY = upperRestY;
+      heroVY = 0;
+      onGround = true;
+    }
+
+    // Climbing platform landing
+    for (var p = 0; p &lt; platforms.length; p++) {
+      var pl = platforms[p];
+      var overlapX = heroX + HERO_SIZE &gt; pl.x &amp;&amp; heroX &lt; pl.x + pl.w;
+      if (overlapX &amp;&amp; heroVY &gt;= 0 &amp;&amp; prevBottom &lt;= pl.y + 2 &amp;&amp; newBottom &gt;= pl.y) {
+        heroY = pl.y - HERO_SIZE;
+        heroVY = 0;
+        onGround = true;
+      }
+    }
+
+    // Lower ground landing
+    if (!onGround &amp;&amp; heroY &gt;= floorY) {
+      heroY = floorY; heroVY = 0; onGround = true;
+    }
+
+    paintHero();
+
+    // Move platforms
+    for (var i = platforms.length - 1; i &gt;= 0; i--) {
+      var pl2 = platforms[i];
+      pl2.x -= OBSTACLE_SPEED;
+      pl2.el.style.left = pl2.x + &#x27;px&#x27;;
+      if (pl2.x + pl2.w &lt; 0) { field.removeChild(pl2.el); platforms.splice(i, 1); }
+    }
+
+    // Move upper segments
+    for (var s2 = upperSegs.length - 1; s2 &gt;= 0; s2--) {
+      var us = upperSegs[s2];
+      us.x -= OBSTACLE_SPEED;
+      us.el.style.left = us.x + &#x27;px&#x27;;
+      if (us.x + us.w &lt; 0) { field.removeChild(us.el); upperSegs.splice(s2, 1); }
+    }
+
+    // Move obstacles
+    for (var j = obstacles.length - 1; j &gt;= 0; j--) {
+      var o = obstacles[j];
+      o.x -= OBSTACLE_SPEED;
+      o.el.style.left = o.x + &#x27;px&#x27;;
+      if (o.x + OBSTACLE_W &lt; 0) {
+        field.removeChild(o.el);
+        obstacles.splice(j, 1);
+        continue;
+      }
+      if (!o.scored &amp;&amp; o.x + OBSTACLE_W &lt; heroX) {
+        o.scored = true;
+        score += (o.level === &#x27;lower&#x27;) ? 2 : 1;
+        scoreEl.textContent = score;
+      }
+      var obstacleTop = o.baseTop - o.h;
+      if (heroX + HERO_SIZE &gt; o.x &amp;&amp; heroX &lt; o.x + OBSTACLE_W &amp;&amp;
+          heroY + HERO_SIZE &gt; obstacleTop &amp;&amp; heroY &lt; o.baseTop) {
+        gameOver = true;
+        stopGame();
+        return;
+      }
+    }
+
+    maintainSpawns();
+
+    animId = requestAnimationFrame(tick);
+  }
+
+  function clearAll() {
+    obstacles.forEach(function (o) { if (o.el.parentNode) o.el.parentNode.removeChild(o.el); });
+    platforms.forEach(function (p) { if (p.el.parentNode) p.el.parentNode.removeChild(p.el); });
+    upperSegs.forEach(function (s) { if (s.el.parentNode) s.el.parentNode.removeChild(s.el); });
+    obstacles = []; platforms = []; upperSegs = [];
+  }
+
+  function placeInitialObstacle() {
+    clearAll();
+    var h = 30;
+    var o = { x: FIELD_W - OBSTACLE_W - 8, h: h, scored: false, el: null, level: &#x27;lower&#x27;, baseTop: lowerFloorTop, w: OBSTACLE_W };
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;obstacle&#x27;;
+    el.style.left = o.x + &#x27;px&#x27;;
+    el.style.height = h + &#x27;px&#x27;;
+    el.style.top = (lowerFloorTop - h) + &#x27;px&#x27;;
+    field.appendChild(el);
+    o.el = el;
+    obstacles.push(o);
+  }
+
+  function startGame() {
+    if (running) return;
+    score = 0;
+    scoreEl.textContent = &#x27;0&#x27;;
+    heroX = 60;
+    heroY = floorY;
+    heroVY = 0;
+    onGround = true;
+    gameOver = false;
+    paintHero();
+    clearAll();
+
+    // Seed the field so there&#x27;s immediate action and correct counts
+    var x = FIELD_W - 120;
+    for (var i = 0; i &lt; LOWER_MIN; i++) {
+      spawnObstacle(&#x27;lower&#x27;, x);
+      x += 100 + Math.random() * 90;
+    }
+    // Upper segments with gaps
+    var sx = FIELD_W + 30;
+    var nSeg = randInt(UPPER_SEG_MIN, UPPER_SEG_MAX);
+    for (var s = 0; s &lt; nSeg; s++) {
+      spawnUpperSegment(sx);
+      sx = rightmostX(upperSegs) + 60 + Math.random() * 90;
+    }
+    // Upper obstacles
+    var ux = FIELD_W + 80;
+    for (var u = 0; u &lt; UPPER_MIN; u++) {
+      spawnObstacle(&#x27;upper&#x27;, ux);
+      ux += 130 + Math.random() * 100;
+    }
+    // A climbing platform on the way in
+    spawnPlatform(FIELD_W + 60);
+
+    running = true;
+    animId = requestAnimationFrame(tick);
+  }
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27; &#x27; || e.code === &#x27;Space&#x27;) { jump(); e.preventDefault(); }
+  });
+  field.addEventListener(&#x27;click&#x27;, function () { jump(); });
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  paintHero();
+  placeInitialObstacle();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  // Suppress in-iframe scrollbars. The parent fits the iframe layout
+  // box to match the content size, so internal scroll is redundant —
+  // and if the LLM&#x27;s CSS sets body overflow: auto, the scrollbar shows
+  // briefly before the fit lands. Force hidden so it never appears.
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  // Iframe-internal JS error capture. window.onerror inside a sandboxed
+  // iframe can&#x27;t post to /api/js_error directly, so we relay to the
+  // parent via postMessage; parent&#x27;s error_logger.js forwards to the
+  // server. Catches LLM-emitted broken HTML (invalid hex, undefined
+  // variables, etc.) that would otherwise fail silently inside the
+  // iframe.
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      // Debounce: don&#x27;t fire more than ~10× per second. ResizeObserver
+      // fires repeatedly during layout/font load; we only need the latest.
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      // Clamp: reject obviously bogus dimensions. Any browser-game viewport
+      // is well under 4000×4000 logical px; readings beyond that are layout
+      // noise during load/visibility transitions.
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  // Parent posts wd_remeasure when it makes the iframe visible (the body&#x27;s
+  // ResizeObserver doesn&#x27;t fire on display:none→block of an outer ancestor
+  // because the iframe document didn&#x27;t actually resize). Wait a frame for
+  // layout to settle before measuring.
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

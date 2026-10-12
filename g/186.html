@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Target Rush</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>Target Rush</b> &middot; Game 186 &middot; Amateur producer &middot; Basic game: Gravity jumper</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #222; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 18px; background: white; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 10px; }
+  h1 { margin: 0; font-size: 28px; font-weight: 600; }
+  .instructions { font-size: 16px; color: #666; max-width: 600px; margin: 0; line-height: 1.4; text-align: center; }
+  .hud { display: flex; gap: 16px; font-size: 18px; color: #555; margin: 0; align-items: center; flex-wrap: wrap; justify-content: center; }
+  .hud .mult { color: #e67e22; font-weight: 700; transition: transform .1s; }
+  .hud .combo { color: #8e44ad; font-weight: 700; transition: transform .1s; }
+  .hud .best { color: #16a085; font-weight: 700; }
+  .field { position: relative; width: 620px; height: 390px; flex-shrink: 0; margin: 0; background: radial-gradient(circle at 50% 40%, #eaf4ff, #d5e6f5); border-radius: 8px; overflow: hidden; cursor: crosshair; }
+  .target { position: absolute; width: 46px; height: 46px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #ff8a8a, #d63031); box-shadow: 0 3px 8px rgba(0,0,0,.25); display: flex; align-items: center; justify-content: center; font-size: 22px; user-select: none; }
+  .target.bonus { background: radial-gradient(circle at 35% 30%, #fff3a0, #f1c40f); box-shadow: 0 0 14px rgba(241,196,15,.9); animation: pulse .5s ease-in-out infinite alternate; }
+  @keyframes pulse { to { transform: scale(1.12); } }
+  .pop { position: absolute; font-size: 20px; font-weight: 700; color: #27ae60; pointer-events: none; animation: floatup .6s ease-out forwards; }
+  .pop.gold { color: #d4900f; font-size: 24px; }
+  @keyframes floatup { to { transform: translateY(-30px); opacity: 0; } }
+  .overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(255,255,255,.85); font-size: 26px; font-weight: 600; color: #333; gap: 8px; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;Target Rush&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Click the moving targets before time runs out; chain quick catches for combos and grab glowing gold targets fast for big bonus points. Targets speed up as time drops — beat your best score using the Start/Restart button below.&lt;/p&gt;
+  &lt;div class=&quot;hud&quot;&gt;
+    &lt;span&gt;Time: &lt;span id=&quot;time&quot;&gt;30&lt;/span&gt;s&lt;/span&gt;
+    &lt;span&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/span&gt;
+    &lt;span&gt;Best: &lt;span class=&quot;best&quot; id=&quot;best&quot;&gt;0&lt;/span&gt;&lt;/span&gt;
+    &lt;span&gt;Combo: &lt;span class=&quot;combo&quot; id=&quot;combo&quot;&gt;0&lt;/span&gt;&lt;/span&gt;
+    &lt;span&gt;Mult: &lt;span class=&quot;mult&quot; id=&quot;mult&quot;&gt;x1&lt;/span&gt;&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;
+    &lt;div class=&quot;overlay&quot; id=&quot;overlay&quot;&gt;Press Start to play!&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var FIELD_W = 620, FIELD_H = 390, TSIZE = 46;
+  var GAME_TIME = 30;
+  var MAX_TARGETS = 4;
+  var MULT_WINDOW = 1200;
+  var BONUS_LIFETIME = 2500; // ms a gold target survives
+  var BONUS_BASE = 50;       // max bonus points
+
+  var field = document.getElementById(&#x27;field&#x27;);
+  var overlay = document.getElementById(&#x27;overlay&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var timeEl = document.getElementById(&#x27;time&#x27;);
+  var multEl = document.getElementById(&#x27;mult&#x27;);
+  var comboEl = document.getElementById(&#x27;combo&#x27;);
+  var bestEl = document.getElementById(&#x27;best&#x27;);
+
+  var running = false, animId = null, timerId = null, bonusId = null;
+  var targets = [];
+  var score = 0, mult = 1, combo = 0, timeLeft = GAME_TIME;
+  var best = 0;
+  var lastCatch = 0;
+  var lastFrame = 0;
+  var speedFactor = 1;
+
+  var audioCtx = null;
+  function ensureAudio() {
+    if (!audioCtx) {
+      try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+      catch (_) { audioCtx = null; }
+    }
+    if (audioCtx &amp;&amp; audioCtx.state === &#x27;suspended&#x27;) audioCtx.resume();
+  }
+  function playPop(comboLevel) {
+    if (!audioCtx) return;
+    var now = audioCtx.currentTime;
+    var osc = audioCtx.createOscillator();
+    var gain = audioCtx.createGain();
+    var baseFreq = 440 + Math.min(comboLevel, 12) * 60;
+    osc.type = &#x27;triangle&#x27;;
+    osc.frequency.setValueAtTime(baseFreq, now);
+    osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.8, now + 0.09);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.25, now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(now); osc.stop(now + 0.2);
+  }
+  function playBonus() {
+    if (!audioCtx) return;
+    var now = audioCtx.currentTime;
+    [660, 880, 1180].forEach(function (f, i) {
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      var t = now + i * 0.07;
+      osc.type = &#x27;square&#x27;;
+      osc.frequency.setValueAtTime(f, t);
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.18, t + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.15);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(t); osc.stop(t + 0.16);
+    });
+  }
+  function playGameOver() {
+    if (!audioCtx) return;
+    var now = audioCtx.currentTime;
+    [523, 392, 262].forEach(function (f, i) {
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      var t = now + i * 0.16;
+      osc.type = &#x27;sawtooth&#x27;;
+      osc.frequency.setValueAtTime(f, t);
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.2, t + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(t); osc.stop(t + 0.32);
+    });
+  }
+
+  function rand(a, b) { return a + Math.random() * (b - a); }
+
+  function makeTarget(isBonus) {
+    var t = {
+      x: rand(0, FIELD_W - TSIZE),
+      y: rand(0, FIELD_H - TSIZE),
+      vx: rand(-140, 140),
+      vy: rand(-140, 140),
+      bonus: !!isBonus,
+      born: performance.now(),
+      el: document.createElement(&#x27;div&#x27;)
+    };
+    t.el.className = &#x27;target&#x27; + (isBonus ? &#x27; bonus&#x27; : &#x27;&#x27;);
+    t.el.textContent = isBonus ? &#x27;⭐&#x27; : &#x27;🎯&#x27;;
+    t.el.style.left = t.x + &#x27;px&#x27;;
+    t.el.style.top = t.y + &#x27;px&#x27;;
+    t.el.addEventListener(&#x27;mousedown&#x27;, function (e) {
+      e.stopPropagation();
+      hit(t);
+    });
+    field.appendChild(t.el);
+    targets.push(t);
+  }
+
+  function spawnBonus() {
+    if (!running) return;
+    // only one bonus at a time
+    var hasBonus = targets.some(function (t) { return t.bonus; });
+    if (!hasBonus) makeTarget(true);
+  }
+
+  function hit(t) {
+    if (!running) return;
+    ensureAudio();
+    var now = performance.now();
+
+    if (t.bonus) {
+      // faster catch = more points
+      var age = now - t.born;
+      var frac = Math.max(0, 1 - age / BONUS_LIFETIME);
+      var gained = 10 + Math.round(BONUS_BASE * frac);
+      score += gained;
+      scoreEl.textContent = score;
+      showPop(t.x, t.y, &#x27;+&#x27; + gained, true);
+      playBonus();
+      removeTarget(t);
+      return;
+    }
+
+    if (now - lastCatch &lt; MULT_WINDOW) {
+      combo += 1;
+      mult = Math.min(mult + 1, 9);
+    } else {
+      combo = 1;
+      mult = 1;
+    }
+    lastCatch = now;
+    var g = 10 * mult;
+    score += g;
+    scoreEl.textContent = score;
+    multEl.textContent = &#x27;x&#x27; + mult;
+    comboEl.textContent = combo;
+    multEl.style.transform = &#x27;scale(1.4)&#x27;;
+    comboEl.style.transform = &#x27;scale(1.4)&#x27;;
+    setTimeout(function () {
+      multEl.style.transform = &#x27;scale(1)&#x27;;
+      comboEl.style.transform = &#x27;scale(1)&#x27;;
+    }, 100);
+    playPop(combo);
+    showPop(t.x, t.y, &#x27;+&#x27; + g, false);
+    removeTarget(t);
+    makeTarget(false);
+  }
+
+  function showPop(x, y, txt, gold) {
+    var p = document.createElement(&#x27;div&#x27;);
+    p.className = &#x27;pop&#x27; + (gold ? &#x27; gold&#x27; : &#x27;&#x27;);
+    p.textContent = txt;
+    p.style.left = x + &#x27;px&#x27;;
+    p.style.top = y + &#x27;px&#x27;;
+    field.appendChild(p);
+    setTimeout(function () { if (p.parentNode) p.parentNode.removeChild(p); }, 600);
+  }
+
+  function removeTarget(t) {
+    if (t.el.parentNode) t.el.parentNode.removeChild(t.el);
+    var i = targets.indexOf(t);
+    if (i &gt;= 0) targets.splice(i, 1);
+  }
+
+  function clearTargets() {
+    targets.forEach(function (t) { if (t.el.parentNode) t.el.parentNode.removeChild(t.el); });
+    targets = [];
+  }
+
+  function tick(ts) {
+    if (!running) return;
+    if (!lastFrame) lastFrame = ts;
+    var dt = Math.min((ts - lastFrame) / 1000, 0.05);
+    lastFrame = ts;
+
+    var elapsed = GAME_TIME - timeLeft;
+    speedFactor = 1 + (elapsed / GAME_TIME) * 1.2;
+
+    var nowP = performance.now();
+    for (var i = targets.length - 1; i &gt;= 0; i--) {
+      var t = targets[i];
+      // expire bonus targets
+      if (t.bonus &amp;&amp; nowP - t.born &gt; BONUS_LIFETIME) {
+        removeTarget(t);
+        continue;
+      }
+      if (Math.random() &lt; 0.02) {
+        t.vx += rand(-60, 60);
+        t.vy += rand(-60, 60);
+        t.vx = Math.max(-200, Math.min(200, t.vx));
+        t.vy = Math.max(-200, Math.min(200, t.vy));
+      }
+      var sf = t.bonus ? speedFactor * 1.15 : speedFactor;
+      t.x += t.vx * dt * sf;
+      t.y += t.vy * dt * sf;
+      if (t.x &lt; 0) { t.x = 0; t.vx = Math.abs(t.vx); }
+      if (t.x &gt; FIELD_W - TSIZE) { t.x = FIELD_W - TSIZE; t.vx = -Math.abs(t.vx); }
+      if (t.y &lt; 0) { t.y = 0; t.vy = Math.abs(t.vy); }
+      if (t.y &gt; FIELD_H - TSIZE) { t.y = FIELD_H - TSIZE; t.vy = -Math.abs(t.vy); }
+      t.el.style.left = t.x + &#x27;px&#x27;;
+      t.el.style.top = t.y + &#x27;px&#x27;;
+    }
+
+    if (combo &gt; 0 &amp;&amp; performance.now() - lastCatch &gt; MULT_WINDOW) {
+      combo = 0; mult = 1;
+      multEl.textContent = &#x27;x1&#x27;;
+      comboEl.textContent = &#x27;0&#x27;;
+    }
+
+    animId = requestAnimationFrame(tick);
+  }
+
+  function endGame() {
+    running = false;
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+    if (timerId) { clearInterval(timerId); timerId = null; }
+    if (bonusId) { clearInterval(bonusId); bonusId = null; }
+    clearTargets();
+    playGameOver();
+    var isRecord = score &gt; best;
+    if (isRecord) { best = score; bestEl.textContent = best; }
+    overlay.style.display = &#x27;flex&#x27;;
+    overlay.innerHTML = (isRecord ? &#x27;🏆 New Best!&#x27; : &#x27;Time\&#x27;s up!&#x27;) +
+      &#x27;&lt;div style=&quot;font-size:22px;&quot;&gt;Final score: &#x27; + score + &#x27;&lt;/div&gt;&#x27; +
+      &#x27;&lt;div style=&quot;font-size:18px;color:#16a085;&quot;&gt;Best: &#x27; + best + &#x27;&lt;/div&gt;&#x27; +
+      &#x27;&lt;div style=&quot;font-size:16px;color:#666;&quot;&gt;Press Start to play again&lt;/div&gt;&#x27;;
+  }
+
+  function startGame() {
+    if (running) return;
+    ensureAudio();
+    score = 0; mult = 1; combo = 0; timeLeft = GAME_TIME;
+    lastCatch = 0; lastFrame = 0; speedFactor = 1;
+    scoreEl.textContent = &#x27;0&#x27;;
+    multEl.textContent = &#x27;x1&#x27;;
+    comboEl.textContent = &#x27;0&#x27;;
+    timeEl.textContent = GAME_TIME;
+    bestEl.textContent = best;
+    overlay.style.display = &#x27;none&#x27;;
+    clearTargets();
+    for (var i = 0; i &lt; MAX_TARGETS; i++) makeTarget(false);
+    running = true;
+    animId = requestAnimationFrame(tick);
+    timerId = setInterval(function () {
+      timeLeft -= 1;
+      timeEl.textContent = timeLeft;
+      if (timeLeft &lt;= 0) endGame();
+    }, 1000);
+    // bonus stars appear every few seconds
+    bonusId = setInterval(spawnBonus, 4500);
+    setTimeout(spawnBonus, 2000);
+  }
+
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+    if (timerId) { clearInterval(timerId); timerId = null; }
+    if (bonusId) { clearInterval(bonusId); bonusId = null; }
+  }
+
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

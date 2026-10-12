@@ -1,0 +1,650 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>⚡ Coin Runner</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>⚡ Coin Runner</b> &middot; Game 109 &middot; Amateur producer &middot; Basic game: Road crossing</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #10131a; color: #e8ecf4; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 10px; box-sizing: border-box; height: 100%; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: .5px; }
+  .instructions { font-size: 16px; color: #9fb0c8; max-width: 660px; margin: 0; line-height: 1.3; text-align: center; }
+  .hud { display: flex; gap: 10px; align-items: center; font-size: 16px; flex-wrap: wrap; justify-content: center; }
+  .hud .chip { background: #1c2230; padding: 3px 11px; border-radius: 20px; }
+  .hud b { color: #ffd95e; }
+  .focus-ready { color: #63e6be; }
+  .focus-off { color: #647089; }
+  .timer-chip { background:#3a1520 !important; }
+  .timer-chip b { color:#ff6b6b; }
+  .field { position: relative; width: 620px; height: 432px; flex-shrink: 0; background: #171c27; border-radius: 10px; overflow: hidden; box-shadow: inset 0 0 0 2px #232a3a; }
+  .safe-top { position: absolute; left: 0; right: 0; top: 0; height: 48px; background: linear-gradient(#1f3a2e, #17271f); z-index:1; }
+  .safe-bot { position: absolute; left: 0; right: 0; bottom: 0; height: 48px; background: linear-gradient(#17271f, #1f3a2e); z-index:1; }
+  .gate { position: absolute; top: 4px; height: 40px; border-radius: 6px; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:700; z-index:2; opacity:.9; }
+  .shortcut { position:absolute; top:48px; bottom:48px; z-index:1; background: repeating-linear-gradient(45deg,#ff4d0044,#ff4d0044 10px,#ffaa0044 10px,#ffaa0044 20px); box-shadow: inset 0 0 0 2px #ff6b00; animation: scflash .5s infinite alternate; }
+  @keyframes scflash { from{opacity:.5;} to{opacity:.95;} }
+  .hero { position: absolute; border-radius: 6px; background: #ffd95e; box-shadow: 0 0 10px #ffd95e88; z-index: 6; transition: left .07s, top .07s; }
+  .obstacle { position: absolute; border-radius: 5px; z-index:4; }
+  .coin { position: absolute; border-radius: 50%; background: radial-gradient(#fff3b0, #f5c518); box-shadow: 0 0 8px #f5c518aa; z-index: 3; }
+  .gem { position: absolute; z-index: 3; display:flex; align-items:center; justify-content:center; font-size:22px; filter: drop-shadow(0 0 6px #63e6be); animation: pulse .8s infinite alternate; }
+  .crown { position:absolute; z-index:3; display:flex; align-items:center; justify-content:center; font-size:26px; filter: drop-shadow(0 0 10px #ffd700); animation: pulse .5s infinite alternate; }
+  @keyframes pulse { from{transform:scale(.85);} to{transform:scale(1.1);} }
+  .hazard-x { position:absolute; z-index:4; display:flex; align-items:center; justify-content:center; font-size:26px; color:#ff4d4d; text-shadow:0 0 8px #ff0000; }
+  .hazard-zap { position:absolute; z-index:4; display:flex; align-items:center; justify-content:center; font-size:26px; color:#da77f2; text-shadow:0 0 8px #b000ff; }
+  .lane-divider { position: absolute; left: 0; right: 0; height: 1px; background: #ffffff10; }
+  .overlay { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; flex-direction: column; background: #0b0e14cc; z-index: 20; text-align: center; }
+  .overlay h2 { margin: 0 0 6px; font-size: 30px; }
+  .overlay p { margin: 0; color: #9fb0c8; font-size: 16px; }
+  .focus-glow { box-shadow: inset 0 0 0 3px #63e6be, inset 0 0 30px #63e6be44 !important; }
+  .boss-glow { box-shadow: inset 0 0 0 3px #ff6b6b, inset 0 0 30px #ff000033 !important; }
+  .flash { animation: flash .3s; }
+  @keyframes flash { from{filter:brightness(2.2);} to{filter:brightness(1);} }
+  .banner { position:absolute; top:0; left:0; right:0; text-align:center; font-size:20px; font-weight:800; color:#ff6b6b; text-shadow:0 0 10px #ff0000; z-index:19; padding-top:6px; pointer-events:none; opacity:0; }
+  .banner.show { animation: bannerIn 1.6s; }
+  @keyframes bannerIn { 0%{opacity:0; transform:scale(.6);} 20%{opacity:1; transform:scale(1.2);} 70%{opacity:1;} 100%{opacity:0;} }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;⚡ Coin Runner&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Arrow keys move, Spacebar spends a coin for slow-motion Focus — bank runs through the ★ gate, grab coins/💎 gems, dodge cars, ❌ traps and ⚡ zaps. Survive to bank 5 runs to trigger the timed Boss Rush, where a deadly middle shortcut and rare 👑 crown offer huge payoffs.&lt;/p&gt;
+  &lt;div class=&quot;hud&quot;&gt;
+    &lt;span class=&quot;chip&quot;&gt;Score &lt;b id=&quot;score&quot;&gt;0&lt;/b&gt;&lt;/span&gt;
+    &lt;span class=&quot;chip&quot;&gt;Coins &lt;b id=&quot;coins&quot;&gt;0&lt;/b&gt;&lt;/span&gt;
+    &lt;span class=&quot;chip&quot;&gt;Runs &lt;b id=&quot;runs&quot;&gt;0&lt;/b&gt;&lt;/span&gt;
+    &lt;span class=&quot;chip&quot;&gt;Best &lt;b id=&quot;best&quot;&gt;0&lt;/b&gt;&lt;/span&gt;
+    &lt;span class=&quot;chip&quot; id=&quot;focusChip&quot;&gt;Focus &lt;span id=&quot;focusState&quot; class=&quot;focus-off&quot;&gt;—&lt;/span&gt;&lt;/span&gt;
+    &lt;span class=&quot;chip timer-chip&quot; id=&quot;timerChip&quot; style=&quot;display:none;&quot;&gt;⏱ &lt;b id=&quot;timer&quot;&gt;30&lt;/b&gt;&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;
+    &lt;div class=&quot;banner&quot; id=&quot;banner&quot;&gt;🔥 BOSS RUSH! 🔥&lt;/div&gt;
+    &lt;div class=&quot;overlay&quot; id=&quot;overlay&quot;&gt;&lt;h2 id=&quot;ovTitle&quot;&gt;Ready&lt;/h2&gt;&lt;p id=&quot;ovMsg&quot;&gt;Press Start below to play.&lt;/p&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var CELL = 48, COLS = 12, LANES = 7, ROWS = LANES + 2;
+  var FIELD_W = COLS * CELL, FIELD_H = ROWS * CELL;
+  var HERO_SIZE = CELL - 14;
+  var OBSTACLE_H = CELL - 16;
+  var COIN_SIZE = 20;
+  var BOSS_TRIGGER = 5;      // runs needed to enter Boss Rush
+  var BOSS_SECONDS = 30;
+  var SHORTCUT_COLS = [5, 6]; // middle columns of the deadly shortcut
+
+  var running = false, animId = null, frame = 0;
+  var hero = { col: 6, row: ROWS - 1 };
+  var lanes = [], coins = [], gems = [], hazards = [], gates = [], crowns = [];
+  var score = 0, best = 0, coinBank = 0, banked = 0;
+  var focusTimer = 0;
+  var bossMode = false, bossFrames = 0, shortcutEl = null;
+  var enteredShortcut = false;
+  var carColors = [&#x27;#ff6b6b&#x27;,&#x27;#4dabf7&#x27;,&#x27;#da77f2&#x27;,&#x27;#ffa94d&#x27;,&#x27;#69db7c&#x27;,&#x27;#ff8787&#x27;,&#x27;#74c0fc&#x27;];
+
+  var field = document.getElementById(&#x27;field&#x27;);
+  var overlay = document.getElementById(&#x27;overlay&#x27;);
+  var ovTitle = document.getElementById(&#x27;ovTitle&#x27;);
+  var ovMsg = document.getElementById(&#x27;ovMsg&#x27;);
+  var banner = document.getElementById(&#x27;banner&#x27;);
+  var heroEl = null;
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var coinsEl = document.getElementById(&#x27;coins&#x27;);
+  var runsEl = document.getElementById(&#x27;runs&#x27;);
+  var bestEl = document.getElementById(&#x27;best&#x27;);
+  var focusStateEl = document.getElementById(&#x27;focusState&#x27;);
+  var timerChip = document.getElementById(&#x27;timerChip&#x27;);
+  var timerEl = document.getElementById(&#x27;timer&#x27;);
+
+  function rm(el){ if(el &amp;&amp; el.parentNode) el.parentNode.removeChild(el); }
+
+  function clearDynamic() {
+    lanes.forEach(function (l) { l.obstacles.forEach(function (o) { rm(o.el); }); });
+    coins.forEach(function (c) { rm(c.el); });
+    gems.forEach(function (g) { rm(g.el); });
+    crowns.forEach(function (c) { rm(c.el); });
+    hazards.forEach(function (h) { rm(h.el); });
+    gates.forEach(function (g) { rm(g.el); });
+    rm(shortcutEl); shortcutEl = null;
+    lanes = []; coins = []; gems = []; hazards = []; gates = []; crowns = [];
+  }
+
+  function drawStatic() {
+    for (var r = 1; r &lt; ROWS; r++) {
+      var d = document.createElement(&#x27;div&#x27;);
+      d.className = &#x27;lane-divider&#x27;;
+      d.style.top = (r * CELL) + &#x27;px&#x27;;
+      field.appendChild(d);
+    }
+    var st = document.createElement(&#x27;div&#x27;); st.className = &#x27;safe-top&#x27;; field.appendChild(st);
+    var sb = document.createElement(&#x27;div&#x27;); sb.className = &#x27;safe-bot&#x27;; field.appendChild(sb);
+  }
+
+  function buildGates() {
+    var defs = [
+      { x: 0.5,  w: 3, color:&#x27;#4dabf7&#x27;, label:&#x27;A&#x27; },
+      { x: 4.5,  w: 3, color:&#x27;#69db7c&#x27;, label:&#x27;B&#x27; },
+      { x: 8.5,  w: 3, color:&#x27;#da77f2&#x27;, label:&#x27;C&#x27; }
+    ];
+    var bonusIdx = Math.floor(Math.random() * 3);
+    defs.forEach(function (g, i) {
+      var el = document.createElement(&#x27;div&#x27;);
+      el.className = &#x27;gate&#x27;;
+      el.style.left = (g.x * CELL) + &#x27;px&#x27;;
+      el.style.width = (g.w * CELL) + &#x27;px&#x27;;
+      el.style.background = g.color + &#x27;55&#x27;;
+      el.style.boxShadow = &#x27;inset 0 0 0 2px &#x27; + g.color;
+      el.textContent = (i === bonusIdx ? &#x27;★&#x27; : g.label);
+      field.appendChild(el);
+      gates.push({ colStart: Math.round(g.x), colEnd: Math.round(g.x + g.w) - 1, bonus: (i === bonusIdx), el: el });
+    });
+  }
+
+  function buildLanes(difficulty) {
+    var mult = bossMode ? 1.8 : 1;
+    for (var i = 0; i &lt; LANES; i++) {
+      var laneRow = i + 1;
+      var y = laneRow * CELL + (CELL - OBSTACLE_H) / 2;
+      var dir = (i % 2 === 0) ? 1 : -1;
+      var speed = (0.5 + (i % 3) * 0.15 + difficulty * 0.18) * dir * mult;
+      var obstacles = [];
+      var count = 1 + (i % 2) + Math.min(2, Math.floor(difficulty / 2)) + (bossMode ? 1 : 0);
+      var carW = (i % 3 === 0) ? CELL * 2 - 10 : CELL + 6;
+      var gap = FIELD_W / count;
+      for (var j = 0; j &lt; count; j++) {
+        var x = j * gap + (i * 37) % gap;
+        var el = document.createElement(&#x27;div&#x27;);
+        el.className = &#x27;obstacle&#x27;;
+        el.style.width = carW + &#x27;px&#x27;;
+        el.style.height = OBSTACLE_H + &#x27;px&#x27;;
+        el.style.top = y + &#x27;px&#x27;;
+        el.style.left = x + &#x27;px&#x27;;
+        el.style.background = carColors[i % carColors.length];
+        field.appendChild(el);
+        obstacles.push({ x: x, el: el, w: carW });
+      }
+      lanes.push({ y: y, dir: dir, baseSpeed: speed, speed: speed, obstacles: obstacles, boost: 0 });
+    }
+    spawnCoins();
+  }
+
+  function buildShortcut() {
+    shortcutEl = document.createElement(&#x27;div&#x27;);
+    shortcutEl.className = &#x27;shortcut&#x27;;
+    shortcutEl.style.left = (SHORTCUT_COLS[0] * CELL) + &#x27;px&#x27;;
+    shortcutEl.style.width = (SHORTCUT_COLS.length * CELL) + &#x27;px&#x27;;
+    field.appendChild(shortcutEl);
+  }
+
+  function inShortcut(col) { return col &gt;= SHORTCUT_COLS[0] &amp;&amp; col &lt;= SHORTCUT_COLS[SHORTCUT_COLS.length-1]; }
+
+  function spawnCoins() {
+    var n = 2 + Math.floor(Math.random() * 2);
+    for (var k = 0; k &lt; n; k++) placePickup(coins, &#x27;coin&#x27;, COIN_SIZE);
+  }
+
+  function placePickup(arr, cls, size) {
+    var laneRow = 1 + Math.floor(Math.random() * LANES);
+    var col = Math.floor(Math.random() * COLS);
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = cls;
+    if (cls === &#x27;coin&#x27;) { el.style.width = size + &#x27;px&#x27;; el.style.height = size + &#x27;px&#x27;; }
+    else { el.style.width = CELL + &#x27;px&#x27;; el.style.height = CELL + &#x27;px&#x27;; }
+    el.style.left = (col * CELL + (CELL - (cls===&#x27;coin&#x27;?size:CELL)) / 2) + &#x27;px&#x27;;
+    el.style.top = (laneRow * CELL) + &#x27;px&#x27;;
+    if (cls === &#x27;gem&#x27;) el.textContent = &#x27;💎&#x27;;
+    if (cls === &#x27;crown&#x27;) el.textContent = &#x27;👑&#x27;;
+    field.appendChild(el);
+    var obj = { col: col, row: laneRow, el: el };
+    arr.push(obj);
+    return obj;
+  }
+
+  function maybeSurprise() {
+    var r = Math.random();
+    var gemCap = bossMode ? 3 : 2;
+    if (r &lt; (bossMode ? 0.55 : 0.35) &amp;&amp; gems.length &lt; gemCap) {
+      var g = placePickup(gems, &#x27;gem&#x27;, CELL);
+      g.el.classList.add(&#x27;flash&#x27;); g.ttl = 240;
+    } else if (r &lt; 0.72) {
+      spawnHazard(&#x27;hazard-x&#x27;, &#x27;❌&#x27;, &#x27;trap&#x27;);
+    } else {
+      spawnHazard(&#x27;hazard-zap&#x27;, &#x27;⚡&#x27;, &#x27;zap&#x27;);
+    }
+    // Rare crown, only during boss rush
+    if (bossMode &amp;&amp; crowns.length === 0 &amp;&amp; Math.random() &lt; 0.25) {
+      var c = placePickup(crowns, &#x27;crown&#x27;, CELL);
+      c.ttl = 200;
+    }
+  }
+
+  function spawnHazard(cls, glyph, kind) {
+    var laneRow = 1 + Math.floor(Math.random() * LANES);
+    var col = Math.floor(Math.random() * COLS);
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = cls + &#x27; flash&#x27;;
+    el.style.width = CELL + &#x27;px&#x27;;
+    el.style.height = CELL + &#x27;px&#x27;;
+    el.style.left = (col * CELL) + &#x27;px&#x27;;
+    el.style.top = (laneRow * CELL) + &#x27;px&#x27;;
+    el.textContent = glyph;
+    field.appendChild(el);
+    hazards.push({ col: col, row: laneRow, el: el, kind: kind, ttl: kind===&#x27;zap&#x27;?200:300 });
+  }
+
+  function makeHero() {
+    if (heroEl &amp;&amp; heroEl.parentNode) heroEl.parentNode.removeChild(heroEl);
+    heroEl = document.createElement(&#x27;div&#x27;);
+    heroEl.className = &#x27;hero&#x27;;
+    heroEl.style.width = HERO_SIZE + &#x27;px&#x27;;
+    heroEl.style.height = HERO_SIZE + &#x27;px&#x27;;
+    field.appendChild(heroEl);
+  }
+
+  function paintHero() {
+    heroEl.style.left = (hero.col * CELL + (CELL - HERO_SIZE) / 2) + &#x27;px&#x27;;
+    heroEl.style.top = (hero.row * CELL + (CELL - HERO_SIZE) / 2) + &#x27;px&#x27;;
+  }
+
+  function resetHero() { hero.col = 6; hero.row = ROWS - 1; paintHero(); enteredShortcut = false; }
+
+  function difficultyLevel() { return Math.floor(banked / 2); }
+
+  function updateFocusChip() {
+    if (focusTimer &gt; 0) { focusStateEl.textContent = &#x27;ON&#x27;; focusStateEl.className = &#x27;focus-ready&#x27;; }
+    else if (coinBank &gt; 0) { focusStateEl.textContent = &#x27;Ready (Space)&#x27;; focusStateEl.className = &#x27;focus-ready&#x27;; }
+    else { focusStateEl.textContent = &#x27;need coin&#x27;; focusStateEl.className = &#x27;focus-off&#x27;; }
+  }
+
+  function enterBoss() {
+    bossMode = true;
+    bossFrames = BOSS_SECONDS * 60;
+    timerChip.style.display = &#x27;&#x27;;
+    timerEl.textContent = BOSS_SECONDS;
+    field.classList.add(&#x27;boss-glow&#x27;);
+    banner.classList.remove(&#x27;show&#x27;); void banner.offsetWidth; banner.classList.add(&#x27;show&#x27;);
+    resetHero();
+    rebuildCourse();
+    buildShortcut();
+  }
+
+  function tick() {
+    if (!running) return;
+    frame++;
+    var slow = focusTimer &gt; 0 ? 0.4 : 1;
+    if (focusTimer &gt; 0) { focusTimer--; if (focusTimer === 0) { field.classList.remove(&#x27;focus-glow&#x27;); updateFocusChip(); } }
+
+    if (bossMode) {
+      bossFrames--;
+      timerEl.textContent = Math.ceil(bossFrames / 60);
+      if (bossFrames &lt;= 0) { winGame(); return; }
+    }
+
+    if (frame % (bossMode ? 55 : 90) === 0) maybeSurprise();
+
+    for (var i = 0; i &lt; lanes.length; i++) {
+      var lane = lanes[i];
+      if (lane.boost &gt; 0) { lane.boost--; lane.speed = lane.baseSpeed * 2; if (lane.boost===0) lane.speed = lane.baseSpeed; }
+      for (var j = 0; j &lt; lane.obstacles.length; j++) {
+        var o = lane.obstacles[j];
+        o.x += lane.speed * slow;
+        if (lane.speed &gt; 0 &amp;&amp; o.x &gt; FIELD_W) o.x = -o.w;
+        else if (lane.speed &lt; 0 &amp;&amp; o.x + o.w &lt; 0) o.x = FIELD_W;
+        o.el.style.left = o.x + &#x27;px&#x27;;
+      }
+    }
+
+    for (var gi = gems.length - 1; gi &gt;= 0; gi--) {
+      gems[gi].ttl--;
+      if (gems[gi].ttl &lt; 60) gems[gi].el.style.opacity = (gems[gi].ttl % 20 &lt; 10) ? &#x27;0.3&#x27; : &#x27;1&#x27;;
+      if (gems[gi].ttl &lt;= 0) { rm(gems[gi].el); gems.splice(gi, 1); }
+    }
+    for (var ci = crowns.length - 1; ci &gt;= 0; ci--) {
+      crowns[ci].ttl--;
+      if (crowns[ci].ttl &lt; 60) crowns[ci].el.style.opacity = (crowns[ci].ttl % 16 &lt; 8) ? &#x27;0.3&#x27; : &#x27;1&#x27;;
+      if (crowns[ci].ttl &lt;= 0) { rm(crowns[ci].el); crowns.splice(ci, 1); }
+    }
+    for (var hi = hazards.length - 1; hi &gt;= 0; hi--) {
+      hazards[hi].ttl--;
+      if (hazards[hi].ttl &lt;= 0) { rm(hazards[hi].el); hazards.splice(hi, 1); }
+    }
+
+    for (var c = coins.length - 1; c &gt;= 0; c--) {
+      if (coins[c].col === hero.col &amp;&amp; coins[c].row === hero.row) {
+        rm(coins[c].el); coins.splice(c, 1);
+        coinBank++; score += 5;
+        coinsEl.textContent = coinBank; scoreEl.textContent = score;
+        updateFocusChip();
+      }
+    }
+    for (var gg = gems.length - 1; gg &gt;= 0; gg--) {
+      if (gems[gg].col === hero.col &amp;&amp; gems[gg].row === hero.row) {
+        rm(gems[gg].el); gems.splice(gg, 1);
+        score += 25; scoreEl.textContent = score;
+      }
+    }
+    for (var cc = crowns.length - 1; cc &gt;= 0; cc--) {
+      if (crowns[cc].col === hero.col &amp;&amp; crowns[cc].row === hero.row) {
+        rm(crowns[cc].el); crowns.splice(cc, 1);
+        score += 100; scoreEl.textContent = score;
+        field.classList.add(&#x27;flash&#x27;); setTimeout(function(){ field.classList.remove(&#x27;flash&#x27;); }, 300);
+      }
+    }
+    for (var hh = hazards.length - 1; hh &gt;= 0; hh--) {
+      if (hazards[hh].col === hero.col &amp;&amp; hazards[hh].row === hero.row) {
+        if (hazards[hh].kind === &#x27;trap&#x27;) { endGame(); return; }
+        else {
+          var li = hazards[hh].row - 1;
+          if (li &gt;= 0 &amp;&amp; li &lt; lanes.length) lanes[li].boost = 120;
+          rm(hazards[hh].el); hazards.splice(hh, 1);
+        }
+      }
+    }
+
+    // Track if hero uses the deadly shortcut this run (boss only)
+    if (bossMode &amp;&amp; hero.row &gt; 0 &amp;&amp; hero.row &lt; ROWS - 1 &amp;&amp; inShortcut(hero.col)) enteredShortcut = true;
+
+    var laneIdx = hero.row - 1;
+    if (laneIdx &gt;= 0 &amp;&amp; laneIdx &lt; LANES) {
+      var hx = hero.col * CELL + (CELL - HERO_SIZE) / 2;
+      var hy = hero.row * CELL + (CELL - HERO_SIZE) / 2;
+      var lane2 = lanes[laneIdx];
+      for (var k = 0; k &lt; lane2.obstacles.length; k++) {
+        var o2 = lane2.obstacles[k];
+        if (hx &lt; o2.x + o2.w &amp;&amp; hx + HERO_SIZE &gt; o2.x &amp;&amp;
+            hy &lt; lane2.y + OBSTACLE_H &amp;&amp; hy + HERO_SIZE &gt; lane2.y) {
+          endGame(); return;
+        }
+      }
+    }
+    animId = requestAnimationFrame(tick);
+  }
+
+  function rebuildCourse() {
+    clearDynamic();
+    drawStatic();
+    buildGates();
+    buildLanes(difficultyLevel());
+    if (bossMode) buildShortcut();
+  }
+
+  function move(dc, dr) {
+    if (!running) return;
+    hero.col = Math.max(0, Math.min(COLS - 1, hero.col + dc));
+    hero.row = Math.max(0, Math.min(ROWS - 1, hero.row + dr));
+    paintHero();
+    if (bossMode &amp;&amp; hero.row &gt; 0 &amp;&amp; hero.row &lt; ROWS - 1 &amp;&amp; inShortcut(hero.col)) enteredShortcut = true;
+    if (hero.row === 0) {
+      banked++;
+      runsEl.textContent = banked;
+      var base = 10 + difficultyLevel() * 3;
+      var gate = gates.find(function (g) { return hero.col &gt;= g.colStart &amp;&amp; hero.col &lt;= g.colEnd; });
+      var bonus = (gate &amp;&amp; gate.bonus) ? 30 : 0;
+      var scBonus = (bossMode &amp;&amp; enteredShortcut) ? 75 : 0;
+      score += base + bonus + scBonus;
+      scoreEl.textContent = score;
+      if (bonus || scBonus) { field.classList.add(&#x27;flash&#x27;); setTimeout(function(){ field.classList.remove(&#x27;flash&#x27;); }, 300); }
+      resetHero();
+      if (!bossMode &amp;&amp; banked &gt;= BOSS_TRIGGER) { enterBoss(); return; }
+      rebuildCourse();
+    }
+  }
+
+  function useFocus() {
+    if (!running || focusTimer &gt; 0) return;
+    if (coinBank &lt;= 0) return;
+    coinBank--; coinsEl.textContent = coinBank;
+    focusTimer = 150;
+    field.classList.add(&#x27;focus-glow&#x27;);
+    updateFocusChip();
+  }
+
+  function endGame() {
+    running = false;
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+    field.classList.remove(&#x27;focus-glow&#x27;); field.classList.remove(&#x27;boss-glow&#x27;);
+    if (score &gt; best) { best = score; bestEl.textContent = best; }
+    ovTitle.textContent = &#x27;💥 Crashed!&#x27;;
+    ovMsg.textContent = &#x27;Score &#x27; + score + &#x27; · Runs &#x27; + banked + &#x27;. Press Start below to try again.&#x27;;
+    overlay.style.display = &#x27;flex&#x27;;
+  }
+
+  function winGame() {
+    running = false;
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+    field.classList.remove(&#x27;focus-glow&#x27;); field.classList.remove(&#x27;boss-glow&#x27;);
+    if (score &gt; best) { best = score; bestEl.textContent = best; }
+    ovTitle.textContent = &#x27;👑 Boss Survived!&#x27;;
+    ovMsg.textContent = &#x27;Final Score &#x27; + score + &#x27;! You outlasted the Boss Rush. Press Start below to go again.&#x27;;
+    overlay.style.display = &#x27;flex&#x27;;
+  }
+
+  function startGame() {
+    if (running) return;
+    overlay.style.display = &#x27;none&#x27;;
+    score = 0; coinBank = 0; banked = 0; focusTimer = 0; frame = 0;
+    bossMode = false; bossFrames = 0; enteredShortcut = false;
+    timerChip.style.display = &#x27;none&#x27;;
+    scoreEl.textContent = &#x27;0&#x27;; coinsEl.textContent = &#x27;0&#x27;; runsEl.textContent = &#x27;0&#x27;;
+    field.innerHTML = &#x27;&#x27;;
+    field.appendChild(banner);
+    field.appendChild(overlay);
+    lanes = []; coins = []; gems = []; hazards = []; gates = []; crowns = []; shortcutEl = null;
+    field.classList.remove(&#x27;boss-glow&#x27;);
+    drawStatic();
+    buildGates();
+    buildLanes(0);
+    makeHero();
+    resetHero();
+    updateFocusChip();
+    running = true;
+    animId = requestAnimationFrame(tick);
+  }
+
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27;) { move(-1, 0); e.preventDefault(); }
+    else if (e.key === &#x27;ArrowRight&#x27;) { move(1, 0); e.preventDefault(); }
+    else if (e.key === &#x27;ArrowUp&#x27;) { move(0, -1); e.preventDefault(); }
+    else if (e.key === &#x27;ArrowDown&#x27;) { move(0, 1); e.preventDefault(); }
+    else if (e.key === &#x27; &#x27; || e.code === &#x27;Space&#x27;) { useFocus(); e.preventDefault(); }
+  });
+
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  // Initial static paint
+  drawStatic();
+  buildGates();
+  buildLanes(0);
+  makeHero();
+  paintHero();
+  overlay.style.display = &#x27;flex&#x27;;
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

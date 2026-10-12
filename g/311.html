@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🐹 Critter Whack 💣</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>🐹 Critter Whack 💣</b> &middot; Game 311 &middot; Amateur producer &middot; Basic game: Whack-a-mole</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #dff3ff; color: #222; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 14px; height: 100%; box-sizing: border-box; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 8px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 700; color: #e05a00; text-shadow: 2px 2px 0 #ffd166; }
+  .instructions { font-size: 16px; color: #3a5a2a; max-width: 640px; margin: 0; line-height: 1.35; font-weight: 500; }
+  .hud { display: flex; gap: 12px; align-items: center; }
+  .pill { font-size: 20px; font-weight: 700; padding: 4px 14px; border-radius: 20px; border: 3px solid #ffd166; }
+  .score { color: #2a6b2a; background: #fff6cc; }
+  .level { color: #7a3ecc; background: #f0e4ff; border-color: #c8a0ff; }
+  .board {
+    position: relative; width: 620px; height: 448px; flex-shrink: 0; margin: 0;
+    border-radius: 14px; overflow: hidden;
+    border: 6px solid #6b3f13;
+    background:
+      radial-gradient(circle at 20% 12%, rgba(255,255,255,0.5) 0 3px, transparent 4px),
+      radial-gradient(circle at 80% 8%, rgba(255,255,255,0.45) 0 4px, transparent 5px),
+      linear-gradient(#8fd14f 0%, #6fbf3a 55%, #5aa82f 100%);
+    box-shadow: inset 0 -30px 40px rgba(0,80,0,0.15);
+  }
+  .board::before {
+    content: &quot;&quot;; position: absolute; inset: 0;
+    background-image: repeating-linear-gradient(90deg, rgba(255,255,255,0.06) 0 8px, transparent 8px 16px);
+    pointer-events: none;
+  }
+  .critter { position: absolute; width: 74px; height: 74px; cursor: pointer; }
+  .hole {
+    position: absolute; width: 78px; height: 30px; border-radius: 50%;
+    background: radial-gradient(ellipse at center, #4a2c0f 0%, #5c3a17 60%, #6b4520 100%);
+    box-shadow: inset 0 4px 6px rgba(0,0,0,0.5);
+    transform: translateY(24px);
+  }
+  .body {
+    position: absolute; left: 0; top: 0; width: 74px; height: 74px;
+    transition: transform 0.12s ease-out; transform: scale(1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 46px; line-height: 74px;
+  }
+  .body .glow { filter: drop-shadow(0 0 6px gold); }
+  .critter.pop .body { animation: pop 0.18s ease-out; }
+  @keyframes pop { 0% { transform: translateY(30px) scale(0.6); } 100% { transform: translateY(0) scale(1); } }
+  .points-float {
+    position: absolute; font-weight: 800; font-size: 22px; color: #fff;
+    text-shadow: 1px 1px 2px #000; pointer-events: none; z-index: 6;
+    animation: floatUp 0.7s ease-out forwards;
+  }
+  @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-40px); } }
+  .overlay {
+    position: absolute; inset: 0; display: none; flex-direction: column;
+    align-items: center; justify-content: center; gap: 6px;
+    background: rgba(30,10,0,0.78); color: #fff; border-radius: 8px; z-index: 5;
+  }
+  .overlay.show { display: flex; }
+  .overlay .big { font-size: 40px; font-weight: 800; color: #ff6b4a; text-shadow: 2px 2px 0 #661500; }
+  .overlay .sub { font-size: 20px; font-weight: 600; }
+  .overlay .hint { font-size: 16px; color: #ffd166; margin-top: 6px; }
+  .levelup {
+    position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+    background: #7a3ecc; color: #fff; font-weight: 800; font-size: 20px;
+    padding: 6px 18px; border-radius: 20px; z-index: 4; opacity: 0;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3); white-space: nowrap;
+  }
+  .levelup.show { animation: lvlflash 1.4s ease-out; }
+  @keyframes lvlflash {
+    0% { opacity: 0; transform: translateX(-50%) translateY(-10px) scale(0.7); }
+    15% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1.1); }
+    80% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateX(-50%) translateY(-6px) scale(1); }
+  }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;🐹 Critter Whack 💣&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Click critters to score — some are worth more points, and new animals appear as you level up. Avoid all bombs, including the sneaky bomb-bunny that looks almost like a real one; one wrong click ends the game.&lt;/p&gt;
+  &lt;div class=&quot;hud&quot;&gt;
+    &lt;div class=&quot;pill score&quot;&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;pill level&quot;&gt;Level: &lt;span id=&quot;level&quot;&gt;1&lt;/span&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;board&quot; id=&quot;board&quot;&gt;
+    &lt;div class=&quot;levelup&quot; id=&quot;levelup&quot;&gt;LEVEL UP!&lt;/div&gt;
+    &lt;div class=&quot;overlay&quot; id=&quot;overlay&quot;&gt;
+      &lt;div class=&quot;big&quot;&gt;💥 GAME OVER 💥&lt;/div&gt;
+      &lt;div class=&quot;sub&quot; id=&quot;finalStats&quot;&gt;You hit a bomb!&lt;/div&gt;
+      &lt;div class=&quot;hint&quot;&gt;Press Restart below to play again.&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var BOARD_W = 620, BOARD_H = 448, SIZE = 74;
+  var score = 0, level = 1;
+  var intervalId = null;
+  var timeouts = [];
+  var running = false;
+  var board = document.getElementById(&#x27;board&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var levelEl = document.getElementById(&#x27;level&#x27;);
+  var overlay = document.getElementById(&#x27;overlay&#x27;);
+  var finalStats = document.getElementById(&#x27;finalStats&#x27;);
+  var levelupEl = document.getElementById(&#x27;levelup&#x27;);
+
+  // Animal roster. minLevel = when it starts appearing. weight = spawn frequency.
+  // golden hamster looks like the normal hamster but glows and is worth 3.
+  var ANIMALS = [
+    { emoji: &#x27;🐹&#x27;, pts: 1, minLevel: 1, weight: 5, name: &#x27;Hamster&#x27; },
+    { emoji: &#x27;🐰&#x27;, pts: 1, minLevel: 2, weight: 4, name: &#x27;Rabbit&#x27; },
+    { emoji: &#x27;🐿️&#x27;, pts: 2, minLevel: 3, weight: 3, name: &#x27;Squirrel&#x27;, fast: true },
+    { emoji: &#x27;🐹&#x27;, pts: 3, minLevel: 4, weight: 1, name: &#x27;Golden Hamster&#x27;, glow: true },
+    { emoji: &#x27;🦊&#x27;, pts: 2, minLevel: 5, weight: 2, name: &#x27;Fox&#x27; },
+    { emoji: &#x27;🐭&#x27;, pts: 1, minLevel: 5, weight: 3, name: &#x27;Mouse&#x27; },
+  ];
+  // Bombs. bombBunny looks like a rabbit at a glance.
+  var BOMBS = [
+    { emoji: &#x27;💣&#x27;, minLevel: 1 },
+    { emoji: &#x27;🐰&#x27;, minLevel: 4, decoy: true }, // bomb-bunny: looks like a rabbit!
+  ];
+
+  function spawnMs() { return Math.max(300, 900 - (level - 1) * 80); }
+  function baseLife() { return Math.max(480, 1200 - (level - 1) * 90); }
+  function molesPerSpawn() { return 1 + Math.floor((level - 1) / 2); }
+  function bombChance() { return Math.min(0.35, 0.10 + (level - 1) * 0.03); }
+
+  function pickAnimal() {
+    var avail = ANIMALS.filter(function (a) { return a.minLevel &lt;= level; });
+    var total = 0;
+    for (var i = 0; i &lt; avail.length; i++) total += avail[i].weight;
+    var r = Math.random() * total;
+    for (var j = 0; j &lt; avail.length; j++) {
+      r -= avail[j].weight;
+      if (r &lt;= 0) return avail[j];
+    }
+    return avail[0];
+  }
+
+  function pickBomb() {
+    var avail = BOMBS.filter(function (b) { return b.minLevel &lt;= level; });
+    return avail[Math.floor(Math.random() * avail.length)];
+  }
+
+  function clearAllCritters() {
+    for (var i = 0; i &lt; timeouts.length; i++) clearTimeout(timeouts[i]);
+    timeouts = [];
+    var cs = board.querySelectorAll(&#x27;.critter, .points-float&#x27;);
+    for (var j = 0; j &lt; cs.length; j++) cs[j].remove();
+  }
+
+  function checkLevelUp() {
+    var newLevel = 1 + Math.floor(score / 5);
+    if (newLevel &gt; level) {
+      level = newLevel;
+      levelEl.textContent = level;
+      // announce new unlock if any
+      var newAnimal = null;
+      for (var i = 0; i &lt; ANIMALS.length; i++) {
+        if (ANIMALS[i].minLevel === level) { newAnimal = ANIMALS[i]; break; }
+      }
+      levelupEl.textContent = newAnimal
+        ? &#x27;LEVEL &#x27; + level + &#x27;! New: &#x27; + newAnimal.emoji + &#x27; &#x27; + newAnimal.name
+        : &#x27;LEVEL &#x27; + level + &#x27;!&#x27;;
+      levelupEl.classList.remove(&#x27;show&#x27;);
+      void levelupEl.offsetWidth;
+      levelupEl.classList.add(&#x27;show&#x27;);
+      if (intervalId) clearInterval(intervalId);
+      intervalId = setInterval(spawnWave, spawnMs());
+    }
+  }
+
+  function floatPoints(x, y, text, color) {
+    var f = document.createElement(&#x27;div&#x27;);
+    f.className = &#x27;points-float&#x27;;
+    f.textContent = text;
+    f.style.color = color;
+    f.style.left = x + &#x27;px&#x27;;
+    f.style.top = y + &#x27;px&#x27;;
+    board.appendChild(f);
+    setTimeout(function () { f.remove(); }, 700);
+  }
+
+  function spawnOne() {
+    var isBomb = Math.random() &lt; bombChance();
+    var animal = isBomb ? null : pickAnimal();
+    var bomb = isBomb ? pickBomb() : null;
+
+    var x = Math.random() * (BOARD_W - SIZE);
+    var y = Math.random() * (BOARD_H - SIZE);
+
+    var wrap = document.createElement(&#x27;div&#x27;);
+    wrap.className = &#x27;critter pop&#x27;;
+    wrap.style.left = x + &#x27;px&#x27;;
+    wrap.style.top = y + &#x27;px&#x27;;
+
+    var hole = document.createElement(&#x27;div&#x27;);
+    hole.className = &#x27;hole&#x27;;
+
+    var bodyEl = document.createElement(&#x27;div&#x27;);
+    bodyEl.className = &#x27;body&#x27;;
+    var emoji = isBomb ? bomb.emoji : animal.emoji;
+    var glow = (!isBomb &amp;&amp; animal.glow);
+    bodyEl.innerHTML = glow ? &#x27;&lt;span class=&quot;glow&quot;&gt;&#x27; + emoji + &#x27;&lt;/span&gt;&#x27; : emoji;
+
+    wrap.appendChild(hole);
+    wrap.appendChild(bodyEl);
+
+    var handled = false;
+    wrap.addEventListener(&#x27;click&#x27;, function () {
+      if (handled || !running) return;
+      handled = true;
+      if (isBomb) { gameOver(); return; }
+      score += animal.pts;
+      scoreEl.textContent = score;
+      var color = animal.glow ? &#x27;gold&#x27; : (animal.pts &gt;= 2 ? &#x27;#ffd166&#x27; : &#x27;#fff&#x27;);
+      floatPoints(x + 20, y + 10, &#x27;+&#x27; + animal.pts, color);
+      bodyEl.innerHTML = &#x27;✨&#x27;;
+      checkLevelUp();
+      setTimeout(function () { wrap.remove(); }, 160);
+    });
+
+    board.appendChild(wrap);
+    // fast animals disappear quicker
+    var life = baseLife();
+    if (!isBomb &amp;&amp; animal.fast) life = Math.max(360, life * 0.65);
+    timeouts.push(setTimeout(function () { wrap.remove(); }, life));
+  }
+
+  function spawnWave() {
+    if (!running) return;
+    var count = molesPerSpawn();
+    for (var i = 0; i &lt; count; i++) spawnOne();
+  }
+
+  function gameOver() {
+    running = false;
+    if (intervalId) { clearInterval(intervalId); intervalId = null; }
+    clearAllCritters();
+    finalStats.textContent = &#x27;Final Score: &#x27; + score + &#x27;  •  Level &#x27; + level;
+    overlay.classList.add(&#x27;show&#x27;);
+  }
+
+  function startGame() {
+    if (running) return;
+    running = true;
+    score = 0; level = 1;
+    scoreEl.textContent = &#x27;0&#x27;;
+    levelEl.textContent = &#x27;1&#x27;;
+    overlay.classList.remove(&#x27;show&#x27;);
+    levelupEl.classList.remove(&#x27;show&#x27;);
+    if (intervalId) clearInterval(intervalId);
+    clearAllCritters();
+    spawnWave();
+    intervalId = setInterval(spawnWave, spawnMs());
+  }
+
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    if (intervalId) { clearInterval(intervalId); intervalId = null; }
+    clearAllCritters();
+  }
+
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

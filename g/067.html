@@ -1,0 +1,552 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>⚔️ ORB DUNGEON ⚔️</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>⚔️ ORB DUNGEON ⚔️</b> &middot; Game 067 &middot; Amateur producer &middot; Basic game: Whack-a-mole</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #0d0d13; color: #eee; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 10px; height: 100%; box-sizing: border-box; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+  h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: 1px; color: #ffd166; text-shadow: 0 2px 6px #000; }
+  .instructions { font-size: 16px; color: #aab; max-width: 640px; margin: 0; line-height: 1.3; }
+  .hud { display: flex; gap: 11px; font-size: 15px; color: #ddd; flex-wrap: wrap; justify-content: center; }
+  .hud b { color: #6ee7ff; }
+  .hud .hp { color: #ff6b8b; }
+  .hud .combo { color: #ffd166; }
+
+  .board {
+    position: relative; width: 640px; height: 356px; flex-shrink: 0; border-radius: 10px; overflow: hidden;
+    background:
+      repeating-linear-gradient(0deg, transparent 0 46px, rgba(0,0,0,.25) 46px 48px),
+      repeating-linear-gradient(90deg, transparent 0 46px, rgba(0,0,0,.25) 46px 48px),
+      radial-gradient(circle at 50% 120%, #3a3450 0%, #201c30 40%, #14111d 100%);
+    box-shadow: inset 0 0 60px rgba(0,0,0,.75);
+    border: 3px solid #2a2438;
+  }
+  .wall {
+    position: absolute; top: 0; left: 0; right: 0; height: 60px; z-index: 1;
+    background:
+      repeating-linear-gradient(90deg, #4a4258 0 58px, #3a3446 58px 62px),
+      linear-gradient(#5a5268, #3a3446);
+    border-bottom: 4px solid #241f30;
+    box-shadow: inset 0 -8px 12px rgba(0,0,0,.5);
+  }
+  .torch { position: absolute; top: 14px; font-size: 28px; z-index: 2; animation: flick .4s infinite alternate; }
+  .torch.l { left: 20px; } .torch.r { right: 20px; }
+  @keyframes flick { from { filter: brightness(1); transform: scale(1);} to { filter: brightness(1.4); transform: scale(1.1);} }
+  .glow { position: absolute; top: 6px; width: 120px; height: 120px; border-radius: 50%; z-index: 1;
+    background: radial-gradient(circle, rgba(255,170,60,.35), transparent 70%); pointer-events: none; }
+  .glow.l { left: -20px; } .glow.r { right: -20px; }
+
+  /* dungeon decor */
+  .chain { position: absolute; top: 60px; width: 4px; z-index: 1; background: repeating-linear-gradient(#8a8496 0 4px, #4a4456 4px 8px); opacity:.5; }
+  .web { position: absolute; z-index: 1; font-size: 30px; opacity: .18; pointer-events:none; }
+  .crack { position:absolute; z-index:1; color:#000; opacity:.25; font-size:26px; pointer-events:none; }
+  .stal { position:absolute; top:56px; z-index:1; font-size:20px; opacity:.4; pointer-events:none; }
+  .grate { position:absolute; bottom:0; left:0; right:0; height:22px; z-index:1; pointer-events:none;
+    background: repeating-linear-gradient(90deg, transparent 0 16px, rgba(0,0,0,.4) 16px 20px);
+    border-top: 2px solid rgba(0,0,0,.4); }
+  .skull { position:absolute; bottom:2px; z-index:1; font-size:18px; opacity:.5; pointer-events:none; }
+
+  .target { position: absolute; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 24px; user-select: none; z-index: 3; }
+  .target:active { transform: scale(.9); }
+  .goblin { transition: left .28s ease, top .28s ease, transform .1s; }
+
+  .msg { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; background: rgba(8,8,16,.9); z-index: 10; }
+  .msg h2 { margin: 0; font-size: 24px; color: #ffd166; }
+  .msg p { margin: 0; font-size: 16px; color: #cdd; max-width: 520px; }
+  .cards { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .card { width: 138px; background: #26263c; border: 2px solid #444; border-radius: 10px; padding: 10px; cursor: pointer; transition: .12s; }
+  .card:hover { border-color: #ffd166; transform: translateY(-3px); background:#2f2f4a; }
+  .card .ci { font-size: 28px; }
+  .card .ct { font-weight: 700; margin: 5px 0 3px; color: #6ee7ff; font-size: 15px; }
+  .card .cd { font-size: 12px; color: #bbc; }
+  .hidden { display: none !important; }
+  .pop { position: absolute; font-weight: 700; pointer-events: none; z-index: 6; animation: floatUp .7s forwards; }
+  @keyframes floatUp { from { opacity: 1; transform: translateY(0);} to { opacity: 0; transform: translateY(-30px);} }
+
+  .guide { display: flex; align-items: flex-start; gap: 8px; width: 640px; box-sizing: border-box; height: 58px; }
+  .grum { font-size: 38px; flex-shrink: 0; }
+  .grum.bounce { animation: gbounce .4s; }
+  @keyframes gbounce { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-8px) scale(1.1);} }
+  .bubble { position: relative; background: #f4efe0; color: #222; border-radius: 12px; padding: 7px 12px; font-size: 15px; text-align: left; flex: 1; box-shadow: 0 3px 8px rgba(0,0,0,.4); line-height: 1.2; display: flex; align-items: center; min-height: 38px; }
+  .bubble:before { content: &#x27;&#x27;; position: absolute; left: -9px; top: 14px; border: 6px solid transparent; border-right-color: #f4efe0; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;⚔️ ORB DUNGEON ⚔️&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Click glowing orbs to clear each floor, but dodge the hazards: 💣 bombs and 👻 ghosts hurt you if clicked, and 👺 goblins dart away and steal points if they escape. Grum cheers you on and offers magic between floors!&lt;/p&gt;
+  &lt;div class=&quot;hud&quot;&gt;
+    &lt;div&gt;Floor &lt;b id=&quot;floor&quot;&gt;1&lt;/b&gt;&lt;/div&gt;
+    &lt;div&gt;Score &lt;b id=&quot;score&quot;&gt;0&lt;/b&gt;&lt;/div&gt;
+    &lt;div&gt;Cleared &lt;b id=&quot;cleared&quot;&gt;0&lt;/b&gt;/&lt;b id=&quot;need&quot;&gt;8&lt;/b&gt;&lt;/div&gt;
+    &lt;div class=&quot;combo&quot;&gt;Combo &lt;b id=&quot;combo&quot;&gt;x1&lt;/b&gt;&lt;/div&gt;
+    &lt;div class=&quot;hp&quot;&gt;HP &lt;span id=&quot;hp&quot;&gt;3&lt;/span&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;guide&quot;&gt;
+    &lt;div class=&quot;grum&quot; id=&quot;grum&quot;&gt;🧙&lt;/div&gt;
+    &lt;div class=&quot;bubble&quot; id=&quot;bubble&quot;&gt;Welcome, hero! Press Start below and we&#x27;ll descend into the dungeon together.&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;board&quot; id=&quot;board&quot;&gt;
+    &lt;div class=&quot;wall&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;glow l&quot;&gt;&lt;/div&gt;&lt;div class=&quot;glow r&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;torch l&quot;&gt;🔥&lt;/div&gt;&lt;div class=&quot;torch r&quot;&gt;🔥&lt;/div&gt;
+    &lt;div class=&quot;chain&quot; style=&quot;left:120px;height:34px;&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;chain&quot; style=&quot;left:400px;height:52px;&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;chain&quot; style=&quot;right:150px;height:28px;&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;stal&quot; style=&quot;left:200px;&quot;&gt;💧&lt;/div&gt;
+    &lt;div class=&quot;stal&quot; style=&quot;right:230px;&quot;&gt;💧&lt;/div&gt;
+    &lt;div class=&quot;web&quot; style=&quot;top:62px;left:4px;&quot;&gt;🕸️&lt;/div&gt;
+    &lt;div class=&quot;web&quot; style=&quot;top:62px;right:4px;transform:scaleX(-1);&quot;&gt;🕸️&lt;/div&gt;
+    &lt;div class=&quot;crack&quot; style=&quot;top:150px;left:40px;&quot;&gt;⟋&lt;/div&gt;
+    &lt;div class=&quot;crack&quot; style=&quot;top:220px;right:60px;&quot;&gt;⟍&lt;/div&gt;
+    &lt;div class=&quot;grate&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;skull&quot; style=&quot;left:70px;&quot;&gt;💀&lt;/div&gt;
+    &lt;div class=&quot;skull&quot; style=&quot;right:120px;&quot;&gt;🦴&lt;/div&gt;
+    &lt;div class=&quot;msg&quot; id=&quot;msg&quot;&gt;&lt;h2&gt;Orb Dungeon&lt;/h2&gt;&lt;p&gt;Press Start below to descend.&lt;/p&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try { window.parent.postMessage({ type: &#x27;game_input&#x27;, kind: t, key: e.key || null }, &#x27;*&#x27;); } catch (_) {}
+    }, true);
+  });
+
+  var BOARD_W = 640, BOARD_H = 356, TOP_PAD = 64;
+  var board = document.getElementById(&#x27;board&#x27;);
+  var msg = document.getElementById(&#x27;msg&#x27;);
+  var grum = document.getElementById(&#x27;grum&#x27;), bubble = document.getElementById(&#x27;bubble&#x27;);
+  var elFloor = document.getElementById(&#x27;floor&#x27;), elScore = document.getElementById(&#x27;score&#x27;),
+      elCleared = document.getElementById(&#x27;cleared&#x27;), elNeed = document.getElementById(&#x27;need&#x27;),
+      elCombo = document.getElementById(&#x27;combo&#x27;), elHp = document.getElementById(&#x27;hp&#x27;);
+
+  var running = false, inShop = false;
+  var floor = 1, score = 0, cleared = 0, need = 8, hp = 3, maxHp = 3;
+  var combo = 1, comboTimer = null, shields = 0;
+  var spawnTimer = null, timeouts = [], targets = [];
+
+  var stats = { life: 1300, bombChance: 0.16, ghostChance: 0.08, goblinChance: 0.10,
+                points: 1, size: 1, healOnClear: false, spawnBoost: 0, comboOn: false,
+                lifeOrbChance: 0, luck: 0, freezeBomb: false, calmGoblins: false };
+
+  var SHAPES = [
+    { r: &#x27;50%&#x27;, bg: &#x27;#6ee7ff&#x27; }, { r: &#x27;18%&#x27;, bg: &#x27;#a78bfa&#x27; },
+    { r: &#x27;50%&#x27;, bg: &#x27;#34d399&#x27; }, { r: &#x27;12%&#x27;, bg: &#x27;#fbbf24&#x27; },
+    { r: &#x27;50% 12% 50% 12%&#x27;, bg: &#x27;#fb7185&#x27; }, { r: &#x27;50%&#x27;, bg: &#x27;#f472b6&#x27; }
+  ];
+
+  var UPGRADES = [
+    { icon: &#x27;❤️&#x27;, t: &#x27;Vitality&#x27;, d: &#x27;+1 max HP and heal 1&#x27;, apply: function(){ maxHp++; hp = Math.min(maxHp, hp+1);} },
+    { icon: &#x27;⭐&#x27;, t: &#x27;Sharpshooter&#x27;, d: &#x27;Orbs worth +1 point&#x27;, apply: function(){ stats.points++; } },
+    { icon: &#x27;🐢&#x27;, t: &#x27;Slow Time&#x27;, d: &#x27;Threats linger longer&#x27;, apply: function(){ stats.life += 350; } },
+    { icon: &#x27;🛡️&#x27;, t: &#x27;Bomb Squad&#x27;, d: &#x27;Fewer bombs appear&#x27;, apply: function(){ stats.bombChance = Math.max(0.04, stats.bombChance - 0.06); } },
+    { icon: &#x27;🔍&#x27;, t: &#x27;Big Targets&#x27;, d: &#x27;Orbs get larger&#x27;, apply: function(){ stats.size += 0.16; } },
+    { icon: &#x27;💚&#x27;, t: &#x27;Regeneration&#x27;, d: &#x27;Heal 1 HP each floor&#x27;, apply: function(){ stats.healOnClear = true; } },
+    { icon: &#x27;🔥&#x27;, t: &#x27;Combo Mastery&#x27;, d: &#x27;Fast clicks build a score multiplier&#x27;, apply: function(){ stats.comboOn = true; } },
+    { icon: &#x27;🩸&#x27;, t: &#x27;Life Orbs&#x27;, d: &#x27;Green ❤ orbs sometimes appear to heal&#x27;, apply: function(){ stats.lifeOrbChance += 0.05; } },
+    { icon: &#x27;🍀&#x27;, t: &#x27;Lucky Gem&#x27;, d: &#x27;10% chance orbs give double points&#x27;, apply: function(){ stats.luck += 0.10; } },
+    { icon: &#x27;❄️&#x27;, t: &#x27;Frost Ward&#x27;, d: &#x27;Bombs &amp; ghosts slow down (safer)&#x27;, apply: function(){ stats.freezeBomb = true; stats.life += 150; } },
+    { icon: &#x27;🔰&#x27;, t: &#x27;Shield Charge&#x27;, d: &#x27;Start each floor with a bomb-blocking shield&#x27;, apply: function(){ shields = Math.max(shields,1); stats._shieldPerFloor = true; } },
+    { icon: &#x27;🪤&#x27;, t: &#x27;Goblin Trap&#x27;, d: &#x27;Goblins move slower and are easier to catch&#x27;, apply: function(){ stats.calmGoblins = true; stats.goblinChance = Math.max(0.04, stats.goblinChance - 0.03); } },
+    { icon: &#x27;🕯️&#x27;, t: &#x27;Torchlight&#x27;, d: &#x27;Fewer ghosts lurk in the dark&#x27;, apply: function(){ stats.ghostChance = Math.max(0.02, stats.ghostChance - 0.05); } }
+  ];
+
+  var CHEERS = [&#x27;Nice shot!&#x27;, &#x27;You\&#x27;ve got this!&#x27;, &#x27;Boom! Great aim!&#x27;, &#x27;Keep it up, hero!&#x27;, &#x27;Sparkling!&#x27;, &#x27;That\&#x27;s the spirit!&#x27;];
+  var COMBOS = [&#x27;Combo rising!&#x27;, &#x27;Unstoppable!&#x27;, &#x27;On fire! 🔥&#x27;, &#x27;Chain it, chain it!&#x27;];
+  var BOMBS = [&#x27;Ouch! Watch the bombs!&#x27;, &#x27;Not the red ones!&#x27;, &#x27;Yikes! Steady now.&#x27;];
+  var GHOSTS = [&#x27;A ghost! Don\&#x27;t touch those!&#x27;, &#x27;Boo! Leave the ghosts be.&#x27;, &#x27;Ghosts bite back, careful!&#x27;];
+  var GOBS = [&#x27;That goblin got away with your loot!&#x27;, &#x27;Sneaky goblin! Catch it faster!&#x27;, &#x27;The goblins are robbing us!&#x27;];
+  var FLOORS = [&#x27;Deeper we go!&#x27;, &#x27;Another floor conquered!&#x27;, &#x27;The dungeon fears you.&#x27;, &#x27;Onward, brave one!&#x27;];
+  var grumTO = null;
+  function grumSay(text, mood) {
+    bubble.textContent = text;
+    grum.classList.remove(&#x27;bounce&#x27;); void grum.offsetWidth; grum.classList.add(&#x27;bounce&#x27;);
+    grum.textContent = mood === &#x27;bomb&#x27; ? &#x27;😱&#x27; : mood === &#x27;happy&#x27; ? &#x27;😄&#x27; : mood === &#x27;floor&#x27; ? &#x27;🥳&#x27; : mood === &#x27;mad&#x27; ? &#x27;😠&#x27; : &#x27;🧙&#x27;;
+    if (grumTO) clearTimeout(grumTO);
+    grumTO = setTimeout(function(){ grum.textContent = &#x27;🧙&#x27;; }, 1400);
+  }
+  function rnd(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+  function clearTimers() {
+    if (spawnTimer) { clearTimeout(spawnTimer); spawnTimer = null; }
+    if (comboTimer) { clearTimeout(comboTimer); comboTimer = null; }
+    timeouts.forEach(clearTimeout); timeouts = [];
+  }
+  function clearBoard() {
+    targets.forEach(function(t){ if (t.moveTimer) clearInterval(t.moveTimer); if (t.el.parentNode) t.el.parentNode.removeChild(t.el); });
+    targets = [];
+  }
+  function updHud() {
+    elFloor.textContent = floor; elScore.textContent = score;
+    elCleared.textContent = cleared; elNeed.textContent = need;
+    elCombo.textContent = &#x27;x&#x27; + combo;
+    var sh = shields &gt; 0 ? &#x27; 🔰&#x27;.repeat(shields) : &#x27;&#x27;;
+    elHp.textContent = &#x27;♥&#x27;.repeat(Math.max(0,hp)) + &#x27;♡&#x27;.repeat(Math.max(0, maxHp - hp)) + sh;
+  }
+
+  function pop(x, y, txt, color) {
+    var p = document.createElement(&#x27;div&#x27;);
+    p.className = &#x27;pop&#x27;; p.textContent = txt; p.style.color = color;
+    p.style.left = x + &#x27;px&#x27;; p.style.top = y + &#x27;px&#x27;;
+    board.appendChild(p);
+    setTimeout(function(){ if (p.parentNode) p.parentNode.removeChild(p); }, 700);
+  }
+
+  function bumpCombo() {
+    if (!stats.comboOn) return;
+    combo = Math.min(combo + 1, 9);
+    if (combo % 3 === 0) grumSay(rnd(COMBOS), &#x27;happy&#x27;);
+    if (comboTimer) clearTimeout(comboTimer);
+    comboTimer = setTimeout(function(){ combo = 1; updHud(); }, 1500);
+  }
+
+  function loseHp(x, y, msgs) {
+    if (shields &gt; 0) { shields--; pop(x, y, &#x27;🔰 blocked!&#x27;, &#x27;#6ee7ff&#x27;); grumSay(&#x27;Shield saved you!&#x27;, &#x27;happy&#x27;); updHud(); return; }
+    hp--; combo = 1; updHud();
+    pop(x, y, &#x27;💥&#x27;, &#x27;#ff6b8b&#x27;);
+    grumSay(rnd(msgs), &#x27;bomb&#x27;);
+    if (hp &lt;= 0) gameOver();
+  }
+
+  function randPos(sz) {
+    return { x: Math.random() * (BOARD_W - sz), y: TOP_PAD + Math.random() * (BOARD_H - sz - TOP_PAD - 22) };
+  }
+
+  function spawnTarget() {
+    if (!running || inShop) return;
+    var roll = Math.random();
+    var kind = &#x27;orb&#x27;;
+    var c = stats;
+    var acc = 0;
+    if (roll &lt; (acc += c.bombChance)) kind = &#x27;bomb&#x27;;
+    else if (roll &lt; (acc += c.ghostChance)) kind = &#x27;ghost&#x27;;
+    else if (roll &lt; (acc += c.goblinChance)) kind = &#x27;goblin&#x27;;
+    else if (roll &lt; (acc += c.lifeOrbChance)) kind = &#x27;life&#x27;;
+
+    var base = 50 * stats.size;
+    var t = { el: document.createElement(&#x27;div&#x27;), kind: kind, hit: false, moveTimer: null };
+    var el = t.el;
+    el.className = &#x27;target&#x27; + (kind === &#x27;goblin&#x27; ? &#x27; goblin&#x27; : &#x27;&#x27;);
+    var sz = (kind === &#x27;bomb&#x27;) ? base * 0.9 : (kind === &#x27;goblin&#x27; ? base * 0.95 : base);
+    el.style.width = sz + &#x27;px&#x27;; el.style.height = sz + &#x27;px&#x27;;
+    el.style.borderRadius = &#x27;50%&#x27;;
+    var p = randPos(sz);
+    el.style.left = p.x + &#x27;px&#x27;; el.style.top = p.y + &#x27;px&#x27;;
+
+    if (kind === &#x27;bomb&#x27;) {
+      el.style.background = stats.freezeBomb ? &#x27;radial-gradient(circle at 35% 30%, #cfefff, #2563eb)&#x27; : &#x27;radial-gradient(circle at 35% 30%, #ff9a9a, #b91c1c)&#x27;;
+      el.style.boxShadow = stats.freezeBomb ? &#x27;0 0 14px rgba(60,120,255,.7)&#x27; : &#x27;0 0 14px rgba(220,40,40,.7)&#x27;;
+      el.textContent = &#x27;💣&#x27;;
+    } else if (kind === &#x27;ghost&#x27;) {
+      el.style.background = &#x27;radial-gradient(circle at 35% 30%, #ffffff55, #6b7280aa)&#x27;;
+      el.style.boxShadow = &#x27;0 0 16px rgba(200,210,255,.5)&#x27;;
+      el.textContent = &#x27;👻&#x27;;
+      // ghosts fade in and out
+      el.style.opacity = &#x27;0.15&#x27;;
+      el.animate([{opacity:0.12},{opacity:0.95},{opacity:0.12}], {duration:1100, iterations: Infinity});
+    } else if (kind === &#x27;goblin&#x27;) {
+      el.style.background = &#x27;radial-gradient(circle at 35% 30%, #bef264, #4d7c0f)&#x27;;
+      el.style.boxShadow = &#x27;0 0 14px rgba(130,180,40,.7)&#x27;;
+      el.textContent = &#x27;👺&#x27;;
+      var hops = 0;
+      var hopMs = stats.calmGoblins ? 900 : 620;
+      t.moveTimer = setInterval(function(){
+        if (t.hit) return;
+        var np = randPos(sz);
+        el.style.left = np.x + &#x27;px&#x27;; el.style.top = np.y + &#x27;px&#x27;;
+        hops++;
+      }, hopMs);
+    } else if (kind === &#x27;life&#x27;) {
+      el.style.background = &#x27;radial-gradient(circle at 35% 30%, #baffc9, #16a34a)&#x27;;
+      el.style.boxShadow = &#x27;0 0 16px rgba(40,220,90,.8)&#x27;;
+      el.textContent = &#x27;❤&#x27;;
+    } else {
+      var sh = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+      el.style.background = &#x27;radial-gradient(circle at 35% 30%, #ffffffaa, &#x27; + sh.bg + &#x27;)&#x27;;
+      el.style.borderRadius = sh.r;
+      el.style.boxShadow = &#x27;0 0 14px &#x27; + sh.bg + &#x27;aa&#x27;;
+    }
+
+    el.addEventListener(&#x27;click&#x27;, function(ev) {
+      if (t.hit) return; t.hit = true;
+      ev.stopPropagation();
+      var cx = parseFloat(el.style.left), cy = parseFloat(el.style.top);
+      remove(t);
+      if (kind === &#x27;bomb&#x27;) loseHp(cx, cy, BOMBS);
+      else if (kind === &#x27;ghost&#x27;) loseHp(cx, cy, GHOSTS);
+      else if (kind === &#x27;goblin&#x27;) {
+        var g = 2 + floor;
+        score += g; cleared++;
+        pop(cx, cy, &#x27;+&#x27; + g + &#x27; 💰&#x27;, &#x27;#bef264&#x27;);
+        grumSay(&#x27;Caught the goblin! Loot!&#x27;, &#x27;happy&#x27;);
+        updHud();
+        if (cleared &gt;= need) floorComplete();
+      } else if (kind === &#x27;life&#x27;) {
+        if (hp &lt; maxHp) { hp++; pop(cx, cy, &#x27;+❤&#x27;, &#x27;#4ade80&#x27;); grumSay(&#x27;A healing orb! Lovely.&#x27;, &#x27;happy&#x27;); }
+        else { score += 3; pop(cx, cy, &#x27;+3&#x27;, &#x27;#4ade80&#x27;); }
+        updHud();
+      } else {
+        bumpCombo();
+        var pts = stats.points * (stats.comboOn ? combo : 1);
+        if (stats.luck &amp;&amp; Math.random() &lt; stats.luck) { pts *= 2; pop(cx, cy, &#x27;🍀 x2!&#x27;, &#x27;#a3e635&#x27;); }
+        else pop(cx, cy, &#x27;+&#x27; + pts, &#x27;#ffd166&#x27;);
+        score += pts; cleared++;
+        if (Math.random() &lt; 0.15) grumSay(rnd(CHEERS), &#x27;happy&#x27;);
+        updHud();
+        if (cleared &gt;= need) floorComplete();
+      }
+    });
+    board.appendChild(el);
+    targets.push(t);
+
+    var life = kind === &#x27;bomb&#x27; ? stats.life * (stats.freezeBomb ? 1.3 : 0.9)
+             : kind === &#x27;goblin&#x27; ? stats.life * 1.6
+             : kind === &#x27;ghost&#x27; ? stats.life * 1.1
+             : stats.life;
+    timeouts.push(setTimeout(function(){
+      // goblin escaping steals a point
+      if (!t.hit &amp;&amp; kind === &#x27;goblin&#x27;) {
+        var gx = parseFloat(el.style.left), gy = parseFloat(el.style.top);
+        score = Math.max(0, score - 2);
+        pop(gx, gy, &#x27;-2 💰&#x27;, &#x27;#f87171&#x27;);
+        grumSay(rnd(GOBS), &#x27;mad&#x27;);
+        updHud();
+      }
+      remove(t);
+    }, life));
+  }
+
+  function remove(t) {
+    if (t.moveTimer) { clearInterval(t.moveTimer); t.moveTimer = null; }
+    if (t.el.parentNode) t.el.parentNode.removeChild(t.el);
+    var i = targets.indexOf(t); if (i &gt;= 0) targets.splice(i, 1);
+  }
+
+  function scheduleSpawn() {
+    if (!running || inShop) return;
+    // difficulty scales with floor: faster base, tighter cap
+    var floorSpeed = Math.min(300, floor * 40);
+    var minGap = Math.max(180, 620 - floorSpeed - stats.spawnBoost);
+    var interval = minGap + Math.random() * Math.max(200, 700 - floorSpeed);
+    spawnTimer = setTimeout(function() {
+      spawnTarget();
+      var burstChance = 0.22 + Math.min(0.25, floor * 0.03);
+      if (Math.random() &lt; burstChance) timeouts.push(setTimeout(spawnTarget, 100 + Math.random() * 180));
+      scheduleSpawn();
+    }, interval);
+  }
+
+  function startFloor() {
+    inShop = false;
+    cleared = 0; combo = 1;
+    need = 6 + floor * 2;
+    // ramp threat rates with depth
+    stats.bombChance = Math.min(0.28, stats.bombChance + 0.008);
+    stats.ghostChance = Math.min(0.20, stats.ghostChance + 0.006);
+    stats.goblinChance = Math.min(0.22, stats.goblinChance + 0.006);
+    stats.life = Math.max(700, stats.life - 15);
+    if (stats._shieldPerFloor) shields = Math.max(shields, 1);
+    updHud();
+    msg.classList.add(&#x27;hidden&#x27;);
+    clearBoard();
+    grumSay(&#x27;Floor &#x27; + floor + &#x27;! Clear &#x27; + need + &#x27;. Watch the hazards!&#x27;, &#x27;happy&#x27;);
+    spawnTarget();
+    scheduleSpawn();
+  }
+
+  function floorComplete() {
+    clearTimers(); clearBoard();
+    if (stats.healOnClear) hp = Math.min(maxHp, hp + 1);
+    floor++;
+    updHud();
+    showShop();
+  }
+
+  function showShop() {
+    inShop = true;
+    grumSay(rnd(FLOORS), &#x27;floor&#x27;);
+    var pool = UPGRADES.slice(), picks = [];
+    for (var i = 0; i &lt; 3 &amp;&amp; pool.length; i++) picks.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);
+    var html = &#x27;&lt;h2&gt;Floor &#x27; + (floor-1) + &#x27; cleared!&lt;/h2&gt;&lt;p&gt;Grum offers you a choice of magic:&lt;/p&gt;&lt;div class=&quot;cards&quot;&gt;&#x27;;
+    picks.forEach(function(u, i){
+      html += &#x27;&lt;div class=&quot;card&quot; data-i=&quot;&#x27;+i+&#x27;&quot;&gt;&lt;div class=&quot;ci&quot;&gt;&#x27;+u.icon+&#x27;&lt;/div&gt;&lt;div class=&quot;ct&quot;&gt;&#x27;+u.t+&#x27;&lt;/div&gt;&lt;div class=&quot;cd&quot;&gt;&#x27;+u.d+&#x27;&lt;/div&gt;&lt;/div&gt;&#x27;;
+    });
+    html += &#x27;&lt;/div&gt;&#x27;;
+    msg.innerHTML = html;
+    msg.classList.remove(&#x27;hidden&#x27;);
+    msg.querySelectorAll(&#x27;.card&#x27;).forEach(function(c){
+      c.addEventListener(&#x27;click&#x27;, function(){
+        picks[parseInt(c.getAttribute(&#x27;data-i&#x27;))].apply();
+        updHud();
+        startFloor();
+      });
+    });
+  }
+
+  function gameOver() {
+    running = false;
+    clearTimers(); clearBoard();
+    grumSay(&#x27;We\&#x27;ll get \&#x27;em next time, hero.&#x27;, &#x27;bomb&#x27;);
+    msg.innerHTML = &#x27;&lt;h2&gt;You Fell in Battle&lt;/h2&gt;&lt;p&gt;Reached Floor &#x27; + floor + &#x27; with &#x27; + score + &#x27; points.&lt;br&gt;Press Start below to try again.&lt;/p&gt;&#x27;;
+    msg.classList.remove(&#x27;hidden&#x27;);
+  }
+
+  function startGame() {
+    running = true; inShop = false;
+    floor = 1; score = 0; hp = 3; maxHp = 3; combo = 1; shields = 0;
+    stats = { life: 1300, bombChance: 0.16, ghostChance: 0.08, goblinChance: 0.10,
+              points: 1, size: 1, healOnClear: false, spawnBoost: 0, comboOn: false,
+              lifeOrbChance: 0, luck: 0, freezeBomb: false, calmGoblins: false };
+    clearTimers();
+    startFloor();
+  }
+
+  function stopGame() {
+    running = false;
+    clearTimers();
+    grumSay(&#x27;Taking a breather? I\&#x27;ll wait here.&#x27;, &#x27;happy&#x27;);
+  }
+
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try { window.parent.postMessage({ type: &#x27;game_input&#x27;, kind: t, key: e.key || null }, &#x27;*&#x27;); } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({ kind: &#x27;iframe_error&#x27;, message: err.message || ev.message || &#x27;(no message)&#x27;, stack: err.stack || null, source: ev.filename || null, line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null, column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({ kind: &#x27;iframe_error&#x27;, message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;, stack: (r &amp;&amp; r.stack) || null, source: &#x27;unhandledrejection&#x27;, line_no: null, column_no: null }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement, b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage({ type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;);
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () { requestAnimationFrame(reportSize); });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () { requestAnimationFrame(reportSize); });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) init();
+  else window.addEventListener(&#x27;load&#x27;, init);
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

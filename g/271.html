@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🍚 Build a Rice Bowl</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>🍚 Build a Rice Bowl</b> &middot; Game 271 &middot; Amateur producer &middot; Basic game: Falling blocks</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #2a1a10; color: #f5e9d8; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 14px; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 700; color: #ffb347; letter-spacing: 1px; }
+  .instructions { font-size: 16px; color: #d8c3a8; max-width: 620px; margin: 0; line-height: 1.35; text-align: center; }
+  .hud { display: flex; gap: 24px; font-size: 18px; }
+  .hud b { color: #8fd97e; }
+  .field { position: relative; width: 420px; height: 400px; background: linear-gradient(#3a2718, #241009); border: 2px solid #5c3d24; border-radius: 10px; overflow: hidden; }
+  .part { position: absolute; width: 60px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 30px; }
+  .slot { position: absolute; bottom: 0; width: 84px; height: 46px; box-sizing: border-box; border-top: 3px solid #5c3d24; display: flex; align-items: center; justify-content: center; font-size: 24px; opacity: .5; }
+  .slot.next { opacity: 1; border-top-color: #ffb347; box-shadow: inset 0 8px 20px rgba(255,179,71,.25); }
+  .slot.done { opacity: 1; background: rgba(143,217,126,.18); border-top-color: #8fd97e; }
+  .catcher { position: absolute; bottom: 40px; width: 92px; height: 22px; background: #d9c7a0; border: 2px solid #a88b5c; border-radius: 0 0 40px 40px; box-shadow: 0 3px 8px rgba(0,0,0,.4); display: flex; align-items: flex-end; justify-content: center; font-size: 18px; }
+  .msg { position: absolute; top: 46%; left: 0; right: 0; text-align: center; font-size: 24px; font-weight: 700; color: #ffdf5d; text-shadow: 0 2px 8px #000; }
+  .pop { position: absolute; font-size: 20px; font-weight: 700; pointer-events: none; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;🍚 Build a Rice Bowl&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Move the bowl with &lt;strong&gt;&amp;larr;&lt;/strong&gt; / &lt;strong&gt;&amp;rarr;&lt;/strong&gt; to catch each falling ingredient for the highlighted layer. Catch them in order to cook the perfect bowl — a wrong catch costs a life!&lt;/p&gt;
+  &lt;div class=&quot;hud&quot;&gt;&lt;span&gt;Layers: &lt;b id=&quot;built&quot;&gt;0&lt;/b&gt;/7&lt;/span&gt;&lt;span&gt;Lives: &lt;b id=&quot;lives&quot;&gt;3&lt;/b&gt;&lt;/span&gt;&lt;span&gt;Score: &lt;b id=&quot;score&quot;&gt;0&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var FIELD_W = 420, FIELD_H = 400;
+  var PARTS = [
+    { emoji: &#x27;🍚&#x27;, color: &#x27;#f0ead6&#x27;, name: &#x27;Rice&#x27; },
+    { emoji: &#x27;🥚&#x27;, color: &#x27;#ffe08a&#x27;, name: &#x27;Egg&#x27; },
+    { emoji: &#x27;🥬&#x27;, color: &#x27;#8fd97e&#x27;, name: &#x27;Greens&#x27; },
+    { emoji: &#x27;🥕&#x27;, color: &#x27;#e8933a&#x27;, name: &#x27;Carrot&#x27; },
+    { emoji: &#x27;🍤&#x27;, color: &#x27;#f2a9a0&#x27;, name: &#x27;Shrimp&#x27; },
+    { emoji: &#x27;🍄&#x27;, color: &#x27;#c07a5a&#x27;, name: &#x27;Mushroom&#x27; },
+    { emoji: &#x27;🌶️&#x27;, color: &#x27;#d9483b&#x27;, name: &#x27;Chili&#x27; }
+  ];
+  var NUM_SLOTS = 7;
+  var slotW = FIELD_W / NUM_SLOTS;
+  var CATCH_W = 92;
+
+  var field, builtEl, livesEl, scoreEl;
+
+  var running = false, rafId = null, lastT = 0, spawnTimer = 0;
+  var catcherX, built, lives, score, activeParts, slotEls, catcherEl, msgEl;
+  var fallSpeed;
+
+  function buildStatic() {
+    field.innerHTML = &#x27;&#x27;;
+    slotEls = [];
+    for (var i = 0; i &lt; NUM_SLOTS; i++) {
+      var s = document.createElement(&#x27;div&#x27;);
+      s.className = &#x27;slot&#x27;;
+      s.style.left = (i * slotW) + &#x27;px&#x27;;
+      s.style.width = slotW + &#x27;px&#x27;;
+      field.appendChild(s);
+      slotEls.push(s);
+    }
+    catcherEl = document.createElement(&#x27;div&#x27;);
+    catcherEl.className = &#x27;catcher&#x27;;
+    catcherEl.textContent = &#x27;🥢&#x27;;
+    field.appendChild(catcherEl);
+    msgEl = document.createElement(&#x27;div&#x27;);
+    msgEl.className = &#x27;msg&#x27;;
+    field.appendChild(msgEl);
+  }
+
+  function refreshSlots() {
+    for (var i = 0; i &lt; NUM_SLOTS; i++) {
+      var s = slotEls[i];
+      s.className = &#x27;slot&#x27;;
+      s.textContent = &#x27;&#x27;;
+      if (i &lt; built) { s.classList.add(&#x27;done&#x27;); s.textContent = PARTS[i].emoji; }
+      else if (i === built) { s.classList.add(&#x27;next&#x27;); s.textContent = PARTS[i].emoji; s.style.opacity = .35; }
+    }
+  }
+
+  function resetState() {
+    catcherX = FIELD_W / 2 - CATCH_W / 2;
+    built = 0; lives = 3; score = 0;
+    fallSpeed = 90;
+    activeParts = [];
+    spawnTimer = 0;
+    builtEl.textContent = 0;
+    livesEl.textContent = 3;
+    scoreEl.textContent = 0;
+    buildStatic();
+    msgEl.textContent = &#x27;&#x27;;
+    refreshSlots();
+    updateCatcher();
+  }
+
+  function updateCatcher() {
+    catcherEl.style.left = catcherX + &#x27;px&#x27;;
+  }
+
+  function spawnPart() {
+    var needIdx = built;
+    if (needIdx &gt;= NUM_SLOTS) return;
+    var idx;
+    if (Math.random() &lt; 0.6) {
+      idx = needIdx;
+    } else {
+      idx = Math.floor(Math.random() * NUM_SLOTS);
+    }
+    var p = PARTS[idx];
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;part&#x27;;
+    el.style.background = p.color;
+    el.textContent = p.emoji;
+    var x = 8 + Math.random() * (FIELD_W - 60 - 16);
+    el.style.left = x + &#x27;px&#x27;;
+    el.style.top = &#x27;-44px&#x27;;
+    field.appendChild(el);
+    activeParts.push({ el: el, x: x, y: -44, idx: idx });
+  }
+
+  function popText(x, y, txt, color) {
+    var p = document.createElement(&#x27;div&#x27;);
+    p.className = &#x27;pop&#x27;;
+    p.textContent = txt;
+    p.style.left = x + &#x27;px&#x27;;
+    p.style.top = y + &#x27;px&#x27;;
+    p.style.color = color;
+    field.appendChild(p);
+    var start = performance.now();
+    (function anim(t){
+      var e = (t - start) / 700;
+      if (e &gt;= 1) { if (p.parentNode) p.parentNode.removeChild(p); return; }
+      p.style.top = (y - e * 30) + &#x27;px&#x27;;
+      p.style.opacity = (1 - e);
+      requestAnimationFrame(anim);
+    })(start);
+  }
+
+  function loop(t) {
+    if (!running) return;
+    if (!lastT) lastT = t;
+    var dt = (t - lastT) / 1000; lastT = t;
+    if (dt &gt; 0.05) dt = 0.05;
+
+    spawnTimer -= dt;
+    if (spawnTimer &lt;= 0) { spawnPart(); spawnTimer = 1.1; }
+
+    var catchTop = FIELD_H - 40 - 22;
+    for (var i = activeParts.length - 1; i &gt;= 0; i--) {
+      var pt = activeParts[i];
+      pt.y += fallSpeed * dt;
+      pt.el.style.top = pt.y + &#x27;px&#x27;;
+      var partBottom = pt.y + 44;
+      var partCenter = pt.x + 30;
+      if (partBottom &gt;= catchTop &amp;&amp; pt.y &lt; catchTop + 22) {
+        if (partCenter &gt;= catcherX &amp;&amp; partCenter &lt;= catcherX + CATCH_W) {
+          handleCatch(pt);
+          field.removeChild(pt.el);
+          activeParts.splice(i, 1);
+          continue;
+        }
+      }
+      if (pt.y &gt; FIELD_H) {
+        if (pt.idx === built) loseLife(pt.x, FIELD_H - 60, &#x27;Missed!&#x27;);
+        field.removeChild(pt.el);
+        activeParts.splice(i, 1);
+      }
+    }
+    rafId = requestAnimationFrame(loop);
+  }
+
+  function handleCatch(pt) {
+    if (pt.idx === built) {
+      built++;
+      score += 10;
+      builtEl.textContent = built;
+      scoreEl.textContent = score;
+      fallSpeed += 10;
+      popText(pt.x, FIELD_H - 90, &#x27;+10 Yum!&#x27;, &#x27;#8fd97e&#x27;);
+      refreshSlots();
+      if (built &gt;= NUM_SLOTS) win();
+    } else {
+      loseLife(pt.x, FIELD_H - 90, &#x27;Wrong!&#x27;);
+    }
+  }
+
+  function loseLife(x, y, txt) {
+    lives--;
+    livesEl.textContent = Math.max(0, lives);
+    popText(x, y, txt, &#x27;#ff7b72&#x27;);
+    if (lives &lt;= 0) gameOver();
+  }
+
+  function win() {
+    running = false;
+    if (rafId) cancelAnimationFrame(rafId);
+    msgEl.innerHTML = &#x27;🍚 Delicious! Score: &#x27; + score;
+  }
+  function gameOver() {
+    running = false;
+    if (rafId) cancelAnimationFrame(rafId);
+    msgEl.textContent = &#x27;Burnt! 🔥 Game over&#x27;;
+  }
+
+  function startGame() {
+    resetState();
+    running = true;
+    lastT = 0;
+    spawnPart();
+    spawnTimer = 1.1;
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(loop);
+  }
+  function stopGame() {
+    running = false;
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (!running) return;
+    if (e.key === &#x27;ArrowLeft&#x27;) { catcherX = Math.max(0, catcherX - 34); updateCatcher(); e.preventDefault(); }
+    else if (e.key === &#x27;ArrowRight&#x27;) { catcherX = Math.min(FIELD_W - CATCH_W, catcherX + 34); updateCatcher(); e.preventDefault(); }
+  });
+
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  function init() {
+    field = document.getElementById(&#x27;field&#x27;);
+    builtEl = document.getElementById(&#x27;built&#x27;);
+    livesEl = document.getElementById(&#x27;lives&#x27;);
+    scoreEl = document.getElementById(&#x27;score&#x27;);
+    resetState();
+  }
+  if (document.readyState === &#x27;loading&#x27;) {
+    document.addEventListener(&#x27;DOMContentLoaded&#x27;, init);
+  } else {
+    init();
+  }
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

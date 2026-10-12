@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>★ SNAKE ARCADE ★</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>★ SNAKE ARCADE ★</b> &middot; Game 252 &middot; Professional producer &middot; Basic game: Snake</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: &#x27;Comic Sans MS&#x27;, &#x27;Trebuchet MS&#x27;, system-ui, sans-serif; margin: 0; padding: 0;
+    background: radial-gradient(circle at 50% 20%, #3a2c6e, #16112e 70%); color: #fff; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 12px; box-sizing: border-box; height: 100%;
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 8px; }
+  h1 { margin: 0; font-size: 28px; font-weight: 800; letter-spacing: 1px;
+    background: linear-gradient(#ffe95c, #ff9d00); -webkit-background-clip: text; background-clip: text; color: transparent;
+    text-shadow: 0 2px 0 rgba(0,0,0,0.35); }
+  .instructions { font-size: 16px; color: #d8d2ff; max-width: 620px; margin: 0; line-height: 1.35; text-align: center;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+  .hud { display: flex; gap: 12px; align-items: center; }
+  .score { font-size: 20px; font-weight: 800; color: #16112e; margin: 0;
+    background: linear-gradient(#ffe95c, #ffb300); padding: 3px 18px; border-radius: 20px;
+    box-shadow: 0 3px 0 #b37400, 0 5px 10px rgba(0,0,0,0.4); }
+  .badge { font-size: 16px; font-weight: 800; padding: 3px 12px; border-radius: 16px; display: none;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4); }
+  .badge.on { display: inline-block; }
+  #shieldBadge { background: linear-gradient(#8fd6ff, #2196f3); color: #fff; }
+  #slowBadge { background: linear-gradient(#d3a4ff, #7e3ff2); color: #fff; }
+  .field { position: relative; width: 600px; height: 440px; flex-shrink: 0; margin: 0;
+    background:
+      linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px) 0 0 / 20px 20px,
+      linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px) 0 0 / 20px 20px,
+      radial-gradient(circle at 50% 40%, #1e63c9, #0b2a63 90%);
+    border-radius: 14px; overflow: hidden;
+    border: 5px solid #ffd23f;
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.5), 0 0 0 3px #b37400, 0 8px 24px rgba(0,0,0,0.6); }
+  .cell { position: absolute; box-sizing: border-box; }
+  .snake { background: radial-gradient(circle at 35% 30%, #7bff8a, #1f9d3a 80%); border-radius: 5px;
+    box-shadow: inset 0 0 4px rgba(255,255,255,0.4); border: 1px solid #0d5c22; }
+  .head { background: radial-gradient(circle at 35% 30%, #baffc4, #16a83a 85%); border-radius: 7px;
+    box-shadow: inset 0 0 6px rgba(255,255,255,0.6), 0 0 8px #4dff6a; border: 1px solid #0d5c22; z-index: 3; }
+  .head.shielded { box-shadow: inset 0 0 6px rgba(255,255,255,0.8), 0 0 12px #4dc3ff, 0 0 4px #fff; border-color: #2196f3; }
+  .enemy { background: radial-gradient(circle at 35% 30%, #ff9d7b, #c0392b 80%); border-radius: 5px;
+    box-shadow: inset 0 0 4px rgba(255,255,255,0.3); border: 1px solid #7a1f14; }
+  .enemyhead { background: radial-gradient(circle at 35% 30%, #ffcbba, #e0402b 85%); border-radius: 7px;
+    box-shadow: inset 0 0 6px rgba(255,255,255,0.5), 0 0 8px #ff5a3c; border: 1px solid #7a1f14; z-index: 2; }
+  .food { border-radius: 50%; background: radial-gradient(circle at 32% 28%, #ff8a8a, #d80000 80%);
+    box-shadow: inset 0 0 5px rgba(255,255,255,0.5), 0 0 12px #ff4d4d; animation: pulse 0.7s ease-in-out infinite alternate; }
+  @keyframes pulse { from { transform: scale(0.82); } to { transform: scale(1.05); } }
+  .wall { background: repeating-linear-gradient(0deg, #8d5524, #8d5524 8px, #a9682f 8px, #a9682f 10px);
+    border-radius: 3px; border: 1px solid #5c3312; box-shadow: inset 0 0 5px rgba(0,0,0,0.5); }
+  .tunnel { border-radius: 50%; box-shadow: inset 0 0 8px rgba(0,0,0,0.6), 0 0 12px currentColor;
+    animation: spin 2s linear infinite; }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  .power { border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 15px;
+    box-shadow: 0 0 12px currentColor, inset 0 0 4px rgba(255,255,255,0.6);
+    animation: bob 0.6s ease-in-out infinite alternate; z-index: 4; }
+  @keyframes bob { from { transform: scale(0.85); } to { transform: scale(1.08); } }
+  .pw-shield { background: radial-gradient(circle at 35% 30%, #bfe8ff, #2196f3); color: #2196f3; }
+  .pw-star { background: radial-gradient(circle at 35% 30%, #fff2a8, #ffb300); color: #ffb300; }
+  .pw-slow { background: radial-gradient(circle at 35% 30%, #e3c4ff, #7e3ff2); color: #7e3ff2; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;★ SNAKE ARCADE ★&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Arrow keys steer you; eat apples to grow and dodge walls and the red enemy snakes. Grab power-ups: 🛡️ shield (pass through anything), ⭐ bonus points, ⏱️ slow-motion — use Start/Restart below.&lt;/p&gt;
+  &lt;div class=&quot;hud&quot;&gt;
+    &lt;div class=&quot;score&quot;&gt;SCORE: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;span class=&quot;badge&quot; id=&quot;shieldBadge&quot;&gt;🛡️ SHIELD&lt;/span&gt;
+    &lt;span class=&quot;badge&quot; id=&quot;slowBadge&quot;&gt;⏱️ SLOW&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var CELL = 20;
+  var COLS = 30, ROWS = 22;
+  var BASE_TICK = 150;
+  var running = false, tickId = null, tickCount = 0;
+  var snake = [];
+  var dir = { x: 1, y: 0 };
+  var pendingDir = { x: 1, y: 0 };
+  var food = { x: 10, y: 10 };
+  var score = 0;
+  var enemies = [];         // each: {body:[{x,y}...]}
+  var powerup = null;       // {x,y,type}
+  var shieldTicks = 0;      // &gt;0 = shield active
+  var slowTicks = 0;        // &gt;0 = slow-mo active
+  var field = document.getElementById(&#x27;field&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var shieldBadge = document.getElementById(&#x27;shieldBadge&#x27;);
+  var slowBadge = document.getElementById(&#x27;slowBadge&#x27;);
+
+  var walls = [
+    {x:6,y:5},{x:7,y:5},{x:8,y:5},{x:9,y:5},
+    {x:22,y:8},{x:22,y:9},{x:22,y:10},{x:22,y:11},
+    {x:8,y:16},{x:9,y:16},{x:8,y:17},{x:9,y:17},
+    {x:18,y:17},{x:19,y:17},{x:20,y:17},{x:21,y:17},
+    {x:15,y:2},{x:15,y:3},{x:15,y:4}
+  ];
+
+  var tunnels = [
+    { a:{x:2,y:2}, b:{x:27,y:19}, color:&#x27;#c14bff&#x27; },
+    { a:{x:27,y:2}, b:{x:2,y:19}, color:&#x27;#2affe0&#x27; }
+  ];
+
+  var POWER_ICON = { shield:&#x27;🛡️&#x27;, star:&#x27;⭐&#x27;, slow:&#x27;⏱️&#x27; };
+
+  function clearField() { field.innerHTML = &#x27;&#x27;; }
+
+  function drawCell(cls, x, y, color, text) {
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;cell &#x27; + cls;
+    el.style.left = (x * CELL) + &#x27;px&#x27;;
+    el.style.top = (y * CELL) + &#x27;px&#x27;;
+    el.style.width = CELL + &#x27;px&#x27;;
+    el.style.height = CELL + &#x27;px&#x27;;
+    if (color) { el.style.background = color; el.style.color = color; }
+    if (text) el.textContent = text;
+    field.appendChild(el);
+  }
+
+  function paint() {
+    clearField();
+    for (var w = 0; w &lt; walls.length; w++) drawCell(&#x27;wall&#x27;, walls[w].x, walls[w].y);
+    for (var t = 0; t &lt; tunnels.length; t++) {
+      drawCell(&#x27;tunnel&#x27;, tunnels[t].a.x, tunnels[t].a.y, tunnels[t].color);
+      drawCell(&#x27;tunnel&#x27;, tunnels[t].b.x, tunnels[t].b.y, tunnels[t].color);
+    }
+    if (powerup) drawCell(&#x27;power pw-&#x27; + powerup.type, powerup.x, powerup.y, null, POWER_ICON[powerup.type]);
+    drawCell(&#x27;food&#x27;, food.x, food.y);
+    for (var e = 0; e &lt; enemies.length; e++) {
+      var b = enemies[e].body;
+      for (var i = 0; i &lt; b.length; i++) drawCell(i === 0 ? &#x27;enemyhead&#x27; : &#x27;enemy&#x27;, b[i].x, b[i].y);
+    }
+    for (var s = 0; s &lt; snake.length; s++) {
+      var cls = s === 0 ? (&#x27;head&#x27; + (shieldTicks &gt; 0 ? &#x27; shielded&#x27; : &#x27;&#x27;)) : &#x27;snake&#x27;;
+      drawCell(cls, snake[s].x, snake[s].y);
+    }
+  }
+
+  function isWall(x, y) {
+    for (var i = 0; i &lt; walls.length; i++) if (walls[i].x === x &amp;&amp; walls[i].y === y) return true;
+    return false;
+  }
+  function isTunnel(x, y) {
+    for (var t = 0; t &lt; tunnels.length; t++) {
+      if (tunnels[t].a.x === x &amp;&amp; tunnels[t].a.y === y) return tunnels[t].b;
+      if (tunnels[t].b.x === x &amp;&amp; tunnels[t].b.y === y) return tunnels[t].a;
+    }
+    return null;
+  }
+  function inSnake(x, y) {
+    for (var i = 0; i &lt; snake.length; i++) if (snake[i].x === x &amp;&amp; snake[i].y === y) return true;
+    return false;
+  }
+  function inAnyEnemy(x, y) {
+    for (var e = 0; e &lt; enemies.length; e++) {
+      var b = enemies[e].body;
+      for (var i = 0; i &lt; b.length; i++) if (b[i].x === x &amp;&amp; b[i].y === y) return true;
+    }
+    return false;
+  }
+  function cellOccupied(x, y) {
+    if (inSnake(x, y)) return true;
+    if (inAnyEnemy(x, y)) return true;
+    if (isWall(x, y)) return true;
+    if (isTunnel(x, y)) return true;
+    if (powerup &amp;&amp; powerup.x === x &amp;&amp; powerup.y === y) return true;
+    if (food.x === x &amp;&amp; food.y === y) return true;
+    return false;
+  }
+
+  function randFreeCell() {
+    for (var tries = 0; tries &lt; 400; tries++) {
+      var x = Math.floor(Math.random() * COLS);
+      var y = Math.floor(Math.random() * ROWS);
+      if (!cellOccupied(x, y)) return { x: x, y: y };
+    }
+    return null;
+  }
+
+  function placeFood() { var c = randFreeCell(); if (c) food = c; }
+
+  function spawnPowerup() {
+    var c = randFreeCell();
+    if (!c) return;
+    var types = [&#x27;shield&#x27;, &#x27;star&#x27;, &#x27;slow&#x27;];
+    c.type = types[Math.floor(Math.random() * types.length)];
+    c.life = 60; // ticks before it disappears
+    powerup = c;
+  }
+
+  function initSnake() {
+    snake = [ { x: 5, y: 10 }, { x: 4, y: 10 }, { x: 3, y: 10 } ];
+    dir = { x: 1, y: 0 };
+    pendingDir = { x: 1, y: 0 };
+  }
+
+  function initEnemies() {
+    enemies = [
+      { body: [ {x:26,y:4}, {x:27,y:4}, {x:28,y:4} ] },
+      { body: [ {x:26,y:18}, {x:27,y:18}, {x:28,y:18} ] }
+    ];
+  }
+
+  // Enemy chooses a step toward the player, avoiding walls/itself when possible.
+  function moveEnemy(en) {
+    var head = en.body[0];
+    var target = snake[0];
+    var opts = [
+      { x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: -1 }
+    ];
+    // Sort by how much each option reduces distance to player.
+    opts.sort(function(a, b) {
+      var da = Math.abs(head.x + a.x - target.x) + Math.abs(head.y + a.y - target.y);
+      var db = Math.abs(head.x + b.x - target.x) + Math.abs(head.y + b.y - target.y);
+      return da - db;
+    });
+    // occasionally act randomly so it isn&#x27;t perfect
+    if (Math.random() &lt; 0.2) opts.sort(function() { return Math.random() - 0.5; });
+    for (var i = 0; i &lt; opts.length; i++) {
+      var nx = head.x + opts[i].x, ny = head.y + opts[i].y;
+      if (nx &lt; 0 || nx &gt;= COLS || ny &lt; 0 || ny &gt;= ROWS) continue;
+      if (isWall(nx, ny)) continue;
+      // avoid stepping on its own body
+      var selfHit = false;
+      for (var j = 0; j &lt; en.body.length - 1; j++) if (en.body[j].x === nx &amp;&amp; en.body[j].y === ny) { selfHit = true; break; }
+      if (selfHit) continue;
+      en.body.unshift({ x: nx, y: ny });
+      en.body.pop();
+      return;
+    }
+    // stuck: stay
+  }
+
+  function collidesWithEnemy(x, y) {
+    return inAnyEnemy(x, y);
+  }
+
+  function applyPowerup(type) {
+    if (type === &#x27;shield&#x27;) { shieldTicks = 45; }
+    else if (type === &#x27;star&#x27;) { score += 5; scoreEl.textContent = score; }
+    else if (type === &#x27;slow&#x27;) { slowTicks = 45; }
+    updateBadges();
+    restartTimer();
+  }
+
+  function updateBadges() {
+    shieldBadge.classList.toggle(&#x27;on&#x27;, shieldTicks &gt; 0);
+    slowBadge.classList.toggle(&#x27;on&#x27;, slowTicks &gt; 0);
+  }
+
+  function currentInterval() {
+    return slowTicks &gt; 0 ? BASE_TICK * 1.8 : BASE_TICK;
+  }
+  function restartTimer() {
+    if (tickId) clearInterval(tickId);
+    tickId = setInterval(tick, currentInterval());
+  }
+
+  function tick() {
+    if (!running) return;
+    tickCount++;
+
+    if (!(pendingDir.x === -dir.x &amp;&amp; pendingDir.y === -dir.y)) dir = pendingDir;
+    var head = snake[0];
+    var nx = head.x + dir.x, ny = head.y + dir.y;
+
+    var shielded = shieldTicks &gt; 0;
+
+    if (nx &lt; 0 || nx &gt;= COLS || ny &lt; 0 || ny &gt;= ROWS) { endGame(); return; }
+    if (isWall(nx, ny) &amp;&amp; !shielded) { endGame(); return; }
+    // if shielded and moving into a wall, just skip past it into the next open logic (treat wall as passable)
+    var exit = isTunnel(nx, ny);
+    if (exit) { nx = exit.x; ny = exit.y; }
+
+    var ateFood = (nx === food.x &amp;&amp; ny === food.y);
+    var body = ateFood ? snake : snake.slice(0, snake.length - 1);
+    for (var i = 0; i &lt; body.length; i++) {
+      if (body[i].x === nx &amp;&amp; body[i].y === ny) { endGame(); return; }
+    }
+    // Enemy collision (unless shielded)
+    if (!shielded &amp;&amp; collidesWithEnemy(nx, ny)) { endGame(); return; }
+
+    snake.unshift({ x: nx, y: ny });
+
+    var gotPower = powerup &amp;&amp; powerup.x === nx &amp;&amp; powerup.y === ny;
+    if (ateFood) {
+      score += 1;
+      scoreEl.textContent = score;
+      placeFood();
+    } else {
+      snake.pop();
+    }
+    if (gotPower) { var pt = powerup.type; powerup = null; applyPowerup(pt); }
+
+    // Move enemies (they move a bit slower — every other tick)
+    if (tickCount % 2 === 0) {
+      for (var e = 0; e &lt; enemies.length; e++) moveEnemy(enemies[e]);
+      // check head-on collision after enemies moved
+      if (!shielded &amp;&amp; collidesWithEnemy(snake[0].x, snake[0].y)) { endGame(); return; }
+    }
+
+    // Powerup lifecycle
+    if (powerup) { powerup.life--; if (powerup.life &lt;= 0) powerup = null; }
+    else if (tickCount % 40 === 0) { spawnPowerup(); }
+
+    // Timers
+    if (shieldTicks &gt; 0) { shieldTicks--; if (shieldTicks === 0) updateBadges(); }
+    if (slowTicks &gt; 0) { slowTicks--; if (slowTicks === 0) { updateBadges(); restartTimer(); } }
+
+    paint();
+  }
+
+  function endGame() {
+    running = false;
+    if (tickId) { clearInterval(tickId); tickId = null; }
+  }
+
+  function startGame() {
+    if (running) return;
+    score = 0;
+    scoreEl.textContent = &#x27;0&#x27;;
+    tickCount = 0;
+    shieldTicks = 0;
+    slowTicks = 0;
+    powerup = null;
+    updateBadges();
+    initSnake();
+    initEnemies();
+    placeFood();
+    paint();
+    running = true;
+    restartTimer();
+  }
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    if (tickId) { clearInterval(tickId); tickId = null; }
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27;) { pendingDir = { x: -1, y: 0 }; e.preventDefault(); }
+    else if (e.key === &#x27;ArrowRight&#x27;) { pendingDir = { x: 1, y: 0 }; e.preventDefault(); }
+    else if (e.key === &#x27;ArrowUp&#x27;) { pendingDir = { x: 0, y: -1 }; e.preventDefault(); }
+    else if (e.key === &#x27;ArrowDown&#x27;) { pendingDir = { x: 0, y: 1 }; e.preventDefault(); }
+  });
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  initSnake();
+  initEnemies();
+  paint();
+&lt;/script&gt;
+
+&lt;script&gt;
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

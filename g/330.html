@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🐺 Wolf Pup Breakout</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>🐺 Wolf Pup Breakout</b> &middot; Game 330 &middot; Amateur producer &middot; Basic game: Paddle and ball</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #fdf4fb; color: #4a3f52; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 10px 14px; box-sizing: border-box; height: 100%; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  h1 { margin: 0; font-size: 24px; font-weight: 700; background: linear-gradient(90deg,#ff9ec6,#a78bfa,#7dd3fc); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .instructions { font-size: 16px; color: #7a6f82; max-width: 640px; margin: 0; line-height: 1.35; text-align: center; }
+  .topbar { display: flex; gap: 16px; font-size: 15px; align-items: center; }
+  .topbar b { color: #a855f7; }
+  .layout { display: flex; gap: 8px; }
+  .panel { width: 130px; background: #fce7f6; border-radius: 10px; padding: 6px; box-sizing: border-box; overflow-y: auto; max-height: 430px; }
+  .panel h3 { margin: 2px 0 6px; font-size: 13px; text-align: center; color: #a855f7; }
+  .wolfcard { background: #fff; border-radius: 8px; padding: 4px; margin-bottom: 5px; font-size: 11px; border: 2px solid transparent; }
+  .wolfcard.lead { border-color: #f472b6; }
+  .wolfcard.egg { background: #fef9c3; }
+  .wolfcard .emoji { font-size: 20px; text-align: center; }
+  .wolfcard .nm { font-weight: 700; text-align: center; color:#6b5b73; }
+  .wolfcard .st { color: #8a7f92; }
+  .field { position: relative; width: 470px; height: 430px; flex-shrink: 0; background: linear-gradient(160deg,#eef2ff,#fce7f6); border-radius: 10px; overflow: hidden; box-shadow: inset 0 0 0 2px #f5d0fe; }
+  .paddle { position: absolute; height: 14px; border-radius: 8px; bottom: 10px; background: linear-gradient(90deg,#f472b6,#a78bfa); box-shadow: 0 2px 6px rgba(167,139,250,.5); }
+  .ball { position: absolute; width: 16px; height: 16px; border-radius: 50%; background: radial-gradient(circle at 30% 30%,#a78bfa,#5b21b6); box-shadow: 0 0 10px #5b21b6; }
+  .brick { position: absolute; border-radius: 5px; box-sizing: border-box; }
+  .drop { position: absolute; font-size: 18px; text-align:center; }
+  .pup { position: absolute; font-size: 26px; text-align:center; pointer-events:none; }
+  .eggbar { display:flex; gap:6px; font-size:13px; align-items:center; flex-wrap:wrap; justify-content:center; }
+  .eggbar span { background:#fff; border-radius:6px; padding:2px 6px; }
+  .msg { position:absolute; top:8px; left:0; right:0; text-align:center; font-size:15px; font-weight:700; color:#a855f7; pointer-events:none; }
+  .overlay { position:absolute; inset:0; background:rgba(253,244,251,.95); display:none; flex-direction:column; align-items:center; justify-content:flex-start; gap:8px; text-align:center; padding:12px; box-sizing:border-box; overflow-y:auto; }
+  .overlay.show { display:flex; }
+  .overlay h2 { margin:2px 0; font-size:22px; color:#a855f7; }
+  .overlay p { margin:0; font-size:14px; color:#7a6f82; }
+  .picklist { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; }
+  .pickcard { background:#fff; border-radius:8px; padding:5px; width:96px; font-size:11px; cursor:pointer; border:2px solid transparent; }
+  .pickcard.sel { border-color:#7dd3fc; background:#eff6ff; }
+  .pickcard .nm { font-weight:700; text-align:center; color:#6b5b73; }
+  .pickcard .st { color:#8a7f92; text-align:center; }
+  .btnrow { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin-top:4px; }
+  .obtn { font-size:13px; padding:6px 10px; border:none; border-radius:8px; background:#c4b5fd; color:#fff; cursor:pointer; }
+  .obtn:disabled { opacity:.4; cursor:default; }
+  .obtn.pink { background:#f472b6; }
+  .obtn.blue { background:#7dd3fc; }
+  .gameover h2 { color:#f472b6; font-size:28px; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;🐺 Wolf Pup Breakout&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Move the paddle with ← → to bounce the purple ball and smash bricks; catch falling traits to grow your egg, which hatches when the round clears. Between rounds you can breed two wolves, keep collecting, or switch your lead wolf — miss the ball and lose one of three lives.&lt;/p&gt;
+  &lt;div class=&quot;topbar&quot;&gt;
+    &lt;div&gt;Score: &lt;b id=&quot;score&quot;&gt;0&lt;/b&gt;&lt;/div&gt;
+    &lt;div&gt;Round: &lt;b id=&quot;round&quot;&gt;1&lt;/b&gt;&lt;/div&gt;
+    &lt;div&gt;Lives: &lt;b id=&quot;lives&quot;&gt;❤️❤️❤️&lt;/b&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;eggbar&quot; id=&quot;eggbar&quot;&gt;&lt;/div&gt;
+  &lt;div class=&quot;layout&quot;&gt;
+    &lt;div class=&quot;panel&quot;&gt;
+      &lt;h3&gt;Your Pack&lt;/h3&gt;
+      &lt;div id=&quot;wolflist&quot;&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;
+      &lt;div class=&quot;msg&quot; id=&quot;msg&quot;&gt;&lt;/div&gt;
+      &lt;div class=&quot;paddle&quot; id=&quot;paddle&quot;&gt;&lt;/div&gt;
+      &lt;div class=&quot;ball&quot; id=&quot;ball&quot;&gt;&lt;/div&gt;
+
+      &lt;div class=&quot;overlay&quot; id=&quot;choice&quot;&gt;
+        &lt;h2&gt;Round Complete!&lt;/h2&gt;
+        &lt;p id=&quot;choiceHatch&quot;&gt;&lt;/p&gt;
+        &lt;p&gt;&lt;b&gt;Breed two wolves&lt;/b&gt; (pick 2 — stats add up, no trait collecting), or start a fresh egg you can grow.&lt;/p&gt;
+        &lt;div class=&quot;picklist&quot; id=&quot;pickWolves&quot;&gt;&lt;/div&gt;
+        &lt;div class=&quot;btnrow&quot;&gt;
+          &lt;button class=&quot;obtn&quot; id=&quot;breedGo&quot; disabled&gt;🐣 Breed selected&lt;/button&gt;
+          &lt;button class=&quot;obtn pink&quot; id=&quot;freshGo&quot;&gt;🥚 Fresh egg &amp;amp; collect&lt;/button&gt;
+        &lt;/div&gt;
+        &lt;p style=&quot;margin-top:4px;&quot;&gt;Switch your lead wolf (moves it to top of pack):&lt;/p&gt;
+        &lt;div class=&quot;btnrow&quot; id=&quot;switchRow&quot;&gt;&lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;overlay gameover&quot; id=&quot;gameover&quot;&gt;
+        &lt;h2&gt;Game Over&lt;/h2&gt;
+        &lt;p id=&quot;goText&quot;&gt;&lt;/p&gt;
+        &lt;p&gt;Press the Start/Restart button below to play again.&lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+[&#x27;keydown&#x27;,&#x27;mousedown&#x27;,&#x27;touchstart&#x27;].forEach(function(t){
+  window.addEventListener(t,function(e){
+    try{ window.parent.postMessage({type:&#x27;game_input&#x27;,kind:t,key:e.key||null},&#x27;*&#x27;); }catch(_){}
+  },true);
+});
+
+var FIELD_W=470, FIELD_H=430;
+var PADDLE_H=14, PADDLE_BOTTOM=10, PADDLE_SPEED=7;
+var BALL_SIZE=16;
+var ROUND_SPEED=4.2;
+var running=false, animId=null, keysDown={};
+var paddleX, paddleW, ballX, ballY, ballVX, ballVY;
+var score=0, round=1, lives=3;
+var bricks=[], drops=[], pups=[];
+var currentEgg=null; // {name,strength,speed,size,ferocity, locked}
+var pack=[];
+var pickSel=[];
+
+var paddle=document.getElementById(&#x27;paddle&#x27;);
+var ball=document.getElementById(&#x27;ball&#x27;);
+var scoreEl=document.getElementById(&#x27;score&#x27;);
+var roundEl=document.getElementById(&#x27;round&#x27;);
+var livesEl=document.getElementById(&#x27;lives&#x27;);
+var field=document.getElementById(&#x27;field&#x27;);
+var msgEl=document.getElementById(&#x27;msg&#x27;);
+var eggbar=document.getElementById(&#x27;eggbar&#x27;);
+var wolflist=document.getElementById(&#x27;wolflist&#x27;);
+var gameoverEl=document.getElementById(&#x27;gameover&#x27;);
+var goText=document.getElementById(&#x27;goText&#x27;);
+var choiceEl=document.getElementById(&#x27;choice&#x27;);
+var choiceHatch=document.getElementById(&#x27;choiceHatch&#x27;);
+var pickWolves=document.getElementById(&#x27;pickWolves&#x27;);
+var breedGo=document.getElementById(&#x27;breedGo&#x27;);
+var freshGo=document.getElementById(&#x27;freshGo&#x27;);
+var switchRow=document.getElementById(&#x27;switchRow&#x27;);
+
+var TRAITS=[{k:&#x27;strength&#x27;,e:&#x27;💪&#x27;},{k:&#x27;speed&#x27;,e:&#x27;⚡&#x27;},{k:&#x27;size&#x27;,e:&#x27;🔷&#x27;},{k:&#x27;ferocity&#x27;,e:&#x27;🔥&#x27;}];
+var BRICK_COLORS=[&#x27;#fbcfe8&#x27;,&#x27;#ddd6fe&#x27;,&#x27;#bae6fd&#x27;,&#x27;#bbf7d0&#x27;,&#x27;#fef9c3&#x27;,&#x27;#fed7aa&#x27;];
+var WOLF_NAMES=[&#x27;Luna&#x27;,&#x27;Ash&#x27;,&#x27;Nova&#x27;,&#x27;Sable&#x27;,&#x27;Frost&#x27;,&#x27;Ember&#x27;,&#x27;Willow&#x27;,&#x27;Storm&#x27;,&#x27;Clover&#x27;,&#x27;Onyx&#x27;,&#x27;Pippin&#x27;,&#x27;Juno&#x27;];
+var nameIdx=0;
+function nextName(){ var n=WOLF_NAMES[nameIdx % WOLF_NAMES.length]+(nameIdx&gt;=WOLF_NAMES.length?&#x27; &#x27;+nameIdx:&#x27;&#x27;); nameIdx++; return n; }
+
+function newEgg(locked){
+  currentEgg={name:nextName(),strength:0,speed:0,size:0,ferocity:0,locked:!!locked};
+}
+
+function makeBricks(){
+  bricks=[];
+  var cols=8, rows=4, pad=4;
+  var bw=(FIELD_W-pad*(cols+1))/cols, bh=18;
+  for(var r=0;r&lt;rows;r++)for(var c=0;c&lt;cols;c++){
+    bricks.push({x:pad+c*(bw+pad),y:30+r*(bh+pad),w:bw,h:bh,color:BRICK_COLORS[(r+c)%BRICK_COLORS.length],alive:true,el:null});
+  }
+  renderBricks();
+}
+function renderBricks(){
+  document.querySelectorAll(&#x27;.brick&#x27;).forEach(function(b){b.remove();});
+  bricks.forEach(function(b){
+    if(!b.alive)return;
+    var el=document.createElement(&#x27;div&#x27;);
+    el.className=&#x27;brick&#x27;;
+    el.style.left=b.x+&#x27;px&#x27;; el.style.top=b.y+&#x27;px&#x27;;
+    el.style.width=b.w+&#x27;px&#x27;; el.style.height=b.h+&#x27;px&#x27;;
+    el.style.background=b.color;
+    field.appendChild(el); b.el=el;
+  });
+}
+function paddleWidth(){ return 90; }
+function paint(){
+  paddle.style.left=paddleX+&#x27;px&#x27;; paddle.style.width=paddleW+&#x27;px&#x27;;
+  ball.style.left=ballX+&#x27;px&#x27;; ball.style.top=ballY+&#x27;px&#x27;;
+}
+function resetBall(){
+  ballX=(FIELD_W-BALL_SIZE)/2; ballY=FIELD_H-120;
+  ballVX=(Math.random()&lt;0.5?-1:1)*ROUND_SPEED; ballVY=-ROUND_SPEED;
+}
+
+function beginRound(){
+  paddleW=paddleWidth(); paddleX=(FIELD_W-paddleW)/2;
+  for(var k in keysDown)keysDown[k]=false;
+  makeBricks(); clearDrops(); clearPups(); resetBall(); spawnPups();
+  paint(); updateEggBar(); renderPack();
+  flash(&#x27;Round &#x27;+round+&#x27;!&#x27;);
+}
+function flash(t){ msgEl.textContent=t; setTimeout(function(){ if(msgEl.textContent===t)msgEl.textContent=&#x27;&#x27;; },1200); }
+function clearDrops(){ document.querySelectorAll(&#x27;.drop&#x27;).forEach(function(d){d.remove();}); drops=[]; }
+function clearPups(){ document.querySelectorAll(&#x27;.pup&#x27;).forEach(function(d){d.remove();}); pups.forEach(function(p){p.el=null;}); }
+
+function spawnPups(){
+  clearPups();
+  pack.forEach(function(w){
+    var el=document.createElement(&#x27;div&#x27;);
+    el.className=&#x27;pup&#x27;; el.textContent=&#x27;🐺&#x27;; field.appendChild(el);
+    var sp=1.2+w.speed*0.5;
+    pups.push({el:el,w:w,x:Math.random()*(FIELD_W-30),y:100+Math.random()*150,
+      vx:(Math.random()&lt;.5?-1:1)*sp,vy:(Math.random()&lt;.5?-1:1)*sp});
+  });
+}
+function dropTrait(bx,by){
+  if(currentEgg &amp;&amp; currentEgg.locked) return; // locked egg: no trait collecting
+  if(Math.random()&lt;0.35){
+    var t=TRAITS[Math.floor(Math.random()*TRAITS.length)];
+    var el=document.createElement(&#x27;div&#x27;);
+    el.className=&#x27;drop&#x27;; el.textContent=t.e;
+    el.style.left=bx+&#x27;px&#x27;; el.style.top=by+&#x27;px&#x27;;
+    field.appendChild(el);
+    drops.push({x:bx,y:by,vy:2.0,trait:t.k,el:el});
+  }
+}
+function updateEggBar(){
+  eggbar.innerHTML=&#x27;&#x27;;
+  if(currentEgg){
+    var nm=document.createElement(&#x27;span&#x27;);
+    nm.innerHTML=&#x27;🥚 &lt;b&gt;&#x27;+currentEgg.name+&#x27;&lt;/b&gt;&#x27;+(currentEgg.locked?&#x27; 🔒&#x27;:&#x27;&#x27;);
+    nm.style.background=&#x27;#fef9c3&#x27;; eggbar.appendChild(nm);
+  }
+  TRAITS.forEach(function(t){
+    var v=currentEgg?currentEgg[t.k]:0;
+    var s=document.createElement(&#x27;span&#x27;);
+    s.innerHTML=t.e+&#x27; &#x27;+t.k[0].toUpperCase()+t.k.slice(1)+&#x27;: &lt;b&gt;&#x27;+v+&#x27;&lt;/b&gt;&#x27;;
+    eggbar.appendChild(s);
+  });
+}
+function renderPack(){
+  wolflist.innerHTML=&#x27;&#x27;;
+  if(currentEgg){
+    var ec=document.createElement(&#x27;div&#x27;);
+    ec.className=&#x27;wolfcard egg&#x27;;
+    ec.innerHTML=&#x27;&lt;div class=&quot;emoji&quot;&gt;🥚&lt;/div&gt;&lt;div class=&quot;nm&quot;&gt;&#x27;+currentEgg.name+(currentEgg.locked?&#x27; 🔒&#x27;:&#x27;&#x27;)+&#x27;&lt;/div&gt;&#x27;+
+      &#x27;&lt;div class=&quot;st&quot;&gt;💪&#x27;+currentEgg.strength+&#x27; ⚡&#x27;+currentEgg.speed+&#x27;&lt;br&gt;🔷&#x27;+currentEgg.size+&#x27; 🔥&#x27;+currentEgg.ferocity+&#x27;&lt;br&gt;&lt;i&gt;incubating…&lt;/i&gt;&lt;/div&gt;&#x27;;
+    wolflist.appendChild(ec);
+  }
+  if(pack.length===0 &amp;&amp; !currentEgg){
+    var d=document.createElement(&#x27;div&#x27;);
+    d.style.fontSize=&#x27;11px&#x27;; d.style.textAlign=&#x27;center&#x27;; d.style.color=&#x27;#a89bb0&#x27;;
+    d.textContent=&#x27;No wolves yet.&#x27;; wolflist.appendChild(d);
+  }
+  pack.forEach(function(w,i){
+    var c=document.createElement(&#x27;div&#x27;);
+    c.className=&#x27;wolfcard&#x27;+(i===0?&#x27; lead&#x27;:&#x27;&#x27;);
+    c.innerHTML=&#x27;&lt;div class=&quot;emoji&quot;&gt;🐺&lt;/div&gt;&lt;div class=&quot;nm&quot;&gt;&#x27;+w.name+(i===0?&#x27; ⭐&#x27;:&#x27;&#x27;)+&#x27;&lt;/div&gt;&#x27;+
+      &#x27;&lt;div class=&quot;st&quot;&gt;💪&#x27;+w.strength+&#x27; ⚡&#x27;+w.speed+&#x27;&lt;br&gt;🔷&#x27;+w.size+&#x27; 🔥&#x27;+w.ferocity+&#x27;&lt;/div&gt;&#x27;;
+    wolflist.appendChild(c);
+  });
+}
+
+function hatchEgg(){
+  if(!currentEgg)return null;
+  var w={name:currentEgg.name,strength:currentEgg.strength,speed:currentEgg.speed,size:currentEgg.size,ferocity:currentEgg.ferocity};
+  pack.unshift(w);
+  currentEgg=null;
+  return w;
+}
+
+function loseLife(){
+  lives--;
+  livesEl.textContent=&#x27;❤️&#x27;.repeat(Math.max(0,lives))||&#x27;—&#x27;;
+  if(lives&lt;=0){ endGame(); }
+  else { flash(&#x27;Life lost! &#x27;+lives+&#x27; left&#x27;); resetBall(); }
+}
+function endGame(){
+  running=false;
+  if(animId){cancelAnimationFrame(animId);animId=null;}
+  goText.textContent=&#x27;Final score: &#x27;+score+&#x27; • Wolves raised: &#x27;+pack.length;
+  gameoverEl.classList.add(&#x27;show&#x27;);
+}
+
+// ---- between-round choice screen ----
+function renderPicks(){
+  pickWolves.innerHTML=&#x27;&#x27;;
+  pack.forEach(function(w,i){
+    var c=document.createElement(&#x27;div&#x27;);
+    c.className=&#x27;pickcard&#x27;+(pickSel.indexOf(i)&gt;=0?&#x27; sel&#x27;:&#x27;&#x27;);
+    c.innerHTML=&#x27;&lt;div class=&quot;nm&quot;&gt;🐺 &#x27;+w.name+&#x27;&lt;/div&gt;&lt;div class=&quot;st&quot;&gt;💪&#x27;+w.strength+&#x27; ⚡&#x27;+w.speed+&#x27;&lt;br&gt;🔷&#x27;+w.size+&#x27; 🔥&#x27;+w.ferocity+&#x27;&lt;/div&gt;&#x27;;
+    c.addEventListener(&#x27;click&#x27;,function(){
+      var p=pickSel.indexOf(i);
+      if(p&gt;=0)pickSel.splice(p,1);
+      else{ pickSel.push(i); if(pickSel.length&gt;2)pickSel.shift(); }
+      renderPicks(); breedGo.disabled=(pickSel.length!==2);
+    });
+    pickWolves.appendChild(c);
+  });
+  switchRow.innerHTML=&#x27;&#x27;;
+  pack.forEach(function(w,i){
+    if(i===0)return;
+    var b=document.createElement(&#x27;button&#x27;);
+    b.className=&#x27;obtn blue&#x27;; b.textContent=&#x27;→ &#x27;+w.name;
+    b.addEventListener(&#x27;click&#x27;,function(){
+      var mv=pack.splice(i,1)[0]; pack.unshift(mv);
+      renderPack(); renderPicks();
+      flash(mv.name+&#x27; now leads!&#x27;);
+    });
+    switchRow.appendChild(b);
+  });
+}
+function showChoice(hatched){
+  choiceHatch.textContent=(hatched? &#x27;🐣 &#x27;+hatched.name+&#x27; hatched! &#x27;:&#x27;&#x27;)+&#x27;Round &#x27;+round+&#x27; cleared.&#x27;;
+  pickSel=[]; breedGo.disabled=true;
+  renderPicks(); renderPack(); updateEggBar();
+  choiceEl.classList.add(&#x27;show&#x27;);
+}
+breedGo.addEventListener(&#x27;click&#x27;,function(){
+  if(pickSel.length!==2)return;
+  var a=pack[pickSel[0]], b=pack[pickSel[1]];
+  currentEgg={name:nextName(),
+    strength:a.strength+b.strength, speed:a.speed+b.speed,
+    size:a.size+b.size, ferocity:a.ferocity+b.ferocity, locked:true};
+  choiceEl.classList.remove(&#x27;show&#x27;);
+  advanceRound();
+});
+freshGo.addEventListener(&#x27;click&#x27;,function(){
+  newEgg(false);
+  choiceEl.classList.remove(&#x27;show&#x27;);
+  advanceRound();
+});
+function advanceRound(){
+  round++; roundEl.textContent=round;
+  running=true; beginRound();
+  animId=requestAnimationFrame(tick);
+}
+
+function tick(){
+  if(!running)return;
+  if(keysDown[&#x27;ArrowLeft&#x27;])paddleX-=PADDLE_SPEED;
+  if(keysDown[&#x27;ArrowRight&#x27;])paddleX+=PADDLE_SPEED;
+  paddleX=Math.max(0,Math.min(FIELD_W-paddleW,paddleX));
+
+  ballX+=ballVX; ballY+=ballVY;
+  if(ballX&lt;=0){ballX=0;ballVX=-ballVX;}
+  if(ballX+BALL_SIZE&gt;=FIELD_W){ballX=FIELD_W-BALL_SIZE;ballVX=-ballVX;}
+  if(ballY&lt;=0){ballY=0;ballVY=-ballVY;}
+
+  var paddleTop=FIELD_H-PADDLE_BOTTOM-PADDLE_H;
+  if(ballVY&gt;0 &amp;&amp; ballY+BALL_SIZE&gt;=paddleTop &amp;&amp; ballY+BALL_SIZE&lt;=paddleTop+PADDLE_H+6 &amp;&amp;
+     ballX+BALL_SIZE&gt;=paddleX &amp;&amp; ballX&lt;=paddleX+paddleW){
+    ballVY=-Math.abs(ballVY); ballY=paddleTop-BALL_SIZE;
+    var hitPos=(ballX+BALL_SIZE/2-paddleX)/paddleW-0.5;
+    ballVX=hitPos*ROUND_SPEED*2;
+    var mag=Math.sqrt(ballVX*ballVX+ballVY*ballVY)||1;
+    ballVX=ballVX/mag*ROUND_SPEED; ballVY=ballVY/mag*ROUND_SPEED;
+  }
+
+  bricks.forEach(function(b){
+    if(!b.alive)return;
+    if(ballX+BALL_SIZE&gt;b.x &amp;&amp; ballX&lt;b.x+b.w &amp;&amp; ballY+BALL_SIZE&gt;b.y &amp;&amp; ballY&lt;b.y+b.h){
+      b.alive=false; if(b.el)b.el.remove();
+      ballVY=-ballVY; score+=10; scoreEl.textContent=score;
+      dropTrait(b.x+b.w/2-9,b.y);
+    }
+  });
+
+  pups.forEach(function(p){
+    p.x+=p.vx; p.y+=p.vy;
+    if(p.x&lt;=0){p.x=0;p.vx=-p.vx;}
+    if(p.x&gt;=FIELD_W-26){p.x=FIELD_W-26;p.vx=-p.vx;}
+    if(p.y&lt;=0){p.y=0;p.vy=-p.vy;}
+    if(p.y&gt;=FIELD_H-90){p.y=FIELD_H-90;p.vy=-p.vy;}
+    bricks.forEach(function(b){
+      if(!b.alive)return;
+      if(p.x+26&gt;b.x &amp;&amp; p.x&lt;b.x+b.w &amp;&amp; p.y+26&gt;b.y &amp;&amp; p.y&lt;b.y+b.h){
+        b.alive=false; if(b.el)b.el.remove();
+        p.vy=-p.vy; score+=5; scoreEl.textContent=score;
+        dropTrait(b.x+b.w/2-9,b.y);
+      }
+    });
+    p.el.style.left=p.x+&#x27;px&#x27;; p.el.style.top=p.y+&#x27;px&#x27;;
+  });
+
+  for(var i=drops.length-1;i&gt;=0;i--){
+    var d=drops[i];
+    d.y+=d.vy; d.el.style.top=d.y+&#x27;px&#x27;;
+    if(d.y+18&gt;=paddleTop &amp;&amp; d.x+18&gt;=paddleX &amp;&amp; d.x&lt;=paddleX+paddleW){
+      if(currentEgg &amp;&amp; !currentEgg.locked){ currentEgg[d.trait]+=1; }
+      updateEggBar(); renderPack();
+      d.el.remove(); drops.splice(i,1);
+      flash(&#x27;+1 &#x27;+d.trait+&#x27;!&#x27;);
+    } else if(d.y&gt;FIELD_H){ d.el.remove(); drops.splice(i,1); }
+  }
+
+  var anyAlive=bricks.some(function(b){return b.alive;});
+  if(!anyAlive){
+    var hatched=hatchEgg();
+    running=false;
+    if(pack.length&gt;=2){
+      updateEggBar(); renderPack();
+      showChoice(hatched);
+    } else {
+      // only one wolf so far: just fresh egg and continue
+      newEgg(false);
+      setTimeout(function(){ if(!gameoverEl.classList.contains(&#x27;show&#x27;)){ advanceRound(); } },900);
+    }
+    return;
+  }
+
+  if(ballY&gt;=FIELD_H){ loseLife(); if(!running)return; }
+  paint();
+  animId=requestAnimationFrame(tick);
+}
+
+function startGame(){
+  if(running)return;
+  gameoverEl.classList.remove(&#x27;show&#x27;); choiceEl.classList.remove(&#x27;show&#x27;);
+  score=0; round=1; lives=3; nameIdx=0;
+  scoreEl.textContent=&#x27;0&#x27;; roundEl.textContent=&#x27;1&#x27;; livesEl.textContent=&#x27;❤️❤️❤️&#x27;;
+  pack=[]; pickSel=[];
+  newEgg(false);
+  running=true; beginRound();
+  animId=requestAnimationFrame(tick);
+}
+function stopGame(){
+  running=false;
+  if(animId){cancelAnimationFrame(animId);animId=null;}
+}
+
+window.addEventListener(&#x27;keydown&#x27;,function(e){
+  if(e.key===&#x27;ArrowLeft&#x27;||e.key===&#x27;ArrowRight&#x27;){keysDown[e.key]=true;e.preventDefault();}
+});
+window.addEventListener(&#x27;keyup&#x27;,function(e){
+  if(e.key===&#x27;ArrowLeft&#x27;||e.key===&#x27;ArrowRight&#x27;)keysDown[e.key]=false;
+});
+window.addEventListener(&#x27;message&#x27;,function(e){
+  if(!e.data||typeof e.data!==&#x27;object&#x27;)return;
+  if(e.data.type===&#x27;wd_start&#x27;)startGame();
+  else if(e.data.type===&#x27;wd_stop&#x27;)stopGame();
+});
+
+newEgg(false);
+paddleW=paddleWidth(); paddleX=(FIELD_W-paddleW)/2;
+resetBall(); makeBricks(); updateEggBar(); renderPack(); paint();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  // Suppress in-iframe scrollbars. The parent fits the iframe layout
+  // box to match the content size, so internal scroll is redundant —
+  // and if the LLM&#x27;s CSS sets body overflow: auto, the scrollbar shows
+  // briefly before the fit lands. Force hidden so it never appears.
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  // Iframe-internal JS error capture. window.onerror inside a sandboxed
+  // iframe can&#x27;t post to /api/js_error directly, so we relay to the
+  // parent via postMessage; parent&#x27;s error_logger.js forwards to the
+  // server. Catches LLM-emitted broken HTML (invalid hex, undefined
+  // variables, etc.) that would otherwise fail silently inside the
+  // iframe.
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      // Debounce: don&#x27;t fire more than ~10× per second. ResizeObserver
+      // fires repeatedly during layout/font load; we only need the latest.
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      // Clamp: reject obviously bogus dimensions. Any browser-game viewport
+      // is well under 4000×4000 logical px; readings beyond that are layout
+      // noise during load/visibility transitions.
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  // Parent posts wd_remeasure when it makes the iframe visible (the body&#x27;s
+  // ResizeObserver doesn&#x27;t fire on display:none→block of an outer ancestor
+  // because the iframe document didn&#x27;t actually resize). Wait a frame for
+  // layout to settle before measuring.
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,761 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NEON DRAGON</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>NEON DRAGON</b> &middot; Game 229 &middot; Amateur producer &middot; Basic game: Space shooter</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #07070d; color: #cfe; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 8px 12px; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+  h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: 2px; color: #0ff; text-shadow: 0 0 8px #0ff, 0 0 18px #08f; }
+  .instructions { font-size: 16px; color: #8ad; max-width: 640px; margin: 0; line-height: 1.3; text-align: center; }
+  .hud { display: flex; gap: 12px; font-size: 14px; flex-wrap: wrap; justify-content: center; }
+  .stat { color: #8cf; text-shadow: 0 0 6px #06a; }
+  .field { position: relative; width: 640px; height: 388px; flex-shrink: 0; background:
+      radial-gradient(circle at 30% 20%, #12122a 0%, #08080f 60%, #050508 100%);
+      border: 1px solid #144; border-radius: 10px; overflow: hidden;
+      box-shadow: 0 0 20px #033 inset; }
+  .bar { width: 200px; height: 11px; background: #123; border-radius: 6px; overflow: hidden; border: 1px solid #0aa; box-shadow: 0 0 6px #0aa; }
+  .bar &gt; i { display: block; height: 100%; background: linear-gradient(90deg,#f0f,#0ff); box-shadow: 0 0 8px #0ff; transition: width .15s; }
+  .barwrap { display:flex; align-items:center; gap:8px; font-size:13px; color:#f6f; }
+  .allypanel { font-size:12px; color:#8ad; text-align:center; min-height:16px; line-height:1.3; }
+  .allypanel b { color:#fff; }
+  .overlay { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; color:#0ff; font-size:24px; text-shadow:0 0 12px #0ff; background:rgba(3,3,8,.55); text-align:center; }
+  .overlay small { font-size:15px; color:#8ad; margin-top:8px; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;NEON DRAGON&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Fly with &lt;strong&gt;&amp;larr; &amp;rarr;&lt;/strong&gt; and breathe fire with &lt;strong&gt;Space&lt;/strong&gt;; blast asteroids and grab glowing boosts. Boosts upgrade your gun and level up allied dragons that unlock as the waves climb.&lt;/p&gt;
+  &lt;div class=&quot;hud&quot;&gt;
+    &lt;span class=&quot;stat&quot;&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/span&gt;
+    &lt;span class=&quot;stat&quot;&gt;Guns &lt;span id=&quot;guns&quot;&gt;1&lt;/span&gt;&lt;/span&gt;
+    &lt;span class=&quot;stat&quot;&gt;Pierce &lt;span id=&quot;pierce&quot;&gt;1&lt;/span&gt;&lt;/span&gt;
+    &lt;span class=&quot;stat&quot;&gt;Rate &lt;span id=&quot;rate&quot;&gt;1&lt;/span&gt;&lt;/span&gt;
+    &lt;span class=&quot;stat&quot;&gt;Wave &lt;span id=&quot;wave&quot;&gt;1&lt;/span&gt;&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;barwrap&quot;&gt;HP &lt;div class=&quot;bar&quot;&gt;&lt;i id=&quot;hpbar&quot; style=&quot;width:100%&quot;&gt;&lt;/i&gt;&lt;/div&gt;&lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;
+    &lt;div class=&quot;overlay&quot; id=&quot;overlay&quot;&gt;Press Start&lt;small&gt;Neon skies await, dragon.&lt;/small&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;allypanel&quot; id=&quot;allypanel&quot;&gt;No allied dragons yet — reach wave 5 to summon the first.&lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var FIELD_W = 640, FIELD_H = 388;
+  var SHIP_W = 46, SHIP_H = 40, SHIP_BOTTOM = 8;
+  var BULLET_W = 6, BULLET_H = 16, BULLET_SPEED = 8;
+  var running=false, animId=null, spawnId=null, boostId=null, difficultyId=null;
+  var keysDown = {};
+  var shipX;
+  var bullets=[], targets=[], boosts=[], allies=[], babies=[], explosions=[], lasers=[];
+  var score, hp, maxHp, lastShot, regenAcc;
+  var guns, pierce, fireRate;
+  var totalDamage;
+  var elapsed;
+  var allySpawnOrder, alliesSpawned;   // wave-based ally unlocks
+  var field = document.getElementById(&#x27;field&#x27;);
+  var overlay = document.getElementById(&#x27;overlay&#x27;);
+  var allypanel = document.getElementById(&#x27;allypanel&#x27;);
+  var els = {
+    score:document.getElementById(&#x27;score&#x27;), guns:document.getElementById(&#x27;guns&#x27;),
+    pierce:document.getElementById(&#x27;pierce&#x27;), rate:document.getElementById(&#x27;rate&#x27;),
+    wave:document.getElementById(&#x27;wave&#x27;), hpbar:document.getElementById(&#x27;hpbar&#x27;)
+  };
+
+  var actx=null;
+  function beep(freq,dur,type,vol){
+    try{
+      if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)();
+      var o=actx.createOscillator(), g=actx.createGain();
+      o.type=type||&#x27;square&#x27;; o.frequency.value=freq;
+      o.connect(g); g.connect(actx.destination);
+      g.gain.setValueAtTime(vol||.07, actx.currentTime);
+      g.gain.exponentialRampToValueAtTime(.001, actx.currentTime+dur);
+      o.start(); o.stop(actx.currentTime+dur);
+    }catch(_){}
+  }
+
+  function dragonSVG(bodyFill, bodyStroke, wing, w, h){
+    return &#x27;&lt;svg viewBox=&quot;0 0 46 40&quot; width=&quot;&#x27;+w+&#x27;&quot; height=&quot;&#x27;+h+&#x27;&quot;&gt;&#x27;+
+      &#x27;&lt;g stroke-width=&quot;1.4&quot; fill=&quot;none&quot;&gt;&#x27;+
+      &#x27;&lt;path d=&quot;M23 6 L14 20 L6 16 L12 24 L4 30 L14 28 L23 38 L32 28 L42 30 L34 24 L40 16 L32 20 Z&quot; fill=&quot;&#x27;+bodyFill+&#x27;&quot; stroke=&quot;&#x27;+bodyStroke+&#x27;&quot;/&gt;&#x27;+
+      &#x27;&lt;path d=&quot;M23 6 L20 14 L23 12 L26 14 Z&quot; fill=&quot;&#x27;+wing+&#x27;&quot; stroke=&quot;&#x27;+wing+&#x27;&quot;/&gt;&#x27;+
+      &#x27;&lt;/g&gt;&#x27;+
+      &#x27;&lt;circle cx=&quot;19&quot; cy=&quot;16&quot; r=&quot;1.6&quot; fill=&quot;#ff2&quot;/&gt;&lt;circle cx=&quot;27&quot; cy=&quot;16&quot; r=&quot;1.6&quot; fill=&quot;#ff2&quot;/&gt;&#x27;+
+      &#x27;&lt;/svg&gt;&#x27;;
+  }
+  var MAIN_SVG = dragonSVG(&#x27;#053&#x27;,&#x27;#0f8&#x27;,&#x27;#f0f&#x27;,46,40);
+
+  var ship = document.createElement(&#x27;div&#x27;);
+  ship.style.cssText=&#x27;position:absolute;width:&#x27;+SHIP_W+&#x27;px;height:&#x27;+SHIP_H+&#x27;px;bottom:&#x27;+SHIP_BOTTOM+&#x27;px;filter:drop-shadow(0 0 6px #0ff);&#x27;;
+  ship.innerHTML=MAIN_SVG;
+  field.appendChild(ship);
+  function paintShip(){ ship.style.left = shipX+&#x27;px&#x27;; }
+
+  function makeBullet(x,color){
+    var el=document.createElement(&#x27;div&#x27;);
+    el.style.cssText=&#x27;position:absolute;width:&#x27;+BULLET_W+&#x27;px;height:&#x27;+BULLET_H+&#x27;px;border-radius:3px;background:&#x27;+color+&#x27;;box-shadow:0 0 8px &#x27;+color+&#x27;;&#x27;;
+    field.appendChild(el); return el;
+  }
+
+  function shootMain(){
+    var now=Date.now();
+    var cooldown = 240 / fireRate;
+    if(now-lastShot &lt; cooldown) return;
+    lastShot=now;
+    var cx = shipX + SHIP_W/2;
+    var y0 = FIELD_H - SHIP_BOTTOM - SHIP_H - BULLET_H;
+    var n = guns;
+    var spread = 10;
+    for(var i=0;i&lt;n;i++){
+      var offset = (i-(n-1)/2)*spread;
+      var bx = cx + offset - BULLET_W/2;
+      var vx = (i-(n-1)/2)*0.8;
+      var b={x:bx,y:y0,vx:vx,dmg:2,pierce:pierce,el:makeBullet(bx,&#x27;#f0f&#x27;)};
+      b.el.style.top=b.y+&#x27;px&#x27;; b.el.style.left=b.x+&#x27;px&#x27;;
+      bullets.push(b);
+    }
+    beep(660,.07);
+  }
+
+  function spawnTarget(){
+    var wave = currentWave();
+    var size = 28 + Math.random()*20;
+    var baseHp = Math.ceil(size/12) + Math.floor(wave*0.8);
+    var t={x:Math.random()*(FIELD_W-size),y:-size,size:size,hp:baseHp,maxhp:baseHp,
+           vx:(Math.random()-.5)*0.5, vy:1 + Math.random()*1.2 + wave*0.12};
+    var el=document.createElement(&#x27;div&#x27;);
+    el.style.cssText=&#x27;position:absolute;width:&#x27;+size+&#x27;px;height:&#x27;+size+&#x27;px;border-radius:50%;&#x27;+
+      &#x27;background:radial-gradient(circle at 35% 30%,#655,#211);border:1px solid #f44;box-shadow:0 0 10px #f22;&#x27;;
+    el.style.left=t.x+&#x27;px&#x27;; el.style.top=t.y+&#x27;px&#x27;;
+    field.appendChild(el); t.el=el;
+    targets.push(t);
+  }
+
+  function currentWave(){
+    return 1 + Math.floor(elapsed/18) + Math.floor(totalDamage/400);
+  }
+
+  var BOOST_TYPES=[
+    {key:&#x27;guns&#x27;,  label:&#x27;≡&#x27;, color:&#x27;#f0f&#x27;},
+    {key:&#x27;pierce&#x27;,label:&#x27;⊕&#x27;, color:&#x27;#0ff&#x27;},
+    {key:&#x27;rate&#x27;,  label:&#x27;⚡&#x27;, color:&#x27;#ff0&#x27;},
+    {key:&#x27;maxhp&#x27;, label:&#x27;❤&#x27;, color:&#x27;#f44&#x27;}
+  ];
+  function spawnBoost(){
+    var bt = BOOST_TYPES[Math.floor(Math.random()*BOOST_TYPES.length)];
+    var size=26;
+    var b={x:Math.random()*(FIELD_W-size),y:-size,size:size,vy:1.6,type:bt.key};
+    var el=document.createElement(&#x27;div&#x27;);
+    el.style.cssText=&#x27;position:absolute;width:&#x27;+size+&#x27;px;height:&#x27;+size+&#x27;px;border-radius:8px;&#x27;+
+      &#x27;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;&#x27;+
+      &#x27;background:#111;border:1.5px solid &#x27;+bt.color+&#x27;;color:&#x27;+bt.color+&#x27;;box-shadow:0 0 12px &#x27;+bt.color+&#x27;;&#x27;;
+    el.textContent=bt.label;
+    el.style.left=b.x+&#x27;px&#x27;; el.style.top=b.y+&#x27;px&#x27;;
+    field.appendChild(el); b.el=el;
+    boosts.push(b);
+  }
+
+  function applyBoost(type){
+    if(type===&#x27;guns&#x27;){ if(guns&lt;5) guns++; }
+    else if(type===&#x27;pierce&#x27;){ pierce++; }
+    else if(type===&#x27;rate&#x27;){ fireRate = Math.min(6, fireRate+0.5); }
+    else if(type===&#x27;maxhp&#x27;){ maxHp+=20; hp+=20; }
+    levelUpAllies();
+    beep(880,.12,&#x27;triangle&#x27;);
+    updateHud();
+  }
+
+  function allySVG(type){
+    if(type===&#x27;shield&#x27;) return dragonSVG(&#x27;#024&#x27;,&#x27;#0af&#x27;,&#x27;#0ff&#x27;,34,30);
+    if(type===&#x27;laser&#x27;)  return dragonSVG(&#x27;#400&#x27;,&#x27;#f22&#x27;,&#x27;#f80&#x27;,34,30);
+    return dragonSVG(&#x27;#340&#x27;,&#x27;#8f0&#x27;,&#x27;#df0&#x27;,34,30);
+  }
+
+  function spawnAlly(type){
+    if(allies.length&gt;=3) return;
+    var a={
+      type:type,
+      x:Math.random()*(FIELD_W-34),
+      offset:Math.random()*Math.PI*2,
+      dmgLvl:1, durLvl:1,
+      rateLvl:1, aoeLvl:1,
+      cooldown:0, active:false, activeTimer:0, babyTimer:0,
+      sweepDir:1
+    };
+    var el=document.createElement(&#x27;div&#x27;);
+    el.style.cssText=&#x27;position:absolute;width:34px;height:30px;bottom:&#x27;+(SHIP_BOTTOM+46)+&#x27;px;filter:drop-shadow(0 0 6px #0ff);opacity:.95;&#x27;;
+    el.innerHTML=allySVG(type);
+    field.appendChild(el); a.el=el;
+    allies.push(a);
+    updateHud();
+    beep(520,.14);
+    var names={shield:&#x27;Shield&#x27;,laser:&#x27;Laser&#x27;,hatcher:&#x27;Hatcher&#x27;};
+    flashMessage(names[type]+&#x27; Dragon joined!&#x27;);
+  }
+
+  var flashTimer=null;
+  function flashMessage(msg){
+    var f=document.createElement(&#x27;div&#x27;);
+    f.textContent=msg;
+    f.style.cssText=&#x27;position:absolute;left:0;right:0;top:12px;text-align:center;color:#8f0;font-size:16px;font-weight:700;text-shadow:0 0 10px #8f0;pointer-events:none;&#x27;;
+    field.appendChild(f);
+    setTimeout(function(){ if(f.parentNode) f.parentNode.removeChild(f); }, 1800);
+  }
+
+  function levelUpAllies(){
+    allies.forEach(function(a){
+      if(a.type===&#x27;hatcher&#x27;){
+        var r=Math.random();
+        if(r&lt;0.34) a.dmgLvl++; else if(r&lt;0.67) a.rateLvl++; else a.aoeLvl++;
+      } else {
+        if(Math.random()&lt;0.5) a.dmgLvl++; else a.durLvl++;
+      }
+    });
+    updateHud();
+  }
+
+  function makeExplosion(x,y,r,dmg){
+    var e={x:x,y:y,r:8,maxr:r,dmg:dmg};
+    var el=document.createElement(&#x27;div&#x27;);
+    el.style.cssText=&#x27;position:absolute;border-radius:50%;background:radial-gradient(circle,#ff8 0%,#f80 40%,rgba(255,80,0,0) 70%);pointer-events:none;&#x27;;
+    field.appendChild(el); e.el=el;
+    explosions.push(e);
+    beep(180,.15,&#x27;sawtooth&#x27;,.09);
+  }
+
+  function spawnBaby(a){
+    var b={x:a.x+8,y:FIELD_H-SHIP_BOTTOM-70,
+           vx:(Math.random()-.5)*3, vy:-2,
+           angle:Math.random()*Math.PI*2, swirl:0.18+Math.random()*0.12,
+           dmg:3+a.dmgLvl*1.5, aoe:26+a.aoeLvl*10, life:200};
+    var el=document.createElement(&#x27;div&#x27;);
+    el.innerHTML=dragonSVG(&#x27;#340&#x27;,&#x27;#8f0&#x27;,&#x27;#df0&#x27;,16,14);
+    el.style.cssText=&#x27;position:absolute;width:16px;height:14px;filter:drop-shadow(0 0 4px #8f0);&#x27;;
+    field.appendChild(el); b.el=el;
+    babies.push(b);
+  }
+
+  function updateHud(){
+    els.score.textContent=score;
+    els.guns.textContent=guns;
+    els.pierce.textContent=pierce;
+    els.rate.textContent=fireRate.toFixed(1);
+    els.wave.textContent=currentWave();
+    els.hpbar.style.width=Math.max(0,hp/maxHp*100)+&#x27;%&#x27;;
+    if(allies.length===0){
+      var nextWave = allySpawnOrder ? [5,20,35][alliesSpawned] : 5;
+      allypanel.textContent=&#x27;No allied dragons yet — reach wave &#x27;+nextWave+&#x27; to summon the first.&#x27;;
+      return;
+    }
+    var parts=allies.map(function(a){
+      if(a.type===&#x27;shield&#x27;) return &#x27;&lt;b style=&quot;color:#0af&quot;&gt;Shield&lt;/b&gt; Dmg&#x27;+a.dmgLvl+&#x27; Dur&#x27;+a.durLvl;
+      if(a.type===&#x27;laser&#x27;)  return &#x27;&lt;b style=&quot;color:#f44&quot;&gt;Laser&lt;/b&gt; Dmg&#x27;+a.dmgLvl+&#x27; Dur&#x27;+a.durLvl;
+      return &#x27;&lt;b style=&quot;color:#8f0&quot;&gt;Hatcher&lt;/b&gt; Dmg&#x27;+a.dmgLvl+&#x27; Rate&#x27;+a.rateLvl+&#x27; AoE&#x27;+a.aoeLvl;
+    });
+    allypanel.innerHTML=parts.join(&#x27; &amp;nbsp;•&amp;nbsp; &#x27;);
+  }
+
+  function dealDamage(t, amt){
+    t.hp -= amt;
+    totalDamage += amt;
+    if(t.hp&lt;=0){
+      makeExplosion(t.x+t.size/2, t.y+t.size/2, t.size+10, 0);
+      field.removeChild(t.el);
+      var idx = targets.indexOf(t);
+      if(idx&gt;=0) targets.splice(idx,1);
+      score+=1;
+      updateHud();
+      beep(990,.05);
+      return true;
+    }
+    return false;
+  }
+
+  function tick(ts){
+    if(!running) return;
+    var moveSpeed=6;
+    if(keysDown[&#x27;ArrowLeft&#x27;]) shipX-=moveSpeed;
+    if(keysDown[&#x27;ArrowRight&#x27;]) shipX+=moveSpeed;
+    shipX=Math.max(0,Math.min(FIELD_W-SHIP_W,shipX));
+    paintShip();
+
+    var tsec=ts/500;
+    allies.forEach(function(a,i){
+      var target = shipX + (i%2===0? -55-i*8 : SHIP_W+34+i*8);
+      a.x += (target-a.x)*0.08 + Math.sin(tsec+a.offset)*0.5;
+      a.x=Math.max(0,Math.min(FIELD_W-34,a.x));
+      a.el.style.left=a.x+&#x27;px&#x27;;
+
+      if(a.type===&#x27;shield&#x27;) updateShield(a);
+      else if(a.type===&#x27;laser&#x27;) updateLaser(a);
+      else if(a.type===&#x27;hatcher&#x27;) updateHatcher(a);
+    });
+
+    regenAcc += 0.02;
+    if(regenAcc&gt;=1 &amp;&amp; hp&lt;maxHp){ hp=Math.min(maxHp,hp+1); regenAcc=0; updateHud(); }
+
+    for(var i=bullets.length-1;i&gt;=0;i--){
+      var b=bullets[i]; b.y-=BULLET_SPEED; b.x+=b.vx||0;
+      if(b.y+BULLET_H&lt;0){ field.removeChild(b.el); bullets.splice(i,1); continue; }
+      b.el.style.top=b.y+&#x27;px&#x27;; b.el.style.left=b.x+&#x27;px&#x27;;
+    }
+    for(var j=targets.length-1;j&gt;=0;j--){
+      var t=targets[j];
+      t.x+=t.vx; t.y+=t.vy;
+      if(t.x&lt;0||t.x&gt;FIELD_W-t.size) t.vx*=-1;
+      if(t.y&gt;FIELD_H){
+        field.removeChild(t.el); targets.splice(j,1);
+        hp-=12; updateHud(); beep(160,.2,&#x27;sawtooth&#x27;);
+        if(hp&lt;=0){ gameOver(); return; }
+        continue;
+      }
+      t.el.style.left=t.x+&#x27;px&#x27;; t.el.style.top=t.y+&#x27;px&#x27;;
+    }
+    for(var k=boosts.length-1;k&gt;=0;k--){
+      var bo=boosts[k]; bo.y+=bo.vy;
+      if(bo.y&gt;FIELD_H){ field.removeChild(bo.el); boosts.splice(k,1); continue; }
+      bo.el.style.top=bo.y+&#x27;px&#x27;;
+      var sy=FIELD_H-SHIP_BOTTOM-SHIP_H;
+      if(bo.x&lt;shipX+SHIP_W &amp;&amp; bo.x+bo.size&gt;shipX &amp;&amp; bo.y+bo.size&gt;sy){
+        applyBoost(bo.type); field.removeChild(bo.el); boosts.splice(k,1);
+      }
+    }
+    for(var bi=bullets.length-1;bi&gt;=0;bi--){
+      var bb=bullets[bi]; if(!bb) continue;
+      for(var tj=targets.length-1;tj&gt;=0;tj--){
+        var tt=targets[tj];
+        if(bb.x&lt;tt.x+tt.size &amp;&amp; bb.x+BULLET_W&gt;tt.x &amp;&amp; bb.y&lt;tt.y+tt.size &amp;&amp; bb.y+BULLET_H&gt;tt.y){
+          dealDamage(tt, bb.dmg);
+          bb.pierce--;
+          if(bb.pierce&lt;=0){ if(bb.el.parentNode) field.removeChild(bb.el); bullets.splice(bi,1); }
+          break;
+        }
+      }
+    }
+    // baby dragons — swirl + home toward nearest asteroid
+    for(var bd=babies.length-1;bd&gt;=0;bd--){
+      var by=babies[bd];
+      by.life--;
+      // find nearest asteroid to home in on
+      var nearest=null, nd=1e9;
+      for(var q=0;q&lt;targets.length;q++){
+        var tg=targets[q];
+        var dx=(tg.x+tg.size/2)-(by.x+8), dy=(tg.y+tg.size/2)-(by.y+7);
+        var d=Math.hypot(dx,dy);
+        if(d&lt;nd){ nd=d; nearest=tg; }
+      }
+      if(nearest){
+        var hx=(nearest.x+nearest.size/2)-(by.x+8);
+        var hy=(nearest.y+nearest.size/2)-(by.y+7);
+        var hl=Math.hypot(hx,hy)||1;
+        by.vx += (hx/hl)*0.35;
+        by.vy += (hy/hl)*0.35;
+      } else {
+        by.vy -= 0.15;
+      }
+      // swirl motion added perpendicular to travel
+      by.angle += by.swirl;
+      var swx=Math.cos(by.angle)*1.6, swy=Math.sin(by.angle)*1.6;
+      // clamp speed
+      var sp=Math.hypot(by.vx,by.vy);
+      var maxsp=4.5;
+      if(sp&gt;maxsp){ by.vx=by.vx/sp*maxsp; by.vy=by.vy/sp*maxsp; }
+      by.x += by.vx + swx;
+      by.y += by.vy + swy;
+      by.el.style.left=by.x+&#x27;px&#x27;; by.el.style.top=by.y+&#x27;px&#x27;;
+
+      var hitT=null;
+      for(var q2=0;q2&lt;targets.length;q2++){
+        var tg2=targets[q2];
+        var ddx=(tg2.x+tg2.size/2)-(by.x+8), ddy=(tg2.y+tg2.size/2)-(by.y+7);
+        if(Math.hypot(ddx,ddy)&lt;tg2.size/2+8){ hitT=tg2; break; }
+      }
+      if(hitT || by.life&lt;=0 || by.y&lt;-20){
+        if(hitT){
+          makeExplosion(by.x+8,by.y+7,by.aoe,by.dmg);
+          for(var w=targets.length-1;w&gt;=0;w--){
+            var at=targets[w];
+            var adx=(at.x+at.size/2)-(by.x+8), ady=(at.y+at.size/2)-(by.y+7);
+            if(Math.hypot(adx,ady)&lt;by.aoe){ dealDamage(at, by.dmg); }
+          }
+        }
+        if(by.el.parentNode) field.removeChild(by.el);
+        babies.splice(bd,1);
+      }
+    }
+    for(var e=explosions.length-1;e&gt;=0;e--){
+      var ex=explosions[e]; ex.r+=4;
+      var op=1-ex.r/ex.maxr;
+      if(op&lt;=0){ field.removeChild(ex.el); explosions.splice(e,1); continue; }
+      ex.el.style.width=ex.r*2+&#x27;px&#x27;; ex.el.style.height=ex.r*2+&#x27;px&#x27;;
+      ex.el.style.left=(ex.x-ex.r)+&#x27;px&#x27;; ex.el.style.top=(ex.y-ex.r)+&#x27;px&#x27;;
+      ex.el.style.opacity=op;
+    }
+    // lasers — now sweep horizontally
+    for(var l=lasers.length-1;l&gt;=0;l--){
+      var lz=lasers[l];
+      // sweep the beam left-right across a band around the dragon
+      lz.x += lz.sweepSpeed * lz.dir;
+      if(lz.x &gt; lz.maxX){ lz.x=lz.maxX; lz.dir=-1; }
+      if(lz.x &lt; lz.minX){ lz.x=lz.minX; lz.dir=1; }
+      lz.el.style.left=(lz.x-2)+&#x27;px&#x27;;
+      lz.timer--;
+      // damage asteroids in the beam column (modest, per-target cooldown)
+      for(var m=targets.length-1;m&gt;=0;m--){
+        var mt=targets[m];
+        if(mt.x&lt;lz.x+5 &amp;&amp; mt.x+mt.size&gt;lz.x-5){
+          dealDamage(mt, lz.dmg);
+        }
+      }
+      if(lz.timer&lt;=0){ if(lz.el.parentNode) field.removeChild(lz.el); lasers.splice(l,1); }
+    }
+
+    animId=requestAnimationFrame(tick);
+  }
+
+  function updateShield(a){
+    a.cooldown--;
+    if(!a.active &amp;&amp; a.cooldown&lt;=0){
+      a.active=true;
+      a.activeTimer=120 + a.durLvl*40;
+      var el=document.createElement(&#x27;div&#x27;);
+      var third=FIELD_W/3;
+      a.shieldX = Math.max(0, Math.min(FIELD_W-third, a.x - third/2));
+      el.style.cssText=&#x27;position:absolute;width:&#x27;+third+&#x27;px;height:10px;left:&#x27;+a.shieldX+&#x27;px;top:&#x27;+(FIELD_H-70)+&#x27;px;&#x27;+
+        &#x27;background:linear-gradient(90deg,rgba(0,170,255,0),#0af,rgba(0,170,255,0));box-shadow:0 0 14px #0af;border-radius:6px;&#x27;;
+      field.appendChild(el); a.shieldEl=el;
+      beep(300,.15,&#x27;triangle&#x27;);
+    }
+    if(a.active){
+      a.activeTimer--;
+      var sy=FIELD_H-70;
+      for(var i=0;i&lt;targets.length;i++){
+        var t=targets[i];
+        if(t.y+t.size&gt;sy &amp;&amp; t.y&lt;sy+10 &amp;&amp; t.x+t.size&gt;a.shieldX &amp;&amp; t.x&lt;a.shieldX+FIELD_W/3 &amp;&amp; t.vy&gt;0){
+          t.vy = -(2+Math.random()*2);
+          t.vx = (Math.random()-.5)*4;
+          beep(500,.06);
+        }
+      }
+      if(a.activeTimer&lt;=0){
+        a.active=false;
+        a.cooldown=180;
+        if(a.shieldEl &amp;&amp; a.shieldEl.parentNode) field.removeChild(a.shieldEl);
+        a.shieldEl=null;
+      }
+    }
+  }
+
+  function updateLaser(a){
+    a.cooldown--;
+    if(!a.active &amp;&amp; a.cooldown&lt;=0){
+      a.active=true;
+      a.activeTimer=100 + a.durLvl*40;
+      var el=document.createElement(&#x27;div&#x27;);
+      el.style.cssText=&#x27;position:absolute;width:4px;height:&#x27;+(FIELD_H-70)+&#x27;px;top:0;&#x27;+
+        &#x27;background:linear-gradient(#fff,#f22);box-shadow:0 0 12px #f44;border-radius:2px;&#x27;;
+      field.appendChild(el);
+      var startX=a.x+17;
+      lasers.push({
+        owner:a, el:el, x:startX,
+        minX:Math.max(20, startX-110), maxX:Math.min(FIELD_W-20, startX+110),
+        dir:1, sweepSpeed:2.2,
+        timer:a.activeTimer,
+        dmg:0.7+a.dmgLvl*0.35   // modest so it chips, not wipes
+      });
+      beep(720,.2,&#x27;sawtooth&#x27;,.06);
+    }
+    if(a.active){
+      a.activeTimer--;
+      if(a.activeTimer&lt;=0){ a.active=false; a.cooldown=170; }
+    }
+  }
+
+  function updateHatcher(a){
+    a.babyTimer--;
+    var interval = Math.max(20, 90 - a.rateLvl*12);
+    if(a.babyTimer&lt;=0){
+      spawnBaby(a);
+      a.babyTimer=interval;
+    }
+  }
+
+  function difficultyTick(){
+    elapsed += 1;
+    // wave-based ally unlocks (order randomized per game)
+    var wave = currentWave();
+    var thresholds=[5,20,35];
+    if(alliesSpawned&lt;3 &amp;&amp; wave&gt;=thresholds[alliesSpawned]){
+      spawnAlly(allySpawnOrder[alliesSpawned]);
+      alliesSpawned++;
+    }
+    updateHud();
+    var count = 1 + Math.floor((wave-1)/2);
+    for(var i=0;i&lt;count;i++) spawnTarget();
+  }
+
+  function clearAll(){
+    [bullets,targets,boosts,allies,babies,explosions].forEach(function(arr){
+      arr.forEach(function(o){ if(o.el&amp;&amp;o.el.parentNode) o.el.parentNode.removeChild(o.el); });
+    });
+    allies.forEach(function(a){ if(a.shieldEl&amp;&amp;a.shieldEl.parentNode) a.shieldEl.parentNode.removeChild(a.shieldEl); });
+    lasers.forEach(function(l){ if(l.el&amp;&amp;l.el.parentNode) l.el.parentNode.removeChild(l.el); });
+    bullets=[]; targets=[]; boosts=[]; allies=[]; babies=[]; explosions=[]; lasers=[];
+  }
+
+  function shuffle(arr){
+    for(var i=arr.length-1;i&gt;0;i--){
+      var j=Math.floor(Math.random()*(i+1));
+      var tmp=arr[i]; arr[i]=arr[j]; arr[j]=tmp;
+    }
+    return arr;
+  }
+
+  function gameOver(){
+    stopGame();
+    overlay.style.display=&#x27;flex&#x27;;
+    overlay.innerHTML=&#x27;GAME OVER&lt;small&gt;Score: &#x27;+score+&#x27; — press Start to fly again.&lt;/small&gt;&#x27;;
+  }
+
+  function startGame(){
+    if(running) return;
+    clearAll();
+    score=0; maxHp=100; hp=100; lastShot=0; regenAcc=0;
+    guns=1; pierce=1; fireRate=1; totalDamage=0; elapsed=0;
+    allySpawnOrder=shuffle([&#x27;shield&#x27;,&#x27;laser&#x27;,&#x27;hatcher&#x27;]);
+    alliesSpawned=0;
+    shipX=(FIELD_W-SHIP_W)/2;
+    for(var k in keysDown) keysDown[k]=false;
+    paintShip(); updateHud();
+    overlay.style.display=&#x27;none&#x27;;
+    running=true;
+    animId=requestAnimationFrame(tick);
+    spawnTarget();
+    difficultyId=setInterval(difficultyTick, 1600);
+    boostId=setInterval(spawnBoost, 4200);
+  }
+  function stopGame(){
+    if(!running) return;
+    running=false;
+    if(animId){ cancelAnimationFrame(animId); animId=null; }
+    if(difficultyId){ clearInterval(difficultyId); difficultyId=null; }
+    if(boostId){ clearInterval(boostId); boostId=null; }
+  }
+
+  setInterval(function(){ if(running &amp;&amp; keysDown[&#x27; &#x27;]) shootMain(); }, 40);
+
+  window.addEventListener(&#x27;keydown&#x27;, function(e){
+    if(e.key===&#x27;ArrowLeft&#x27;||e.key===&#x27;ArrowRight&#x27;){ keysDown[e.key]=true; e.preventDefault(); }
+    else if(e.key===&#x27; &#x27;||e.code===&#x27;Space&#x27;){ keysDown[&#x27; &#x27;]=true; if(running) shootMain(); e.preventDefault(); }
+  });
+  window.addEventListener(&#x27;keyup&#x27;, function(e){
+    if(e.key===&#x27;ArrowLeft&#x27;||e.key===&#x27;ArrowRight&#x27;) keysDown[e.key]=false;
+    else if(e.key===&#x27; &#x27;||e.code===&#x27;Space&#x27;) keysDown[&#x27; &#x27;]=false;
+  });
+  window.addEventListener(&#x27;message&#x27;, function(e){
+    if(!e.data||typeof e.data!==&#x27;object&#x27;) return;
+    if(e.data.type===&#x27;wd_start&#x27;) startGame();
+    else if(e.data.type===&#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;,&#x27;mousedown&#x27;,&#x27;touchstart&#x27;].forEach(function(t){
+    window.addEventListener(t, function(e){
+      try{ window.parent.postMessage({type:&#x27;game_input&#x27;,kind:t,key:e.key||null},&#x27;*&#x27;); }catch(_){}
+    }, true);
+  });
+
+  shipX=(FIELD_W-SHIP_W)/2;
+  paintShip();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  // Suppress in-iframe scrollbars. The parent fits the iframe layout
+  // box to match the content size, so internal scroll is redundant —
+  // and if the LLM&#x27;s CSS sets body overflow: auto, the scrollbar shows
+  // briefly before the fit lands. Force hidden so it never appears.
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  // Iframe-internal JS error capture. window.onerror inside a sandboxed
+  // iframe can&#x27;t post to /api/js_error directly, so we relay to the
+  // parent via postMessage; parent&#x27;s error_logger.js forwards to the
+  // server. Catches LLM-emitted broken HTML (invalid hex, undefined
+  // variables, etc.) that would otherwise fail silently inside the
+  // iframe.
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      // Debounce: don&#x27;t fire more than ~10× per second. ResizeObserver
+      // fires repeatedly during layout/font load; we only need the latest.
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      // Clamp: reject obviously bogus dimensions. Any browser-game viewport
+      // is well under 4000×4000 logical px; readings beyond that are layout
+      // noise during load/visibility transitions.
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  // Parent posts wd_remeasure when it makes the iframe visible (the body&#x27;s
+  // ResizeObserver doesn&#x27;t fire on display:none→block of an outer ancestor
+  // because the iframe document didn&#x27;t actually resize). Wait a frame for
+  // layout to settle before measuring.
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

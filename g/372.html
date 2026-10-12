@@ -1,0 +1,737 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paddle Duel</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>Paddle Duel</b> &middot; Game 372 &middot; Professional producer &middot; Basic game: Paddle and ball</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #222; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 14px; background: white; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 8px; }
+  h1 { margin: 0; font-size: 24px; font-weight: 600; }
+  .instructions { font-size: 16px; color: #666; max-width: 620px; margin: 0; line-height: 1.35; text-align: center; }
+  .scores { display: flex; gap: 40px; font-size: 20px; font-weight: 600; margin: 0; }
+  .scores .cpu { color: #d0342c; }
+  .scores .player { color: #2c6fd0; }
+  .field { position: relative; width: 620px; height: 440px; flex-shrink: 0; margin: 0; background: #ececec; border-radius: 8px; overflow: hidden; }
+  .paddle { position: absolute; width: 100px; height: 14px; border-radius: 4px; }
+  .paddle.player { background: #2c6fd0; }
+  .paddle.cpu { background: #d0342c; }
+  .sticky { position: absolute; height: 6px; border-radius: 3px; background: #16c79a; box-shadow: 0 0 6px #16c79a; }
+  .sticky.blink { animation: stickyblink 0.2s steps(1) infinite; }
+  @keyframes stickyblink { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
+  .ball { position: absolute; width: 16px; height: 16px; background: #333; border-radius: 50%; }
+  .brick { position: absolute; width: 32px; height: 16px; border-radius: 3px; }
+  .brick.special { animation: flashcol 0.4s linear infinite; }
+  .brick.gold { animation: goldflash 0.35s linear infinite; box-shadow: 0 0 6px #ffcf33; }
+  @keyframes flashcol {
+    0%   { background: #e74c3c; }
+    20%  { background: #f1c40f; }
+    40%  { background: #2ecc71; }
+    60%  { background: #3498db; }
+    80%  { background: #9b59b6; }
+    100% { background: #e74c3c; }
+  }
+  @keyframes goldflash {
+    0%   { background: #ffcf33; }
+    50%  { background: #fff2b0; }
+    100% { background: #ffcf33; }
+  }
+  .powerup { position: absolute; width: 18px; height: 18px; border-radius: 4px; animation: goldflash 0.3s linear infinite; box-shadow: 0 0 8px #ffcf33; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+  .msg { position: absolute; left: 0; right: 0; top: 46%; text-align: center; font-size: 18px; color: #444; font-weight: 600; pointer-events: none; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;Paddle Duel&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Move your blue paddle with the &lt;strong&gt;&amp;larr;&lt;/strong&gt; and &lt;strong&gt;&amp;rarr;&lt;/strong&gt; keys and get the ball past the red CPU to score. Press &lt;strong&gt;Space&lt;/strong&gt; to launch a locked or stuck ball; catch the gold power-up for a one-time sticky paddle.&lt;/p&gt;
+  &lt;div class=&quot;scores&quot;&gt;&lt;span class=&quot;cpu&quot;&gt;CPU: &lt;span id=&quot;cpuScore&quot;&gt;0&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;player&quot;&gt;Player: &lt;span id=&quot;playerScore&quot;&gt;0&lt;/span&gt;&lt;/span&gt;&lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;
+    &lt;div class=&quot;paddle cpu&quot; id=&quot;cpuPaddle&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;paddle player&quot; id=&quot;playerPaddle&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;ball&quot; id=&quot;ball&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;msg&quot; id=&quot;msg&quot;&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var FIELD_W = 620, FIELD_H = 440;
+  var PADDLE_W = 100, PADDLE_H = 14;
+  var PLAYER_BOTTOM = 12, CPU_TOP = 12;
+  var BRICK_W = 32, BRICK_H = 16;
+  var BALL_SIZE = 16;
+  var POWERUP_SIZE = 18, POWERUP_SPEED = 3.2;
+  var BASE_SPEED = 4.0, MAX_MULT = 2.5;
+  var STICKY_HOLD_MS = 7000;
+
+  var PLAYER_ACCEL = 0.9, PLAYER_MAX = 9, PLAYER_FRICTION = 0.85;
+  var running = false, animId = null;
+  var keysDown = {};
+
+  var playerX = (FIELD_W - PADDLE_W) / 2, playerVX = 0;
+  var cpuX = (FIELD_W - PADDLE_W) / 2, cpuVX = 0;
+  var CPU_ACCEL = 0.7, CPU_MAX = 6.5, CPU_FRICTION = 0.88;
+  var ballX, ballY, ballVX, ballVY;
+  var speedMult = 1;
+  var lastHitter = null;
+  var locked = null;
+  var playerScore = 0, cpuScore = 0;
+  var bricks = [];
+  var brickTimer = 0;
+
+  // power-ups (homing gold projectiles)
+  var powerups = []; // {x,y,vx,vy,target}
+  // sticky paddle ownership: &#x27;player&#x27; or &#x27;cpu&#x27; has an available sticky charge
+  var stickyOwner = { player: false, cpu: false };
+  // when the ball is currently stuck to a sticky paddle
+  var stuck = null; // null | &#x27;player&#x27; | &#x27;cpu&#x27;
+  var stuckStart = 0;
+
+  var field = document.getElementById(&#x27;field&#x27;);
+  var playerPaddle = document.getElementById(&#x27;playerPaddle&#x27;);
+  var cpuPaddle = document.getElementById(&#x27;cpuPaddle&#x27;);
+  var ball = document.getElementById(&#x27;ball&#x27;);
+  var msg = document.getElementById(&#x27;msg&#x27;);
+  var playerScoreEl = document.getElementById(&#x27;playerScore&#x27;);
+  var cpuScoreEl = document.getElementById(&#x27;cpuScore&#x27;);
+
+  var playerTop = FIELD_H - PLAYER_BOTTOM - PADDLE_H;
+  var cpuBottom = CPU_TOP + PADDLE_H;
+
+  var brickEls = [];
+  var powerupEls = [];
+  var stickyEls = { player: null, cpu: null };
+
+  function paint() {
+    playerPaddle.style.left = playerX + &#x27;px&#x27;;
+    playerPaddle.style.top = playerTop + &#x27;px&#x27;;
+    cpuPaddle.style.left = cpuX + &#x27;px&#x27;;
+    cpuPaddle.style.top = CPU_TOP + &#x27;px&#x27;;
+    ball.style.left = ballX + &#x27;px&#x27;;
+    ball.style.top = ballY + &#x27;px&#x27;;
+    renderSticky();
+    renderPowerups();
+  }
+
+  function renderSticky() {
+    // player sticky bar sits just above player paddle
+    if (stickyOwner.player) {
+      if (!stickyEls.player) {
+        stickyEls.player = document.createElement(&#x27;div&#x27;);
+        stickyEls.player.className = &#x27;sticky&#x27;;
+        field.appendChild(stickyEls.player);
+      }
+      var e = stickyEls.player;
+      e.style.width = PADDLE_W + &#x27;px&#x27;;
+      e.style.left = playerX + &#x27;px&#x27;;
+      e.style.top = (playerTop - 8) + &#x27;px&#x27;;
+      var blinking = (stuck === &#x27;player&#x27;) &amp;&amp; (Date.now() - stuckStart &gt; STICKY_HOLD_MS - 2000);
+      e.className = &#x27;sticky&#x27; + (blinking ? &#x27; blink&#x27; : &#x27;&#x27;);
+    } else if (stickyEls.player) {
+      field.removeChild(stickyEls.player); stickyEls.player = null;
+    }
+    if (stickyOwner.cpu) {
+      if (!stickyEls.cpu) {
+        stickyEls.cpu = document.createElement(&#x27;div&#x27;);
+        stickyEls.cpu.className = &#x27;sticky&#x27;;
+        field.appendChild(stickyEls.cpu);
+      }
+      var e2 = stickyEls.cpu;
+      e2.style.width = PADDLE_W + &#x27;px&#x27;;
+      e2.style.left = cpuX + &#x27;px&#x27;;
+      e2.style.top = (cpuBottom + 2) + &#x27;px&#x27;;
+      var blinking2 = (stuck === &#x27;cpu&#x27;) &amp;&amp; (Date.now() - stuckStart &gt; STICKY_HOLD_MS - 2000);
+      e2.className = &#x27;sticky&#x27; + (blinking2 ? &#x27; blink&#x27; : &#x27;&#x27;);
+    } else if (stickyEls.cpu) {
+      field.removeChild(stickyEls.cpu); stickyEls.cpu = null;
+    }
+  }
+
+  function renderPowerups() {
+    for (var i = 0; i &lt; powerupEls.length; i++) field.removeChild(powerupEls[i]);
+    powerupEls = [];
+    for (var j = 0; j &lt; powerups.length; j++) {
+      var p = powerups[j];
+      var el = document.createElement(&#x27;div&#x27;);
+      el.className = &#x27;powerup&#x27;;
+      el.textContent = &#x27;★&#x27;;
+      el.style.left = p.x + &#x27;px&#x27;;
+      el.style.top = p.y + &#x27;px&#x27;;
+      field.appendChild(el);
+      powerupEls.push(el);
+    }
+  }
+
+  function renderBricks() {
+    for (var i = 0; i &lt; brickEls.length; i++) field.removeChild(brickEls[i]);
+    brickEls = [];
+    for (var j = 0; j &lt; bricks.length; j++) {
+      var b = bricks[j];
+      var cls = &#x27;brick&#x27;;
+      if (b.type === &#x27;special&#x27;) cls += &#x27; special&#x27;;
+      else if (b.type === &#x27;gold&#x27;) cls += &#x27; gold&#x27;;
+      var el = document.createElement(&#x27;div&#x27;);
+      el.className = cls;
+      el.style.left = b.x + &#x27;px&#x27;;
+      el.style.top = b.y + &#x27;px&#x27;;
+      if (b.type === &#x27;normal&#x27;) el.style.background = b.color;
+      field.appendChild(el);
+      brickEls.push(el);
+    }
+  }
+
+  function currentSpeed() { return BASE_SPEED * speedMult; }
+
+  function normalizeSpeed() {
+    var mag = Math.sqrt(ballVX * ballVX + ballVY * ballVY);
+    if (mag === 0) return;
+    var target = currentSpeed();
+    ballVX = ballVX / mag * target;
+    ballVY = ballVY / mag * target;
+  }
+
+  function lockBallTo(who) {
+    locked = who;
+    lastHitter = null;
+    speedMult = 1;
+    if (who === &#x27;player&#x27;) {
+      ballX = playerX + PADDLE_W / 2 - BALL_SIZE / 2;
+      ballY = playerTop - BALL_SIZE - 2;
+      msg.textContent = &#x27;Press Space to launch&#x27;;
+    } else {
+      ballX = cpuX + PADDLE_W / 2 - BALL_SIZE / 2;
+      ballY = cpuBottom + 2;
+      msg.textContent = &#x27;CPU serving...&#x27;;
+    }
+  }
+
+  function launchBall(dir) {
+    var ang = (Math.random() * 0.6 - 0.3);
+    var vx = Math.sin(ang);
+    var vy = Math.cos(ang) * dir;
+    var s = currentSpeed();
+    ballVX = vx * s;
+    ballVY = vy * s;
+    locked = null;
+    msg.textContent = &#x27;&#x27;;
+  }
+
+  function overlapsExisting(x, y) {
+    for (var i = 0; i &lt; bricks.length; i++) {
+      var b = bricks[i];
+      if (x &lt; b.x + BRICK_W + 6 &amp;&amp; x + BRICK_W + 6 &gt; b.x &amp;&amp;
+          y &lt; b.y + BRICK_H + 6 &amp;&amp; y + BRICK_H + 6 &gt; b.y) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function spawnBrick() {
+    var minY = FIELD_H * 0.30;
+    var maxY = FIELD_H * 0.62;
+    var colors = [&#x27;#e67e22&#x27;, &#x27;#27ae60&#x27;, &#x27;#8e44ad&#x27;, &#x27;#f1c40f&#x27;, &#x27;#16a085&#x27;, &#x27;#c0392b&#x27;, &#x27;#2980b9&#x27;];
+    for (var attempt = 0; attempt &lt; 25; attempt++) {
+      var x = 20 + Math.random() * (FIELD_W - BRICK_W - 40);
+      var y = minY + Math.random() * (maxY - minY);
+      if (!overlapsExisting(x, y)) {
+        var r = Math.random();
+        var type = &#x27;normal&#x27;;
+        if (r &lt; 0.08) type = &#x27;gold&#x27;;       // rarest
+        else if (r &lt; 0.26) type = &#x27;special&#x27;;
+        bricks.push({
+          x: x, y: y,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          type: type
+        });
+        renderBricks();
+        return;
+      }
+    }
+  }
+
+  function bumpSpeed() { speedMult = Math.min(MAX_MULT, speedMult + 0.12); }
+  function reduceSpeed() { speedMult = Math.max(1, speedMult - 0.35); }
+  function boostSpeed() { speedMult = Math.min(MAX_MULT, speedMult + 0.45); }
+
+  function spawnPowerup(bx, by, target) {
+    // direction toward the paddle who first struck the brick with the ball
+    var px = bx + BRICK_W / 2 - POWERUP_SIZE / 2;
+    var py = by + BRICK_H / 2 - POWERUP_SIZE / 2;
+    var destX, destY;
+    if (target === &#x27;player&#x27;) { destX = playerX + PADDLE_W / 2; destY = playerTop; }
+    else { destX = cpuX + PADDLE_W / 2; destY = cpuBottom; }
+    var dx = destX - px, dy = destY - py;
+    var mag = Math.sqrt(dx * dx + dy * dy) || 1;
+    powerups.push({
+      x: px, y: py,
+      vx: dx / mag * POWERUP_SPEED,
+      vy: dy / mag * POWERUP_SPEED,
+      target: target
+    });
+    renderPowerups();
+  }
+
+  function resetRound(serveWho) {
+    speedMult = 1;
+    stuck = null;
+    lockBallTo(serveWho);
+    if (serveWho === &#x27;cpu&#x27;) {
+      setTimeout(function () {
+        if (running &amp;&amp; locked === &#x27;cpu&#x27; &amp;&amp; stuck === null) launchBall(1);
+      }, 700);
+    }
+  }
+
+  function releaseStuck() {
+    if (stuck === &#x27;player&#x27;) {
+      stuck = null;
+      stickyOwner.player = false; // charge consumed
+      launchBall(-1);
+      beep(700);
+    } else if (stuck === &#x27;cpu&#x27;) {
+      stuck = null;
+      stickyOwner.cpu = false;
+      launchBall(1);
+      beep(500);
+    }
+  }
+
+  function tick() {
+    if (!running) return;
+
+    // player inertia
+    if (keysDown[&#x27;ArrowLeft&#x27;]) playerVX -= PLAYER_ACCEL;
+    if (keysDown[&#x27;ArrowRight&#x27;]) playerVX += PLAYER_ACCEL;
+    if (!keysDown[&#x27;ArrowLeft&#x27;] &amp;&amp; !keysDown[&#x27;ArrowRight&#x27;]) playerVX *= PLAYER_FRICTION;
+    playerVX = Math.max(-PLAYER_MAX, Math.min(PLAYER_MAX, playerVX));
+    if (Math.abs(playerVX) &lt; 0.05) playerVX = 0;
+    playerX += playerVX;
+    if (playerX &lt;= 0) { playerX = 0; playerVX = 0; }
+    if (playerX &gt;= FIELD_W - PADDLE_W) { playerX = FIELD_W - PADDLE_W; playerVX = 0; }
+
+    // cpu AI
+    if (locked !== &#x27;cpu&#x27; &amp;&amp; stuck !== &#x27;cpu&#x27;) {
+      var target = ballX + BALL_SIZE / 2 - PADDLE_W / 2;
+      if (cpuX + 6 &lt; target) cpuVX += CPU_ACCEL;
+      else if (cpuX - 6 &gt; target) cpuVX -= CPU_ACCEL;
+      else cpuVX *= CPU_FRICTION;
+      cpuVX = Math.max(-CPU_MAX, Math.min(CPU_MAX, cpuVX));
+      cpuX += cpuVX;
+      if (cpuX &lt;= 0) { cpuX = 0; cpuVX = 0; }
+      if (cpuX &gt;= FIELD_W - PADDLE_W) { cpuX = FIELD_W - PADDLE_W; cpuVX = 0; }
+    } else {
+      cpuX = ballX + BALL_SIZE / 2 - PADDLE_W / 2;
+      cpuX = Math.max(0, Math.min(FIELD_W - PADDLE_W, cpuX));
+      cpuVX = 0;
+    }
+
+    // move power-ups &amp; catch detection
+    for (var pi = powerups.length - 1; pi &gt;= 0; pi--) {
+      var p = powerups[pi];
+      p.x += p.vx; p.y += p.vy;
+      // catch by player
+      if (p.x + POWERUP_SIZE &gt;= playerX &amp;&amp; p.x &lt;= playerX + PADDLE_W &amp;&amp;
+          p.y + POWERUP_SIZE &gt;= playerTop &amp;&amp; p.y &lt;= playerTop + PADDLE_H + 4) {
+        stickyOwner.player = true;
+        powerups.splice(pi, 1);
+        beep(900);
+        continue;
+      }
+      // catch by cpu
+      if (p.x + POWERUP_SIZE &gt;= cpuX &amp;&amp; p.x &lt;= cpuX + PADDLE_W &amp;&amp;
+          p.y + POWERUP_SIZE &gt;= CPU_TOP - 4 &amp;&amp; p.y &lt;= cpuBottom) {
+        stickyOwner.cpu = true;
+        powerups.splice(pi, 1);
+        beep(600);
+        continue;
+      }
+      // off-screen removal
+      if (p.y &lt; -30 || p.y &gt; FIELD_H + 30 || p.x &lt; -30 || p.x &gt; FIELD_W + 30) {
+        powerups.splice(pi, 1);
+      }
+    }
+    renderPowerups();
+
+    // ball stuck to sticky paddle
+    if (stuck === &#x27;player&#x27;) {
+      ballX = playerX + PADDLE_W / 2 - BALL_SIZE / 2;
+      ballY = playerTop - BALL_SIZE - 6;
+      if (Date.now() - stuckStart &gt; STICKY_HOLD_MS) releaseStuck();
+      msg.textContent = &#x27;Sticky! Press Space to release&#x27;;
+      paint();
+      animId = requestAnimationFrame(tick);
+      return;
+    }
+    if (stuck === &#x27;cpu&#x27;) {
+      ballX = cpuX + PADDLE_W / 2 - BALL_SIZE / 2;
+      ballY = cpuBottom + 6;
+      if (Date.now() - stuckStart &gt; STICKY_HOLD_MS) releaseStuck();
+      paint();
+      animId = requestAnimationFrame(tick);
+      return;
+    }
+
+    if (locked === &#x27;player&#x27;) {
+      ballX = playerX + PADDLE_W / 2 - BALL_SIZE / 2;
+      ballY = playerTop - BALL_SIZE - 2;
+      paint();
+      animId = requestAnimationFrame(tick);
+      return;
+    }
+    if (locked === &#x27;cpu&#x27;) {
+      ballX = cpuX + PADDLE_W / 2 - BALL_SIZE / 2;
+      ballY = cpuBottom + 2;
+      paint();
+      animId = requestAnimationFrame(tick);
+      return;
+    }
+
+    ballX += ballVX;
+    ballY += ballVY;
+
+    if (ballX &lt;= 0) { ballX = 0; ballVX = Math.abs(ballVX); }
+    if (ballX + BALL_SIZE &gt;= FIELD_W) { ballX = FIELD_W - BALL_SIZE; ballVX = -Math.abs(ballVX); }
+
+    // player paddle
+    if (ballVY &gt; 0 &amp;&amp;
+        ballY + BALL_SIZE &gt;= playerTop &amp;&amp;
+        ballY + BALL_SIZE &lt;= playerTop + PADDLE_H + 8 &amp;&amp;
+        ballX + BALL_SIZE &gt;= playerX &amp;&amp; ballX &lt;= playerX + PADDLE_W) {
+      if (stickyOwner.player) {
+        stuck = &#x27;player&#x27;;
+        stuckStart = Date.now();
+        lastHitter = &#x27;player&#x27;;
+        beep(760);
+      } else {
+        ballVY = -Math.abs(ballVY);
+        ballY = playerTop - BALL_SIZE;
+        var off = (ballX + BALL_SIZE / 2 - (playerX + PADDLE_W / 2)) / (PADDLE_W / 2);
+        ballVX = off * currentSpeed() * 0.8 + playerVX * 0.3;
+        lastHitter = &#x27;player&#x27;;
+        bumpSpeed();
+        normalizeSpeed();
+        beep(660);
+      }
+    }
+
+    // cpu paddle
+    if (stuck === null &amp;&amp; ballVY &lt; 0 &amp;&amp;
+        ballY &lt;= cpuBottom &amp;&amp;
+        ballY &gt;= CPU_TOP - 8 &amp;&amp;
+        ballX + BALL_SIZE &gt;= cpuX &amp;&amp; ballX &lt;= cpuX + PADDLE_W) {
+      if (stickyOwner.cpu) {
+        stuck = &#x27;cpu&#x27;;
+        stuckStart = Date.now();
+        lastHitter = &#x27;cpu&#x27;;
+        beep(560);
+      } else {
+        ballVY = Math.abs(ballVY);
+        ballY = cpuBottom;
+        var off2 = (ballX + BALL_SIZE / 2 - (cpuX + PADDLE_W / 2)) / (PADDLE_W / 2);
+        ballVX = off2 * currentSpeed() * 0.8 + cpuVX * 0.3;
+        lastHitter = &#x27;cpu&#x27;;
+        bumpSpeed();
+        normalizeSpeed();
+        beep(440);
+      }
+    }
+
+    // bricks
+    for (var i = 0; i &lt; bricks.length; i++) {
+      var b = bricks[i];
+      if (ballX + BALL_SIZE &gt;= b.x &amp;&amp; ballX &lt;= b.x + BRICK_W &amp;&amp;
+          ballY + BALL_SIZE &gt;= b.y &amp;&amp; ballY &lt;= b.y + BRICK_H) {
+        var overlapX = Math.min(ballX + BALL_SIZE - b.x, b.x + BRICK_W - ballX);
+        var overlapY = Math.min(ballY + BALL_SIZE - b.y, b.y + BRICK_H - ballY);
+        if (overlapX &lt; overlapY) ballVX = -ballVX;
+        else ballVY = -ballVY;
+        if (b.type === &#x27;special&#x27;) { boostSpeed(); beep(1200); }
+        else if (b.type === &#x27;gold&#x27;) {
+          // release power-up homing toward whoever last struck the ball
+          var tgt = lastHitter || &#x27;player&#x27;;
+          spawnPowerup(b.x, b.y, tgt);
+          beep(1400);
+        } else { reduceSpeed(); beep(880); }
+        bricks.splice(i, 1);
+        renderBricks();
+        normalizeSpeed();
+        break;
+      }
+    }
+
+    if (ballY &lt;= 0) {
+      if (lastHitter === &#x27;player&#x27;) { playerScore++; playerScoreEl.textContent = playerScore; beep(1000); }
+      resetRound(&#x27;cpu&#x27;);
+      paint();
+      animId = requestAnimationFrame(tick);
+      return;
+    }
+    if (ballY + BALL_SIZE &gt;= FIELD_H) {
+      if (lastHitter === &#x27;cpu&#x27;) { cpuScore++; cpuScoreEl.textContent = cpuScore; beep(200); }
+      resetRound(&#x27;player&#x27;);
+      paint();
+      animId = requestAnimationFrame(tick);
+      return;
+    }
+
+    brickTimer++;
+    if (brickTimer &gt; 180) {
+      brickTimer = 0;
+      if (Math.random() &lt; 0.8) spawnBrick();
+    }
+
+    // CPU auto-releases its sticky quickly (simple AI)
+    if (stuck === &#x27;cpu&#x27; &amp;&amp; Date.now() - stuckStart &gt; 600) releaseStuck();
+
+    paint();
+    animId = requestAnimationFrame(tick);
+  }
+
+  var audioCtx = null;
+  function beep(freq) {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      var o = audioCtx.createOscillator();
+      var g = audioCtx.createGain();
+      o.frequency.value = freq;
+      o.type = &#x27;square&#x27;;
+      g.gain.value = 0.05;
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start();
+      g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.08);
+      o.stop(audioCtx.currentTime + 0.09);
+    } catch (_) {}
+  }
+
+  function startGame() {
+    if (running) return;
+    playerScore = 0; cpuScore = 0;
+    playerScoreEl.textContent = &#x27;0&#x27;;
+    cpuScoreEl.textContent = &#x27;0&#x27;;
+    playerX = (FIELD_W - PADDLE_W) / 2; playerVX = 0;
+    cpuX = (FIELD_W - PADDLE_W) / 2; cpuVX = 0;
+    bricks = []; renderBricks();
+    powerups = []; renderPowerups();
+    stickyOwner.player = false; stickyOwner.cpu = false;
+    stuck = null;
+    brickTimer = 0;
+    for (var k in keysDown) keysDown[k] = false;
+    spawnBrick(); spawnBrick();
+    resetRound(&#x27;player&#x27;);
+    running = true;
+    paint();
+    animId = requestAnimationFrame(tick);
+  }
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27; || e.key === &#x27;ArrowRight&#x27;) {
+      keysDown[e.key] = true;
+      e.preventDefault();
+    }
+    if (e.key === &#x27; &#x27; || e.code === &#x27;Space&#x27;) {
+      e.preventDefault();
+      if (running) {
+        if (stuck === &#x27;player&#x27;) releaseStuck();
+        else if (locked === &#x27;player&#x27;) launchBall(-1);
+      }
+    }
+  });
+  window.addEventListener(&#x27;keyup&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27; || e.key === &#x27;ArrowRight&#x27;) keysDown[e.key] = false;
+  });
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  ballX = (FIELD_W - BALL_SIZE) / 2;
+  ballY = playerTop - BALL_SIZE - 2;
+  paint();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

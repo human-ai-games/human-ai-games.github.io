@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NEON WHACK — STYLISH!</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>NEON WHACK — STYLISH!</b> &middot; Game 238 &middot; Professional producer &middot; Basic game: Whack-a-mole</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #05030f; color: #eee; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 8px 14px; height: 100%; box-sizing: border-box; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 5px; }
+  h1 { margin: 0; font-size: 22px; font-weight: 700; color: #0ff; text-shadow: 0 0 8px #0ff, 0 0 18px #0ff; letter-spacing: 1px; }
+  .instructions { font-size: 16px; color: #cbd5e1; max-width: 660px; margin: 0; line-height: 1.25; }
+  .legend { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; font-size: 13px; color: #cbd5e1; margin: 0; }
+  .legend span { display: inline-flex; align-items: center; gap: 4px; }
+  .dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; }
+  .d-green { background: radial-gradient(circle at 35% 30%, #aaffaa, #00c800 60%); box-shadow: 0 0 6px #0f0; }
+  .d-gold  { background: radial-gradient(circle at 35% 30%, #fff6c0, #ffd000 55%); box-shadow: 0 0 6px #ffd000; }
+  .d-red   { background: radial-gradient(circle at 35% 30%, #ffb0b0, #ff1030 55%); box-shadow: 0 0 6px #ff0033; }
+  .d-blue  { background: radial-gradient(circle at 35% 30%, #bfe4ff, #1080ff 55%); box-shadow: 0 0 6px #1e90ff; }
+  .hud { display: flex; gap: 16px; font-size: 17px; color: #fff; margin: 0; align-items: baseline; }
+  .hud b { color: #0f0; text-shadow: 0 0 6px #0f0; }
+  .rank { font-size: 20px; font-weight: 800; letter-spacing: 1px; color: #888; }
+  .perk { font-size: 13px; color: #7cc8ff; min-height: 16px; margin: 0; text-shadow: 0 0 6px rgba(124,200,255,.5); }
+  .board { position: relative; width: 660px; height: 352px; flex-shrink: 0; margin: 0; border-radius: 10px; overflow: hidden;
+    background:
+      repeating-linear-gradient(0deg, rgba(255,0,255,.18) 0 1px, transparent 1px 40px),
+      repeating-linear-gradient(90deg, rgba(0,255,255,.18) 0 1px, transparent 1px 40px),
+      radial-gradient(ellipse at 50% 120%, #1a0033 0%, #05030f 70%);
+    box-shadow: inset 0 0 60px rgba(255,0,255,.25), 0 0 20px rgba(0,255,255,.3);
+    border: 1px solid rgba(0,255,255,.4);
+    transition: filter .25s;
+  }
+  .board.slow { box-shadow: inset 0 0 70px rgba(0,120,255,.6), 0 0 26px rgba(0,120,255,.6); }
+  .board.shield { border-color: #ffd000; box-shadow: inset 0 0 60px rgba(255,208,0,.35), 0 0 24px rgba(255,208,0,.5); }
+  .board.epic { animation: epicflash .6s ease-out; }
+  @keyframes epicflash {
+    0%   { filter: brightness(2.4) saturate(2.4) hue-rotate(0deg) contrast(1.4); }
+    40%  { filter: brightness(1.6) saturate(2) hue-rotate(60deg) contrast(1.2); }
+    100% { filter: none; }
+  }
+  .ball { position: absolute; width: 58px; height: 58px; border-radius: 50%; cursor: pointer; transform: translate(-50%,-50%) scale(0); animation: pop .12s forwards; }
+  @keyframes pop { to { transform: translate(-50%,-50%) scale(1); } }
+  .green { background: radial-gradient(circle at 35% 30%, #aaffaa, #00c800 60%, #007000); box-shadow: 0 0 14px #0f0, 0 0 28px #0f0; }
+  .gold  { background: radial-gradient(circle at 35% 30%, #fff6c0, #ffd000 55%, #b38600); box-shadow: 0 0 16px #ffd000, 0 0 34px #ffb000; }
+  .red   { background: radial-gradient(circle at 35% 30%, #ffb0b0, #ff1030 55%, #900010); box-shadow: 0 0 16px #ff0033, 0 0 34px #ff0033; }
+  .blue  { background: radial-gradient(circle at 35% 30%, #bfe4ff, #1080ff 55%, #0040a0); box-shadow: 0 0 16px #1e90ff, 0 0 34px #1e90ff; }
+  .overlay { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; flex-direction: column; gap: 8px; background: rgba(5,3,15,.85); z-index: 5; }
+  .overlay.show { display: flex; }
+  .overlay h2 { margin: 0; font-size: 32px; color: #ff2244; text-shadow: 0 0 12px #ff0033; }
+  .overlay p { margin: 0; font-size: 17px; color: #ddd; }
+  .slowmsg { position:absolute; top:6px; left:14px; color:#7cc8ff; text-shadow:0 0 8px #1e90ff; font-size:15px; display:none; z-index:4; }
+  .slowmsg.show { display:block; }
+  .stylepop { position:absolute; top:44%; left:50%; transform:translate(-50%,-50%) scale(1); font-size:70px; font-weight:900; letter-spacing:3px; z-index:6; pointer-events:none; opacity:0; }
+  .stylepop.show { animation: stylezoom .8s ease-out; }
+  @keyframes stylezoom {
+    0%   { opacity:0; transform:translate(-50%,-50%) scale(.3) rotate(-12deg); }
+    30%  { opacity:1; transform:translate(-50%,-50%) scale(1.1) rotate(4deg); }
+    70%  { opacity:1; transform:translate(-50%,-50%) scale(1) rotate(0); }
+    100% { opacity:0; transform:translate(-50%,-50%) scale(1.15) rotate(0); }
+  }
+  .perkpop { position:absolute; top:60%; left:50%; transform:translate(-50%,-50%); font-size:18px; font-weight:700; z-index:6; pointer-events:none; opacity:0; }
+  .perkpop.show { animation: perkfade 1.4s ease-out; }
+  @keyframes perkfade { 0%{opacity:0;} 20%{opacity:1;} 80%{opacity:1;} 100%{opacity:0;} }
+  .comboBar { position:absolute; bottom:6px; left:14px; right:14px; height:6px; background:rgba(255,255,255,.12); border-radius:3px; overflow:hidden; z-index:4; }
+  .comboFill { height:100%; width:100%; background:linear-gradient(90deg,#0ff,#f0f); transition:width .05s linear; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;NEON WHACK — STYLISH!&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Click green/gold balls fast to climb Style ranks D→C→B→A→S→SS→SSS, each granting a stronger perk; blue freezes time, red is game over. The deeper you go the faster Style drains and the harder ranks are to earn — use Start/Restart below.&lt;/p&gt;
+  &lt;div class=&quot;legend&quot;&gt;
+    &lt;span&gt;&lt;i class=&quot;dot d-green&quot;&gt;&lt;/i&gt;Green +1&lt;/span&gt;
+    &lt;span&gt;&lt;i class=&quot;dot d-gold&quot;&gt;&lt;/i&gt;Gold +5&lt;/span&gt;
+    &lt;span&gt;&lt;i class=&quot;dot d-blue&quot;&gt;&lt;/i&gt;Blue freeze&lt;/span&gt;
+    &lt;span&gt;&lt;i class=&quot;dot d-red&quot;&gt;&lt;/i&gt;Red = danger&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;hud&quot;&gt;
+    &lt;span&gt;Score: &lt;b id=&quot;score&quot;&gt;0&lt;/b&gt;&lt;/span&gt;
+    &lt;span&gt;x&lt;b id=&quot;mult&quot; style=&quot;color:#f0c;text-shadow:0 0 6px #f0c&quot;&gt;1&lt;/b&gt;&lt;/span&gt;
+    &lt;span&gt;Speed: &lt;b id=&quot;speed&quot; style=&quot;color:#0ff;text-shadow:0 0 6px #0ff&quot;&gt;1.0x&lt;/b&gt;&lt;/span&gt;
+    &lt;span&gt;Style: &lt;span class=&quot;rank&quot; id=&quot;rank&quot;&gt;—&lt;/span&gt;&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;p class=&quot;perk&quot; id=&quot;perkline&quot;&gt;Reach C rank to unlock perks…&lt;/p&gt;
+  &lt;div class=&quot;board&quot; id=&quot;board&quot;&gt;
+    &lt;div class=&quot;slowmsg&quot; id=&quot;slowmsg&quot;&gt;❄ FROZEN&lt;/div&gt;
+    &lt;div class=&quot;stylepop&quot; id=&quot;stylepop&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;perkpop&quot; id=&quot;perkpop&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;comboBar&quot;&gt;&lt;div class=&quot;comboFill&quot; id=&quot;comboFill&quot;&gt;&lt;/div&gt;&lt;/div&gt;
+    &lt;div class=&quot;overlay&quot; id=&quot;overlay&quot;&gt;
+      &lt;h2 id=&quot;ovtitle&quot;&gt;GAME OVER&lt;/h2&gt;
+      &lt;p id=&quot;ovtext&quot;&gt;You hit a red ball!&lt;/p&gt;
+      &lt;p&gt;Press Start/Restart below to play again.&lt;/p&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var BOARD_W = 660, BOARD_H = 352, R = 37;
+  var score = 0, hits = 0, running = false;
+  var spawnTimer = null, activeBalls = [];
+  var slowUntil = 0;
+
+  var RANKS = [&#x27;D&#x27;,&#x27;C&#x27;,&#x27;B&#x27;,&#x27;A&#x27;,&#x27;S&#x27;,&#x27;SS&#x27;,&#x27;SSS&#x27;];
+  var RANK_COLORS = [&#x27;#8ab&#x27;,&#x27;#5cf&#x27;,&#x27;#5f8&#x27;,&#x27;#ff5&#x27;,&#x27;#f80&#x27;,&#x27;#f0c&#x27;,&#x27;#f33&#x27;];
+  // Perk descriptions per rank.
+  var PERKS = [
+    &#x27;D — no perk yet, keep chaining!&#x27;,
+    &#x27;C — Bonus: +1 extra point per green&#x27;,
+    &#x27;B — Cryo: freeze lasts 7s instead of 5s&#x27;,
+    &#x27;A — Shield: survive one red-ball hit&#x27;,
+    &#x27;S — Multiplier: all points x2&#x27;,
+    &#x27;SS — Deep Freeze: freeze lasts 9s&#x27;,
+    &#x27;SSS — Overdrive: green balls worth 5 points, x3 score!&#x27;
+  ];
+  var styleIdx = -1;
+  var comboCount = 0;
+  var lastHitTime = 0;
+  var comboRAF = null;
+  var shielded = false;
+
+  var board = document.getElementById(&#x27;board&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var multEl = document.getElementById(&#x27;mult&#x27;);
+  var speedEl = document.getElementById(&#x27;speed&#x27;);
+  var rankEl = document.getElementById(&#x27;rank&#x27;);
+  var perkline = document.getElementById(&#x27;perkline&#x27;);
+  var overlay = document.getElementById(&#x27;overlay&#x27;);
+  var ovtitle = document.getElementById(&#x27;ovtitle&#x27;);
+  var ovtext = document.getElementById(&#x27;ovtext&#x27;);
+  var slowmsg = document.getElementById(&#x27;slowmsg&#x27;);
+  var stylepop = document.getElementById(&#x27;stylepop&#x27;);
+  var perkpop = document.getElementById(&#x27;perkpop&#x27;);
+  var comboFill = document.getElementById(&#x27;comboFill&#x27;);
+
+  var actx = null;
+  function beep(freq, dur, type) {
+    try {
+      if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+      var o = actx.createOscillator(), g = actx.createGain();
+      o.type = type || &#x27;square&#x27;; o.frequency.value = freq;
+      o.connect(g); g.connect(actx.destination);
+      g.gain.setValueAtTime(0.15, actx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + dur);
+      o.start(); o.stop(actx.currentTime + dur);
+    } catch (_) {}
+  }
+  function chord() { beep(523,0.14); setTimeout(function(){beep(784,0.16);},60); setTimeout(function(){beep(1046,0.2);},120); }
+
+  function speedFactor() {
+    var s = 1 + hits * 0.03;
+    if (s &gt; 2.4) s = 2.4;
+    return s;
+  }
+  function isSlow() { return Date.now() &lt; slowUntil; }
+  function effSpeed() { return isSlow() ? speedFactor() * 0.5 : speedFactor(); }
+
+  function blueChance() {
+    var c = 0.05 + hits * 0.004;
+    if (c &gt; 0.22) c = 0.22;
+    return c;
+  }
+
+  // DIFFICULTY SCALING FOR STYLE:
+  // Combo window shrinks as you get deeper (drains faster later).
+  function comboWindow() {
+    var w = 2200 - hits * 22;          // starts 2.2s, drops
+    if (w &lt; 850) w = 850;              // floor
+    return w;
+  }
+  // Hits needed to advance one rank grows as you climb (harder to upgrade).
+  function hitsForRank(idx) {
+    // idx is target rank index (1..6). Need progressively more chained hits.
+    return 2 + idx;                    // C=3, B=4, A=5, S=6, SS=7, SSS=8
+  }
+
+  // Perk helpers based on current rank.
+  function greenValue() {
+    var base = (styleIdx &gt;= 6) ? 5 : 1;
+    if (styleIdx &gt;= 1) base += 1;      // C perk bonus
+    return base;
+  }
+  function scoreMult() {
+    if (styleIdx &gt;= 6) return 3;       // SSS
+    if (styleIdx &gt;= 4) return 2;       // S
+    return 1;
+  }
+  function freezeDuration() {
+    if (styleIdx &gt;= 5) return 9000;    // SS
+    if (styleIdx &gt;= 2) return 7000;    // B
+    return 5000;
+  }
+  function updateMult() {
+    multEl.textContent = scoreMult();
+  }
+
+  function clearBalls() {
+    for (var i = 0; i &lt; activeBalls.length; i++) {
+      clearTimeout(activeBalls[i].life);
+      if (activeBalls[i].el.parentNode === board) board.removeChild(activeBalls[i].el);
+    }
+    activeBalls = [];
+  }
+
+  function pickType() {
+    var r = Math.random();
+    var blue = blueChance();
+    if (r &lt; blue) return &#x27;blue&#x27;;
+    if (r &lt; blue + 0.08) return &#x27;gold&#x27;;
+    if (r &lt; blue + 0.08 + 0.20) return &#x27;red&#x27;;
+    return &#x27;green&#x27;;
+  }
+
+  function showPerkPop(idx) {
+    if (idx &lt; 1) return;
+    perkpop.textContent = PERKS[idx];
+    perkpop.style.color = RANK_COLORS[idx];
+    perkpop.style.textShadow = &#x27;0 0 12px &#x27; + RANK_COLORS[idx];
+    perkpop.classList.remove(&#x27;show&#x27;); void perkpop.offsetWidth; perkpop.classList.add(&#x27;show&#x27;);
+  }
+
+  function refreshShieldVisual() {
+    if (styleIdx &gt;= 3 &amp;&amp; shielded) board.classList.add(&#x27;shield&#x27;);
+    else board.classList.remove(&#x27;shield&#x27;);
+  }
+
+  function setRank(idx) {
+    if (idx &gt; 6) idx = 6;
+    if (idx === styleIdx) return;
+    var wentUp = idx &gt; styleIdx;
+    styleIdx = idx;
+    if (idx &lt; 0) {
+      rankEl.textContent = &#x27;—&#x27;; rankEl.style.color = &#x27;#888&#x27;; rankEl.style.textShadow = &#x27;none&#x27;;
+      perkline.textContent = &#x27;Reach C rank to unlock perks…&#x27;;
+      updateMult(); refreshShieldVisual();
+      return;
+    }
+    var name = RANKS[idx], col = RANK_COLORS[idx];
+    rankEl.textContent = name;
+    rankEl.style.color = col;
+    rankEl.style.textShadow = &#x27;0 0 8px &#x27; + col;
+    perkline.textContent = &#x27;Active perk: &#x27; + PERKS[idx].replace(/^[A-Z]+ — /, &#x27;&#x27;);
+    perkline.style.color = col;
+    if (idx &gt;= 3) shielded = true;     // gaining A (re)arms the shield
+    updateMult(); refreshShieldVisual();
+    if (wentUp) {
+      board.classList.remove(&#x27;epic&#x27;); void board.offsetWidth; board.classList.add(&#x27;epic&#x27;);
+      stylepop.textContent = name + &#x27;!&#x27;;
+      stylepop.style.color = col;
+      stylepop.style.textShadow = &#x27;0 0 20px &#x27; + col + &#x27;, 0 0 40px &#x27; + col;
+      stylepop.classList.remove(&#x27;show&#x27;); void stylepop.offsetWidth; stylepop.classList.add(&#x27;show&#x27;);
+      chord();
+      showPerkPop(idx);
+    }
+  }
+
+  function registerStyleHit(n) {
+    n = n || 1;
+    var now = Date.now();
+    lastHitTime = now;
+    comboCount += n;
+    // Determine rank from cumulative thresholds that grow per rank.
+    var idx = 0, need = 0;
+    for (var r = 1; r &lt;= 6; r++) {
+      need += hitsForRank(r);
+      if (comboCount &gt;= need) idx = r; else break;
+    }
+    setRank(idx);
+  }
+
+  function resetStyle() {
+    comboCount = 0;
+    shielded = false;
+    setRank(-1);
+    comboFill.style.width = &#x27;0%&#x27;;
+  }
+
+  function updateComboBar() {
+    if (!running) return;
+    if (styleIdx &gt;= 0) {
+      var elapsed = Date.now() - lastHitTime;
+      var win = comboWindow();
+      var pct = Math.max(0, 1 - elapsed / win) * 100;
+      comboFill.style.width = pct + &#x27;%&#x27;;
+      if (elapsed &gt; win) resetStyle();
+    }
+    comboRAF = requestAnimationFrame(updateComboBar);
+  }
+
+  function triggerFreeze() {
+    slowUntil = Date.now() + freezeDuration();
+    board.classList.add(&#x27;slow&#x27;); slowmsg.classList.add(&#x27;show&#x27;);
+    var dur = freezeDuration();
+    setTimeout(function () {
+      if (Date.now() &gt;= slowUntil) { board.classList.remove(&#x27;slow&#x27;); slowmsg.classList.remove(&#x27;show&#x27;); }
+    }, dur);
+  }
+
+  function spawnBall() {
+    if (!running) return;
+    var type = pickType();
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;ball &#x27; + type;
+    var x = R + Math.random() * (BOARD_W - 2 * R);
+    var y = R + Math.random() * (BOARD_H - 2 * R);
+    el.style.left = x + &#x27;px&#x27;;
+    el.style.top = y + &#x27;px&#x27;;
+
+    var baseLife = (type === &#x27;gold&#x27;) ? 650 : 1150;
+    var life = baseLife / effSpeed();
+
+    var handled = false;
+    var record = { el: el, life: null };
+
+    el.addEventListener(&#x27;click&#x27;, function () {
+      if (handled || !running) return;
+      handled = true;
+      if (type === &#x27;red&#x27;) {
+        if (styleIdx &gt;= 3 &amp;&amp; shielded) {
+          // Shield absorbs the hit.
+          shielded = false;
+          refreshShieldVisual();
+          beep(400, 0.25, &#x27;triangle&#x27;);
+          perkpop.textContent = &#x27;SHIELD SAVED YOU!&#x27;;
+          perkpop.style.color = &#x27;#ffd000&#x27;; perkpop.style.textShadow = &#x27;0 0 12px #ffd000&#x27;;
+          perkpop.classList.remove(&#x27;show&#x27;); void perkpop.offsetWidth; perkpop.classList.add(&#x27;show&#x27;);
+          removeBall(record);
+          return;
+        }
+        beep(90, 0.4, &#x27;sawtooth&#x27;);
+        removeBall(record);
+        gameOver();
+        return;
+      }
+      var m = scoreMult();
+      if (type === &#x27;green&#x27;) { score += greenValue() * m; hits += 1; beep(660, 0.09); registerStyleHit(1); }
+      else if (type === &#x27;gold&#x27;) { score += 5 * m; hits += 1; beep(990, 0.14); registerStyleHit(2); }
+      else if (type === &#x27;blue&#x27;) {
+        hits += 1;
+        beep(300, 0.3, &#x27;sine&#x27;);
+        registerStyleHit(1);
+        triggerFreeze();
+      }
+      scoreEl.textContent = score;
+      speedEl.textContent = speedFactor().toFixed(1) + &#x27;x&#x27;;
+      el.style.animation = &#x27;none&#x27;;
+      el.style.transform = &#x27;translate(-50%,-50%) scale(1.4)&#x27;;
+      el.style.opacity = &#x27;0&#x27;;
+      el.style.transition = &#x27;transform .12s, opacity .12s&#x27;;
+      clearTimeout(record.life);
+      setTimeout(function () { removeBall(record); }, 120);
+    });
+
+    board.appendChild(el);
+    record.life = setTimeout(function () { removeBall(record); }, life);
+    activeBalls.push(record);
+  }
+
+  function removeBall(record) {
+    var idx = activeBalls.indexOf(record);
+    if (idx !== -1) activeBalls.splice(idx, 1);
+    clearTimeout(record.life);
+    if (record.el.parentNode === board) board.removeChild(record.el);
+  }
+
+  function scheduleSpawn() {
+    if (!running) return;
+    var gap = 950 / effSpeed();
+    spawnTimer = setTimeout(function () {
+      spawnBall();
+      scheduleSpawn();
+    }, gap);
+  }
+
+  function startGame() {
+    running = true;
+    score = 0; hits = 0; slowUntil = 0;
+    scoreEl.textContent = &#x27;0&#x27;;
+    speedEl.textContent = &#x27;1.0x&#x27;;
+    multEl.textContent = &#x27;1&#x27;;
+    overlay.classList.remove(&#x27;show&#x27;);
+    board.classList.remove(&#x27;slow&#x27;);
+    slowmsg.classList.remove(&#x27;show&#x27;);
+    resetStyle();
+    lastHitTime = Date.now();
+    clearBalls();
+    spawnBall();
+    scheduleSpawn();
+    if (comboRAF) cancelAnimationFrame(comboRAF);
+    updateComboBar();
+  }
+
+  function stopGame() {
+    running = false;
+    if (spawnTimer) { clearTimeout(spawnTimer); spawnTimer = null; }
+    if (comboRAF) { cancelAnimationFrame(comboRAF); comboRAF = null; }
+    clearBalls();
+    board.classList.remove(&#x27;slow&#x27;);
+    slowmsg.classList.remove(&#x27;show&#x27;);
+  }
+
+  function gameOver() {
+    running = false;
+    if (spawnTimer) { clearTimeout(spawnTimer); spawnTimer = null; }
+    if (comboRAF) { cancelAnimationFrame(comboRAF); comboRAF = null; }
+    clearBalls();
+    board.classList.remove(&#x27;slow&#x27;);
+    board.classList.remove(&#x27;shield&#x27;);
+    slowmsg.classList.remove(&#x27;show&#x27;);
+    ovtitle.textContent = &#x27;GAME OVER&#x27;;
+    var rankTxt = styleIdx &gt;= 0 ? RANKS[styleIdx] : &#x27;—&#x27;;
+    ovtext.textContent = &#x27;Score: &#x27; + score + &#x27;  •  Best Style: &#x27; + rankTxt;
+    overlay.classList.add(&#x27;show&#x27;);
+  }
+
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  // Suppress in-iframe scrollbars. The parent fits the iframe layout
+  // box to match the content size, so internal scroll is redundant —
+  // and if the LLM&#x27;s CSS sets body overflow: auto, the scrollbar shows
+  // briefly before the fit lands. Force hidden so it never appears.
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  // Iframe-internal JS error capture. window.onerror inside a sandboxed
+  // iframe can&#x27;t post to /api/js_error directly, so we relay to the
+  // parent via postMessage; parent&#x27;s error_logger.js forwards to the
+  // server. Catches LLM-emitted broken HTML (invalid hex, undefined
+  // variables, etc.) that would otherwise fail silently inside the
+  // iframe.
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      // Debounce: don&#x27;t fire more than ~10× per second. ResizeObserver
+      // fires repeatedly during layout/font load; we only need the latest.
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      // Clamp: reject obviously bogus dimensions. Any browser-game viewport
+      // is well under 4000×4000 logical px; readings beyond that are layout
+      // noise during load/visibility transitions.
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  // Parent posts wd_remeasure when it makes the iframe visible (the body&#x27;s
+  // ResizeObserver doesn&#x27;t fire on display:none→block of an outer ancestor
+  // because the iframe document didn&#x27;t actually resize). Wait a frame for
+  // layout to settle before measuring.
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>⛏️ Whack-a-Mole ⛏️</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>⛏️ Whack-a-Mole ⛏️</b> &middot; Game 061 &middot; Professional producer &middot; Basic game: Whack-a-mole</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: Georgia, &#x27;Times New Roman&#x27;, serif; margin: 0; padding: 0;
+    background: linear-gradient(165deg, #e9dcc0 0%, #d8c39a 55%, #c9b184 100%); color: #3a2c1a; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 12px; height: 100%; box-sizing: border-box;
+    text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 8px; }
+  h1 { margin: 0; font-size: 27px; font-weight: 700; color: #5b3a1e;
+    text-shadow: 0 2px 0 #f4e9d0, 0 3px 7px rgba(0,0,0,.2); letter-spacing: 1px; }
+  .instructions { font-size: 16px; color: #4a3620; max-width: 600px; margin: 0; line-height: 1.32; }
+  .hud { display: flex; gap: 0; align-items: stretch; width: 600px;
+    background: linear-gradient(180deg, #8a5a30 0%, #6e4522 100%);
+    border: 2px solid #4a2e15; border-radius: 12px; overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.15); }
+  .hud .stat { flex: 1; padding: 6px 4px; color: #f4e4c4; font-weight: 700;
+    border-right: 1px solid rgba(0,0,0,.25); }
+  .hud .stat:last-child { border-right: none; }
+  .hud .stat .label { display:block; font-size: 12px; letter-spacing:1px; text-transform: uppercase; opacity:.8; }
+  .hud .stat .val { display:block; font-size: 22px; line-height:1.1; }
+  .stat.bump .val { animation: pillBump .3s ease; }
+  @keyframes pillBump { 0%{transform:scale(1);} 40%{transform:scale(1.28);} 100%{transform:scale(1);} }
+  #time.low { color:#ffbf47; }
+  .board-shell { position: relative; width: 600px; height: 408px; flex-shrink: 0; }
+  .board { position: absolute; inset:0;
+    background:
+      radial-gradient(circle at 30% 20%, rgba(255,255,255,.08), transparent 40%),
+      linear-gradient(180deg, #9c6a3c 0%, #7a4e28 55%, #63401f 100%);
+    border: 4px solid #4a2e15; border-radius: 18px;
+    box-shadow: inset 0 -10px 24px rgba(0,0,0,.35), inset 0 4px 12px rgba(255,255,255,.12), 0 10px 26px rgba(0,0,0,.28);
+    display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr);
+    padding: 22px; gap: 8px; box-sizing: border-box; overflow: hidden; }
+  .board.gold-glow { box-shadow: inset 0 -10px 24px rgba(0,0,0,.35), inset 0 0 40px rgba(255,200,60,.45), 0 10px 26px rgba(0,0,0,.28); }
+  .board.shake { animation: shake .3s ease; }
+  @keyframes shake { 0%,100%{transform:translate(0,0);} 20%{transform:translate(-4px,3px);} 40%{transform:translate(5px,-2px);} 60%{transform:translate(-3px,-3px);} 80%{transform:translate(3px,2px);} }
+  .cell { position: relative; display: flex; align-items: flex-end; justify-content: center; z-index:2; }
+  .hole {
+    position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
+    width: 116px; height: 50px; border-radius: 50%;
+    background: radial-gradient(ellipse at center, #3a2413 0%, #241509 68%, #150c05 100%);
+    box-shadow: inset 0 8px 14px rgba(0,0,0,.7), 0 3px 0 rgba(255,235,200,.12);
+  }
+  .hole::before { content:&#x27;&#x27;; position:absolute; top:-4px; left:50%; transform:translateX(-50%);
+    width:124px; height:16px; border-radius:50%; background: rgba(60,38,20,.6); }
+  .mole-wrap { position: absolute; bottom: 12px; left: 50%; width: 88px; height: 100px;
+    transform: translate(-50%, 105%); pointer-events: none; z-index:3; }
+  .mole-wrap.up { animation: popUp .28s cubic-bezier(.34,1.7,.5,1) forwards; }
+  .mole-wrap.up .mole { animation: idleBob 1.3s ease-in-out .3s infinite; }
+  .mole-wrap.whacked { animation: whackDown .22s cubic-bezier(.5,-0.4,.7,.5) forwards; }
+  .mole-wrap.timeout { animation: sinkDown .25s ease-in forwards; }
+  @keyframes popUp { 0%{transform:translate(-50%,105%);} 70%{transform:translate(-50%,-8%);} 100%{transform:translate(-50%,4%);} }
+  @keyframes idleBob { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-4px);} }
+  @keyframes whackDown { 0%{transform:translate(-50%,4%) scale(1,1);} 30%{transform:translate(-50%,20%) scale(1.25,.7);} 100%{transform:translate(-50%,110%) scale(.85,1);} }
+  @keyframes sinkDown { from{transform:translate(-50%,4%);} to{transform:translate(-50%,110%);} }
+  .mole { width: 88px; height: 88px; cursor: pointer; pointer-events: auto; position: relative; }
+  .mole svg { display: block; filter: drop-shadow(0 4px 5px rgba(0,0,0,.4)); }
+  .mole.golden svg { filter: drop-shadow(0 0 8px #ffd24d) drop-shadow(0 4px 5px rgba(0,0,0,.4)); }
+  .paw { transform-origin: center; animation: pawWiggle 1s ease-in-out infinite; }
+  .paw.r { animation-delay:.15s; }
+  @keyframes pawWiggle { 0%,100%{transform:translateY(0) rotate(0deg);} 50%{transform:translateY(-2px) rotate(4deg);} }
+  .whisk { transform-origin: 44px 60px; animation: whiskTwitch 2.4s ease-in-out infinite; }
+  @keyframes whiskTwitch { 0%,88%,100%{transform:rotate(0deg);} 92%,96%{transform:rotate(3deg);} }
+  .eye-lid { transform-origin:center; animation: blink 3.4s infinite; }
+  @keyframes blink { 0%,94%,100%{transform:scaleY(0);} 96%,98%{transform:scaleY(1);} }
+  .dirt { position:absolute; bottom:16px; left:50%; width:8px; height:8px; border-radius:50%;
+    background:#3a2413; pointer-events:none; z-index:4; animation: dirtFly .5s ease-out forwards; }
+  @keyframes dirtFly { 0%{opacity:1;transform:translate(-50%,0) scale(1);} 100%{opacity:0;transform:translate(calc(-50% + var(--dx)),var(--dy)) scale(.4);} }
+  .float { position: absolute; font-weight: 700; font-size: 26px; pointer-events: none; font-family: Georgia, serif;
+    text-shadow: 0 2px 5px rgba(0,0,0,.5); animation: floatUp .75s ease-out forwards; z-index: 6; }
+  @keyframes floatUp { 0%{ transform: translate(-50%,0) scale(.5); opacity:0; }
+    20%{ opacity:1; transform: translate(-50%,-12px) scale(1.15);} 100%{ transform: translate(-50%,-52px) scale(1); opacity:0; } }
+  .star { position:absolute; font-size:20px; pointer-events:none; z-index:5;
+    animation: starBurst .55s ease-out forwards; }
+  @keyframes starBurst { 0%{opacity:1;transform:translate(-50%,-50%) scale(.3) rotate(0deg);}
+    100%{opacity:0;transform:translate(calc(-50% + var(--sx)),calc(-50% + var(--sy))) scale(1.1) rotate(180deg);} }
+  .overlay { position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-size:28px; font-weight:700; color:#f4e4c4; background:rgba(58,36,20,.72); border-radius:16px;
+    text-shadow:0 2px 4px rgba(0,0,0,.5); flex-direction:column; gap:8px; z-index:20; }
+  .overlay small { font-size:17px; font-weight:400; color:#e8d3ac; }
+  .overlay .big { font-size:44px; color:#ffd24d; animation: pillBump .5s ease; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;⛏️ Whack-a-Mole ⛏️&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Click the moles as they pop out of their burrows to score — golden moles are worth triple, and fast back-to-back hits build a combo bonus! You have 30 seconds, so whack quickly using the Start button below.&lt;/p&gt;
+  &lt;div class=&quot;hud&quot;&gt;
+    &lt;div class=&quot;stat&quot; id=&quot;scoreStat&quot;&gt;&lt;span class=&quot;label&quot;&gt;Score&lt;/span&gt;&lt;span class=&quot;val&quot; id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;stat&quot;&gt;&lt;span class=&quot;label&quot;&gt;Time&lt;/span&gt;&lt;span class=&quot;val&quot; id=&quot;time&quot;&gt;30&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;stat&quot; id=&quot;comboStat&quot;&gt;&lt;span class=&quot;label&quot;&gt;Combo&lt;/span&gt;&lt;span class=&quot;val&quot; id=&quot;combo&quot;&gt;x1&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;stat&quot;&gt;&lt;span class=&quot;label&quot;&gt;Best&lt;/span&gt;&lt;span class=&quot;val&quot; id=&quot;best&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;board-shell&quot;&gt;
+    &lt;div class=&quot;board&quot; id=&quot;board&quot;&gt;
+      &lt;div class=&quot;overlay&quot; id=&quot;overlay&quot;&gt;Press Start to play!&lt;small&gt;Whack the moles&lt;/small&gt;&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var GRID = 9, GAME_TIME = 30;
+  var score = 0, best = 0, timeLeft = GAME_TIME, running = false;
+  var spawnTimer = null, countTimer = null;
+  var combo = 1, lastHit = 0;
+  var board = document.getElementById(&#x27;board&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var timeEl = document.getElementById(&#x27;time&#x27;);
+  var bestEl = document.getElementById(&#x27;best&#x27;);
+  var comboEl = document.getElementById(&#x27;combo&#x27;);
+  var scoreStat = document.getElementById(&#x27;scoreStat&#x27;);
+  var comboStat = document.getElementById(&#x27;comboStat&#x27;);
+  var overlay = document.getElementById(&#x27;overlay&#x27;);
+  var cells = [];
+
+  for (var i = 0; i &lt; GRID; i++) {
+    var cell = document.createElement(&#x27;div&#x27;);
+    cell.className = &#x27;cell&#x27;;
+    var hole = document.createElement(&#x27;div&#x27;); hole.className = &#x27;hole&#x27;;
+    var wrap = document.createElement(&#x27;div&#x27;); wrap.className = &#x27;mole-wrap&#x27;;
+    var mole = document.createElement(&#x27;div&#x27;); mole.className = &#x27;mole&#x27;;
+    mole.innerHTML = moleSVG(false);
+    wrap.appendChild(mole);
+    cell.appendChild(hole); cell.appendChild(wrap);
+    board.appendChild(cell);
+    cells.push({ cell: cell, wrap: wrap, mole: mole, active: false, golden: false, timeout: null });
+    (function(idx){
+      cells[idx].mole.addEventListener(&#x27;click&#x27;, function(){ whack(idx); });
+    })(i);
+  }
+
+  // Classic gray garden mole — round body, dirt cap, pink snout &amp; paws,
+  // buck teeth, whiskers. Golden variant swaps the body to warm gold.
+  function moleSVG(golden){
+    var body = golden ? &#x27;#c9a13a&#x27; : &#x27;#6b6b73&#x27;;
+    var bodyD = golden ? &#x27;#a9832a&#x27; : &#x27;#54545c&#x27;;
+    var belly = golden ? &#x27;#e8d38f&#x27; : &#x27;#9a9aa2&#x27;;
+    var snout = &#x27;#e39aa0&#x27;;
+    return &#x27;&lt;svg width=&quot;88&quot; height=&quot;88&quot; viewBox=&quot;0 0 88 88&quot;&gt;&#x27;
+      // paws
+      + &#x27;&lt;g class=&quot;paw l&quot;&gt;&lt;ellipse cx=&quot;20&quot; cy=&quot;62&quot; rx=&quot;9&quot; ry=&quot;7&quot; fill=&quot;&#x27;+body+&#x27;&quot;/&gt;&lt;ellipse cx=&quot;17&quot; cy=&quot;64&quot; rx=&quot;4&quot; ry=&quot;3&quot; fill=&quot;&#x27;+snout+&#x27;&quot;/&gt;&lt;/g&gt;&#x27;
+      + &#x27;&lt;g class=&quot;paw r&quot;&gt;&lt;ellipse cx=&quot;68&quot; cy=&quot;62&quot; rx=&quot;9&quot; ry=&quot;7&quot; fill=&quot;&#x27;+body+&#x27;&quot;/&gt;&lt;ellipse cx=&quot;71&quot; cy=&quot;64&quot; rx=&quot;4&quot; ry=&quot;3&quot; fill=&quot;&#x27;+snout+&#x27;&quot;/&gt;&lt;/g&gt;&#x27;
+      // body
+      + &#x27;&lt;ellipse cx=&quot;44&quot; cy=&quot;52&quot; rx=&quot;30&quot; ry=&quot;30&quot; fill=&quot;&#x27;+body+&#x27;&quot;/&gt;&#x27;
+      + &#x27;&lt;path d=&quot;M14 52 a30 30 0 0 0 60 0 z&quot; fill=&quot;&#x27;+bodyD+&#x27;&quot; opacity=&quot;.35&quot;/&gt;&#x27;
+      + &#x27;&lt;ellipse cx=&quot;44&quot; cy=&quot;60&quot; rx=&quot;18&quot; ry=&quot;16&quot; fill=&quot;&#x27;+belly+&#x27;&quot;/&gt;&#x27;
+      // little dirt cap on head
+      + &#x27;&lt;path d=&quot;M24 30 q20 -16 40 0 q-20 -6 -40 0 z&quot; fill=&quot;#3a2413&quot;/&gt;&#x27;
+      + &#x27;&lt;circle cx=&quot;30&quot; cy=&quot;27&quot; r=&quot;2.5&quot; fill=&quot;#4a2e15&quot;/&gt;&lt;circle cx=&quot;44&quot; cy=&quot;24&quot; r=&quot;2.8&quot; fill=&quot;#4a2e15&quot;/&gt;&lt;circle cx=&quot;57&quot; cy=&quot;27&quot; r=&quot;2.5&quot; fill=&quot;#4a2e15&quot;/&gt;&#x27;
+      // eyes
+      + &#x27;&lt;circle cx=&quot;34&quot; cy=&quot;44&quot; r=&quot;5.5&quot; fill=&quot;#fff&quot;/&gt;&#x27;
+      + &#x27;&lt;circle cx=&quot;54&quot; cy=&quot;44&quot; r=&quot;5.5&quot; fill=&quot;#fff&quot;/&gt;&#x27;
+      + &#x27;&lt;circle cx=&quot;35&quot; cy=&quot;45&quot; r=&quot;3&quot; fill=&quot;#2a2a2a&quot;/&gt;&#x27;
+      + &#x27;&lt;circle cx=&quot;55&quot; cy=&quot;45&quot; r=&quot;3&quot; fill=&quot;#2a2a2a&quot;/&gt;&#x27;
+      + &#x27;&lt;circle cx=&quot;36&quot; cy=&quot;43.5&quot; r=&quot;1&quot; fill=&quot;#fff&quot;/&gt;&lt;circle cx=&quot;56&quot; cy=&quot;43.5&quot; r=&quot;1&quot; fill=&quot;#fff&quot;/&gt;&#x27;
+      + &#x27;&lt;rect class=&quot;eye-lid&quot; x=&quot;28&quot; y=&quot;38.5&quot; width=&quot;12&quot; height=&quot;6&quot; rx=&quot;3&quot; fill=&quot;&#x27;+body+&#x27;&quot;/&gt;&#x27;
+      + &#x27;&lt;rect class=&quot;eye-lid&quot; x=&quot;48&quot; y=&quot;38.5&quot; width=&quot;12&quot; height=&quot;6&quot; rx=&quot;3&quot; fill=&quot;&#x27;+body+&#x27;&quot;/&gt;&#x27;
+      // whiskers
+      + &#x27;&lt;g class=&quot;whisk&quot; stroke=&quot;#d8d8dd&quot; stroke-width=&quot;1.4&quot; stroke-linecap=&quot;round&quot;&gt;&#x27;
+      + &#x27;&lt;path d=&quot;M40 58 L22 54&quot;/&gt;&lt;path d=&quot;M40 61 L21 62&quot;/&gt;&lt;path d=&quot;M48 58 L66 54&quot;/&gt;&lt;path d=&quot;M48 61 L67 62&quot;/&gt;&lt;/g&gt;&#x27;
+      // snout
+      + &#x27;&lt;ellipse cx=&quot;44&quot; cy=&quot;59&quot; rx=&quot;9&quot; ry=&quot;7&quot; fill=&quot;&#x27;+snout+&#x27;&quot;/&gt;&#x27;
+      + &#x27;&lt;ellipse cx=&quot;44&quot; cy=&quot;56&quot; rx=&quot;4&quot; ry=&quot;3&quot; fill=&quot;#c96f78&quot;/&gt;&#x27;
+      + &#x27;&lt;circle cx=&quot;42&quot; cy=&quot;55&quot; r=&quot;1&quot; fill=&quot;#fff&quot; opacity=&quot;.7&quot;/&gt;&#x27;
+      // buck teeth
+      + &#x27;&lt;rect x=&quot;40&quot; y=&quot;65&quot; width=&quot;4&quot; height=&quot;6&quot; rx=&quot;1&quot; fill=&quot;#fff&quot; stroke=&quot;#d0d0d0&quot; stroke-width=&quot;.5&quot;/&gt;&#x27;
+      + &#x27;&lt;rect x=&quot;44&quot; y=&quot;65&quot; width=&quot;4&quot; height=&quot;6&quot; rx=&quot;1&quot; fill=&quot;#fff&quot; stroke=&quot;#d0d0d0&quot; stroke-width=&quot;.5&quot;/&gt;&#x27;
+      + &#x27;&lt;/svg&gt;&#x27;;
+  }
+
+  // --- audio ---
+  var audioCtx = null;
+  function ctx(){ try{ if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} return audioCtx; }
+  function beep(freq, dur, type, vol){
+    var c = ctx(); if(!c) return;
+    try {
+      var o = c.createOscillator(), g = c.createGain();
+      o.type = type||&#x27;sine&#x27;; o.frequency.value = freq;
+      g.gain.value = vol||0.15;
+      o.connect(g); g.connect(c.destination);
+      var t = c.currentTime;
+      g.gain.setValueAtTime(g.gain.value, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t+dur);
+      o.start(t); o.stop(t+dur);
+    } catch(e){}
+  }
+  function bonkSound(golden){
+    var c = ctx(); if(!c) return;
+    try {
+      var o = c.createOscillator(), g = c.createGain();
+      o.type=&#x27;sine&#x27;;
+      var t = c.currentTime;
+      o.frequency.setValueAtTime(golden?900:600, t);
+      o.frequency.exponentialRampToValueAtTime(golden?200:150, t+0.14);
+      g.gain.setValueAtTime(0.22, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t+0.16);
+      o.connect(g); g.connect(c.destination);
+      o.start(t); o.stop(t+0.16);
+    } catch(e){}
+    if (golden) setTimeout(function(){ beep(1320,0.12,&#x27;triangle&#x27;,0.14); }, 60);
+  }
+  function popSound(){ beep(420, 0.06, &#x27;triangle&#x27;, 0.08); }
+
+  function popUp(){
+    if (!running) return;
+    var free = [];
+    for (var i=0;i&lt;GRID;i++){ if(!cells[i].active) free.push(i); }
+    if (free.length){
+      var idx = free[Math.floor(Math.random()*free.length)];
+      var c = cells[idx];
+      c.active = true;
+      c.golden = Math.random() &lt; 0.15;
+      c.mole.className = &#x27;mole&#x27; + (c.golden ? &#x27; golden&#x27; : &#x27;&#x27;);
+      c.mole.innerHTML = moleSVG(c.golden);
+      c.wrap.className = &#x27;mole-wrap up&#x27;;
+      dirtBurst(c.cell);
+      popSound();
+      if (c.golden){ board.classList.add(&#x27;gold-glow&#x27;); }
+      var life = 750 + Math.random()*550;
+      c.timeout = setTimeout(function(){ timeoutHide(idx); }, life);
+    }
+  }
+
+  function anyGolden(){
+    for (var i=0;i&lt;GRID;i++){ if(cells[i].active &amp;&amp; cells[i].golden) return true; }
+    return false;
+  }
+
+  function dirtBurst(cell){
+    for (var i=0;i&lt;6;i++){
+      var d = document.createElement(&#x27;div&#x27;);
+      d.className=&#x27;dirt&#x27;;
+      d.style.setProperty(&#x27;--dx&#x27;, (Math.random()*70-35)+&#x27;px&#x27;);
+      d.style.setProperty(&#x27;--dy&#x27;, -(15+Math.random()*30)+&#x27;px&#x27;);
+      cell.appendChild(d);
+      (function(el){ setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); },500); })(d);
+    }
+  }
+
+  function timeoutHide(idx){
+    var c = cells[idx];
+    if (!c.active) return;
+    c.active = false;
+    if (c.timeout){ clearTimeout(c.timeout); c.timeout=null; }
+    c.wrap.className = &#x27;mole-wrap timeout&#x27;;
+    if (!anyGolden()) board.classList.remove(&#x27;gold-glow&#x27;);
+    combo = 1; comboEl.textContent = &#x27;x1&#x27;;
+  }
+
+  function whack(idx){
+    var c = cells[idx];
+    if (!running || !c.active) return;
+    var now = Date.now();
+    if (now - lastHit &lt; 900) { combo = Math.min(combo+1, 8); }
+    else { combo = 1; }
+    lastHit = now;
+    comboEl.textContent = &#x27;x&#x27;+combo;
+    comboStat.classList.remove(&#x27;bump&#x27;); void comboStat.offsetWidth; comboStat.classList.add(&#x27;bump&#x27;);
+
+    var base = c.golden ? 3 : 1;
+    var pts = base * combo;
+    score += pts;
+    scoreEl.textContent = score;
+    scoreStat.classList.remove(&#x27;bump&#x27;); void scoreStat.offsetWidth; scoreStat.classList.add(&#x27;bump&#x27;);
+
+    c.active = false;
+    if (c.timeout){ clearTimeout(c.timeout); c.timeout=null; }
+    c.wrap.className = &#x27;mole-wrap whacked&#x27;;
+    if (!anyGolden()) board.classList.remove(&#x27;gold-glow&#x27;);
+    bonkSound(c.golden);
+    showFloat(c.cell, &#x27;+&#x27;+pts, c.golden ? &#x27;#ffd24d&#x27; : &#x27;#f4e4c4&#x27;);
+    starBurst(c.cell, c.golden);
+    board.classList.remove(&#x27;shake&#x27;); void board.offsetWidth; board.classList.add(&#x27;shake&#x27;);
+  }
+
+  function showFloat(cell, text, color){
+    var f = document.createElement(&#x27;div&#x27;);
+    f.className = &#x27;float&#x27;; f.textContent = text; f.style.color = color;
+    f.style.left = &#x27;50%&#x27;; f.style.top = &#x27;16px&#x27;;
+    cell.appendChild(f);
+    setTimeout(function(){ if(f.parentNode) f.parentNode.removeChild(f); }, 750);
+  }
+  function starBurst(cell, golden){
+    var syms = golden ? [&#x27;⭐&#x27;,&#x27;✨&#x27;,&#x27;🌟&#x27;,&#x27;⭐&#x27;,&#x27;✨&#x27;] : [&#x27;💫&#x27;,&#x27;✨&#x27;,&#x27;⭐&#x27;,&#x27;✨&#x27;];
+    for (var i=0;i&lt;syms.length;i++){
+      var s = document.createElement(&#x27;div&#x27;);
+      s.className=&#x27;star&#x27;; s.textContent=syms[i];
+      s.style.left=&#x27;50%&#x27;; s.style.top=&#x27;42%&#x27;;
+      var ang = (Math.PI*2/syms.length)*i;
+      s.style.setProperty(&#x27;--sx&#x27;, Math.cos(ang)*45+&#x27;px&#x27;);
+      s.style.setProperty(&#x27;--sy&#x27;, Math.sin(ang)*45+&#x27;px&#x27;);
+      cell.appendChild(s);
+      (function(el){ setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); },550); })(s);
+    }
+  }
+
+  function tick(){
+    timeLeft--;
+    timeEl.textContent = timeLeft;
+    if (timeLeft &lt;= 5){ timeEl.classList.add(&#x27;low&#x27;); beep(300, 0.08, &#x27;sine&#x27;, 0.1); }
+    if (timeLeft &lt;= 0) endGame();
+  }
+
+  function resetAll(){
+    for (var i=0;i&lt;GRID;i++){
+      var c = cells[i]; c.active=false;
+      if (c.timeout){ clearTimeout(c.timeout); c.timeout=null; }
+      c.wrap.className = &#x27;mole-wrap&#x27;;
+    }
+    board.classList.remove(&#x27;gold-glow&#x27;);
+  }
+
+  function startGame(){
+    if (running) return;
+    running = true;
+    score = 0; timeLeft = GAME_TIME; combo = 1; lastHit = 0;
+    scoreEl.textContent = &#x27;0&#x27;; timeEl.textContent = timeLeft; comboEl.textContent = &#x27;x1&#x27;;
+    timeEl.classList.remove(&#x27;low&#x27;);
+    overlay.style.display = &#x27;none&#x27;;
+    resetAll();
+    ctx();
+    popUp();
+    spawnTimer = setInterval(popUp, 700);
+    countTimer = setInterval(tick, 1000);
+    beep(392,0.1,&#x27;triangle&#x27;,0.14);
+    setTimeout(function(){ beep(587,0.12,&#x27;triangle&#x27;,0.14); },110);
+  }
+
+  function stopGame(){
+    running = false;
+    if (spawnTimer){ clearInterval(spawnTimer); spawnTimer=null; }
+    if (countTimer){ clearInterval(countTimer); countTimer=null; }
+    resetAll();
+  }
+
+  function endGame(){
+    stopGame();
+    var isBest = score &gt; best;
+    if (isBest){ best = score; bestEl.textContent = best; }
+    overlay.innerHTML = &quot;Time&#x27;s up!&quot;
+      + &quot;&lt;div class=&#x27;big&#x27;&gt;&quot; + score + &quot;&lt;/div&gt;&quot;
+      + &quot;&lt;small&gt;&quot; + (isBest ? &quot;🏆 New best! &quot; : &quot;&quot;) + &quot;Press Start to play again&lt;/small&gt;&quot;;
+    overlay.style.display = &#x27;flex&#x27;;
+    beep(523,0.14,&#x27;triangle&#x27;,0.15);
+    setTimeout(function(){ beep(392,0.14,&#x27;triangle&#x27;,0.13); },150);
+    setTimeout(function(){ beep(659,0.22,&#x27;triangle&#x27;,0.14); },300);
+  }
+
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) { stopGame(); startGame(); }
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  // Suppress in-iframe scrollbars. The parent fits the iframe layout
+  // box to match the content size, so internal scroll is redundant —
+  // and if the LLM&#x27;s CSS sets body overflow: auto, the scrollbar shows
+  // briefly before the fit lands. Force hidden so it never appears.
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  // Iframe-internal JS error capture. window.onerror inside a sandboxed
+  // iframe can&#x27;t post to /api/js_error directly, so we relay to the
+  // parent via postMessage; parent&#x27;s error_logger.js forwards to the
+  // server. Catches LLM-emitted broken HTML (invalid hex, undefined
+  // variables, etc.) that would otherwise fail silently inside the
+  // iframe.
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      // Debounce: don&#x27;t fire more than ~10× per second. ResizeObserver
+      // fires repeatedly during layout/font load; we only need the latest.
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      // Clamp: reject obviously bogus dimensions. Any browser-game viewport
+      // is well under 4000×4000 logical px; readings beyond that are layout
+      // noise during load/visibility transitions.
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  // Parent posts wd_remeasure when it makes the iframe visible (the body&#x27;s
+  // ResizeObserver doesn&#x27;t fire on display:none→block of an outer ancestor
+  // because the iframe document didn&#x27;t actually resize). Wait a frame for
+  // layout to settle before measuring.
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🍬 Candy Drop 🍭</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>🍬 Candy Drop 🍭</b> &middot; Game 342 &middot; Amateur producer &middot; Basic game: Falling blocks</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: &#x27;Comic Sans MS&#x27;, &#x27;Trebuchet MS&#x27;, system-ui, sans-serif; margin: 0; padding: 0;
+    background: linear-gradient(160deg, #ffd9ec 0%, #ffe6c7 50%, #d9f2ff 100%); color: #6a2c5a; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 12px; box-sizing: border-box; height: 100%;
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 8px; }
+  h1 { margin: 0; font-size: 30px; font-weight: 800;
+    background: linear-gradient(90deg,#ff5fa2,#ff9d3f,#ffe14d,#5fd0ff,#c86bff);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    text-shadow: 1px 1px 0 rgba(255,255,255,0.4); letter-spacing: 1px; }
+  .instructions { font-size: 16px; color: #8a3d72; max-width: 620px; margin: 0; line-height: 1.4; text-align: center; }
+  .score { font-size: 22px; font-weight: 700; color: #d63384; margin: 0; }
+  .field { position: relative; width: 240px; height: 384px; flex-shrink: 0; margin: 0;
+    background: repeating-linear-gradient(45deg, #fff0f7 0 20px, #ffe1f0 20px 40px);
+    border-radius: 14px; overflow: hidden; box-shadow: 0 6px 20px rgba(214,51,132,0.3), inset 0 0 0 4px #ffb3d9; }
+  .block { position: absolute; box-sizing: border-box; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;🍬 Candy Drop 🍭&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Move candy with &lt;strong&gt;&amp;larr;&lt;/strong&gt;/&lt;strong&gt;&amp;rarr;&lt;/strong&gt;, press &lt;strong&gt;&amp;uarr;&lt;/strong&gt; to rotate, and &lt;strong&gt;&amp;darr;&lt;/strong&gt; to drop faster. Fill a whole row to clear it and score a sweet point!&lt;/p&gt;
+  &lt;div class=&quot;score&quot;&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage({ type: &#x27;game_input&#x27;, kind: t, key: e.key || null }, &#x27;*&#x27;);
+      } catch (_) {}
+    }, true);
+  });
+
+  var CELL = 24;
+  var COLS = 10, ROWS = 16;
+  var DROP_MS = 500;
+  var running = false, dropId = null;
+  var grid = [];
+  var piece = null;
+  var score = 0;
+  var field = document.getElementById(&#x27;field&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+
+  // Candy colors + decorations.
+  var CANDIES = [
+    { name:&#x27;pink&#x27;,      c1:&#x27;#ff8fc7&#x27;, c2:&#x27;#e0367f&#x27;, deco:&#x27;sprinkles&#x27; },
+    { name:&#x27;red&#x27;,       c1:&#x27;#ff6b6b&#x27;, c2:&#x27;#c81e1e&#x27;, deco:&#x27;swirl&#x27; },
+    { name:&#x27;blue&#x27;,      c1:&#x27;#5fb3ff&#x27;, c2:&#x27;#1a5fd6&#x27;, deco:&#x27;shine&#x27; },
+    { name:&#x27;yellow&#x27;,    c1:&#x27;#ffe14d&#x27;, c2:&#x27;#e0a800&#x27;, deco:&#x27;swirl&#x27; },
+    { name:&#x27;purple&#x27;,    c1:&#x27;#c86bff&#x27;, c2:&#x27;#7d34c0&#x27;, deco:&#x27;sprinkles&#x27; },
+    { name:&#x27;orange&#x27;,    c1:&#x27;#ff9d3f&#x27;, c2:&#x27;#e06b00&#x27;, deco:&#x27;shine&#x27; },
+    { name:&#x27;green&#x27;,     c1:&#x27;#7ee86b&#x27;, c2:&#x27;#2ea82e&#x27;, deco:&#x27;swirl&#x27; },
+    { name:&#x27;mint&#x27;,      c1:&#x27;#6bffd0&#x27;, c2:&#x27;#1fc4a0&#x27;, deco:&#x27;shine&#x27; }
+  ];
+
+  // Shape definitions: each is a list of cell offsets {x,y} relative to origin.
+  // Rotation is computed by rotating offsets around (0,0) 90deg clockwise.
+  var SHAPES = [
+    { name:&#x27;square&#x27;, cells:[{x:0,y:0},{x:1,y:0},{x:0,y:1},{x:1,y:1}] },      // O
+    { name:&#x27;line&#x27;,   cells:[{x:0,y:0},{x:1,y:0},{x:2,y:0},{x:3,y:0}] },      // I
+    { name:&#x27;ell&#x27;,    cells:[{x:0,y:0},{x:0,y:1},{x:0,y:2},{x:1,y:2}] },      // L
+    { name:&#x27;jay&#x27;,    cells:[{x:1,y:0},{x:1,y:1},{x:1,y:2},{x:0,y:2}] },      // J
+    { name:&#x27;ess&#x27;,    cells:[{x:1,y:0},{x:2,y:0},{x:0,y:1},{x:1,y:1}] },      // S
+    { name:&#x27;zee&#x27;,    cells:[{x:0,y:0},{x:1,y:0},{x:1,y:1},{x:2,y:1}] },      // Z
+    { name:&#x27;tee&#x27;,    cells:[{x:0,y:0},{x:1,y:0},{x:2,y:0},{x:1,y:1}] }       // T
+  ];
+
+  function newGrid() {
+    grid = [];
+    for (var r = 0; r &lt; ROWS; r++) {
+      var row = [];
+      for (var c = 0; c &lt; COLS; c++) row.push(0);
+      grid.push(row);
+    }
+  }
+
+  // Given a piece, return its absolute cell coordinates.
+  function pieceCells(p) {
+    var out = [];
+    for (var i = 0; i &lt; p.cells.length; i++) {
+      out.push({ x: p.x + p.cells[i].x, y: p.y + p.cells[i].y });
+    }
+    return out;
+  }
+
+  // Rotate a set of offset cells 90deg clockwise, then normalize so min x/y = 0.
+  function rotateCells(cells) {
+    var rot = [];
+    for (var i = 0; i &lt; cells.length; i++) {
+      rot.push({ x: -cells[i].y, y: cells[i].x });
+    }
+    var minx = Infinity, miny = Infinity;
+    for (var j = 0; j &lt; rot.length; j++) {
+      if (rot[j].x &lt; minx) minx = rot[j].x;
+      if (rot[j].y &lt; miny) miny = rot[j].y;
+    }
+    for (var k = 0; k &lt; rot.length; k++) {
+      rot[k].x -= minx; rot[k].y -= miny;
+    }
+    return rot;
+  }
+
+  function collides(p) {
+    var cells = pieceCells(p);
+    for (var i = 0; i &lt; cells.length; i++) {
+      var cx = cells[i].x, cy = cells[i].y;
+      if (cx &lt; 0 || cx &gt;= COLS || cy &gt;= ROWS) return true;
+      if (cy &gt;= 0 &amp;&amp; grid[cy][cx]) return true;
+    }
+    return false;
+  }
+
+  var lastCandy = -1;
+  function spawnPiece() {
+    var idx;
+    do { idx = Math.floor(Math.random() * CANDIES.length); }
+    while (idx === lastCandy &amp;&amp; CANDIES.length &gt; 1);
+    lastCandy = idx;
+    var shape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+    // Deep copy the cells so rotation doesn&#x27;t mutate the template.
+    var cells = shape.cells.map(function (c) { return { x: c.x, y: c.y }; });
+    piece = { x: Math.floor(COLS / 2) - 1, y: 0, candy: idx, cells: cells };
+    if (collides(piece)) return false;
+    return true;
+  }
+
+  function rotatePiece() {
+    if (!running || !piece) return;
+    var rotated = rotateCells(piece.cells);
+    var test = { x: piece.x, y: piece.y, candy: piece.candy, cells: rotated };
+    // Try a couple of horizontal nudges (wall kicks) if rotation collides.
+    var kicks = [0, -1, 1, -2, 2];
+    for (var i = 0; i &lt; kicks.length; i++) {
+      test.x = piece.x + kicks[i];
+      if (!collides(test)) {
+        piece.cells = rotated;
+        piece.x = test.x;
+        paint();
+        return;
+      }
+    }
+  }
+
+  function lockPiece() {
+    var cells = pieceCells(piece);
+    for (var i = 0; i &lt; cells.length; i++) {
+      var c = cells[i];
+      if (c.y &gt;= 0 &amp;&amp; c.y &lt; ROWS &amp;&amp; c.x &gt;= 0 &amp;&amp; c.x &lt; COLS) grid[c.y][c.x] = piece.candy + 1;
+    }
+    piece = null;
+    playLockSound();
+  }
+
+  function clearFullRows() {
+    var cleared = 0;
+    for (var r = ROWS - 1; r &gt;= 0; r--) {
+      var full = true;
+      for (var c = 0; c &lt; COLS; c++) if (!grid[r][c]) { full = false; break; }
+      if (full) {
+        grid.splice(r, 1);
+        var empty = [];
+        for (var c2 = 0; c2 &lt; COLS; c2++) empty.push(0);
+        grid.unshift(empty);
+        cleared += 1;
+        r += 1;
+      }
+    }
+    if (cleared &gt; 0) {
+      score += cleared;
+      scoreEl.textContent = score;
+      playClearSound();
+    }
+  }
+
+  function paint() {
+    field.innerHTML = &#x27;&#x27;;
+    for (var r = 0; r &lt; ROWS; r++) {
+      for (var c = 0; c &lt; COLS; c++) {
+        if (grid[r][c]) drawBlock(c, r, grid[r][c] - 1);
+      }
+    }
+    if (piece) {
+      var cells = pieceCells(piece);
+      for (var i = 0; i &lt; cells.length; i++) {
+        if (cells[i].y &gt;= 0) drawBlock(cells[i].x, cells[i].y, piece.candy);
+      }
+    }
+  }
+
+  function drawBlock(cx, cy, candyIdx) {
+    var cndy = CANDIES[candyIdx] || CANDIES[0];
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;block&#x27;;
+    el.style.left = (cx * CELL) + &#x27;px&#x27;;
+    el.style.top = (cy * CELL) + &#x27;px&#x27;;
+    el.style.width = CELL + &#x27;px&#x27;;
+    el.style.height = CELL + &#x27;px&#x27;;
+    el.style.borderRadius = &#x27;7px&#x27;;
+    el.style.background = &#x27;radial-gradient(circle at 32% 28%, &#x27; + cndy.c1 + &#x27; 0%, &#x27; + cndy.c2 + &#x27; 90%)&#x27;;
+    el.style.boxShadow = &#x27;inset 0 -3px 5px rgba(0,0,0,0.25), inset 0 2px 3px rgba(255,255,255,0.6), 0 1px 2px rgba(0,0,0,0.2)&#x27;;
+    el.style.border = &#x27;1px solid rgba(255,255,255,0.35)&#x27;;
+    el.style.position = &#x27;absolute&#x27;;
+    el.style.overflow = &#x27;hidden&#x27;;
+
+    var shine = document.createElement(&#x27;div&#x27;);
+    shine.style.position = &#x27;absolute&#x27;;
+    shine.style.top = &#x27;3px&#x27;; shine.style.left = &#x27;4px&#x27;;
+    shine.style.width = &#x27;7px&#x27;; shine.style.height = &#x27;5px&#x27;;
+    shine.style.borderRadius = &#x27;50%&#x27;;
+    shine.style.background = &#x27;rgba(255,255,255,0.75)&#x27;;
+    el.appendChild(shine);
+
+    if (cndy.deco === &#x27;sprinkles&#x27;) {
+      var colors = [&#x27;#fff&#x27;,&#x27;#ffe14d&#x27;,&#x27;#5fd0ff&#x27;,&#x27;#ff5fa2&#x27;];
+      for (var s = 0; s &lt; 4; s++) {
+        var sp = document.createElement(&#x27;div&#x27;);
+        sp.style.position = &#x27;absolute&#x27;;
+        sp.style.width = &#x27;5px&#x27;; sp.style.height = &#x27;2px&#x27;;
+        sp.style.borderRadius = &#x27;1px&#x27;;
+        sp.style.background = colors[s];
+        sp.style.left = (4 + (s % 2) * 11) + &#x27;px&#x27;;
+        sp.style.top = (11 + Math.floor(s / 2) * 7) + &#x27;px&#x27;;
+        sp.style.transform = &#x27;rotate(&#x27; + (s * 40 - 30) + &#x27;deg)&#x27;;
+        el.appendChild(sp);
+      }
+    } else if (cndy.deco === &#x27;swirl&#x27;) {
+      var sw = document.createElement(&#x27;div&#x27;);
+      sw.style.position = &#x27;absolute&#x27;;
+      sw.style.left = &#x27;6px&#x27;; sw.style.top = &#x27;6px&#x27;;
+      sw.style.width = &#x27;11px&#x27;; sw.style.height = &#x27;11px&#x27;;
+      sw.style.borderRadius = &#x27;50%&#x27;;
+      sw.style.border = &#x27;2px solid rgba(255,255,255,0.55)&#x27;;
+      sw.style.borderRightColor = &#x27;transparent&#x27;;
+      sw.style.borderBottomColor = &#x27;transparent&#x27;;
+      el.appendChild(sw);
+    } else if (cndy.deco === &#x27;shine&#x27;) {
+      var star = document.createElement(&#x27;div&#x27;);
+      star.textContent = &#x27;✦&#x27;;
+      star.style.position = &#x27;absolute&#x27;;
+      star.style.right = &#x27;3px&#x27;; star.style.bottom = &#x27;0px&#x27;;
+      star.style.fontSize = &#x27;9px&#x27;;
+      star.style.color = &#x27;rgba(255,255,255,0.7)&#x27;;
+      el.appendChild(star);
+    }
+
+    field.appendChild(el);
+  }
+
+  // --- Web Audio for lock/clear sounds ---
+  var audioCtx = null;
+  function getCtx() {
+    if (!audioCtx) {
+      try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+      catch (_) { audioCtx = null; }
+    }
+    return audioCtx;
+  }
+  function playTone(freq, dur, type, vol, when) {
+    var ctx = getCtx();
+    if (!ctx) return;
+    var t = ctx.currentTime + (when || 0);
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.type = type || &#x27;sine&#x27;;
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(vol || 0.2, t + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(t); osc.stop(t + dur + 0.02);
+  }
+  function playLockSound() {
+    playTone(660, 0.12, &#x27;triangle&#x27;, 0.25, 0);
+    playTone(990, 0.14, &#x27;sine&#x27;, 0.2, 0.06);
+  }
+  function playClearSound() {
+    playTone(523, 0.12, &#x27;triangle&#x27;, 0.25, 0);
+    playTone(659, 0.12, &#x27;triangle&#x27;, 0.25, 0.09);
+    playTone(784, 0.14, &#x27;sine&#x27;, 0.25, 0.18);
+    playTone(1047, 0.18, &#x27;sine&#x27;, 0.22, 0.27);
+  }
+
+  function stepDown() {
+    if (!piece) return;
+    var next = { x: piece.x, y: piece.y + 1, candy: piece.candy, cells: piece.cells };
+    if (collides(next)) {
+      lockPiece();
+      clearFullRows();
+      if (!spawnPiece()) { endGame(); paint(); return; }
+    } else {
+      piece = next;
+    }
+    paint();
+  }
+
+  function move(dx) {
+    if (!running || !piece) return;
+    var next = { x: piece.x + dx, y: piece.y, candy: piece.candy, cells: piece.cells };
+    if (!collides(next)) { piece = next; paint(); }
+  }
+
+  function endGame() {
+    running = false;
+    if (dropId) { clearInterval(dropId); dropId = null; }
+  }
+
+  function startGame() {
+    if (running) return;
+    getCtx();
+    score = 0;
+    scoreEl.textContent = &#x27;0&#x27;;
+    lastCandy = -1;
+    newGrid();
+    if (!spawnPiece()) return;
+    paint();
+    running = true;
+    if (dropId) clearInterval(dropId);
+    dropId = setInterval(stepDown, DROP_MS);
+  }
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    if (dropId) { clearInterval(dropId); dropId = null; }
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27;) { move(-1); e.preventDefault(); }
+    else if (e.key === &#x27;ArrowRight&#x27;) { move(1); e.preventDefault(); }
+    else if (e.key === &#x27;ArrowDown&#x27;) { if (running) stepDown(); e.preventDefault(); }
+    else if (e.key === &#x27;ArrowUp&#x27;) { rotatePiece(); e.preventDefault(); }
+  });
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  // Initial preview
+  newGrid();
+  piece = { x: Math.floor(COLS / 2) - 1, y: 0, candy: 0,
+    cells: SHAPES[2].cells.map(function (c) { return { x: c.x, y: c.y }; }) };
+  paint();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

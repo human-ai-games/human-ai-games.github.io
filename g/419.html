@@ -1,0 +1,744 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pixel Sailor Jumper</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>Pixel Sailor Jumper</b> &middot; Game 419 &middot; Professional producer &middot; Basic game: Gravity jumper</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #222; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 18px; background: white; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 8px; }
+  h1 { margin: 0; font-size: 28px; font-weight: 600; }
+  .instructions { font-size: 16px; color: #666; max-width: 600px; margin: 0; line-height: 1.4; text-align: center; }
+  .hud { display: flex; gap: 20px; font-size: 20px; color: #555; align-items: center; }
+  .hud .lives { color: #e63b3b; }
+  .hud .fly { color: #d17bff; font-weight: 700; }
+  .field { position: relative; width: 620px; height: 400px; flex-shrink: 0; margin: 0; background: linear-gradient(#9fd4ff, #e6f5ff); border-radius: 8px; overflow: hidden; }
+  .ground { position: absolute; left: 0; right: 0; bottom: 0; height: 30px; background: #7ec850; box-shadow: inset 0 4px 0 #6bb540; }
+  .hero { position: absolute; image-rendering: pixelated; }
+  .obstacle { position: absolute; bottom: 30px; image-rendering: pixelated; }
+  .star { position: absolute; image-rendering: pixelated; }
+  .cloud, .darkcloud { position: absolute; image-rendering: pixelated; }
+  .final { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.55); color: #fff; font-size: 30px; text-align: center; gap: 8px; }
+  .final.show { display: flex; }
+  .final .big { font-size: 46px; font-weight: 700; color: #ffd83b; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;Pixel Sailor Jumper&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Press &lt;strong&gt;Space&lt;/strong&gt; to jump (again mid-air to double jump) over the boulders and grab smiley stars for 3 points, avoiding the flashing dark storm clouds. Catch the sparkling blinking star for 12 seconds of flight — you have three lives, and each boulder hit costs 2 points and a life; use the &lt;strong&gt;Start&lt;/strong&gt;/&lt;strong&gt;Restart&lt;/strong&gt; button below.&lt;/p&gt;
+  &lt;div class=&quot;hud&quot;&gt;
+    &lt;div&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;lives&quot;&gt;Lives: &lt;span id=&quot;lives&quot;&gt;❤❤❤&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;fly&quot; id=&quot;flyHud&quot; style=&quot;display:none;&quot;&gt;✨ Flight: &lt;span id=&quot;flyTime&quot;&gt;12&lt;/span&gt;s&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;
+    &lt;div class=&quot;ground&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;hero&quot; id=&quot;hero&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;final&quot; id=&quot;final&quot;&gt;
+      &lt;div&gt;Game Over&lt;/div&gt;
+      &lt;div class=&quot;big&quot; id=&quot;finalScore&quot;&gt;0&lt;/div&gt;
+      &lt;div style=&quot;font-size:18px;&quot;&gt;Press Restart below to play again&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  var FIELD_W = 620, FIELD_H = 400;
+  var GROUND_H = 30;
+  var HERO_W = 44, HERO_H = 56; // bigger character
+  var GRAVITY = 0.6, JUMP_V = -13, DOUBLE_JUMP_V = -12;
+  var MAX_JUMPS = 2;
+  var OBSTACLE_W = 30, OBSTACLE_SPEED = 3.5;
+  var SPAWN_INTERVAL = 2200;
+  var STAR_INTERVAL = 3800, STAR_SIZE = 32;
+  var CLOUD_SPEED = 1.2;
+  var CLOUD_INTERVAL = 4000;
+  var DARK_INTERVAL = 13000;
+  var FLYSTAR_INTERVAL = 16000; // special star, quite rare
+  var FLY_DURATION = 12000; // ms
+  var running = false, animId = null;
+  var spawnId = null, starId = null, cloudId = null, darkId = null, flyStarId = null;
+  var heroX = 60;
+  var heroY = FIELD_H - GROUND_H - HERO_H;
+  var heroVY = 0;
+  var jumpsUsed = 0;
+  var obstacles = [];
+  var stars = [];
+  var flyStars = [];
+  var clouds = [];
+  var darkClouds = [];
+  var score = 0;
+  var lives = 3;
+  var invuln = 0;
+  var flying = false;
+  var flyEndTime = 0;
+  var gameOver = false;
+  var field = document.getElementById(&#x27;field&#x27;);
+  var hero = document.getElementById(&#x27;hero&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var livesEl = document.getElementById(&#x27;lives&#x27;);
+  var finalEl = document.getElementById(&#x27;final&#x27;);
+  var finalScoreEl = document.getElementById(&#x27;finalScore&#x27;);
+  var flyHud = document.getElementById(&#x27;flyHud&#x27;);
+  var flyTimeEl = document.getElementById(&#x27;flyTime&#x27;);
+
+  function svgFromGrid(grid, colors, cell) {
+    var n = grid.length, m = grid[0].length;
+    var rects = &#x27;&#x27;;
+    for (var y = 0; y &lt; n; y++) {
+      for (var x = 0; x &lt; m; x++) {
+        var c = grid[y][x];
+        if (c === &#x27;.&#x27;) continue;
+        rects += &#x27;&lt;rect x=&quot;&#x27;+(x*cell)+&#x27;&quot; y=&quot;&#x27;+(y*cell)+&#x27;&quot; width=&quot;&#x27;+cell+&#x27;&quot; height=&quot;&#x27;+cell+&#x27;&quot; fill=&quot;&#x27;+colors[c]+&#x27;&quot;/&gt;&#x27;;
+      }
+    }
+    var svg = &#x27;&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;&#x27;+(m*cell)+&#x27;&quot; height=&quot;&#x27;+(n*cell)+&#x27;&quot; shape-rendering=&quot;crispEdges&quot;&gt;&#x27;+rects+&#x27;&lt;/svg&gt;&#x27;;
+    return &#x27;url(&quot;data:image/svg+xml;utf8,&#x27;+encodeURIComponent(svg)+&#x27;&quot;)&#x27;;
+  }
+
+  // --- Sailor Moon-ish pixel character with black hair ---
+  // 11 wide x 14 tall. K=hair(black), S=skin, E=eye, R=red-bow, B=blue-collar,
+  // W=white-dress, L=blue-skirt, G=gold, .=transparent
+  var heroSVG = svgFromGrid([
+    &quot;...GKKKG...&quot;,
+    &quot;..KKKKKKK..&quot;,
+    &quot;.KKKGGGKKK.&quot;,
+    &quot;.KKSSSSSKK.&quot;,
+    &quot;.KSSESESKK.&quot;,
+    &quot;.KSSSSSSSK.&quot;,
+    &quot;..SSRRRSS..&quot;,
+    &quot;..BWWWWWB..&quot;,
+    &quot;.BWWWWWWWB.&quot;,
+    &quot;.WWWWWWWWW.&quot;,
+    &quot;.LLLLLLLLL.&quot;,
+    &quot;.LLLLLLLLL.&quot;,
+    &quot;..SS...SS..&quot;,
+    &quot;..RR...RR..&quot;
+  ], { &#x27;K&#x27;:&#x27;#1a1a24&#x27;,&#x27;S&#x27;:&#x27;#ffe0c2&#x27;,&#x27;E&#x27;:&#x27;#3a2fa0&#x27;,&#x27;R&#x27;:&#x27;#e8354a&#x27;,&#x27;B&#x27;:&#x27;#3a6fe0&#x27;,&#x27;W&#x27;:&#x27;#ffffff&#x27;,&#x27;L&#x27;:&#x27;#4a7ff0&#x27;,&#x27;G&#x27;:&#x27;#ffd23b&#x27; }, 4);
+
+  hero.style.width = HERO_W + &#x27;px&#x27;;
+  hero.style.height = HERO_H + &#x27;px&#x27;;
+  hero.style.backgroundImage = heroSVG;
+  hero.style.backgroundSize = &#x27;contain&#x27;;
+  hero.style.backgroundRepeat = &#x27;no-repeat&#x27;;
+
+  // --- 8-bit boulder ---
+  var ROCK_IMG = svgFromGrid([
+    &quot;..DDDD..&quot;,
+    &quot;.DLLLLD.&quot;,
+    &quot;DLLLLLLD&quot;,
+    &quot;DLLMLLLD&quot;,
+    &quot;DLLLMMLD&quot;,
+    &quot;DLMLLLLD&quot;,
+    &quot;.DLLLLD.&quot;,
+    &quot;..DDDD..&quot;
+  ], { &#x27;D&#x27;:&#x27;#4a3320&#x27;,&#x27;L&#x27;:&#x27;#8a6a45&#x27;,&#x27;M&#x27;:&#x27;#6b4e30&#x27; }, 5);
+  var ROCK_TILE = 40;
+
+  // --- Smiley star ---
+  var STAR_IMG = svgFromGrid([
+    &quot;....Y....&quot;,
+    &quot;....Y....&quot;,
+    &quot;..YYYYY..&quot;,
+    &quot;YYYYYYYYY&quot;,
+    &quot;.YYYYYYY.&quot;,
+    &quot;.YKYYYKY.&quot;,
+    &quot;.YYYYYYY.&quot;,
+    &quot;.YKYYYKY.&quot;,
+    &quot;..YYKYY..&quot;,
+    &quot;.YY...YY.&quot;,
+    &quot;Y.......Y&quot;
+  ], { &#x27;Y&#x27;:&#x27;#ffd23b&#x27;,&#x27;K&#x27;:&#x27;#3a2a00&#x27; }, 3);
+
+  // --- Blinking flight star (rainbow-ish special) ---
+  var FLYSTAR_IMG = svgFromGrid([
+    &quot;....P....&quot;,
+    &quot;...PPP...&quot;,
+    &quot;..PPPPP..&quot;,
+    &quot;PPPPPPPPP&quot;,
+    &quot;.PPWWWPP.&quot;,
+    &quot;.PWWWWWP.&quot;,
+    &quot;.PPWWWPP.&quot;,
+    &quot;..PPPPP..&quot;,
+    &quot;.PP...PP.&quot;,
+    &quot;P.......P&quot;
+  ], { &#x27;P&#x27;:&#x27;#d17bff&#x27;,&#x27;W&#x27;:&#x27;#ffffff&#x27; }, 3);
+
+  function buildCloudSVG(dark) {
+    var body = dark ? &#x27;#5a5f6e&#x27; : &#x27;#ffffff&#x27;;
+    var shade = dark ? &#x27;#3f4450&#x27; : &#x27;#dcecf7&#x27;;
+    return svgFromGrid([
+      &quot;....SSSS....&quot;,
+      &quot;..SSBBBBSS..&quot;,
+      &quot;.SBBBBBBBBS.&quot;,
+      &quot;SBBBBBBBBBBS&quot;,
+      &quot;SBBBBBBBBBBS&quot;,
+      &quot;.SSBBBBBBSS.&quot;,
+      &quot;...SSSSSS...&quot;
+    ], { &#x27;B&#x27;:body,&#x27;S&#x27;:shade }, 5);
+  }
+  var CLOUD_IMG = buildCloudSVG(false);
+  var DARK_IMG = buildCloudSVG(true);
+  var CLOUD_W = 60, CLOUD_H = 35;
+
+  function paintHero() {
+    hero.style.left = heroX + &#x27;px&#x27;;
+    hero.style.top = heroY + &#x27;px&#x27;;
+    var op = &#x27;1&#x27;;
+    if (flying) {
+      op = (Math.floor(Date.now() / 120) % 2 === 0) ? &#x27;1&#x27; : &#x27;0.75&#x27;;
+    } else if (invuln &gt; 0 &amp;&amp; Math.floor(invuln / 4) % 2 === 0) {
+      op = &#x27;0.35&#x27;;
+    }
+    hero.style.opacity = op;
+  }
+
+  function updateLives() {
+    livesEl.textContent = lives &gt; 0 ? &#x27;❤&#x27;.repeat(lives) : &#x27;—&#x27;;
+  }
+
+  function onFloor() {
+    return heroY &gt;= FIELD_H - GROUND_H - HERO_H - 1;
+  }
+
+  function spawnObstacle() {
+    // stack rock tiles to vary height, keeping widths similar to before
+    var tiles = 1 + Math.floor(Math.random() * 2); // 1 or 2 tall
+    var h = tiles * (ROCK_TILE - 6) + 6;
+    var o = { x: FIELD_W, h: h, tiles: tiles, scored: false, el: null };
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;obstacle&#x27;;
+    el.style.width = OBSTACLE_W + &#x27;px&#x27;;
+    el.style.height = h + &#x27;px&#x27;;
+    el.style.left = o.x + &#x27;px&#x27;;
+    // repeat the rock image vertically for stacked look
+    el.style.backgroundImage = ROCK_IMG;
+    el.style.backgroundSize = OBSTACLE_W + &#x27;px &#x27; + (ROCK_TILE - 6) + &#x27;px&#x27;;
+    el.style.backgroundRepeat = &#x27;repeat-y&#x27;;
+    field.appendChild(el);
+    o.el = el;
+    obstacles.push(o);
+  }
+
+  function makeStarEl(img) {
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;star&#x27;;
+    el.style.width = STAR_SIZE + &#x27;px&#x27;;
+    el.style.height = STAR_SIZE + &#x27;px&#x27;;
+    el.style.backgroundImage = img;
+    el.style.backgroundSize = &#x27;contain&#x27;;
+    el.style.backgroundRepeat = &#x27;no-repeat&#x27;;
+    return el;
+  }
+
+  function spawnStar() {
+    var minTop = 30, maxTop = 170;
+    var top = minTop + Math.random() * (maxTop - minTop);
+    var s = { x: FIELD_W, y: top, taken: false, el: makeStarEl(STAR_IMG) };
+    s.el.style.left = s.x + &#x27;px&#x27;;
+    s.el.style.top = s.y + &#x27;px&#x27;;
+    field.appendChild(s.el);
+    stars.push(s);
+  }
+
+  function spawnFlyStar() {
+    var top = 40 + Math.random() * 120;
+    var s = { x: FIELD_W, y: top, taken: false, blink: 0, el: makeStarEl(FLYSTAR_IMG) };
+    s.el.style.left = s.x + &#x27;px&#x27;;
+    s.el.style.top = s.y + &#x27;px&#x27;;
+    field.appendChild(s.el);
+    flyStars.push(s);
+  }
+
+  function spawnCloud() {
+    var top = 10 + Math.random() * 90;
+    var c = { x: FIELD_W, y: top, el: document.createElement(&#x27;div&#x27;) };
+    c.el.className = &#x27;cloud&#x27;;
+    c.el.style.width = CLOUD_W + &#x27;px&#x27;;
+    c.el.style.height = CLOUD_H + &#x27;px&#x27;;
+    c.el.style.backgroundImage = CLOUD_IMG;
+    c.el.style.backgroundSize = &#x27;contain&#x27;;
+    c.el.style.backgroundRepeat = &#x27;no-repeat&#x27;;
+    c.el.style.left = c.x + &#x27;px&#x27;;
+    c.el.style.top = c.y + &#x27;px&#x27;;
+    field.appendChild(c.el);
+    clouds.push(c);
+  }
+
+  function spawnDarkCloud() {
+    // higher up now — around star height
+    var top = 30 + Math.random() * 60;
+    var d = { x: FIELD_W, y: top, el: document.createElement(&#x27;div&#x27;), boltEl: null, flash: 0 };
+    d.el.className = &#x27;darkcloud&#x27;;
+    d.el.style.width = CLOUD_W + &#x27;px&#x27;;
+    d.el.style.height = CLOUD_H + &#x27;px&#x27;;
+    d.el.style.backgroundImage = DARK_IMG;
+    d.el.style.backgroundSize = &#x27;contain&#x27;;
+    d.el.style.backgroundRepeat = &#x27;no-repeat&#x27;;
+    d.el.style.left = d.x + &#x27;px&#x27;;
+    d.el.style.top = d.y + &#x27;px&#x27;;
+    field.appendChild(d.el);
+    var bolt = document.createElement(&#x27;div&#x27;);
+    bolt.style.position = &#x27;absolute&#x27;;
+    bolt.style.left = (d.x + CLOUD_W/2 - 4) + &#x27;px&#x27;;
+    bolt.style.top = (d.y + CLOUD_H - 4) + &#x27;px&#x27;;
+    bolt.style.fontSize = &#x27;22px&#x27;;
+    bolt.style.lineHeight = &#x27;22px&#x27;;
+    bolt.textContent = &#x27;⚡&#x27;;
+    bolt.style.opacity = &#x27;0&#x27;;
+    field.appendChild(bolt);
+    d.boltEl = bolt;
+    darkClouds.push(d);
+  }
+
+  function jump() {
+    if (!running || gameOver) return;
+    if (flying) {
+      // flap upward while flying
+      heroVY = -6;
+      return;
+    }
+    if (onFloor()) {
+      heroVY = JUMP_V;
+      jumpsUsed = 1;
+    } else if (jumpsUsed &lt; MAX_JUMPS) {
+      heroVY = DOUBLE_JUMP_V;
+      jumpsUsed++;
+    }
+  }
+
+  function startFlying() {
+    flying = true;
+    flyEndTime = Date.now() + FLY_DURATION;
+    flyHud.style.display = &#x27;&#x27;;
+  }
+
+  function endFlying() {
+    flying = false;
+    flyHud.style.display = &#x27;none&#x27;;
+    heroX = 60;
+    heroY = FIELD_H - GROUND_H - HERO_H;
+    heroVY = 0;
+    jumpsUsed = 0;
+  }
+
+  function loseLife(penalty) {
+    if (invuln &gt; 0 || flying) return;
+    lives -= 1;
+    if (penalty) {
+      score -= 2;
+      if (score &lt; 0) score = 0;
+      scoreEl.textContent = score;
+    }
+    updateLives();
+    if (lives &lt;= 0) { endGame(); return; }
+    heroX = 60;
+    heroY = FIELD_H - GROUND_H - HERO_H;
+    heroVY = 0;
+    jumpsUsed = 0;
+    invuln = 90;
+  }
+
+  function tick() {
+    if (!running) return;
+    if (invuln &gt; 0) invuln--;
+
+    if (flying) {
+      var remain = flyEndTime - Date.now();
+      if (remain &lt;= 0) { endFlying(); }
+      else { flyTimeEl.textContent = Math.ceil(remain / 1000); }
+    }
+
+    if (flying) {
+      // gentle floaty physics; drift up slowly, flap with jump
+      heroVY += 0.25;
+      if (heroVY &gt; 4) heroVY = 4;
+      heroY += heroVY;
+      if (heroY &lt; 5) { heroY = 5; heroVY = 0; }
+      var maxFly = FIELD_H - GROUND_H - HERO_H;
+      if (heroY &gt; maxFly) { heroY = maxFly; heroVY = 0; }
+    } else {
+      heroVY += GRAVITY;
+      heroY += heroVY;
+      var floorY = FIELD_H - GROUND_H - HERO_H;
+      if (heroY &gt; floorY) { heroY = floorY; heroVY = 0; jumpsUsed = 0; }
+      if (heroY &lt; 0) { heroY = 0; heroVY = 0; }
+    }
+    paintHero();
+
+    // Obstacles
+    for (var i = obstacles.length - 1; i &gt;= 0; i--) {
+      var o = obstacles[i];
+      o.x -= OBSTACLE_SPEED;
+      o.el.style.left = o.x + &#x27;px&#x27;;
+      if (o.x + OBSTACLE_W &lt; 0) {
+        field.removeChild(o.el);
+        obstacles.splice(i, 1);
+        continue;
+      }
+      if (!o.scored &amp;&amp; o.x + OBSTACLE_W &lt; heroX) {
+        o.scored = true;
+        score += 1;
+        scoreEl.textContent = score;
+      }
+      var obstacleTop = FIELD_H - GROUND_H - o.h;
+      if (!flying &amp;&amp; invuln === 0 &amp;&amp;
+          heroX + HERO_W &gt; o.x &amp;&amp; heroX &lt; o.x + OBSTACLE_W &amp;&amp;
+          heroY + HERO_H &gt; obstacleTop) {
+        field.removeChild(o.el);
+        obstacles.splice(i, 1);
+        loseLife(true);
+        if (gameOver) return;
+        continue;
+      }
+    }
+
+    // Stars
+    for (var j = stars.length - 1; j &gt;= 0; j--) {
+      var s = stars[j];
+      s.x -= OBSTACLE_SPEED;
+      s.el.style.left = s.x + &#x27;px&#x27;;
+      if (s.x + STAR_SIZE &lt; 0) {
+        field.removeChild(s.el);
+        stars.splice(j, 1);
+        continue;
+      }
+      if (!s.taken &amp;&amp;
+          heroX + HERO_W &gt; s.x &amp;&amp; heroX &lt; s.x + STAR_SIZE &amp;&amp;
+          heroY + HERO_H &gt; s.y &amp;&amp; heroY &lt; s.y + STAR_SIZE) {
+        s.taken = true;
+        score += 3;
+        scoreEl.textContent = score;
+        field.removeChild(s.el);
+        stars.splice(j, 1);
+      }
+    }
+
+    // Flight stars
+    for (var f = flyStars.length - 1; f &gt;= 0; f--) {
+      var fs = flyStars[f];
+      fs.x -= OBSTACLE_SPEED;
+      fs.el.style.left = fs.x + &#x27;px&#x27;;
+      fs.blink = (fs.blink + 1) % 30;
+      fs.el.style.opacity = fs.blink &lt; 15 ? &#x27;1&#x27; : &#x27;0.25&#x27;;
+      if (fs.x + STAR_SIZE &lt; 0) {
+        field.removeChild(fs.el);
+        flyStars.splice(f, 1);
+        continue;
+      }
+      if (!fs.taken &amp;&amp;
+          heroX + HERO_W &gt; fs.x &amp;&amp; heroX &lt; fs.x + STAR_SIZE &amp;&amp;
+          heroY + HERO_H &gt; fs.y &amp;&amp; heroY &lt; fs.y + STAR_SIZE) {
+        fs.taken = true;
+        field.removeChild(fs.el);
+        flyStars.splice(f, 1);
+        startFlying();
+      }
+    }
+
+    // Clouds
+    for (var k = clouds.length - 1; k &gt;= 0; k--) {
+      var c = clouds[k];
+      c.x -= CLOUD_SPEED;
+      c.el.style.left = c.x + &#x27;px&#x27;;
+      if (c.x + CLOUD_W &lt; 0) { field.removeChild(c.el); clouds.splice(k, 1); }
+    }
+
+    // Dark clouds
+    for (var d = darkClouds.length - 1; d &gt;= 0; d--) {
+      var dc = darkClouds[d];
+      dc.x -= CLOUD_SPEED;
+      dc.el.style.left = dc.x + &#x27;px&#x27;;
+      dc.boltEl.style.left = (dc.x + CLOUD_W/2 - 4) + &#x27;px&#x27;;
+      dc.flash = (dc.flash + 1) % 60;
+      dc.boltEl.style.opacity = dc.flash &lt; 12 ? &#x27;1&#x27; : &#x27;0&#x27;;
+      if (dc.x + CLOUD_W &lt; 0) {
+        field.removeChild(dc.el);
+        field.removeChild(dc.boltEl);
+        darkClouds.splice(d, 1);
+        continue;
+      }
+      if (!flying &amp;&amp; invuln === 0 &amp;&amp;
+          heroX + HERO_W &gt; dc.x + 6 &amp;&amp; heroX &lt; dc.x + CLOUD_W - 6 &amp;&amp;
+          heroY + HERO_H &gt; dc.y + 4 &amp;&amp; heroY &lt; dc.y + CLOUD_H - 4) {
+        loseLife(false);
+        if (gameOver) return;
+      }
+    }
+
+    animId = requestAnimationFrame(tick);
+  }
+
+  function clearAll() {
+    obstacles.forEach(function (o) { if (o.el.parentNode) o.el.parentNode.removeChild(o.el); });
+    obstacles = [];
+    stars.forEach(function (s) { if (s.el.parentNode) s.el.parentNode.removeChild(s.el); });
+    stars = [];
+    flyStars.forEach(function (s) { if (s.el.parentNode) s.el.parentNode.removeChild(s.el); });
+    flyStars = [];
+    clouds.forEach(function (c) { if (c.el.parentNode) c.el.parentNode.removeChild(c.el); });
+    clouds = [];
+    darkClouds.forEach(function (dc) {
+      if (dc.el.parentNode) dc.el.parentNode.removeChild(dc.el);
+      if (dc.boltEl.parentNode) dc.boltEl.parentNode.removeChild(dc.boltEl);
+    });
+    darkClouds = [];
+  }
+
+  function placeInitialObstacle() {
+    clearAll();
+    spawnObstacle();
+    spawnCloud();
+  }
+
+  function endGame() {
+    gameOver = true;
+    finalScoreEl.textContent = score;
+    finalEl.classList.add(&#x27;show&#x27;);
+    stopTimers();
+    running = false;
+  }
+
+  function startGame() {
+    if (running) return;
+    score = 0;
+    scoreEl.textContent = &#x27;0&#x27;;
+    lives = 3;
+    updateLives();
+    invuln = 0;
+    flying = false;
+    flyHud.style.display = &#x27;none&#x27;;
+    heroX = 60;
+    heroY = FIELD_H - GROUND_H - HERO_H;
+    heroVY = 0;
+    jumpsUsed = 0;
+    gameOver = false;
+    finalEl.classList.remove(&#x27;show&#x27;);
+    paintHero();
+    clearAll();
+    spawnObstacle();
+    spawnStar();
+    spawnCloud();
+    running = true;
+    animId = requestAnimationFrame(tick);
+    spawnId = setInterval(spawnObstacle, SPAWN_INTERVAL);
+    starId = setInterval(spawnStar, STAR_INTERVAL);
+    cloudId = setInterval(spawnCloud, CLOUD_INTERVAL);
+    darkId = setInterval(spawnDarkCloud, DARK_INTERVAL);
+    flyStarId = setInterval(spawnFlyStar, FLYSTAR_INTERVAL);
+  }
+
+  function stopTimers() {
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+    if (spawnId) { clearInterval(spawnId); spawnId = null; }
+    if (starId) { clearInterval(starId); starId = null; }
+    if (cloudId) { clearInterval(cloudId); cloudId = null; }
+    if (darkId) { clearInterval(darkId); darkId = null; }
+    if (flyStarId) { clearInterval(flyStarId); flyStarId = null; }
+  }
+
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    stopTimers();
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27; &#x27; || e.code === &#x27;Space&#x27;) {
+      jump();
+      e.preventDefault();
+    }
+  });
+  field.addEventListener(&#x27;click&#x27;, function () { jump(); });
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  paintHero();
+  updateLives();
+  placeInitialObstacle();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

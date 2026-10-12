@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Combo Blocks</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>Combo Blocks</b> &middot; Game 412 &middot; Amateur producer &middot; Basic game: Falling blocks</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #0f1020; color: #eee; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 14px; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 8px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 700; background: linear-gradient(90deg,#ff6b6b,#feca57,#48dbfb,#1dd1a1); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .instructions { font-size: 16px; color: #aab; max-width: 640px; margin: 0; line-height: 1.4; text-align: center; }
+  .status { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; justify-content: center; }
+  .score { font-size: 22px; color: #eee; margin: 0; }
+  .autobadge { font-size: 15px; font-weight: 600; padding: 4px 10px; border-radius: 14px; background: #333; color: #999; }
+  .autobadge.on { background: #2ecc71; color: white; }
+  .robobadge { font-size: 15px; font-weight: 700; padding: 4px 10px; border-radius: 14px; background: #333; color: #999; }
+  .robobadge.on { background: #48dbfb; color: #06121a; box-shadow: 0 0 12px #48dbfb; }
+  .combo { font-size: 18px; font-weight: 700; padding: 4px 12px; border-radius: 14px; background: #222; color: #666; min-width: 60px; text-align: center; transition: transform .1s; }
+  .heatwrap { width: 240px; height: 12px; background: #222; border-radius: 6px; overflow: hidden; }
+  .heatbar { height: 100%; width: 0%; background: linear-gradient(90deg,#feca57,#ff6b6b); transition: width .2s; }
+  .stage { position: relative; }
+  .field { position: relative; width: 240px; height: 384px; flex-shrink: 0; margin: 0; background: #1a1b2e; border-radius: 8px; overflow: hidden; box-shadow: 0 0 0 2px #2a2b4e; }
+  .field.hot { box-shadow: 0 0 24px 4px #ff6b6b, 0 0 0 2px #ff6b6b; }
+  .field.blaze { animation: shake .18s infinite; }
+  .field.robo { box-shadow: 0 0 20px 3px #48dbfb, 0 0 0 2px #48dbfb; }
+  @keyframes shake { 0%{transform:translate(0,0)} 25%{transform:translate(-2px,1px)} 50%{transform:translate(2px,-1px)} 75%{transform:translate(-1px,-1px)} 100%{transform:translate(1px,1px)} }
+  .block { position: absolute; box-sizing: border-box; border: 1px solid rgba(0,0,0,.25); border-radius: 3px; }
+  .particle { position: absolute; width: 6px; height: 6px; border-radius: 50%; pointer-events: none; }
+  .flash { position: absolute; left:0; right:0; height: 24px; background: rgba(255,255,255,.85); pointer-events:none; border-radius:3px; }
+  .comboPop { position:absolute; left:50%; top:40%; transform:translate(-50%,-50%); font-size:34px; font-weight:800; color:#feca57; text-shadow:0 2px 8px #000; pointer-events:none; opacity:0; }
+  .laser { position:absolute; width:48px; background:linear-gradient(to bottom, rgba(72,219,251,0), rgba(72,219,251,.5)); pointer-events:none; border-radius:3px; }
+  .target { position:absolute; width:48px; height:48px; border:2px dashed #48dbfb; box-sizing:border-box; border-radius:4px; pointer-events:none; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;Combo Blocks&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Move pieces with &lt;strong&gt;&amp;larr;&lt;/strong&gt;/&lt;strong&gt;&amp;rarr;&lt;/strong&gt; and drop faster with &lt;strong&gt;&amp;darr;&lt;/strong&gt;; clear rows in a streak to build your Combo multiplier. Press &lt;strong&gt;A&lt;/strong&gt; for Auto, or &lt;strong&gt;R&lt;/strong&gt; for the smart Robo-Dropper that plays for you.&lt;/p&gt;
+  &lt;div class=&quot;status&quot;&gt;
+    &lt;div class=&quot;score&quot;&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;combo&quot; id=&quot;combo&quot;&gt;x1&lt;/div&gt;
+    &lt;div class=&quot;autobadge&quot; id=&quot;autobadge&quot;&gt;Auto: OFF&lt;/div&gt;
+    &lt;div class=&quot;robobadge&quot; id=&quot;robobadge&quot;&gt;🤖 Robo: OFF&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;heatwrap&quot;&gt;&lt;div class=&quot;heatbar&quot; id=&quot;heatbar&quot;&gt;&lt;/div&gt;&lt;/div&gt;
+  &lt;div class=&quot;stage&quot;&gt;
+    &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var CELL = 24;
+  var COLS = 10, ROWS = 16;
+  var DROP_MS = 500;
+  var AUTO_MS = 90;
+  var ROBO_MS = 260;   // time between robo piece placements
+  var running = false, dropId = null;
+  var autoMode = false;
+  var roboMode = false;
+  var roboBusy = false;
+  var grid = [];
+  var piece = null;
+  var pieceColor = &#x27;#48dbfb&#x27;;
+  var autoTarget = null;
+  var score = 0;
+  var combo = 0;
+  var heat = 0;
+  var lastClearTime = 0;
+
+  var COLORS = [&#x27;#ff6b6b&#x27;,&#x27;#feca57&#x27;,&#x27;#48dbfb&#x27;,&#x27;#1dd1a1&#x27;,&#x27;#a55eea&#x27;,&#x27;#ff9ff3&#x27;];
+
+  var field = document.getElementById(&#x27;field&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var comboEl = document.getElementById(&#x27;combo&#x27;);
+  var autoBadge = document.getElementById(&#x27;autobadge&#x27;);
+  var roboBadge = document.getElementById(&#x27;robobadge&#x27;);
+  var heatBar = document.getElementById(&#x27;heatbar&#x27;);
+
+  var actx = null;
+  function ac() { if (!actx) { try { actx = new (window.AudioContext||window.webkitAudioContext)(); } catch(_){} } return actx; }
+  function beep(freq, dur, type, vol) {
+    var a = ac(); if (!a) return;
+    var o = a.createOscillator(), g = a.createGain();
+    o.type = type || &#x27;square&#x27;; o.frequency.value = freq;
+    g.gain.value = vol || 0.08;
+    o.connect(g); g.connect(a.destination);
+    var t = a.currentTime;
+    g.gain.setValueAtTime(g.gain.value, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.start(t); o.stop(t + dur);
+  }
+  function clearSound(chain) {
+    var base = 440 + chain * 80;
+    beep(base, 0.12, &#x27;square&#x27;, 0.09);
+    setTimeout(function(){ beep(base*1.5, 0.14, &#x27;triangle&#x27;, 0.08); }, 60);
+    if (chain &gt;= 3) setTimeout(function(){ beep(base*2, 0.18, &#x27;sawtooth&#x27;, 0.06); }, 120);
+  }
+  function roboBeep() { beep(880, 0.05, &#x27;square&#x27;, 0.05); setTimeout(function(){beep(1200,0.05,&#x27;square&#x27;,0.04);},40); }
+
+  function newGrid() {
+    grid = [];
+    for (var r = 0; r &lt; ROWS; r++) {
+      var row = [];
+      for (var c = 0; c &lt; COLS; c++) row.push(0);
+      grid.push(row);
+    }
+  }
+
+  function pieceCells(p) {
+    return [
+      { x: p.x,     y: p.y },
+      { x: p.x + 1, y: p.y },
+      { x: p.x,     y: p.y + 1 },
+      { x: p.x + 1, y: p.y + 1 },
+    ];
+  }
+
+  function collidesGrid(p, g) {
+    var cells = pieceCells(p);
+    for (var i = 0; i &lt; cells.length; i++) {
+      var cx = cells[i].x, cy = cells[i].y;
+      if (cx &lt; 0 || cx &gt;= COLS || cy &gt;= ROWS) return true;
+      if (cy &gt;= 0 &amp;&amp; g[cy][cx]) return true;
+    }
+    return false;
+  }
+  function collides(p) { return collidesGrid(p, grid); }
+
+  function spawnPiece() {
+    piece = { x: Math.floor((COLS - 2) / 2), y: 0 };
+    pieceColor = COLORS[Math.floor(Math.random()*COLORS.length)];
+    autoTarget = null;
+    if (collides(piece)) return false;
+    if (autoMode) planAuto();
+    return true;
+  }
+
+  function lockPiece() {
+    var cells = pieceCells(piece);
+    for (var i = 0; i &lt; cells.length; i++) {
+      var c = cells[i];
+      if (c.y &gt;= 0 &amp;&amp; c.y &lt; ROWS &amp;&amp; c.x &gt;= 0 &amp;&amp; c.x &lt; COLS) grid[c.y][c.x] = pieceColor;
+    }
+    piece = null;
+  }
+
+  function clearFullRows() {
+    var clearedRows = [];
+    for (var r = ROWS - 1; r &gt;= 0; r--) {
+      var full = true;
+      for (var c = 0; c &lt; COLS; c++) if (!grid[r][c]) { full = false; break; }
+      if (full) clearedRows.push(r);
+    }
+    var cleared = clearedRows.length;
+    if (cleared &gt; 0) {
+      for (var i = 0; i &lt; clearedRows.length; i++) burstRow(clearedRows[i]);
+      clearedRows.sort(function(a,b){return a-b;});
+      for (var j = clearedRows.length - 1; j &gt;= 0; j--) {
+        grid.splice(clearedRows[j], 1);
+        var empty = [];
+        for (var c2 = 0; c2 &lt; COLS; c2++) empty.push(0);
+        grid.unshift(empty);
+      }
+      combo += 1;
+      var mult = combo;
+      var gained = cleared * 100 * mult + (cleared &gt; 1 ? cleared * 50 : 0);
+      score += gained;
+      heat = Math.min(100, heat + 34 + cleared * 8);
+      lastClearTime = Date.now();
+      scoreEl.textContent = score;
+      updateCombo();
+      clearSound(combo);
+      popCombo(mult, gained);
+    } else {
+      if (combo &gt; 0) { combo = 0; updateCombo(); }
+    }
+  }
+
+  function updateCombo() {
+    comboEl.textContent = &#x27;x&#x27; + Math.max(1, combo);
+    var hot = combo &gt;= 2;
+    comboEl.style.background = combo &gt;= 4 ? &#x27;#ff6b6b&#x27; : (hot ? &#x27;#feca57&#x27; : &#x27;#222&#x27;);
+    comboEl.style.color = hot ? &#x27;#111&#x27; : &#x27;#666&#x27;;
+    comboEl.style.transform = &#x27;scale(&#x27; + (1 + Math.min(combo,6)*0.06) + &#x27;)&#x27;;
+    field.classList.toggle(&#x27;hot&#x27;, combo &gt;= 2 &amp;&amp; !roboMode);
+    field.classList.toggle(&#x27;blaze&#x27;, combo &gt;= 4);
+  }
+
+  function popCombo(mult, gained) {
+    if (mult &lt; 2) return;
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;comboPop&#x27;;
+    el.textContent = &#x27;COMBO x&#x27; + mult + &#x27;!&#x27;;
+    field.appendChild(el);
+    var start = null;
+    function anim(ts) {
+      if (!start) start = ts;
+      var t = (ts - start) / 700;
+      if (t &gt;= 1) { if (el.parentNode) el.parentNode.removeChild(el); return; }
+      el.style.opacity = (t &lt; 0.3 ? t/0.3 : (1 - (t-0.3)/0.7)).toFixed(2);
+      el.style.top = (40 - t*15) + &#x27;%&#x27;;
+      requestAnimationFrame(anim);
+    }
+    requestAnimationFrame(anim);
+  }
+
+  function burstRow(r) {
+    var flash = document.createElement(&#x27;div&#x27;);
+    flash.className = &#x27;flash&#x27;;
+    flash.style.top = (r * CELL) + &#x27;px&#x27;;
+    field.appendChild(flash);
+    setTimeout(function(){ if (flash.parentNode) flash.parentNode.removeChild(flash); }, 180);
+    for (var c = 0; c &lt; COLS; c++) {
+      var color = grid[r][c] || &#x27;#fff&#x27;;
+      for (var k = 0; k &lt; 2; k++) spawnParticle(c*CELL + CELL/2, r*CELL + CELL/2, color);
+    }
+  }
+
+  function spawnParticle(x, y, color) {
+    var p = document.createElement(&#x27;div&#x27;);
+    p.className = &#x27;particle&#x27;;
+    p.style.background = color;
+    p.style.left = x + &#x27;px&#x27;;
+    p.style.top = y + &#x27;px&#x27;;
+    field.appendChild(p);
+    var vx = (Math.random()-0.5)*4, vy = (Math.random()-1.2)*3.5;
+    var px = x, py = y, life = 0;
+    function step() {
+      life++; vy += 0.25; px += vx; py += vy;
+      p.style.left = px + &#x27;px&#x27;; p.style.top = py + &#x27;px&#x27;;
+      p.style.opacity = Math.max(0, 1 - life/40);
+      if (life &lt; 40 &amp;&amp; p.parentNode) requestAnimationFrame(step);
+      else if (p.parentNode) p.parentNode.removeChild(p);
+    }
+    requestAnimationFrame(step);
+  }
+
+  function decayLoop() {
+    if (!running) return;
+    if (heat &gt; 0) { heat = Math.max(0, heat - 0.6); heatBar.style.width = heat + &#x27;%&#x27;; }
+    if (combo &gt; 0 &amp;&amp; Date.now() - lastClearTime &gt; 4500) { combo = 0; updateCombo(); }
+    requestAnimationFrame(decayLoop);
+  }
+
+  // ---- Shared board evaluation ----
+  function dropDepth(px, g) {
+    var y = 0;
+    if (collidesGrid({ x: px, y: 0 }, g)) return null;
+    while (!collidesGrid({ x: px, y: y + 1 }, g)) y++;
+    return y;
+  }
+  function boardScore(g, weights) {
+    var heights = [], holes = 0;
+    for (var c = 0; c &lt; COLS; c++) {
+      var top = ROWS;
+      for (var r2 = 0; r2 &lt; ROWS; r2++) if (g[r2][c]) { top = r2; break; }
+      heights.push(ROWS - top);
+      var seen = false;
+      for (var r3 = 0; r3 &lt; ROWS; r3++) { if (g[r3][c]) seen = true; else if (seen) holes++; }
+    }
+    var aggHeight=0, bumpiness=0, maxH=0;
+    for (var c2=0;c2&lt;COLS;c2++){aggHeight+=heights[c2];if(heights[c2]&gt;maxH)maxH=heights[c2];if(c2&gt;0)bumpiness+=Math.abs(heights[c2]-heights[c2-1]);}
+    var complete=0;
+    for (var r4=0;r4&lt;ROWS;r4++){var full=true;for(var c3=0;c3&lt;COLS;c3++)if(!g[r4][c3]){full=false;break;}if(full)complete++;}
+    return complete*weights.complete - holes*weights.holes - aggHeight*weights.agg - bumpiness*weights.bump - maxH*weights.max;
+  }
+  function placedGrid(px, srcGrid) {
+    var y = dropDepth(px, srcGrid);
+    if (y === null) return null;
+    var g = [];
+    for (var r = 0; r &lt; ROWS; r++) g.push(srcGrid[r].slice());
+    var cells = pieceCells({ x: px, y: y });
+    for (var i = 0; i &lt; cells.length; i++) if (cells[i].y &gt;= 0) g[cells[i].y][cells[i].x] = 1;
+    return { grid: g, y: y };
+  }
+
+  // basic Auto weights
+  var AUTO_W = { complete:100, holes:40, agg:2, bump:3, max:1.5 };
+  function evaluateColumn(px) {
+    var res = placedGrid(px, grid);
+    if (!res) return -Infinity;
+    return boardScore(res.grid, AUTO_W);
+  }
+  function planAuto() {
+    var bestX = piece.x, bestScore = -Infinity;
+    for (var x=0;x&lt;=COLS-2;x++){var s=evaluateColumn(x);if(s&gt;bestScore){bestScore=s;bestX=x;}}
+    autoTarget = bestX;
+  }
+  function autoNudge() {
+    if (!piece || autoTarget===null) return;
+    if (piece.x &lt; autoTarget) move(1);
+    else if (piece.x &gt; autoTarget) move(-1);
+    else stepDown();
+  }
+
+  // ---- ROBO brain: 1-ply lookahead, combo-aware, robotic hard-drop ----
+  var ROBO_W = { complete:220, holes:55, agg:2.5, bump:3.5, max:2 };
+  function roboBestColumn() {
+    var bestX = 0, bestScore = -Infinity;
+    for (var x=0;x&lt;=COLS-2;x++){
+      var res = placedGrid(x, grid);
+      if (!res) continue;
+      var s = boardScore(res.grid, ROBO_W);
+      // lookahead: assume best follow-up placement on resulting board
+      var best2 = -Infinity;
+      for (var x2=0;x2&lt;=COLS-2;x2++){
+        var r2 = placedGrid(x2, res.grid);
+        if (!r2) continue;
+        var s2 = boardScore(r2.grid, ROBO_W);
+        if (s2 &gt; best2) best2 = s2;
+      }
+      if (best2 &gt; -Infinity) s += best2 * 0.5;
+      // reward continuing a combo streak (encourages clears now)
+      var rowsClearedNow = countClears(res.grid);
+      if (rowsClearedNow &gt; 0 &amp;&amp; combo &gt; 0) s += combo * 60;
+      if (s &gt; bestScore) { bestScore = s; bestX = x; }
+    }
+    return bestX;
+  }
+  function countClears(g) {
+    var n = 0;
+    for (var r=0;r&lt;ROWS;r++){var full=true;for(var c=0;c&lt;COLS;c++)if(!g[r][c]){full=false;break;}if(full)n++;}
+    return n;
+  }
+  function showRoboTarget(px) {
+    var y = dropDepth(px, grid);
+    if (y === null) return;
+    var laser = document.createElement(&#x27;div&#x27;);
+    laser.className = &#x27;laser&#x27;;
+    laser.style.left = (px*CELL)+&#x27;px&#x27;;
+    laser.style.top = &#x27;0px&#x27;;
+    laser.style.height = ((y+2)*CELL)+&#x27;px&#x27;;
+    field.appendChild(laser);
+    var tgt = document.createElement(&#x27;div&#x27;);
+    tgt.className = &#x27;target&#x27;;
+    tgt.style.left = (px*CELL)+&#x27;px&#x27;;
+    tgt.style.top = (y*CELL)+&#x27;px&#x27;;
+    field.appendChild(tgt);
+    setTimeout(function(){ if(laser.parentNode)laser.remove(); if(tgt.parentNode)tgt.remove(); }, ROBO_MS-40);
+  }
+  function roboTick() {
+    if (!running || !roboMode || roboBusy || !piece) return;
+    roboBusy = true;
+    var target = roboBestColumn();
+    piece.x = Math.max(0, Math.min(COLS-2, target));
+    showRoboTarget(piece.x);
+    roboBeep();
+    paint();
+    // then hard-drop after a beat so the target is visible
+    setTimeout(function(){
+      if (!running || !roboMode || !piece) { roboBusy = false; return; }
+      hardDrop();
+      roboBusy = false;
+    }, 150);
+  }
+  function hardDrop() {
+    if (!piece) return;
+    while (!collides({ x: piece.x, y: piece.y + 1 })) piece.y++;
+    lockPiece();
+    clearFullRows();
+    if (!spawnPiece()) { endGame(); paint(); return; }
+    paint();
+  }
+
+  function paint() {
+    var blocks = field.querySelectorAll(&#x27;.block&#x27;);
+    for (var i=0;i&lt;blocks.length;i++) blocks[i].remove();
+    for (var r = 0; r &lt; ROWS; r++)
+      for (var c = 0; c &lt; COLS; c++)
+        if (grid[r][c]) drawBlock(c, r, grid[r][c]);
+    if (piece) {
+      var cells = pieceCells(piece);
+      for (var k = 0; k &lt; cells.length; k++)
+        if (cells[k].y &gt;= 0) drawBlock(cells[k].x, cells[k].y, pieceColor);
+    }
+  }
+  function drawBlock(cx, cy, color) {
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;block&#x27;;
+    el.style.left = (cx*CELL)+&#x27;px&#x27;;
+    el.style.top = (cy*CELL)+&#x27;px&#x27;;
+    el.style.width = CELL+&#x27;px&#x27;;
+    el.style.height = CELL+&#x27;px&#x27;;
+    el.style.background = color;
+    field.appendChild(el);
+  }
+
+  function stepDown() {
+    if (!piece) return;
+    var next = { x: piece.x, y: piece.y + 1 };
+    if (collides(next)) {
+      lockPiece();
+      clearFullRows();
+      if (!spawnPiece()) { endGame(); paint(); return; }
+    } else piece = next;
+    paint();
+  }
+  function move(dx) {
+    if (!running || !piece) return;
+    var next = { x: piece.x + dx, y: piece.y };
+    if (!collides(next)) { piece = next; paint(); }
+  }
+
+  function setDropInterval() {
+    if (dropId) clearInterval(dropId);
+    var ms;
+    if (roboMode) ms = ROBO_MS;
+    else if (autoMode) ms = AUTO_MS;
+    else ms = DROP_MS;
+    dropId = setInterval(function(){
+      if (roboMode) roboTick();
+      else if (autoMode) autoNudge();
+      else stepDown();
+    }, ms);
+  }
+
+  function toggleAuto() {
+    if (roboMode) return; // robo takes priority; turn it off first
+    autoMode = !autoMode;
+    autoBadge.textContent = &#x27;Auto: &#x27; + (autoMode ? &#x27;ON&#x27; : &#x27;OFF&#x27;);
+    autoBadge.classList.toggle(&#x27;on&#x27;, autoMode);
+    if (running) { if (autoMode &amp;&amp; piece) planAuto(); setDropInterval(); paint(); }
+  }
+  function toggleRobo() {
+    roboMode = !roboMode;
+    roboBadge.textContent = &#x27;🤖 Robo: &#x27; + (roboMode ? &#x27;ON&#x27; : &#x27;OFF&#x27;);
+    roboBadge.classList.toggle(&#x27;on&#x27;, roboMode);
+    field.classList.toggle(&#x27;robo&#x27;, roboMode);
+    if (roboMode &amp;&amp; autoMode) { autoMode = false; autoBadge.textContent=&#x27;Auto: OFF&#x27;; autoBadge.classList.remove(&#x27;on&#x27;); }
+    roboBusy = false;
+    if (running) { setDropInterval(); paint(); }
+  }
+
+  function endGame() {
+    running = false;
+    if (dropId) { clearInterval(dropId); dropId = null; }
+    beep(220,0.3,&#x27;sawtooth&#x27;,0.1);
+    setTimeout(function(){beep(160,0.4,&#x27;sawtooth&#x27;,0.1);},150);
+  }
+
+  function startGame() {
+    if (running) return;
+    ac();
+    score = 0; combo = 0; heat = 0; roboBusy = false;
+    scoreEl.textContent = &#x27;0&#x27;;
+    updateCombo();
+    heatBar.style.width = &#x27;0%&#x27;;
+    newGrid();
+    if (!spawnPiece()) return;
+    paint();
+    running = true;
+    setDropInterval();
+    requestAnimationFrame(decayLoop);
+  }
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    if (dropId) { clearInterval(dropId); dropId = null; }
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    var manual = !autoMode &amp;&amp; !roboMode;
+    if (e.key === &#x27;ArrowLeft&#x27;) { if (manual) move(-1); e.preventDefault(); }
+    else if (e.key === &#x27;ArrowRight&#x27;) { if (manual) move(1); e.preventDefault(); }
+    else if (e.key === &#x27;ArrowDown&#x27;) { if (running &amp;&amp; manual) stepDown(); e.preventDefault(); }
+    else if (e.key === &#x27;ArrowUp&#x27;) { e.preventDefault(); }
+    else if (e.key === &#x27;a&#x27; || e.key === &#x27;A&#x27;) { toggleAuto(); e.preventDefault(); }
+    else if (e.key === &#x27;r&#x27; || e.key === &#x27;R&#x27;) { toggleRobo(); e.preventDefault(); }
+  });
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  newGrid();
+  piece = { x: Math.floor((COLS - 2) / 2), y: 0 };
+  paint();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  // Suppress in-iframe scrollbars. The parent fits the iframe layout
+  // box to match the content size, so internal scroll is redundant —
+  // and if the LLM&#x27;s CSS sets body overflow: auto, the scrollbar shows
+  // briefly before the fit lands. Force hidden so it never appears.
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  // Iframe-internal JS error capture. window.onerror inside a sandboxed
+  // iframe can&#x27;t post to /api/js_error directly, so we relay to the
+  // parent via postMessage; parent&#x27;s error_logger.js forwards to the
+  // server. Catches LLM-emitted broken HTML (invalid hex, undefined
+  // variables, etc.) that would otherwise fail silently inside the
+  // iframe.
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      // Debounce: don&#x27;t fire more than ~10× per second. ResizeObserver
+      // fires repeatedly during layout/font load; we only need the latest.
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      // Clamp: reject obviously bogus dimensions. Any browser-game viewport
+      // is well under 4000×4000 logical px; readings beyond that are layout
+      // noise during load/visibility transitions.
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  // Parent posts wd_remeasure when it makes the iframe visible (the body&#x27;s
+  // ResizeObserver doesn&#x27;t fire on display:none→block of an outer ancestor
+  // because the iframe document didn&#x27;t actually resize). Wait a frame for
+  // layout to settle before measuring.
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

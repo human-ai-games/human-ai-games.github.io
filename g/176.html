@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🐰 Carrot Hop</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>🐰 Carrot Hop</b> &middot; Game 176 &middot; Professional producer &middot; Basic game: Gravity jumper</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #eef6ff; color: #222; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 14px; background: #fff; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 8px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 700; color: #6a4a2a; text-shadow: 1px 1px 0 #f3d9a0; }
+  .instructions { font-size: 16px; color: #666; max-width: 620px; margin: 0; line-height: 1.4; text-align: center; }
+  .score { font-size: 22px; color: #555; margin: 0; }
+  .score strong { color: #d2691e; }
+  .field { position: relative; width: 640px; height: 400px; flex-shrink: 0; margin: 0;
+    background: linear-gradient(#7ec8f0 0%, #a9e0f5 45%, #d9f2fb 70%);
+    border-radius: 12px; overflow: hidden; box-shadow: inset 0 0 30px rgba(0,0,0,0.08); }
+  .sun { position: absolute; top: 22px; right: 40px; width: 54px; height: 54px; border-radius: 50%;
+    background: radial-gradient(circle at 40% 40%, #fff6c0, #ffd93b); box-shadow: 0 0 30px 8px rgba(255,217,59,0.6); }
+  .cloud { position: absolute; color: #fff; font-size: 40px; opacity: 0.9; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1)); pointer-events: none; }
+  .ground { position: absolute; left: 0; right: 0; bottom: 0; height: 44px;
+    background: linear-gradient(#8bc34a, #6ba03a);
+    border-top: 5px solid #4e7d29; }
+  .grass-edge { position: absolute; left: 0; right: 0; bottom: 39px; height: 12px;
+    background-image: radial-gradient(circle at 6px 0, #8bc34a 6px, transparent 7px);
+    background-size: 16px 12px; background-repeat: repeat-x; pointer-events: none; }
+  .entity { position: absolute; text-align: center; line-height: 1; }
+  .carrot { font-size: 26px; filter: drop-shadow(0 2px 1px rgba(0,0,0,0.2)); }
+  .rock { filter: drop-shadow(0 3px 2px rgba(0,0,0,0.3)); }
+
+  /* Rabbit built from shapes */
+  .hero { width: 40px; height: 48px; }
+  .rabbit { position: relative; width: 40px; height: 48px; transition: filter 0.1s; }
+  .rabbit .ear { position: absolute; top: 0; width: 8px; height: 20px; background: #f3f3f3;
+    border: 2px solid #d8d8d8; border-radius: 6px 6px 4px 4px; }
+  .rabbit .ear.left { left: 8px; transform: rotate(-12deg); }
+  .rabbit .ear.right { left: 22px; transform: rotate(12deg); }
+  .rabbit .ear::after { content: &#x27;&#x27;; position: absolute; top: 3px; left: 2px; right: 2px; bottom: 6px;
+    background: #ffb6c1; border-radius: 4px; }
+  .rabbit .head { position: absolute; top: 14px; left: 8px; width: 24px; height: 20px;
+    background: #f7f7f7; border: 2px solid #dcdcdc; border-radius: 50%; }
+  .rabbit .eye { position: absolute; top: 20px; width: 4px; height: 5px; background: #333; border-radius: 50%; }
+  .rabbit .eye.left { left: 15px; } .rabbit .eye.right { left: 23px; }
+  .rabbit .nose { position: absolute; top: 26px; left: 19px; width: 4px; height: 3px; background: #ff8fab; border-radius: 50%; }
+  .rabbit .body { position: absolute; top: 30px; left: 6px; width: 28px; height: 16px;
+    background: #fafafa; border: 2px solid #dcdcdc; border-radius: 50% 50% 45% 45%; }
+  .rabbit .foot { position: absolute; bottom: -2px; width: 10px; height: 6px; background: #f0f0f0;
+    border: 2px solid #dcdcdc; border-radius: 6px; }
+  .rabbit .foot.left { left: 6px; } .rabbit .foot.right { left: 22px; }
+  .rabbit .tail { position: absolute; top: 34px; left: -3px; width: 10px; height: 10px;
+    background: #fff; border: 2px solid #e6e6e6; border-radius: 50%; }
+  .hero.hurt .rabbit { filter: hue-rotate(-40deg) saturate(3) brightness(1.1); }
+
+  .field.flash::after { content: &#x27;&#x27;; position: absolute; inset: 0; background: rgba(255,0,0,0.35);
+    pointer-events: none; animation: flashfade 0.3s ease-out forwards; }
+  @keyframes flashfade { from { opacity: 1; } to { opacity: 0; } }
+  @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-4px);} 75%{transform:translateX(4px);} }
+  .hero.shake { animation: shake 0.25s; }
+
+  .msg { position: absolute; top: 50%; left: 0; right: 0; transform: translateY(-50%); text-align: center;
+    font-size: 30px; font-weight: 700; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.4); }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;🐰 Carrot Hop&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Use &lt;strong&gt;←&lt;/strong&gt;/&lt;strong&gt;→&lt;/strong&gt; to move and &lt;strong&gt;Space&lt;/strong&gt; to jump; grab 🥕 carrots to reach 100 points. Hitting a 🪨 rock costs points by its size — drop below 0 and it&#x27;s game over!&lt;/p&gt;
+  &lt;div class=&quot;score&quot;&gt;Score: &lt;strong id=&quot;score&quot;&gt;0&lt;/strong&gt; / 100&lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;
+    &lt;div class=&quot;sun&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;cloud&quot; id=&quot;cloud1&quot; style=&quot;top:40px;left:120px;&quot;&gt;☁️&lt;/div&gt;
+    &lt;div class=&quot;cloud&quot; id=&quot;cloud2&quot; style=&quot;top:80px;left:400px;font-size:52px;&quot;&gt;☁️&lt;/div&gt;
+    &lt;div class=&quot;cloud&quot; id=&quot;cloud3&quot; style=&quot;top:20px;left:520px;font-size:34px;&quot;&gt;☁️&lt;/div&gt;
+    &lt;div class=&quot;grass-edge&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;ground&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;entity hero&quot; id=&quot;hero&quot;&gt;
+      &lt;div class=&quot;rabbit&quot;&gt;
+        &lt;div class=&quot;ear left&quot;&gt;&lt;/div&gt;&lt;div class=&quot;ear right&quot;&gt;&lt;/div&gt;
+        &lt;div class=&quot;head&quot;&gt;&lt;/div&gt;
+        &lt;div class=&quot;eye left&quot;&gt;&lt;/div&gt;&lt;div class=&quot;eye right&quot;&gt;&lt;/div&gt;
+        &lt;div class=&quot;nose&quot;&gt;&lt;/div&gt;
+        &lt;div class=&quot;body&quot;&gt;&lt;/div&gt;
+        &lt;div class=&quot;tail&quot;&gt;&lt;/div&gt;
+        &lt;div class=&quot;foot left&quot;&gt;&lt;/div&gt;&lt;div class=&quot;foot right&quot;&gt;&lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;msg&quot; id=&quot;msg&quot; style=&quot;display:none&quot;&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var FIELD_W = 640, FIELD_H = 400;
+  var GROUND_H = 44, HERO_W = 40, HERO_H = 48;
+  var GRAVITY = 0.7, JUMP_V = -14;
+  var MOVE_SPEED = 5;
+  var SCROLL_SPEED = 3;
+  var SPAWN_INTERVAL = 1400;
+  var running = false, animId = null, spawnId = null;
+  var heroX = 70;
+  var heroY = FIELD_H - GROUND_H - HERO_H;
+  var heroVY = 0;
+  var items = [];
+  var score = 0;
+  var over = false;
+  var leftDown = false, rightDown = false;
+  var clouds = [
+    { el: document.getElementById(&#x27;cloud1&#x27;), x: 120, speed: 0.3 },
+    { el: document.getElementById(&#x27;cloud2&#x27;), x: 400, speed: 0.2 },
+    { el: document.getElementById(&#x27;cloud3&#x27;), x: 520, speed: 0.45 }
+  ];
+
+  var field = document.getElementById(&#x27;field&#x27;);
+  var hero = document.getElementById(&#x27;hero&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var msg = document.getElementById(&#x27;msg&#x27;);
+
+  function paintHero() {
+    hero.style.left = heroX + &#x27;px&#x27;;
+    hero.style.top = heroY + &#x27;px&#x27;;
+  }
+  function updateScore() {
+    scoreEl.textContent = score &lt; 0 ? 0 : score;
+  }
+
+  var ROCKS = [
+    { size: 26, dmg: 5, font: 22 },
+    { size: 38, dmg: 12, font: 34 },
+    { size: 52, dmg: 20, font: 48 }
+  ];
+
+  function spawnItem() {
+    if (!running) return;
+    var isCarrot = Math.random() &lt; 0.55;
+    if (isCarrot) {
+      var el = document.createElement(&#x27;div&#x27;);
+      el.className = &#x27;entity carrot&#x27;;
+      el.textContent = &#x27;🥕&#x27;;
+      var y = FIELD_H - GROUND_H - 26 - Math.floor(Math.random() * 90);
+      var it = { type: &#x27;carrot&#x27;, x: FIELD_W, y: y, w: 26, h: 26, el: el, hit: false };
+      el.style.left = it.x + &#x27;px&#x27;; el.style.top = it.y + &#x27;px&#x27;;
+      field.appendChild(el); items.push(it);
+    } else {
+      var r = ROCKS[Math.floor(Math.random() * ROCKS.length)];
+      var el2 = document.createElement(&#x27;div&#x27;);
+      el2.className = &#x27;entity rock&#x27;;
+      el2.textContent = &#x27;🪨&#x27;;
+      el2.style.fontSize = r.font + &#x27;px&#x27;;
+      var top = FIELD_H - GROUND_H - r.size;
+      var it2 = { type: &#x27;rock&#x27;, x: FIELD_W, y: top, w: r.size, h: r.size, dmg: r.dmg, el: el2, hit: false };
+      el2.style.left = it2.x + &#x27;px&#x27;; el2.style.top = it2.y + &#x27;px&#x27;;
+      field.appendChild(el2); items.push(it2);
+    }
+  }
+
+  function jump() {
+    if (!running || over) return;
+    if (heroY &gt;= FIELD_H - GROUND_H - HERO_H - 1) heroVY = JUMP_V;
+  }
+
+  function overlap(bx, by, bw, bh) {
+    var hx = heroX + 6, hw = HERO_W - 12;
+    return hx + hw &gt; bx &amp;&amp; hx &lt; bx + bw &amp;&amp;
+           heroY + HERO_H &gt; by &amp;&amp; heroY &lt; by + bh;
+  }
+
+  function endGame(win) {
+    over = true;
+    stopGame();
+    msg.style.display = &#x27;block&#x27;;
+    msg.textContent = win ? &#x27;🎉 You reached 100! 🎉&#x27; : &#x27;💥 Game Over!&#x27;;
+  }
+
+  function rockHitEffect() {
+    field.classList.remove(&#x27;flash&#x27;); void field.offsetWidth; field.classList.add(&#x27;flash&#x27;);
+    hero.classList.remove(&#x27;hurt&#x27;, &#x27;shake&#x27;); void hero.offsetWidth;
+    hero.classList.add(&#x27;hurt&#x27;, &#x27;shake&#x27;);
+    setTimeout(function () { hero.classList.remove(&#x27;hurt&#x27;); }, 400);
+  }
+
+  function tick() {
+    if (!running) return;
+    if (leftDown) heroX -= MOVE_SPEED;
+    if (rightDown) heroX += MOVE_SPEED;
+    if (heroX &lt; 0) heroX = 0;
+    if (heroX &gt; FIELD_W - HERO_W) heroX = FIELD_W - HERO_W;
+
+    heroVY += GRAVITY;
+    heroY += heroVY;
+    var floorY = FIELD_H - GROUND_H - HERO_H;
+    if (heroY &gt; floorY) { heroY = floorY; heroVY = 0; }
+    if (heroY &lt; 0) { heroY = 0; heroVY = 0; }
+    paintHero();
+
+    for (var c = 0; c &lt; clouds.length; c++) {
+      var cl = clouds[c];
+      cl.x -= cl.speed;
+      if (cl.x &lt; -60) cl.x = FIELD_W + 20;
+      cl.el.style.left = cl.x + &#x27;px&#x27;;
+    }
+
+    for (var i = items.length - 1; i &gt;= 0; i--) {
+      var it = items[i];
+      it.x -= SCROLL_SPEED;
+      it.el.style.left = it.x + &#x27;px&#x27;;
+      if (it.x + it.w &lt; -10) { field.removeChild(it.el); items.splice(i, 1); continue; }
+      if (!it.hit &amp;&amp; overlap(it.x, it.y, it.w, it.h)) {
+        it.hit = true;
+        if (it.type === &#x27;carrot&#x27;) {
+          score += 5;
+          field.removeChild(it.el); items.splice(i, 1);
+          updateScore();
+          if (score &gt;= 100) { score = 100; updateScore(); endGame(true); return; }
+        } else {
+          score -= it.dmg; updateScore();
+          rockHitEffect();
+          it.el.style.opacity = &#x27;0.3&#x27;;
+          var el = it.el; items.splice(i, 1);
+          setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 150);
+          if (score &lt; 0) { endGame(false); return; }
+        }
+      }
+    }
+    animId = requestAnimationFrame(tick);
+  }
+
+  function clearItems() {
+    items.forEach(function (it) { if (it.el.parentNode) it.el.parentNode.removeChild(it.el); });
+    items = [];
+  }
+
+  function startGame() {
+    if (running) return;
+    score = 0; updateScore();
+    heroX = 70; heroY = FIELD_H - GROUND_H - HERO_H; heroVY = 0;
+    over = false; leftDown = rightDown = false;
+    msg.style.display = &#x27;none&#x27;;
+    hero.classList.remove(&#x27;hurt&#x27;, &#x27;shake&#x27;);
+    paintHero();
+    clearItems();
+    spawnItem();
+    running = true;
+    animId = requestAnimationFrame(tick);
+    spawnId = setInterval(spawnItem, SPAWN_INTERVAL);
+  }
+  function stopGame() {
+    running = false;
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+    if (spawnId) { clearInterval(spawnId); spawnId = null; }
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27; &#x27; || e.code === &#x27;Space&#x27;) { jump(); e.preventDefault(); }
+    else if (e.key === &#x27;ArrowLeft&#x27;) { leftDown = true; e.preventDefault(); }
+    else if (e.key === &#x27;ArrowRight&#x27;) { rightDown = true; e.preventDefault(); }
+  });
+  window.addEventListener(&#x27;keyup&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27;) leftDown = false;
+    else if (e.key === &#x27;ArrowRight&#x27;) rightDown = false;
+  });
+  field.addEventListener(&#x27;click&#x27;, function () { jump(); });
+
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  paintHero();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  // Suppress in-iframe scrollbars. The parent fits the iframe layout
+  // box to match the content size, so internal scroll is redundant —
+  // and if the LLM&#x27;s CSS sets body overflow: auto, the scrollbar shows
+  // briefly before the fit lands. Force hidden so it never appears.
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  // Iframe-internal JS error capture. window.onerror inside a sandboxed
+  // iframe can&#x27;t post to /api/js_error directly, so we relay to the
+  // parent via postMessage; parent&#x27;s error_logger.js forwards to the
+  // server. Catches LLM-emitted broken HTML (invalid hex, undefined
+  // variables, etc.) that would otherwise fail silently inside the
+  // iframe.
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      // Debounce: don&#x27;t fire more than ~10× per second. ResizeObserver
+      // fires repeatedly during layout/font load; we only need the latest.
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      // Clamp: reject obviously bogus dimensions. Any browser-game viewport
+      // is well under 4000×4000 logical px; readings beyond that are layout
+      // noise during load/visibility transitions.
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  // Parent posts wd_remeasure when it makes the iframe visible (the body&#x27;s
+  // ResizeObserver doesn&#x27;t fire on display:none→block of an outer ancestor
+  // because the iframe document didn&#x27;t actually resize). Wait a frame for
+  // layout to settle before measuring.
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Double Snake Duel</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>Double Snake Duel</b> &middot; Game 081 &middot; Amateur producer &middot; Basic game: Snake</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #222; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 14px; background: white; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 8px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 600; }
+  .instructions { font-size: 16px; color: #666; max-width: 620px; margin: 0; line-height: 1.35; text-align: center; }
+  .scores { display: flex; gap: 30px; font-size: 20px; margin: 0; }
+  .p1 { color: #1c6b28; font-weight: 600; }
+  .p2 { color: #1565c0; font-weight: 600; }
+  .status { font-size: 17px; color: #b71c1c; min-height: 20px; margin: 0; font-weight: 600; }
+  .legend { font-size: 14px; color: #666; margin: 0; display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .swatch { width: 13px; height: 13px; border-radius: 50%; display: inline-block; }
+  #field { display: block; width: 600px; height: 400px; flex-shrink: 0; background: #cfe8b5; border-radius: 8px; box-shadow: inset 0 0 0 2px #b7d79a; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;Double Snake Duel&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Player 1 (green) steers with the arrow keys and Player 2 (blue) uses the W, A, S, D keys, both eating the colorful foods to grow. Crash into a wall, yourself, or the other snake and you&#x27;re out — last snake alive wins!&lt;/p&gt;
+  &lt;div class=&quot;scores&quot;&gt;&lt;span class=&quot;p1&quot;&gt;P1: &lt;span id=&quot;s1&quot;&gt;0&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;p2&quot;&gt;P2: &lt;span id=&quot;s2&quot;&gt;0&lt;/span&gt;&lt;/span&gt;&lt;/div&gt;
+  &lt;div class=&quot;status&quot; id=&quot;status&quot;&gt;&lt;/div&gt;
+  &lt;div class=&quot;legend&quot;&gt;
+    &lt;span&gt;&lt;i class=&quot;swatch&quot; style=&quot;background:#e53935&quot;&gt;&lt;/i&gt; Apple = 1&lt;/span&gt;
+    &lt;span&gt;&lt;i class=&quot;swatch&quot; style=&quot;background:#fbc02d&quot;&gt;&lt;/i&gt; Gold = 3&lt;/span&gt;
+    &lt;span&gt;&lt;i class=&quot;swatch&quot; style=&quot;background:#8e24aa&quot;&gt;&lt;/i&gt; Gem = 5&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;canvas id=&quot;field&quot; width=&quot;600&quot; height=&quot;400&quot;&gt;&lt;/canvas&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  var CELL = 20;
+  var COLS = 30, ROWS = 20;
+  var TICK_MS = 150;
+  var running = false, tickId = null, rafId = null;
+  var food = null;
+  var lastTickTime = 0;
+  var tonguePhase = 0;
+  var canvas = document.getElementById(&#x27;field&#x27;);
+  var ctx = canvas.getContext(&#x27;2d&#x27;);
+  var s1El = document.getElementById(&#x27;s1&#x27;);
+  var s2El = document.getElementById(&#x27;s2&#x27;);
+  var statusEl = document.getElementById(&#x27;status&#x27;);
+
+  var FOOD_TYPES = [
+    { color: &#x27;#e53935&#x27;, points: 1, weight: 70 },
+    { color: &#x27;#fbc02d&#x27;, points: 3, weight: 22 },
+    { color: &#x27;#8e24aa&#x27;, points: 5, weight: 8 }
+  ];
+
+  // Two players. Each: body array, dir, pendingDir, prev body, alive, score, colors.
+  var players = [];
+
+  function makePlayer(startX, startY, dirX, dirY, colors) {
+    var body = [];
+    for (var i = 0; i &lt; 3; i++) body.push({ x: startX - dirX * i, y: startY - dirY * i });
+    return {
+      body: body,
+      prev: body.map(function (s) { return { x: s.x, y: s.y }; }),
+      dir: { x: dirX, y: dirY },
+      pendingDir: { x: dirX, y: dirY },
+      alive: true,
+      score: 0,
+      colors: colors
+    };
+  }
+
+  function resetPlayers() {
+    players = [
+      makePlayer(6, 6, 1, 0, {
+        outline: &#x27;#0d3d15&#x27;, top: &#x27;#6cc470&#x27;, mid: &#x27;#2e8b3a&#x27;, bot: &#x27;#1c6b28&#x27;, belly: &#x27;rgba(180,230,150,0.35)&#x27;
+      }),
+      makePlayer(COLS - 7, ROWS - 7, -1, 0, {
+        outline: &#x27;#0a2f52&#x27;, top: &#x27;#5aa8e8&#x27;, mid: &#x27;#1e78c8&#x27;, bot: &#x27;#12508f&#x27;, belly: &#x27;rgba(160,210,245,0.35)&#x27;
+      })
+    ];
+  }
+
+  function pickFoodType() {
+    var total = 0, i;
+    for (i = 0; i &lt; FOOD_TYPES.length; i++) total += FOOD_TYPES[i].weight;
+    var r = Math.random() * total;
+    for (i = 0; i &lt; FOOD_TYPES.length; i++) {
+      r -= FOOD_TYPES[i].weight;
+      if (r &lt;= 0) return FOOD_TYPES[i];
+    }
+    return FOOD_TYPES[0];
+  }
+
+  function cellOccupied(x, y) {
+    for (var p = 0; p &lt; players.length; p++) {
+      var b = players[p].body;
+      for (var i = 0; i &lt; b.length; i++) if (b[i].x === x &amp;&amp; b[i].y === y) return true;
+    }
+    return false;
+  }
+
+  function placeFood() {
+    for (var tries = 0; tries &lt; 300; tries++) {
+      var x = Math.floor(Math.random() * COLS);
+      var y = Math.floor(Math.random() * ROWS);
+      if (!cellOccupied(x, y)) { food = { x: x, y: y, type: pickFoodType() }; return; }
+    }
+  }
+
+  function segPos(pl, i, t) {
+    var cur = pl.body[i];
+    var prev = pl.prev[i] || cur;
+    return {
+      x: (prev.x + (cur.x - prev.x) * t) * CELL + CELL / 2,
+      y: (prev.y + (cur.y - prev.y) * t) * CELL + CELL / 2
+    };
+  }
+
+  function drawSnake(pl, t) {
+    if (!pl.alive || pl.body.length === 0) {
+      // draw faint if dead
+    }
+    var body = pl.body;
+    var pts = [];
+    for (var i = 0; i &lt; body.length; i++) pts.push(segPos(pl, i, t));
+
+    function widthAt(i) {
+      var n = body.length;
+      var base = CELL * 0.9;
+      var frac = i / Math.max(1, n - 1);
+      var taper = 1 - Math.pow(frac, 1.6) * 0.6;
+      var bulge = 1 + Math.sin(Math.min(frac, 1) * Math.PI) * 0.12;
+      return base * taper * bulge;
+    }
+
+    var alpha = pl.alive ? 1 : 0.4;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+
+    for (var pass = 0; pass &lt; 2; pass++) {
+      for (var i = pts.length - 1; i &gt;= 0; i--) {
+        var w = widthAt(i);
+        var rr = pass === 0 ? w / 2 + 1.5 : w / 2;
+        ctx.beginPath();
+        ctx.arc(pts[i].x, pts[i].y, rr, 0, Math.PI * 2);
+        if (pass === 0) {
+          ctx.fillStyle = pl.colors.outline;
+        } else {
+          var g = ctx.createLinearGradient(pts[i].x, pts[i].y - rr, pts[i].x, pts[i].y + rr);
+          g.addColorStop(0, pl.colors.top);
+          g.addColorStop(0.5, pl.colors.mid);
+          g.addColorStop(1, pl.colors.bot);
+          ctx.fillStyle = g;
+        }
+        ctx.fill();
+      }
+    }
+
+    for (var i = 1; i &lt; pts.length; i++) {
+      var w = widthAt(i);
+      ctx.beginPath();
+      ctx.arc(pts[i].x, pts[i].y, w * 0.28, 0, Math.PI * 2);
+      ctx.fillStyle = pl.colors.belly;
+      ctx.fill();
+    }
+
+    // Head
+    var head = pts[0];
+    var hw = widthAt(0) * 0.65;
+    var ang = Math.atan2(pl.dir.y, pl.dir.x);
+    ctx.save();
+    ctx.translate(head.x, head.y);
+    ctx.rotate(ang);
+    ctx.beginPath();
+    ctx.ellipse(2, 0, hw + 4, hw, 0, 0, Math.PI * 2);
+    var hg = ctx.createLinearGradient(0, -hw, 0, hw);
+    hg.addColorStop(0, pl.colors.top);
+    hg.addColorStop(1, pl.colors.bot);
+    ctx.fillStyle = hg;
+    ctx.fill();
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = pl.colors.outline;
+    ctx.stroke();
+
+    if (pl.alive) {
+      var flick = Math.abs(Math.sin(tonguePhase));
+      if (flick &gt; 0.3) {
+        var tl = 6 + flick * 8;
+        ctx.strokeStyle = &#x27;#d9314b&#x27;;
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.moveTo(hw + 3, 0);
+        ctx.lineTo(hw + 3 + tl, 0);
+        ctx.moveTo(hw + 3 + tl, 0);
+        ctx.lineTo(hw + 3 + tl + 3, -3);
+        ctx.moveTo(hw + 3 + tl, 0);
+        ctx.lineTo(hw + 3 + tl + 3, 3);
+        ctx.stroke();
+      }
+    }
+
+    var eyeOff = hw * 0.5;
+    for (var s = -1; s &lt;= 1; s += 2) {
+      ctx.beginPath();
+      ctx.arc(hw * 0.15, s * eyeOff, hw * 0.32, 0, Math.PI * 2);
+      ctx.fillStyle = &#x27;#fff&#x27;;
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(hw * 0.28, s * eyeOff, hw * 0.16, 0, Math.PI * 2);
+      ctx.fillStyle = pl.alive ? &#x27;#111&#x27; : &#x27;#777&#x27;;
+      ctx.fill();
+    }
+    ctx.restore();
+    ctx.restore();
+  }
+
+  function draw(t) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (food) {
+      var fx = food.x * CELL + CELL / 2;
+      var fy = food.y * CELL + CELL / 2;
+      var r = CELL * 0.42;
+      ctx.beginPath();
+      ctx.arc(fx, fy, r, 0, Math.PI * 2);
+      ctx.fillStyle = food.type.color;
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(fx - r * 0.3, fy - r * 0.3, r * 0.28, 0, Math.PI * 2);
+      ctx.fillStyle = &#x27;rgba(255,255,255,0.55)&#x27;;
+      ctx.fill();
+    }
+    for (var p = 0; p &lt; players.length; p++) drawSnake(players[p], t);
+  }
+
+  function render(now) {
+    if (!running) return;
+    var t = Math.min(1, (now - lastTickTime) / TICK_MS);
+    tonguePhase = now / 220;
+    draw(t);
+    rafId = requestAnimationFrame(render);
+  }
+
+  function tick() {
+    if (!running) return;
+    var p;
+    // Compute new heads for alive players.
+    var newHeads = [];
+    for (p = 0; p &lt; players.length; p++) {
+      var pl = players[p];
+      if (!pl.alive) { newHeads.push(null); continue; }
+      if (!(pl.pendingDir.x === -pl.dir.x &amp;&amp; pl.pendingDir.y === -pl.dir.y)) pl.dir = pl.pendingDir;
+      var head = pl.body[0];
+      newHeads.push({ x: head.x + pl.dir.x, y: head.y + pl.dir.y });
+    }
+
+    // Determine who eats (before moving so we know grow).
+    var eats = [];
+    for (p = 0; p &lt; players.length; p++) {
+      eats.push(false);
+      if (newHeads[p] &amp;&amp; food &amp;&amp; newHeads[p].x === food.x &amp;&amp; newHeads[p].y === food.y) eats[p] = true;
+    }
+
+    // Collision detection.
+    var dead = [false, false];
+    for (p = 0; p &lt; players.length; p++) {
+      var nh = newHeads[p];
+      if (!nh) continue;
+      // walls
+      if (nh.x &lt; 0 || nh.x &gt;= COLS || nh.y &lt; 0 || nh.y &gt;= ROWS) { dead[p] = true; continue; }
+      // against each snake&#x27;s body (post-move approximation: bodies minus tail unless that snake eats)
+      for (var q = 0; q &lt; players.length; q++) {
+        var opl = players[q];
+        if (!opl.alive) continue;
+        var ob = opl.body;
+        var checkLen = eats[q] ? ob.length : ob.length - 1; // tail vacates if not eating
+        for (var i = 0; i &lt; checkLen; i++) {
+          if (ob[i].x === nh.x &amp;&amp; ob[i].y === nh.y) { dead[p] = true; break; }
+        }
+        if (dead[p]) break;
+      }
+    }
+    // head-on collision: both heads to same cell
+    if (newHeads[0] &amp;&amp; newHeads[1] &amp;&amp; newHeads[0].x === newHeads[1].x &amp;&amp; newHeads[0].y === newHeads[1].y) {
+      dead[0] = true; dead[1] = true;
+    }
+
+    // Apply movement for survivors.
+    var foodEaten = false;
+    for (p = 0; p &lt; players.length; p++) {
+      var pl2 = players[p];
+      if (!pl2.alive) continue;
+      if (dead[p]) { pl2.alive = false; continue; }
+      pl2.prev = pl2.body.map(function (s) { return { x: s.x, y: s.y }; });
+      pl2.body.unshift({ x: newHeads[p].x, y: newHeads[p].y });
+      if (eats[p]) {
+        pl2.score += food.type.points;
+        (p === 0 ? s1El : s2El).textContent = pl2.score;
+        foodEaten = true;
+        pl2.prev.unshift({ x: pl2.prev[0].x, y: pl2.prev[0].y });
+      } else {
+        pl2.body.pop();
+      }
+    }
+
+    if (foodEaten) placeFood();
+    lastTickTime = performance.now();
+
+    // Check end conditions.
+    var aliveCount = 0, aliveIdx = -1;
+    for (p = 0; p &lt; players.length; p++) if (players[p].alive) { aliveCount++; aliveIdx = p; }
+    if (aliveCount &lt;= 1) {
+      running = false;
+      if (tickId) { clearInterval(tickId); tickId = null; }
+      if (aliveCount === 1) {
+        statusEl.textContent = (aliveIdx === 0 ? &#x27;Player 1 (Green)&#x27; : &#x27;Player 2 (Blue)&#x27;) + &#x27; wins! 🏆&#x27;;
+      } else {
+        statusEl.textContent = &quot;It&#x27;s a tie — both crashed!&quot;;
+      }
+      setTimeout(function () { if (rafId) { cancelAnimationFrame(rafId); rafId = null; } draw(1); }, 200);
+    }
+  }
+
+  function startGame() {
+    if (running) return;
+    resetPlayers();
+    s1El.textContent = &#x27;0&#x27;;
+    s2El.textContent = &#x27;0&#x27;;
+    statusEl.textContent = &#x27;&#x27;;
+    placeFood();
+    running = true;
+    lastTickTime = performance.now();
+    if (tickId) clearInterval(tickId);
+    tickId = setInterval(tick, TICK_MS);
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(render);
+  }
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    if (tickId) { clearInterval(tickId); tickId = null; }
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    var k = e.key;
+    // Player 1 arrows
+    if (k === &#x27;ArrowLeft&#x27;) { players[0].pendingDir = { x: -1, y: 0 }; e.preventDefault(); }
+    else if (k === &#x27;ArrowRight&#x27;) { players[0].pendingDir = { x: 1, y: 0 }; e.preventDefault(); }
+    else if (k === &#x27;ArrowUp&#x27;) { players[0].pendingDir = { x: 0, y: -1 }; e.preventDefault(); }
+    else if (k === &#x27;ArrowDown&#x27;) { players[0].pendingDir = { x: 0, y: 1 }; e.preventDefault(); }
+    // Player 2 WASD
+    else if (k === &#x27;a&#x27; || k === &#x27;A&#x27;) { players[1].pendingDir = { x: -1, y: 0 }; }
+    else if (k === &#x27;d&#x27; || k === &#x27;D&#x27;) { players[1].pendingDir = { x: 1, y: 0 }; }
+    else if (k === &#x27;w&#x27; || k === &#x27;W&#x27;) { players[1].pendingDir = { x: 0, y: -1 }; }
+    else if (k === &#x27;s&#x27; || k === &#x27;S&#x27;) { players[1].pendingDir = { x: 0, y: 1 }; }
+  });
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  resetPlayers();
+  placeFood();
+  draw(1);
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,618 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🪂 Sky Climb</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>🪂 Sky Climb</b> &middot; Game 167 &middot; Amateur producer &middot; Basic game: Snake</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #0b1026; color: #eaf0ff; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 14px; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: .5px; }
+  .instructions { font-size: 16px; color: #9fb0d8; max-width: 620px; margin: 0; line-height: 1.35; text-align: center; }
+  .hud { display: flex; gap: 16px; font-size: 18px; align-items: center; }
+  .hud b { color: #7fd3ff; }
+  .stage { position: relative; display: flex; gap: 10px; }
+  canvas { border-radius: 10px; box-shadow: 0 6px 24px rgba(0,0,0,.5); }
+  .meter { width: 30px; height: 440px; background: #101838; border-radius: 8px; position: relative; overflow: hidden; border: 1px solid #2a3a70; }
+  .meter-fill { position: absolute; bottom: 0; left: 0; right: 0; transition: height .25s ease, background .5s ease; }
+  .zone-mark { position: absolute; left: 0; right: 0; height: 1px; background: rgba(255,255,255,.25); }
+  .meter-label { font-size: 11px; color: #9fb0d8; text-align: center; margin-top: 2px; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;🪂 Sky Climb&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Steer your falling parachutist with the ← → arrow keys to land dead-center on the moving platforms and chain flawless landings for a glowing combo. Rise through the blue, fiery-orange, and starry-purple zones — each new height milestone triggers a triumphant fanfare!&lt;/p&gt;
+  &lt;div class=&quot;hud&quot;&gt;
+    &lt;span&gt;Altitude: &lt;b id=&quot;alt&quot;&gt;0&lt;/b&gt; m&lt;/span&gt;
+    &lt;span&gt;Best: &lt;b id=&quot;best&quot;&gt;0&lt;/b&gt; m&lt;/span&gt;
+    &lt;span&gt;Combo: &lt;b id=&quot;combo&quot;&gt;x1&lt;/b&gt;&lt;/span&gt;
+    &lt;span&gt;Zone: &lt;b id=&quot;zone&quot;&gt;Dusk&lt;/b&gt;&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;stage&quot;&gt;
+    &lt;canvas id=&quot;cv&quot; width=&quot;600&quot; height=&quot;440&quot;&gt;&lt;/canvas&gt;
+    &lt;div&gt;
+      &lt;div class=&quot;meter&quot;&gt;
+        &lt;div class=&quot;meter-fill&quot; id=&quot;mfill&quot; style=&quot;height:0%&quot;&gt;&lt;/div&gt;
+        &lt;div class=&quot;zone-mark&quot; style=&quot;bottom:33.3%&quot;&gt;&lt;/div&gt;
+        &lt;div class=&quot;zone-mark&quot; style=&quot;bottom:66.6%&quot;&gt;&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;meter-label&quot;&gt;ALT&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var cv = document.getElementById(&#x27;cv&#x27;), ctx = cv.getContext(&#x27;2d&#x27;);
+  var W = cv.width, H = cv.height;
+  var altEl = document.getElementById(&#x27;alt&#x27;), bestEl = document.getElementById(&#x27;best&#x27;);
+  var zoneEl = document.getElementById(&#x27;zone&#x27;), mfill = document.getElementById(&#x27;mfill&#x27;);
+  var comboEl = document.getElementById(&#x27;combo&#x27;);
+
+  var running = false, rafId = null, lastT = 0;
+  var altitude = 0, best = 0;
+  var combo = 0, comboGlow = 0;
+  var keys = { left: false, right: false };
+
+  var MAX_ALT = 300;          // altitude that fills the meter fully
+  var MILESTONE = 50;         // fanfare every 50m
+  var lastMilestone = 0;
+  var milestoneBanner = null; // {text, life}
+
+  // Zone color themes keyed by progress fraction (0..1)
+  // Zone 1: Dusk (blue), Zone 2: Blaze (orange), Zone 3: Starfall (purple)
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function mix(c1, c2, t) {
+    return [Math.round(lerp(c1[0], c2[0], t)), Math.round(lerp(c1[1], c2[1], t)), Math.round(lerp(c1[2], c2[2], t))];
+  }
+  function rgb(c) { return &#x27;rgb(&#x27; + c[0] + &#x27;,&#x27; + c[1] + &#x27;,&#x27; + c[2] + &#x27;)&#x27;; }
+
+  // top &amp; bottom gradient colors for each of 3 zones
+  var zoneTops = [ [19,32,73], [140,52,20], [40,12,66] ];
+  var zoneBots = [ [28,47,107], [230,120,40], [90,30,120] ];
+  var zoneNames = [&#x27;Dusk&#x27;, &#x27;Blaze&#x27;, &#x27;Starfall&#x27;];
+
+  function skyColors() {
+    var f = Math.min(1, altitude / MAX_ALT); // 0..1
+    var seg = f * 2;                          // 0..2 across 3 stops
+    var i = Math.min(1, Math.floor(seg));
+    var localT = seg - i;
+    var top = mix(zoneTops[i], zoneTops[i+1], localT);
+    var bot = mix(zoneBots[i], zoneBots[i+1], localT);
+    return { top: top, bot: bot };
+  }
+  function zoneIndex() {
+    var f = Math.min(0.999, altitude / MAX_ALT);
+    return Math.floor(f * 3);
+  }
+
+  // Audio
+  var actx = null;
+  function ensureAudio() { if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (_) {} } }
+  function tone(freq, start, dur, type, vol) {
+    if (!actx) return;
+    var t = actx.currentTime + start;
+    var o = actx.createOscillator(), g = actx.createGain();
+    o.type = type || &#x27;sine&#x27;; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(vol || 0.2, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t + dur + 0.02);
+  }
+  function thwump(perfect) {
+    if (!actx) return;
+    var t = actx.currentTime;
+    var o = actx.createOscillator(), g = actx.createGain();
+    o.type = &#x27;sine&#x27;; o.frequency.setValueAtTime(perfect ? 220 : 180, t); o.frequency.exponentialRampToValueAtTime(55, t + 0.18);
+    g.gain.setValueAtTime(0.5, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+    o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t + 0.26);
+    var o2 = actx.createOscillator(), g2 = actx.createGain();
+    o2.type = &#x27;square&#x27;; o2.frequency.setValueAtTime(perfect ? 520 : 400, t);
+    g2.gain.setValueAtTime(0.12, t); g2.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+    o2.connect(g2); g2.connect(actx.destination); o2.start(t); o2.stop(t + 0.07);
+  }
+  function whoosh(comboCount) {
+    if (!actx) return;
+    var t = actx.currentTime;
+    var startF = 300 + comboCount * 60, endF = 700 + comboCount * 140;
+    var o = actx.createOscillator(), g = actx.createGain();
+    var f = actx.createBiquadFilter(); f.type = &#x27;bandpass&#x27;; f.frequency.value = startF; f.Q.value = 0.7;
+    f.frequency.setValueAtTime(startF, t); f.frequency.exponentialRampToValueAtTime(endF, t + 0.35);
+    o.type = &#x27;sawtooth&#x27;; o.frequency.value = 90;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(0.12 + Math.min(0.15, comboCount * 0.02), t + 0.12);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.4);
+    o.connect(f); f.connect(g); g.connect(actx.destination);
+    o.start(t); o.stop(t + 0.42);
+  }
+  function fanfare(zone) {
+    if (!actx) return;
+    // triumphant ascending arpeggio, key rises per zone
+    var roots = [392, 466, 523]; // G4, Bb4, C5 base per zone
+    var base = roots[Math.min(2, zone)];
+    var notes = [1, 1.25, 1.5, 2]; // major-ish chord climb
+    for (var i = 0; i &lt; notes.length; i++) {
+      tone(base * notes[i], i * 0.12, 0.5, &#x27;triangle&#x27;, 0.22);
+      tone(base * notes[i] * 2, i * 0.12, 0.4, &#x27;sine&#x27;, 0.08);
+    }
+    // shimmer at the top
+    tone(base * 3, 0.48, 0.6, &#x27;sine&#x27;, 0.14);
+  }
+  function fallSound() {
+    if (!actx) return;
+    var t = actx.currentTime;
+    var o = actx.createOscillator(), g = actx.createGain();
+    o.type = &#x27;sawtooth&#x27;; o.frequency.setValueAtTime(300, t); o.frequency.exponentialRampToValueAtTime(60, t + 0.6);
+    g.gain.setValueAtTime(0.3, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
+    o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t + 0.62);
+  }
+  function comboBreakSound() {
+    if (!actx) return;
+    var t = actx.currentTime;
+    var o = actx.createOscillator(), g = actx.createGain();
+    o.type = &#x27;triangle&#x27;; o.frequency.setValueAtTime(300, t); o.frequency.exponentialRampToValueAtTime(120, t + 0.25);
+    g.gain.setValueAtTime(0.18, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
+    o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t + 0.3);
+  }
+
+  var player = { x: W/2, y: 60, vy: 0, w: 22, h: 26 };
+  var platform = null;
+  var flashT = 0, flashPerfect = false;
+  var scorePop = null;
+  var stage = &#x27;falling&#x27;;
+  var landedTimer = 0, gameOverTimer = 0;
+  var starOffset = 0;
+
+  function windLevel() { return altitude / 100; }
+  function comboMult() { return 1 + combo * 0.5; }
+
+  function spawnPlatform() {
+    var w = Math.max(70, 130 - altitude * 1.2);
+    var speed = 60 + altitude * 4;
+    if (Math.random() &lt; 0.5) speed = -speed;
+    platform = {
+      x: 60 + Math.random() * (W - 120),
+      y: H - 70, w: w, h: 14, vx: speed,
+      wobbleAmp: Math.min(40, windLevel() * 6),
+      wobbleSpeed: 2 + windLevel() * 0.6,
+      phase: Math.random() * Math.PI * 2, baseX: 0
+    };
+    platform.baseX = platform.x;
+  }
+  function resetPlayer() { player.x = W/2; player.y = 60; player.vy = 0; }
+
+  function checkMilestone() {
+    while (altitude &gt;= lastMilestone + MILESTONE) {
+      lastMilestone += MILESTONE;
+      milestoneBanner = { text: lastMilestone + &#x27; m — &#x27; + zoneNames[Math.min(2, zoneIndex())] + &#x27;!&#x27;, life: 1.8 };
+      fanfare(zoneIndex());
+    }
+  }
+
+  function startGame() {
+    ensureAudio();
+    altitude = 0; combo = 0; comboGlow = 0; lastMilestone = 0; milestoneBanner = null;
+    updateHUD();
+    resetPlayer(); spawnPlatform();
+    stage = &#x27;falling&#x27;;
+    flashT = 0; landedTimer = 0; gameOverTimer = 0; scorePop = null;
+    running = true; lastT = performance.now();
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(loop);
+  }
+  function stopGame() {
+    running = false;
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+  }
+
+  function updateHUD() {
+    altEl.textContent = Math.round(altitude);
+    if (altitude &gt; best) best = altitude;
+    bestEl.textContent = Math.round(best);
+    comboEl.textContent = &#x27;x&#x27; + comboMult().toFixed(1);
+    zoneEl.textContent = zoneNames[Math.min(2, zoneIndex())];
+    mfill.style.height = Math.min(100, altitude / MAX_ALT * 100) + &#x27;%&#x27;;
+    var sc = skyColors();
+    mfill.style.background = &#x27;linear-gradient(&#x27; + rgb(sc.top) + &#x27;,&#x27; + rgb(sc.bot) + &#x27;)&#x27;;
+  }
+
+  function update(dt) {
+    starOffset += dt * 20;
+    var p = platform;
+    p.phase += p.wobbleSpeed * dt;
+    p.baseX += p.vx * dt;
+    if (p.baseX &lt; p.w/2 + 6) { p.baseX = p.w/2 + 6; p.vx = Math.abs(p.vx); }
+    if (p.baseX &gt; W - p.w/2 - 6) { p.baseX = W - p.w/2 - 6; p.vx = -Math.abs(p.vx); }
+    p.x = p.baseX + Math.sin(p.phase) * p.wobbleAmp;
+
+    var targetGlow = Math.min(1, combo / 6);
+    comboGlow += (targetGlow - comboGlow) * Math.min(1, dt * 4);
+
+    if (stage === &#x27;falling&#x27;) {
+      var spd = 200;
+      if (keys.left) player.x -= spd * dt;
+      if (keys.right) player.x += spd * dt;
+      if (player.x &lt; player.w/2) player.x = player.w/2;
+      if (player.x &gt; W - player.w/2) player.x = W - player.w/2;
+      player.vy += 380 * dt;
+      player.y += player.vy * dt;
+
+      var footY = player.y + player.h/2;
+      var platTop = p.y - p.h/2;
+      if (footY &gt;= platTop &amp;&amp; footY &lt;= platTop + 20 &amp;&amp; player.vy &gt; 0) {
+        var dx = Math.abs(player.x - p.x);
+        if (dx &lt;= p.w/2 + player.w/2 - 4) {
+          player.y = platTop - player.h/2; player.vy = 0;
+          stage = &#x27;landed&#x27;; landedTimer = 0.35;
+          var perfect = dx &lt;= p.w * 0.22;
+          flashT = 0.4; flashPerfect = perfect;
+          var base = 5;
+          if (perfect) {
+            combo += 1;
+            var gained = Math.round(base * comboMult());
+            altitude += gained;
+            thwump(true); whoosh(combo);
+            scorePop = { text: &#x27;+&#x27; + gained + &#x27;  x&#x27; + comboMult().toFixed(1), y: player.y, life: 0.9, perfect: true };
+          } else {
+            if (combo &gt; 0) { comboBreakSound(); scorePop = { text: &#x27;combo lost!&#x27;, y: player.y, life: 0.9, perfect: false }; }
+            else { scorePop = { text: &#x27;+&#x27; + base, y: player.y, life: 0.9, perfect: false }; }
+            combo = 0; altitude += base; thwump(false);
+          }
+          checkMilestone();
+          updateHUD();
+        }
+      }
+      if (player.y - player.h/2 &gt; H) {
+        stage = &#x27;over&#x27;; gameOverTimer = 1.5; fallSound(); combo = 0; updateHUD();
+      }
+    } else if (stage === &#x27;landed&#x27;) {
+      player.x = p.x; landedTimer -= dt;
+      if (landedTimer &lt;= 0) { spawnPlatform(); resetPlayer(); stage = &#x27;falling&#x27;; }
+    } else if (stage === &#x27;over&#x27;) {
+      gameOverTimer -= dt;
+      if (gameOverTimer &lt;= 0) stopGame();
+    }
+    if (flashT &gt; 0) flashT -= dt;
+    if (scorePop) { scorePop.life -= dt; scorePop.y -= 30 * dt; if (scorePop.life &lt;= 0) scorePop = null; }
+    if (milestoneBanner) { milestoneBanner.life -= dt; if (milestoneBanner.life &lt;= 0) milestoneBanner = null; }
+  }
+
+  function draw() {
+    var sc = skyColors();
+    var g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, rgb(sc.top)); g.addColorStop(1, rgb(sc.bot));
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+    var zi = zoneIndex();
+    // stars — subtle in blue, brighter and twinkling in purple zone
+    var starBright = zi === 2 ? 0.5 : (zi === 1 ? 0.1 : 0.18);
+    ctx.fillStyle = &#x27;#fff&#x27;;
+    for (var i = 0; i &lt; 30; i++) {
+      var sx = (i * 97 + 30) % W;
+      var sy = (i * 53 + 20 + starOffset) % H;
+      var tw = zi === 2 ? (0.5 + 0.5 * Math.sin(performance.now()/300 + i)) : 1;
+      ctx.globalAlpha = starBright * tw;
+      var size = zi === 2 ? 2.3 : 2;
+      ctx.fillRect(sx, sy, size, size);
+    }
+    // sun glow in blaze zone
+    if (zi === 1) {
+      ctx.globalAlpha = 0.35;
+      var sg = ctx.createRadialGradient(W*0.75, H*0.7, 10, W*0.75, H*0.7, 180);
+      sg.addColorStop(0, &#x27;rgba(255,220,120,0.8)&#x27;); sg.addColorStop(1, &#x27;rgba(255,220,120,0)&#x27;);
+      ctx.fillStyle = sg; ctx.fillRect(0, 0, W, H);
+    }
+    ctx.globalAlpha = 1;
+
+    var wl = windLevel();
+    var streakAlpha = Math.min(0.5, wl * 0.06 + comboGlow * 0.25);
+    if (streakAlpha &gt; 0.03) {
+      ctx.strokeStyle = &#x27;rgba(220,230,255,&#x27; + streakAlpha + &#x27;)&#x27;;
+      ctx.lineWidth = 2;
+      var count = Math.min(20, wl * 3 + comboGlow * 12);
+      for (var s = 0; s &lt; count; s++) {
+        var wy = (s * 61 + (performance.now()/6) % H) % H;
+        ctx.beginPath(); ctx.moveTo(0, wy); ctx.lineTo(30 + wl * 8 + comboGlow * 20, wy + 4); ctx.stroke();
+      }
+    }
+
+    var p = platform;
+    if (flashT &gt; 0) {
+      var fa = flashT / 0.4;
+      ctx.fillStyle = flashPerfect ? &#x27;rgba(56,240,176,&#x27; + (fa * 0.6) + &#x27;)&#x27; : &#x27;rgba(255,203,92,&#x27; + (fa * 0.35) + &#x27;)&#x27;;
+      ctx.fillRect(p.x - p.w/2 - 6, p.y - p.h/2 - 30, p.w + 12, 40);
+    }
+    ctx.fillStyle = &#x27;rgba(56,240,176,0.35)&#x27;;
+    var sweet = p.w * 0.22 * 2;
+    ctx.fillRect(p.x - sweet/2, p.y - p.h/2 - 2, sweet, 3);
+    ctx.fillStyle = &#x27;#ffcf5c&#x27;;
+    roundRect(p.x - p.w/2, p.y - p.h/2, p.w, p.h, 6); ctx.fill();
+    ctx.fillStyle = &#x27;rgba(0,0,0,.2)&#x27;;
+    roundRect(p.x - p.w/2, p.y + 2, p.w, 5, 3); ctx.fill();
+
+    var px = player.x, py = player.y;
+    if (stage === &#x27;falling&#x27;) {
+      ctx.fillStyle = &#x27;#ff6b9d&#x27;;
+      ctx.beginPath(); ctx.arc(px, py - 22, 20, Math.PI, 0); ctx.fill();
+      ctx.strokeStyle = &#x27;rgba(255,255,255,.6)&#x27;; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(px - 18, py - 22); ctx.lineTo(px - 6, py - 6);
+      ctx.moveTo(px + 18, py - 22); ctx.lineTo(px + 6, py - 6); ctx.stroke();
+    }
+    if (comboGlow &gt; 0.05) {
+      ctx.save();
+      ctx.shadowColor = &#x27;rgba(56,240,176,&#x27; + comboGlow + &#x27;)&#x27;;
+      ctx.shadowBlur = 10 + comboGlow * 24;
+      ctx.fillStyle = &#x27;#eaf0ff&#x27;;
+      roundRect(px - player.w/2, py - player.h/2, player.w, player.h, 5); ctx.fill();
+      ctx.restore();
+    } else {
+      ctx.fillStyle = &#x27;#eaf0ff&#x27;;
+      roundRect(px - player.w/2, py - player.h/2, player.w, player.h, 5); ctx.fill();
+    }
+    ctx.fillStyle = &#x27;#7fd3ff&#x27;; ctx.fillRect(px - 5, py - 4, 10, 6);
+
+    if (scorePop) {
+      var a = Math.min(1, scorePop.life / 0.6);
+      ctx.globalAlpha = a;
+      ctx.font = &#x27;700 22px system-ui, sans-serif&#x27;; ctx.textAlign = &#x27;center&#x27;;
+      ctx.fillStyle = scorePop.perfect ? &#x27;#38f0b0&#x27; : (scorePop.text.indexOf(&#x27;lost&#x27;) &gt;= 0 ? &#x27;#ff6b9d&#x27; : &#x27;#ffcf5c&#x27;);
+      ctx.fillText(scorePop.text, px, scorePop.y - 30);
+      ctx.globalAlpha = 1; ctx.textAlign = &#x27;left&#x27;;
+    }
+
+    if (combo &gt; 0) {
+      var pulse = 1 + Math.sin(performance.now() / 120) * 0.06 * comboGlow;
+      ctx.save();
+      ctx.translate(70, 44); ctx.scale(pulse, pulse);
+      ctx.shadowColor = &#x27;rgba(56,240,176,&#x27; + (0.4 + comboGlow * 0.6) + &#x27;)&#x27;;
+      ctx.shadowBlur = 12 + comboGlow * 30;
+      ctx.font = &#x27;800 &#x27; + (26 + combo * 2) + &#x27;px system-ui, sans-serif&#x27;; ctx.textAlign = &#x27;center&#x27;;
+      var r = Math.round(56 + comboGlow * 120), gg = 240, b = Math.round(176 + comboGlow * 60);
+      ctx.fillStyle = &#x27;rgb(&#x27; + r + &#x27;,&#x27; + gg + &#x27;,&#x27; + b + &#x27;)&#x27;;
+      ctx.fillText(&#x27;x&#x27; + comboMult().toFixed(1), 0, 0);
+      ctx.font = &#x27;600 12px system-ui, sans-serif&#x27;; ctx.shadowBlur = 0;
+      ctx.fillStyle = &#x27;rgba(234,240,255,0.8)&#x27;;
+      ctx.fillText(combo + &#x27; flawless!&#x27;, 0, 16);
+      ctx.restore(); ctx.textAlign = &#x27;left&#x27;;
+    }
+
+    // milestone banner
+    if (milestoneBanner) {
+      var ml = milestoneBanner.life;
+      var alpha = ml &gt; 1.4 ? (1.8 - ml) / 0.4 : Math.min(1, ml / 0.5);
+      var scale = 1 + (1.8 - ml) * 0.15;
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+      ctx.translate(W/2, 110); ctx.scale(scale, scale); ctx.textAlign = &#x27;center&#x27;;
+      ctx.shadowColor = &#x27;rgba(255,215,120,0.9)&#x27;; ctx.shadowBlur = 24;
+      ctx.font = &#x27;800 34px system-ui, sans-serif&#x27;;
+      ctx.fillStyle = &#x27;#ffe08a&#x27;;
+      ctx.fillText(&#x27;★ &#x27; + milestoneBanner.text + &#x27; ★&#x27;, 0, 0);
+      ctx.restore(); ctx.textAlign = &#x27;left&#x27;;
+    }
+
+    if (stage === &#x27;over&#x27;) {
+      ctx.fillStyle = &#x27;rgba(0,0,0,.55)&#x27;; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = &#x27;#ff6b9d&#x27;; ctx.font = &#x27;700 40px system-ui, sans-serif&#x27;; ctx.textAlign = &#x27;center&#x27;;
+      ctx.fillText(&#x27;You Fell!&#x27;, W/2, H/2 - 10);
+      ctx.fillStyle = &#x27;#eaf0ff&#x27;; ctx.font = &#x27;20px system-ui, sans-serif&#x27;;
+      ctx.fillText(&#x27;Altitude reached: &#x27; + Math.round(altitude) + &#x27; m  (&#x27; + zoneNames[Math.min(2, zoneIndex())] + &#x27;)&#x27;, W/2, H/2 + 28);
+      ctx.fillStyle = &#x27;#9fb0d8&#x27;; ctx.font = &#x27;15px system-ui, sans-serif&#x27;;
+      ctx.fillText(&#x27;Press Restart below to climb again&#x27;, W/2, H/2 + 56);
+      ctx.textAlign = &#x27;left&#x27;;
+    }
+  }
+
+  function roundRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function loop(now) {
+    if (!running) return;
+    var dt = Math.min(0.05, (now - lastT) / 1000);
+    lastT = now;
+    update(dt); draw();
+    rafId = requestAnimationFrame(loop);
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27;) { keys.left = true; e.preventDefault(); }
+    else if (e.key === &#x27;ArrowRight&#x27;) { keys.right = true; e.preventDefault(); }
+  });
+  window.addEventListener(&#x27;keyup&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27;) keys.left = false;
+    else if (e.key === &#x27;ArrowRight&#x27;) keys.right = false;
+  });
+
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage({ type: &#x27;game_input&#x27;, kind: t, key: e.key || null }, &#x27;*&#x27;);
+      } catch (_) {}
+    }, true);
+  });
+
+  spawnPlatform(); resetPlayer(); updateHUD(); draw();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

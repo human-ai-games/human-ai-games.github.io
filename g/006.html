@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SNAKE</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>SNAKE</b> &middot; Game 006 &middot; Amateur producer &middot; Basic game: Snake</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #12161c; color: #dfe6ee; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 12px; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 8px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: 2px; color: #4ade80; }
+  .instructions { font-size: 16px; color: #9aa7b4; max-width: 620px; margin: 0; line-height: 1.35; text-align: center; }
+  .hud { display: flex; gap: 18px; align-items: center; font-size: 18px; }
+  .hud .chip { background: rgba(255,255,255,0.05); padding: 4px 12px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.12); }
+  .hud b { color: #4ade80; }
+  .field { position: relative; width: 480px; height: 400px; flex-shrink: 0; margin: 0; background: #1b222c; border-radius: 10px; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06); background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 20px 20px; }
+  .cell { position: absolute; box-sizing: border-box; }
+  .snake { border-radius: 4px; background: #22c55e; }
+  .snake-head { background: #86efac; box-shadow: 0 0 6px rgba(134,239,172,0.7); }
+  .food { border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+  .combo { position: absolute; font-size: 16px; font-weight: 700; color: #fde047; pointer-events: none; animation: floatUp 0.8s ease-out forwards; text-shadow: 0 0 6px rgba(0,0,0,0.8); }
+  @keyframes floatUp { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-30px); } }
+  .overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; background: rgba(18,22,28,0.88); text-align: center; }
+  .overlay.hidden { display: none; }
+  .overlay h2 { margin: 0; font-size: 30px; color: #4ade80; }
+  .overlay p { margin: 0; font-size: 17px; color: #cbd5e1; }
+  .flash { animation: flash 0.15s; }
+  @keyframes flash { 0% { filter: brightness(1.6); } 100% { filter: brightness(1); } }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;SNAKE&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Steer with arrow keys and eat orbs to grow — grab 🍎 speed orbs and 🌟 golden bonuses (worth 5) for big points. Eat quickly to build a combo multiplier; the game speeds up as you level up!&lt;/p&gt;
+  &lt;div class=&quot;hud&quot;&gt;
+    &lt;span class=&quot;chip&quot;&gt;Score &lt;b id=&quot;score&quot;&gt;0&lt;/b&gt;&lt;/span&gt;
+    &lt;span class=&quot;chip&quot;&gt;Level &lt;b id=&quot;level&quot;&gt;1&lt;/b&gt;&lt;/span&gt;
+    &lt;span class=&quot;chip&quot;&gt;Best &lt;b id=&quot;best&quot;&gt;0&lt;/b&gt;&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;
+    &lt;div class=&quot;overlay&quot; id=&quot;overlay&quot;&gt;
+      &lt;h2 id=&quot;ovTitle&quot;&gt;READY?&lt;/h2&gt;
+      &lt;p id=&quot;ovMsg&quot;&gt;Press Start below to play!&lt;/p&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var CELL = 20;
+  var COLS = 24, ROWS = 20;
+  var running = false, tickId = null;
+  var snake = [], dir = { x: 1, y: 0 }, pendingDir = { x: 1, y: 0 };
+  var foods = [];
+  var score = 0, best = 0, level = 1;
+  var comboCount = 0, comboTimer = 0;
+  var field = document.getElementById(&#x27;field&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var levelEl = document.getElementById(&#x27;level&#x27;);
+  var bestEl = document.getElementById(&#x27;best&#x27;);
+  var overlay = document.getElementById(&#x27;overlay&#x27;);
+  var ovTitle = document.getElementById(&#x27;ovTitle&#x27;);
+  var ovMsg = document.getElementById(&#x27;ovMsg&#x27;);
+
+  var actx = null;
+  function beep(freq, dur, type, vol) {
+    try {
+      if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+      var o = actx.createOscillator(), g = actx.createGain();
+      o.type = type || &#x27;square&#x27;; o.frequency.value = freq;
+      g.gain.value = vol || 0.08;
+      o.connect(g); g.connect(actx.destination);
+      o.start();
+      g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + dur);
+      o.stop(actx.currentTime + dur);
+    } catch (_) {}
+  }
+
+  function tickMs() { return Math.max(70, 150 - (level - 1) * 8); }
+
+  function clearFieldCells() {
+    var kids = field.querySelectorAll(&#x27;.cell, .combo&#x27;);
+    for (var i = 0; i &lt; kids.length; i++) kids[i].remove();
+  }
+
+  function drawCell(cls, x, y, extra, glow) {
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;cell &#x27; + cls;
+    el.style.left = (x * CELL) + &#x27;px&#x27;;
+    el.style.top = (y * CELL) + &#x27;px&#x27;;
+    el.style.width = CELL + &#x27;px&#x27;;
+    el.style.height = CELL + &#x27;px&#x27;;
+    if (glow) el.style.boxShadow = glow;
+    if (extra) el.textContent = extra;
+    field.appendChild(el);
+    return el;
+  }
+
+  function paint() {
+    clearFieldCells();
+    for (var f = 0; f &lt; foods.length; f++) {
+      var fo = foods[f];
+      var el;
+      if (fo.type === &#x27;golden&#x27;) el = drawCell(&#x27;food&#x27;, fo.x, fo.y, &#x27;🌟&#x27;, &#x27;0 0 10px rgba(253,224,71,0.8)&#x27;);
+      else if (fo.type === &#x27;speed&#x27;) el = drawCell(&#x27;food&#x27;, fo.x, fo.y, &#x27;🍎&#x27;, &#x27;0 0 9px rgba(239,68,68,0.7)&#x27;);
+      else { el = drawCell(&#x27;food&#x27;, fo.x, fo.y, &#x27;&#x27;, &#x27;0 0 8px rgba(255,255,255,0.6)&#x27;); el.style.background = &#x27;#f1f5f9&#x27;; }
+    }
+    for (var i = 0; i &lt; snake.length; i++) {
+      var el2 = drawCell(i === 0 ? &#x27;snake snake-head&#x27; : &#x27;snake&#x27;, snake[i].x, snake[i].y);
+    }
+  }
+
+  function cellOccupied(x, y) {
+    for (var i = 0; i &lt; snake.length; i++) if (snake[i].x === x &amp;&amp; snake[i].y === y) return true;
+    for (var j = 0; j &lt; foods.length; j++) if (foods[j].x === x &amp;&amp; foods[j].y === y) return true;
+    return false;
+  }
+
+  function randEmptyCell() {
+    for (var tries = 0; tries &lt; 300; tries++) {
+      var x = Math.floor(Math.random() * COLS);
+      var y = Math.floor(Math.random() * ROWS);
+      if (!cellOccupied(x, y)) return { x: x, y: y };
+    }
+    return null;
+  }
+
+  function spawnRegularFood() {
+    var c = randEmptyCell();
+    if (c) foods.push({ x: c.x, y: c.y, type: &#x27;regular&#x27; });
+  }
+
+  function maybeSpawnSpecial() {
+    if (foods.length &gt;= 3) return;
+    var r = Math.random();
+    if (r &lt; 0.18) { var c = randEmptyCell(); if (c) foods.push({ x: c.x, y: c.y, type: &#x27;golden&#x27;, ttl: 28 }); }
+    else if (r &lt; 0.34) { var c2 = randEmptyCell(); if (c2) foods.push({ x: c2.x, y: c2.y, type: &#x27;speed&#x27;, ttl: 24 }); }
+  }
+
+  function initSnake() {
+    snake = [ { x: 5, y: 10 }, { x: 4, y: 10 }, { x: 3, y: 10 } ];
+    dir = { x: 1, y: 0 };
+    pendingDir = { x: 1, y: 0 };
+  }
+
+  function showCombo(x, y, text) {
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;combo&#x27;;
+    el.textContent = text;
+    el.style.left = (x * CELL - 6) + &#x27;px&#x27;;
+    el.style.top = (y * CELL - 4) + &#x27;px&#x27;;
+    field.appendChild(el);
+    setTimeout(function () { el.remove(); }, 800);
+  }
+
+  function flashField() {
+    field.classList.remove(&#x27;flash&#x27;);
+    void field.offsetWidth;
+    field.classList.add(&#x27;flash&#x27;);
+  }
+
+  function tick() {
+    if (!running) return;
+    if (!(pendingDir.x === -dir.x &amp;&amp; pendingDir.y === -dir.y)) dir = pendingDir;
+    var head = snake[0];
+    var nx = head.x + dir.x, ny = head.y + dir.y;
+    if (nx &lt; 0 || nx &gt;= COLS || ny &lt; 0 || ny &gt;= ROWS) { endGame(); return; }
+
+    if (comboTimer &gt; 0) { comboTimer--; if (comboTimer === 0) comboCount = 0; }
+
+    var eatenIdx = -1;
+    for (var f = 0; f &lt; foods.length; f++) {
+      if (foods[f].x === nx &amp;&amp; foods[f].y === ny) { eatenIdx = f; break; }
+    }
+    var ateFood = eatenIdx &gt;= 0;
+
+    var body = ateFood ? snake : snake.slice(0, snake.length - 1);
+    for (var i = 0; i &lt; body.length; i++) {
+      if (body[i].x === nx &amp;&amp; body[i].y === ny) { endGame(); return; }
+    }
+    snake.unshift({ x: nx, y: ny });
+
+    if (ateFood) {
+      var fo = foods[eatenIdx];
+      foods.splice(eatenIdx, 1);
+      comboCount++;
+      comboTimer = 6;
+      var mult = comboCount &gt;= 3 ? comboCount - 1 : 1;
+      var base = fo.type === &#x27;golden&#x27; ? 5 : (fo.type === &#x27;speed&#x27; ? 2 : 1);
+      var pts = base * mult;
+      score += pts;
+      scoreEl.textContent = score;
+
+      if (fo.type === &#x27;golden&#x27;) { beep(660, 0.08, &#x27;square&#x27;); beep(990, 0.12, &#x27;square&#x27;); flashField(); showCombo(nx, ny, &#x27;+&#x27; + pts + &#x27; 🌟&#x27;); }
+      else if (fo.type === &#x27;speed&#x27;) { beep(520, 0.06, &#x27;sawtooth&#x27;); showCombo(nx, ny, &#x27;+&#x27; + pts + &#x27; fast!&#x27;); }
+      else { beep(440 + comboCount * 40, 0.05, &#x27;square&#x27;); showCombo(nx, ny, mult &gt; 1 ? (&#x27;+&#x27; + pts + &#x27; x&#x27; + mult) : (&#x27;+&#x27; + pts)); }
+
+      var newLevel = 1 + Math.floor(score / 8);
+      if (newLevel &gt; level) {
+        level = newLevel;
+        levelEl.textContent = level;
+        beep(880, 0.15, &#x27;triangle&#x27;, 0.12);
+        if (tickId) { clearInterval(tickId); tickId = setInterval(tick, tickMs()); }
+      }
+
+      var hasRegular = foods.some(function (x) { return x.type === &#x27;regular&#x27;; });
+      if (!hasRegular) spawnRegularFood();
+      maybeSpawnSpecial();
+    } else {
+      snake.pop();
+    }
+
+    for (var k = foods.length - 1; k &gt;= 0; k--) {
+      if (foods[k].ttl !== undefined) { foods[k].ttl--; if (foods[k].ttl &lt;= 0) foods.splice(k, 1); }
+    }
+    if (!foods.some(function (x) { return x.type === &#x27;regular&#x27;; })) spawnRegularFood();
+
+    paint();
+  }
+
+  function endGame() {
+    running = false;
+    if (tickId) { clearInterval(tickId); tickId = null; }
+    if (score &gt; best) { best = score; bestEl.textContent = best; }
+    beep(200, 0.2, &#x27;sawtooth&#x27;, 0.12);
+    setTimeout(function(){ beep(140, 0.3, &#x27;sawtooth&#x27;, 0.12); }, 120);
+    ovTitle.textContent = &#x27;GAME OVER&#x27;;
+    ovMsg.textContent = &#x27;Score &#x27; + score + &#x27; · Level &#x27; + level + &#x27; — press Start to try again!&#x27;;
+    overlay.classList.remove(&#x27;hidden&#x27;);
+  }
+
+  function startGame() {
+    score = 0; level = 1; comboCount = 0; comboTimer = 0;
+    scoreEl.textContent = &#x27;0&#x27;;
+    levelEl.textContent = &#x27;1&#x27;;
+    initSnake();
+    foods = [];
+    spawnRegularFood();
+    maybeSpawnSpecial();
+    paint();
+    overlay.classList.add(&#x27;hidden&#x27;);
+    running = true;
+    if (tickId) clearInterval(tickId);
+    tickId = setInterval(tick, tickMs());
+  }
+  function stopGame() {
+    running = false;
+    if (tickId) { clearInterval(tickId); tickId = null; }
+    ovTitle.textContent = &#x27;PAUSED&#x27;;
+    ovMsg.textContent = &#x27;Press Start below to resume playing.&#x27;;
+    overlay.classList.remove(&#x27;hidden&#x27;);
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27;) { pendingDir = { x: -1, y: 0 }; e.preventDefault(); }
+    else if (e.key === &#x27;ArrowRight&#x27;) { pendingDir = { x: 1, y: 0 }; e.preventDefault(); }
+    else if (e.key === &#x27;ArrowUp&#x27;) { pendingDir = { x: 0, y: -1 }; e.preventDefault(); }
+    else if (e.key === &#x27;ArrowDown&#x27;) { pendingDir = { x: 0, y: 1 }; e.preventDefault(); }
+  });
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  initSnake();
+  spawnRegularFood();
+  paint();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  // Suppress in-iframe scrollbars. The parent fits the iframe layout
+  // box to match the content size, so internal scroll is redundant —
+  // and if the LLM&#x27;s CSS sets body overflow: auto, the scrollbar shows
+  // briefly before the fit lands. Force hidden so it never appears.
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  // Iframe-internal JS error capture. window.onerror inside a sandboxed
+  // iframe can&#x27;t post to /api/js_error directly, so we relay to the
+  // parent via postMessage; parent&#x27;s error_logger.js forwards to the
+  // server. Catches LLM-emitted broken HTML (invalid hex, undefined
+  // variables, etc.) that would otherwise fail silently inside the
+  // iframe.
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      // Debounce: don&#x27;t fire more than ~10× per second. ResizeObserver
+      // fires repeatedly during layout/font load; we only need the latest.
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      // Clamp: reject obviously bogus dimensions. Any browser-game viewport
+      // is well under 4000×4000 logical px; readings beyond that are layout
+      // noise during load/visibility transitions.
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  // Parent posts wd_remeasure when it makes the iframe visible (the body&#x27;s
+  // ResizeObserver doesn&#x27;t fire on display:none→block of an outer ancestor
+  // because the iframe document didn&#x27;t actually resize). Wait a frame for
+  // layout to settle before measuring.
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

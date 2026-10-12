@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jumper</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>Jumper</b> &middot; Game 475 &middot; Amateur producer &middot; Basic game: Gravity jumper</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #222; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 18px; background: white; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 10px; }
+  h1 { margin: 0; font-size: 28px; font-weight: 600; }
+  .instructions { font-size: 16px; color: #666; max-width: 600px; margin: 0; line-height: 1.4; text-align: center; }
+  .score { font-size: 22px; color: #555; margin: 0; }
+  .field { position: relative; width: 620px; height: 420px; flex-shrink: 0; margin: 0; background: #f0f0f0; border-radius: 8px; overflow: hidden; }
+  .ground { position: absolute; left: 0; right: 0; bottom: 0; height: 30px; background: #aaa; }
+  .hero { position: absolute; width: 36px; height: 36px; background: #333; border-radius: 50%; }
+  .obstacle { position: absolute; width: 28px; bottom: 30px; background: #555; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;Jumper&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Hold &lt;strong&gt;Space&lt;/strong&gt; or the &lt;strong&gt;Up arrow&lt;/strong&gt; (or hold the mouse on the field) to float the ball up, and let go to drop. Avoid the obstacles scrolling from the right.&lt;/p&gt;
+  &lt;div class=&quot;score&quot;&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;
+    &lt;div class=&quot;ground&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;hero&quot; id=&quot;hero&quot;&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  var FIELD_W = 620, FIELD_H = 420;
+  var GROUND_H = 30, HERO_SIZE = 36;
+  var GRAVITY = 0.5, LIFT = -0.9, MAX_UP = -6, MAX_DOWN = 8;
+  var OBSTACLE_W = 28, OBSTACLE_H = 26, OBSTACLE_SPEED = 2.2;
+  var SPAWN_INTERVAL = 3200;
+  var running = false, animId = null, spawnId = null;
+  var heroX = 60;
+  var heroY = FIELD_H - GROUND_H - HERO_SIZE;
+  var heroVY = 0;
+  var lifting = false;
+  var obstacles = [];
+  var score = 0;
+  var gameOver = false;
+  var field = document.getElementById(&#x27;field&#x27;);
+  var hero = document.getElementById(&#x27;hero&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+
+  function paintHero() {
+    hero.style.left = heroX + &#x27;px&#x27;;
+    hero.style.top = heroY + &#x27;px&#x27;;
+  }
+
+  function spawnObstacle() {
+    var o = { x: FIELD_W, h: OBSTACLE_H, scored: false, el: null };
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;obstacle&#x27;;
+    el.style.left = o.x + &#x27;px&#x27;;
+    el.style.height = o.h + &#x27;px&#x27;;
+    field.appendChild(el);
+    o.el = el;
+    obstacles.push(o);
+  }
+
+  function tick() {
+    if (!running) return;
+    if (lifting) heroVY += LIFT;
+    else heroVY += GRAVITY;
+    if (heroVY &lt; MAX_UP) heroVY = MAX_UP;
+    if (heroVY &gt; MAX_DOWN) heroVY = MAX_DOWN;
+    heroY += heroVY;
+    var floorY = FIELD_H - GROUND_H - HERO_SIZE;
+    if (heroY &gt; floorY) { heroY = floorY; heroVY = 0; }
+    if (heroY &lt; 0) { heroY = 0; heroVY = 0; }
+    paintHero();
+    for (var i = obstacles.length - 1; i &gt;= 0; i--) {
+      var o = obstacles[i];
+      o.x -= OBSTACLE_SPEED;
+      o.el.style.left = o.x + &#x27;px&#x27;;
+      if (o.x + OBSTACLE_W &lt; 0) {
+        field.removeChild(o.el);
+        obstacles.splice(i, 1);
+        continue;
+      }
+      if (!o.scored &amp;&amp; o.x + OBSTACLE_W &lt; heroX) {
+        o.scored = true;
+        score += 1;
+        scoreEl.textContent = score;
+      }
+      var obstacleTop = FIELD_H - GROUND_H - o.h;
+      if (heroX + HERO_SIZE &gt; o.x &amp;&amp; heroX &lt; o.x + OBSTACLE_W &amp;&amp;
+          heroY + HERO_SIZE &gt; obstacleTop) {
+        gameOver = true;
+        stopGame();
+        return;
+      }
+    }
+    animId = requestAnimationFrame(tick);
+  }
+
+  function clearObstacles() {
+    obstacles.forEach(function (o) { if (o.el.parentNode) o.el.parentNode.removeChild(o.el); });
+    obstacles = [];
+  }
+
+  function placeInitialObstacle() {
+    clearObstacles();
+    var o = { x: FIELD_W - OBSTACLE_W - 8, h: OBSTACLE_H, scored: false, el: null };
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;obstacle&#x27;;
+    el.style.left = o.x + &#x27;px&#x27;;
+    el.style.height = o.h + &#x27;px&#x27;;
+    field.appendChild(el);
+    o.el = el;
+    obstacles.push(o);
+  }
+
+  function startGame() {
+    if (running) return;
+    score = 0;
+    scoreEl.textContent = &#x27;0&#x27;;
+    heroX = 60;
+    heroY = FIELD_H - GROUND_H - HERO_SIZE;
+    heroVY = 0;
+    lifting = false;
+    gameOver = false;
+    paintHero();
+    clearObstacles();
+    spawnObstacle();
+    running = true;
+    animId = requestAnimationFrame(tick);
+    spawnId = setInterval(spawnObstacle, SPAWN_INTERVAL);
+  }
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+    if (spawnId) { clearInterval(spawnId); spawnId = null; }
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27; &#x27; || e.code === &#x27;Space&#x27; || e.key === &#x27;ArrowUp&#x27; || e.code === &#x27;ArrowUp&#x27;) {
+      lifting = true;
+      e.preventDefault();
+    }
+  });
+  window.addEventListener(&#x27;keyup&#x27;, function (e) {
+    if (e.key === &#x27; &#x27; || e.code === &#x27;Space&#x27; || e.key === &#x27;ArrowUp&#x27; || e.code === &#x27;ArrowUp&#x27;) {
+      lifting = false;
+      e.preventDefault();
+    }
+  });
+  field.addEventListener(&#x27;mousedown&#x27;, function () { lifting = true; });
+  window.addEventListener(&#x27;mouseup&#x27;, function () { lifting = false; });
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  paintHero();
+  placeInitialObstacle();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Whack-a-mole</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>Whack-a-mole</b> &middot; Game 075 &middot; Professional producer &middot; Basic game: Whack-a-mole</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #222; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 18px; background: white; height: 100%; box-sizing: border-box; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 10px; }
+  h1 { margin: 0; font-size: 28px; font-weight: 600; }
+  .instructions { font-size: 16px; color: #666; max-width: 600px; margin: 0; line-height: 1.4; }
+  .score { font-size: 22px; color: #555; margin: 0; }
+  .board {
+    position: relative; width: 620px; height: 440px; flex-shrink: 0; margin: 0;
+    border-radius: 8px; overflow: hidden;
+    background:
+      /* pointy grass blades along the base, layered zig-zags */
+      linear-gradient(135deg, transparent 66%, #2b6b1f 66%) 0 100% / 26px 34px repeat-x,
+      linear-gradient(-135deg, transparent 66%, #2b6b1f 66%) 13px 100% / 26px 34px repeat-x,
+      linear-gradient(135deg, transparent 70%, #367d26 70%) 0 100% / 20px 24px repeat-x,
+      linear-gradient(-135deg, transparent 70%, #367d26 70%) 10px 100% / 20px 24px repeat-x,
+      linear-gradient(180deg, #3f8f2e 0%, #2f7522 60%, #245c1a 100%);
+    background-repeat: repeat-x, repeat-x, repeat-x, repeat-x, no-repeat;
+  }
+  .mole { position: absolute; width: 72px; height: 72px; cursor: pointer; z-index: 5; }
+  .mole svg { width: 100%; height: 100%; display: block; }
+  .flower { position: absolute; user-select: none; pointer-events: none; z-index: 1; }
+  .butterfly { position: absolute; font-size: 30px; pointer-events: none; z-index: 4; will-change: transform; }
+  .bee { position: absolute; font-size: 26px; pointer-events: none; z-index: 4; will-change: transform; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;Whack-a-mole&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Click the cheeky mole when it pops up in the flowery meadow to score a point. Use the &lt;strong&gt;Start&lt;/strong&gt;/&lt;strong&gt;Restart&lt;/strong&gt; button below the game.&lt;/p&gt;
+  &lt;div class=&quot;score&quot;&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+  &lt;div class=&quot;board&quot; id=&quot;board&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var BOARD_W = 620, BOARD_H = 440, MOLE_SIZE = 72;
+  var SPAWN_MS = 900, MOLE_LIFE_MS = 1200;
+  var score = 0;
+  var intervalId = null;
+  var butterflyTimeout = null;
+  var beeTimeout = null;
+  var moleTimeouts = [];
+  var running = false;
+  var board = document.getElementById(&#x27;board&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+
+  var flowerEmojis = [&#x27;🌸&#x27;,&#x27;🌼&#x27;,&#x27;🌷&#x27;,&#x27;🌺&#x27;,&#x27;🌻&#x27;,&#x27;🏵️&#x27;,&#x27;💐&#x27;,&#x27;🌹&#x27;,&#x27;🌸&#x27;,&#x27;🪻&#x27;];
+
+  var MOLE_SVG =
+    &#x27;&lt;svg viewBox=&quot;0 0 100 100&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;&gt;&#x27; +
+      &#x27;&lt;ellipse cx=&quot;50&quot; cy=&quot;52&quot; rx=&quot;40&quot; ry=&quot;42&quot; fill=&quot;#7a4a24&quot;/&gt;&#x27; +
+      &#x27;&lt;ellipse cx=&quot;50&quot; cy=&quot;60&quot; rx=&quot;28&quot; ry=&quot;30&quot; fill=&quot;#f2c14e&quot;/&gt;&#x27; +
+      &#x27;&lt;circle cx=&quot;26&quot; cy=&quot;30&quot; r=&quot;11&quot; fill=&quot;#7a4a24&quot;/&gt;&#x27; +
+      &#x27;&lt;circle cx=&quot;74&quot; cy=&quot;30&quot; r=&quot;11&quot; fill=&quot;#7a4a24&quot;/&gt;&#x27; +
+      &#x27;&lt;ellipse cx=&quot;38&quot; cy=&quot;44&quot; rx=&quot;8&quot; ry=&quot;9&quot; fill=&quot;#fff&quot;/&gt;&#x27; +
+      &#x27;&lt;ellipse cx=&quot;62&quot; cy=&quot;44&quot; rx=&quot;8&quot; ry=&quot;9&quot; fill=&quot;#fff&quot;/&gt;&#x27; +
+      &#x27;&lt;circle cx=&quot;40&quot; cy=&quot;46&quot; r=&quot;4&quot; fill=&quot;#222&quot;/&gt;&#x27; +
+      &#x27;&lt;circle cx=&quot;64&quot; cy=&quot;46&quot; r=&quot;4&quot; fill=&quot;#222&quot;/&gt;&#x27; +
+      &#x27;&lt;circle cx=&quot;41.5&quot; cy=&quot;44.5&quot; r=&quot;1.4&quot; fill=&quot;#fff&quot;/&gt;&#x27; +
+      &#x27;&lt;circle cx=&quot;65.5&quot; cy=&quot;44.5&quot; r=&quot;1.4&quot; fill=&quot;#fff&quot;/&gt;&#x27; +
+      &#x27;&lt;ellipse cx=&quot;50&quot; cy=&quot;58&quot; rx=&quot;7&quot; ry=&quot;5&quot; fill=&quot;#e06a8b&quot;/&gt;&#x27; +
+      &#x27;&lt;path d=&quot;M34 66 Q50 84 66 66&quot; stroke=&quot;#7a3b1e&quot; stroke-width=&quot;4&quot; fill=&quot;none&quot; stroke-linecap=&quot;round&quot;/&gt;&#x27; +
+      &#x27;&lt;path d=&quot;M40 74 Q50 80 60 74&quot; fill=&quot;#fff&quot;/&gt;&#x27; +
+      &#x27;&lt;line x1=&quot;18&quot; y1=&quot;56&quot; x2=&quot;34&quot; y2=&quot;58&quot; stroke=&quot;#5a3418&quot; stroke-width=&quot;2&quot;/&gt;&#x27; +
+      &#x27;&lt;line x1=&quot;18&quot; y1=&quot;62&quot; x2=&quot;34&quot; y2=&quot;63&quot; stroke=&quot;#5a3418&quot; stroke-width=&quot;2&quot;/&gt;&#x27; +
+      &#x27;&lt;line x1=&quot;82&quot; y1=&quot;56&quot; x2=&quot;66&quot; y2=&quot;58&quot; stroke=&quot;#5a3418&quot; stroke-width=&quot;2&quot;/&gt;&#x27; +
+      &#x27;&lt;line x1=&quot;82&quot; y1=&quot;62&quot; x2=&quot;66&quot; y2=&quot;63&quot; stroke=&quot;#5a3418&quot; stroke-width=&quot;2&quot;/&gt;&#x27; +
+    &#x27;&lt;/svg&gt;&#x27;;
+
+  function addFlower(x, y, size) {
+    var f = document.createElement(&#x27;div&#x27;);
+    f.className = &#x27;flower&#x27;;
+    f.textContent = flowerEmojis[Math.floor(Math.random() * flowerEmojis.length)];
+    f.style.left = x + &#x27;px&#x27;;
+    f.style.top = y + &#x27;px&#x27;;
+    f.style.fontSize = size + &#x27;px&#x27;;
+    board.appendChild(f);
+  }
+
+  function scatterFlowers() {
+    // Bigger scattered flowers across the grass.
+    for (var i = 0; i &lt; 16; i++) {
+      addFlower(Math.random() * (BOARD_W - 50), Math.random() * (BOARD_H - 50), 34 + Math.random() * 20);
+    }
+    // Dense bigger flower clusters at every corner.
+    var corners = [
+      { x: 0, y: 0 },
+      { x: BOARD_W - 90, y: 0 },
+      { x: 0, y: BOARD_H - 90 },
+      { x: BOARD_W - 90, y: BOARD_H - 90 }
+    ];
+    corners.forEach(function (c) {
+      for (var j = 0; j &lt; 7; j++) {
+        addFlower(c.x + Math.random() * 90, c.y + Math.random() * 90, 36 + Math.random() * 22);
+      }
+    });
+  }
+
+  function clearAllMoles() {
+    for (var i = 0; i &lt; moleTimeouts.length; i++) clearTimeout(moleTimeouts[i]);
+    moleTimeouts = [];
+  }
+
+  function clearBoard() {
+    clearAllMoles();
+    if (butterflyTimeout) { clearTimeout(butterflyTimeout); butterflyTimeout = null; }
+    if (beeTimeout) { clearTimeout(beeTimeout); beeTimeout = null; }
+    board.innerHTML = &#x27;&#x27;;
+  }
+
+  function spawnMole() {
+    var mole = document.createElement(&#x27;div&#x27;);
+    mole.className = &#x27;mole&#x27;;
+    mole.innerHTML = MOLE_SVG;
+    mole.style.left = Math.random() * (BOARD_W - MOLE_SIZE) + &#x27;px&#x27;;
+    mole.style.top = Math.random() * (BOARD_H - MOLE_SIZE) + &#x27;px&#x27;;
+    var hit = false;
+    mole.addEventListener(&#x27;click&#x27;, function () {
+      if (hit) return;
+      hit = true;
+      score += 1;
+      scoreEl.textContent = score;
+      mole.style.transform = &#x27;scale(0.7)&#x27;;
+      mole.style.opacity = &#x27;0.4&#x27;;
+      mole.style.transition = &#x27;transform 0.12s, opacity 0.12s&#x27;;
+      setTimeout(function () {
+        if (mole.parentNode === board) board.removeChild(mole);
+      }, 120);
+    });
+    board.appendChild(mole);
+    moleTimeouts.push(setTimeout(function () {
+      if (mole.parentNode === board) board.removeChild(mole);
+    }, MOLE_LIFE_MS));
+  }
+
+  function flyButterfly() {
+    if (!running) return;
+    var isPurple = Math.random() &lt; 0.5;
+    var b = document.createElement(&#x27;div&#x27;);
+    b.className = &#x27;butterfly&#x27;;
+    b.textContent = &#x27;🦋&#x27;;
+    b.style.filter = isPurple
+      ? &#x27;hue-rotate(90deg) saturate(1.6)&#x27;
+      : &#x27;hue-rotate(20deg) saturate(1.4)&#x27;;
+    var startY = 40 + Math.random() * (BOARD_H - 120);
+    var leftToRight = Math.random() &lt; 0.5;
+    var startX = leftToRight ? -40 : BOARD_W + 40;
+    var endX = leftToRight ? BOARD_W + 40 : -40;
+    b.style.top = startY + &#x27;px&#x27;;
+    b.style.left = &#x27;0px&#x27;;
+    board.appendChild(b);
+
+    var duration = 5000 + Math.random() * 2000;
+    var startTime = performance.now();
+    function animate(now) {
+      if (!running || b.parentNode !== board) return;
+      var t = (now - startTime) / duration;
+      if (t &gt;= 1) { if (b.parentNode === board) board.removeChild(b); return; }
+      var x = startX + (endX - startX) * t;
+      var bob = Math.sin(t * Math.PI * 8) * 18;
+      var flip = leftToRight ? &#x27;&#x27; : &#x27; scaleX(-1)&#x27;;
+      b.style.transform = &#x27;translate(&#x27; + x + &#x27;px,&#x27; + bob + &#x27;px)&#x27; + flip;
+      requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+
+    butterflyTimeout = setTimeout(flyButterfly, 4000 + Math.random() * 5000);
+  }
+
+  function flyBee() {
+    if (!running) return;
+    var b = document.createElement(&#x27;div&#x27;);
+    b.className = &#x27;bee&#x27;;
+    b.textContent = &#x27;🐝&#x27;;
+    var startY = 40 + Math.random() * (BOARD_H - 120);
+    var leftToRight = Math.random() &lt; 0.5;
+    var startX = leftToRight ? -40 : BOARD_W + 40;
+    var endX = leftToRight ? BOARD_W + 40 : -40;
+    b.style.top = startY + &#x27;px&#x27;;
+    b.style.left = &#x27;0px&#x27;;
+    board.appendChild(b);
+
+    var duration = 3500 + Math.random() * 2000;
+    var startTime = performance.now();
+    var wiggleAmp = 30 + Math.random() * 25;
+    function animate(now) {
+      if (!running || b.parentNode !== board) return;
+      var t = (now - startTime) / duration;
+      if (t &gt;= 1) { if (b.parentNode === board) board.removeChild(b); return; }
+      var x = startX + (endX - startX) * t;
+      // Fast erratic buzzing wiggle.
+      var wiggle = Math.sin(t * Math.PI * 16) * wiggleAmp;
+      var flip = leftToRight ? &#x27;&#x27; : &#x27; scaleX(-1)&#x27;;
+      b.style.transform = &#x27;translate(&#x27; + x + &#x27;px,&#x27; + wiggle + &#x27;px)&#x27; + flip;
+      requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+
+    beeTimeout = setTimeout(flyBee, 3000 + Math.random() * 4000);
+  }
+
+  function startGame() {
+    if (running) return;
+    running = true;
+    score = 0;
+    scoreEl.textContent = &#x27;0&#x27;;
+    if (intervalId) clearInterval(intervalId);
+    clearBoard();
+    scatterFlowers();
+    spawnMole();
+    intervalId = setInterval(spawnMole, SPAWN_MS);
+    butterflyTimeout = setTimeout(flyButterfly, 1500 + Math.random() * 1500);
+    beeTimeout = setTimeout(flyBee, 800 + Math.random() * 1200);
+  }
+
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    if (intervalId) { clearInterval(intervalId); intervalId = null; }
+    clearBoard();
+    scatterFlowers();
+  }
+
+  scatterFlowers();
+
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

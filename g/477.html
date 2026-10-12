@@ -1,0 +1,653 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>F R O G G E R</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>F R O G G E R</b> &middot; Game 477 &middot; Amateur producer &middot; Basic game: Road crossing</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: &#x27;Courier New&#x27;, monospace; margin: 0; padding: 0; background: #000; color: #fff; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 8px; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+  h1 { margin: 0; font-size: 22px; font-weight: bold; letter-spacing: 3px; color: #39ff14; text-shadow: 2px 2px #085c00, 0 0 12px #39ff1466; }
+  .instructions { font-size: 16px; color: #cfc; max-width: 620px; margin: 0; line-height: 1.3; text-align: center; }
+  .status { font-size: 18px; margin: 0; display: flex; gap: 26px; color: #ffd23f; letter-spacing: 1px; align-items: center; }
+  .lifeicons { color: #39ff14; letter-spacing: 2px; }
+  .field { position: relative; width: 560px; height: 480px; flex-shrink: 0; background: #001; border: 3px solid #39ff14; border-radius: 6px; overflow: hidden; cursor: crosshair; box-shadow: 0 0 20px #39ff1433; }
+
+  .row-water { position: absolute; left: 0; right: 0; overflow: hidden;
+    background: linear-gradient(180deg,#0a3aa0,#001f6b); }
+  .ripple { position: absolute; height: 100%; width: 200%; left: 0; top: 0;
+    background-image: repeating-linear-gradient(90deg, transparent 0 20px, rgba(255,255,255,0.06) 20px 24px, transparent 24px 44px);
+    animation: drift 6s linear infinite; }
+  @keyframes drift { from { transform: translateX(0); } to { transform: translateX(-44px); } }
+
+  .row-road { position: absolute; left: 0; right: 0; background: #2b2b2b;
+    background-image: repeating-linear-gradient(90deg, #2b2b2b 0 30px, #333 30px 32px); }
+  .lane-line { position: absolute; left: 0; right: 0; height: 3px; top: 50%; transform: translateY(-50%);
+    background-image: repeating-linear-gradient(90deg, #ffd23f 0 18px, transparent 18px 40px); opacity: .55; }
+  .row-safe { position: absolute; left: 0; right: 0; background: linear-gradient(180deg,#8f47b8,#6f329a); }
+  .row-goal { position: absolute; left: 0; right: 0; background: linear-gradient(180deg,#0a5c00,#063a00);
+    border-bottom: 3px solid #0a8a00; }
+
+  .goal-pad { position: absolute; top: 5px; height: 30px; border-radius: 50%;
+    background: radial-gradient(circle at 50% 40%, #17c917, #0a7a0a);
+    border: 2px solid #39ff14; box-shadow: 0 0 8px #39ff1455; }
+  .goal-pad.filled { background: radial-gradient(circle at 50% 40%, #7dff7d, #2fbf2f);
+    box-shadow: 0 0 14px #39ff14; }
+  .goal-pad.filled::after { content: &#x27;🐸&#x27;; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+
+  .log { position: absolute; border-radius: 9px;
+    background: linear-gradient(180deg,#b06f34 0%, #8a5227 45%, #64391b 100%);
+    box-shadow: inset 0 2px 3px #d2955a, inset 0 -3px 4px #46270f, 0 2px 4px #0005;
+    background-image: repeating-linear-gradient(90deg, transparent 0 8px, rgba(0,0,0,0.07) 8px 10px); }
+  .log::before, .log::after { content: &#x27;&#x27;; position: absolute; top: 50%; width: 14px; height: 14px;
+    transform: translateY(-50%); border-radius: 50%;
+    background: radial-gradient(circle, #a06336 0 30%, #7a4a24 30% 60%, #5c3418 60% 100%);
+    box-shadow: 0 0 0 2px #4a2c13; }
+  .log::before { left: 3px; } .log::after { right: 3px; }
+
+  .veh { position: absolute; display: flex; align-items: center; justify-content: center;
+    border-radius: 6px; box-shadow: 0 2px 4px #0007, inset 0 2px 3px rgba(255,255,255,.25); }
+  .veh .win { position: absolute; background: #bfe6ff; border-radius: 2px; }
+
+  .frog { position: absolute; z-index: 6; }
+  .frog svg { display: block; }
+  @keyframes bob { 0%,100% { transform: translateY(0);} 50%{ transform: translateY(-2px);} }
+
+  .popup { position: absolute; z-index: 15; color: #ffd23f; font-weight: bold; font-size: 16px;
+    text-shadow: 1px 1px #000; pointer-events: none; animation: floatUp .8s ease-out forwards; }
+  @keyframes floatUp { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-30px); opacity: 0; } }
+
+  .splash { position: absolute; z-index: 14; font-size: 26px; pointer-events: none; animation: pop .5s ease-out forwards; }
+  @keyframes pop { from { transform: scale(.4); opacity: 1;} to { transform: scale(1.6); opacity: 0;} }
+
+  .banner { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; flex-direction: column; background: rgba(0,0,10,0.78); color: #39ff14; font-size: 28px; z-index: 20; gap: 10px; text-align: center; text-shadow: 0 0 10px #39ff1455; }
+  .banner small { font-size: 15px; color: #cfc; text-shadow: none; }
+  .countdown { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; z-index: 18; font-size: 70px; color: #ffd23f; text-shadow: 0 0 20px #ffd23f88; pointer-events: none; }
+  .hint { font-size: 13px; color: #8a8; margin: 0; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;F R O G G E R&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Move your mouse over the play area and flick up, down, left, or right — each flick hops your frog that way. Dodge the cars and trucks, ride the logs across the river, and fill every lily pad at the top; falling in the water or getting hit costs a life.&lt;/p&gt;
+  &lt;div class=&quot;status&quot;&gt;
+    &lt;span&gt;SCORE &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/span&gt;
+    &lt;span&gt;LIVES &lt;span id=&quot;lives&quot; class=&quot;lifeicons&quot;&gt;🐸🐸🐸&lt;/span&gt;&lt;/span&gt;
+    &lt;span&gt;LEVEL &lt;span id=&quot;level&quot;&gt;1&lt;/span&gt;&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;
+    &lt;div class=&quot;countdown&quot; id=&quot;countdown&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;banner&quot; id=&quot;banner&quot;&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;p class=&quot;hint&quot;&gt;Tip: short mouse flicks work best — one flick = one hop. Arrow keys also work.&lt;/p&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var CELL = 40;
+  var COLS = 14, ROWS = 12;
+  var FIELD_W = COLS * CELL, FIELD_H = ROWS * CELL;
+
+  var ROW_TYPE = [
+    &#x27;goal&#x27;,&#x27;water&#x27;,&#x27;water&#x27;,&#x27;water&#x27;,&#x27;water&#x27;,&#x27;safe&#x27;,&#x27;road&#x27;,&#x27;road&#x27;,&#x27;road&#x27;,&#x27;road&#x27;,&#x27;safe&#x27;,&#x27;start&#x27;
+  ];
+
+  var running = false, animId = null, accepting = false;
+  var score = 0, lives = 3, level = 1;
+  var frog = { col: 6, row: 11, offset: 0, dir: &#x27;up&#x27; };
+  var lanes = [], goalPads = [];
+  var field = document.getElementById(&#x27;field&#x27;);
+  var banner = document.getElementById(&#x27;banner&#x27;);
+  var countdownEl = document.getElementById(&#x27;countdown&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var livesEl = document.getElementById(&#x27;lives&#x27;);
+  var levelEl = document.getElementById(&#x27;level&#x27;);
+  var frogEl = null;
+
+  function rowTop(r) { return r * CELL; }
+  function speedScale() { return 1 + (level - 1) * 0.26; }
+
+  var FROG_SVG =
+    &#x27;&lt;svg width=&quot;34&quot; height=&quot;34&quot; viewBox=&quot;0 0 34 34&quot;&gt;&#x27; +
+    &#x27;&lt;ellipse cx=&quot;7&quot; cy=&quot;8&quot; rx=&quot;5&quot; ry=&quot;6&quot; fill=&quot;#2fbf2f&quot;/&gt;&#x27; +
+    &#x27;&lt;ellipse cx=&quot;27&quot; cy=&quot;8&quot; rx=&quot;5&quot; ry=&quot;6&quot; fill=&quot;#2fbf2f&quot;/&gt;&#x27; +
+    &#x27;&lt;circle cx=&quot;7&quot; cy=&quot;7&quot; r=&quot;2.6&quot; fill=&quot;#fff&quot;/&gt;&lt;circle cx=&quot;7&quot; cy=&quot;7&quot; r=&quot;1.3&quot; fill=&quot;#000&quot;/&gt;&#x27; +
+    &#x27;&lt;circle cx=&quot;27&quot; cy=&quot;7&quot; r=&quot;2.6&quot; fill=&quot;#fff&quot;/&gt;&lt;circle cx=&quot;27&quot; cy=&quot;7&quot; r=&quot;1.3&quot; fill=&quot;#000&quot;/&gt;&#x27; +
+    &#x27;&lt;ellipse cx=&quot;17&quot; cy=&quot;19&quot; rx=&quot;11&quot; ry=&quot;10&quot; fill=&quot;#39d939&quot;/&gt;&#x27; +
+    &#x27;&lt;ellipse cx=&quot;17&quot; cy=&quot;16&quot; rx=&quot;8&quot; ry=&quot;5.5&quot; fill=&quot;#63ff63&quot;/&gt;&#x27; +
+    &#x27;&lt;path d=&quot;M3 24 Q0 31 6 30 L9 25 Z&quot; fill=&quot;#2fbf2f&quot;/&gt;&#x27; +
+    &#x27;&lt;path d=&quot;M31 24 Q34 31 28 30 L25 25 Z&quot; fill=&quot;#2fbf2f&quot;/&gt;&#x27; +
+    &#x27;&lt;path d=&quot;M8 27 Q6 34 12 32 L14 27 Z&quot; fill=&quot;#2fbf2f&quot;/&gt;&#x27; +
+    &#x27;&lt;path d=&quot;M26 27 Q28 34 22 32 L20 27 Z&quot; fill=&quot;#2fbf2f&quot;/&gt;&#x27; +
+    &#x27;&lt;circle cx=&quot;13&quot; cy=&quot;18&quot; r=&quot;1.3&quot; fill=&quot;#1c7a1c&quot;/&gt;&#x27; +
+    &#x27;&lt;circle cx=&quot;21&quot; cy=&quot;20&quot; r=&quot;1.3&quot; fill=&quot;#1c7a1c&quot;/&gt;&#x27; +
+    &#x27;&lt;circle cx=&quot;17&quot; cy=&quot;23&quot; r=&quot;1.3&quot; fill=&quot;#1c7a1c&quot;/&gt;&#x27; +
+    &#x27;&lt;/svg&gt;&#x27;;
+
+  function buildField() {
+    // remove all children except countdown &amp; banner
+    Array.prototype.slice.call(field.children).forEach(function (ch) {
+      if (ch !== countdownEl &amp;&amp; ch !== banner) field.removeChild(ch);
+    });
+    lanes = []; goalPads = [];
+
+    for (var r = 0; r &lt; ROWS; r++) {
+      var t = ROW_TYPE[r];
+      var bg = document.createElement(&#x27;div&#x27;);
+      if (t === &#x27;goal&#x27;) bg.className = &#x27;row-goal&#x27;;
+      else if (t === &#x27;water&#x27;) bg.className = &#x27;row-water&#x27;;
+      else if (t === &#x27;road&#x27;) bg.className = &#x27;row-road&#x27;;
+      else bg.className = &#x27;row-safe&#x27;;
+      bg.style.top = rowTop(r) + &#x27;px&#x27;;
+      bg.style.height = CELL + &#x27;px&#x27;;
+      if (t === &#x27;water&#x27;) {
+        var rip = document.createElement(&#x27;div&#x27;);
+        rip.className = &#x27;ripple&#x27;;
+        rip.style.animationDuration = (5 + r) + &#x27;s&#x27;;
+        bg.appendChild(rip);
+      }
+      if (t === &#x27;road&#x27;) {
+        var ln = document.createElement(&#x27;div&#x27;);
+        ln.className = &#x27;lane-line&#x27;;
+        bg.appendChild(ln);
+      }
+      field.appendChild(bg);
+    }
+
+    var padCols = [1, 5, 8, 12];
+    for (var p = 0; p &lt; padCols.length; p++) {
+      var pad = document.createElement(&#x27;div&#x27;);
+      pad.className = &#x27;goal-pad&#x27;;
+      pad.style.left = (padCols[p] * CELL + 2) + &#x27;px&#x27;;
+      pad.style.width = (CELL - 4) + &#x27;px&#x27;;
+      field.appendChild(pad);
+      goalPads.push({ col: padCols[p], filled: false, el: pad });
+    }
+
+    var carColors = [&#x27;#ff3b3b&#x27;, &#x27;#ffb703&#x27;, &#x27;#3ba7ff&#x27;, &#x27;#c34bff&#x27;, &#x27;#ff6f3b&#x27;];
+    var truckColors = [&#x27;#e0e0e0&#x27;, &#x27;#8ecae6&#x27;];
+    for (var rr = 1; rr &lt; ROWS; rr++) {
+      var tt = ROW_TYPE[rr];
+      if (tt !== &#x27;water&#x27; &amp;&amp; tt !== &#x27;road&#x27;) continue;
+      var dir = (rr % 2 === 0) ? 1 : -1;
+      var baseSpeed = 0.55 + ((rr * 7) % 5) * 0.15;
+      var items = [];
+
+      if (tt === &#x27;water&#x27;) {
+        var logW = CELL * (2 + (rr % 2));
+        var count = 3;
+        var gap = FIELD_W / count;
+        for (var j = 0; j &lt; count; j++) {
+          var x = j * gap + (rr * 37) % gap;
+          var el = document.createElement(&#x27;div&#x27;);
+          el.className = &#x27;log&#x27;;
+          el.style.width = logW + &#x27;px&#x27;;
+          el.style.height = (CELL - 10) + &#x27;px&#x27;;
+          el.style.top = (rowTop(rr) + 5) + &#x27;px&#x27;;
+          el.style.left = x + &#x27;px&#x27;;
+          field.appendChild(el);
+          items.push({ x: x, w: logW, el: el });
+        }
+      } else {
+        var isTruck = (rr % 2 === 0);
+        var vw = isTruck ? CELL * 1.5 : CELL * 1.05;
+        var vh = CELL - 10;
+        var count2 = isTruck ? 2 : 3;
+        var gap2 = FIELD_W / count2;
+        for (var k = 0; k &lt; count2; k++) {
+          var cx = k * gap2 + (rr * 29) % gap2;
+          var cel = document.createElement(&#x27;div&#x27;);
+          cel.className = &#x27;veh&#x27;;
+          cel.style.width = vw + &#x27;px&#x27;;
+          cel.style.height = vh + &#x27;px&#x27;;
+          cel.style.top = (rowTop(rr) + 5) + &#x27;px&#x27;;
+          cel.style.left = cx + &#x27;px&#x27;;
+          var color = isTruck ? truckColors[k % truckColors.length] : carColors[(rr + k) % carColors.length];
+          cel.style.background = &#x27;linear-gradient(180deg,&#x27; + color + &#x27;, &#x27; + color + &#x27;)&#x27;;
+          cel.style.filter = &#x27;brightness(1.05)&#x27;;
+          // windows
+          var win = document.createElement(&#x27;div&#x27;);
+          win.className = &#x27;win&#x27;;
+          if (isTruck) {
+            win.style.width = &#x27;10px&#x27;; win.style.height = (vh - 8) + &#x27;px&#x27;;
+            win.style.top = &#x27;4px&#x27;;
+            win.style[dir &gt; 0 ? &#x27;right&#x27; : &#x27;left&#x27;] = &#x27;4px&#x27;;
+          } else {
+            win.style.width = (vw * 0.4) + &#x27;px&#x27;; win.style.height = (vh - 10) + &#x27;px&#x27;;
+            win.style.top = &#x27;5px&#x27;; win.style.left = (vw * 0.3) + &#x27;px&#x27;;
+          }
+          cel.appendChild(win);
+          field.appendChild(cel);
+          items.push({ x: cx, w: vw, el: cel });
+        }
+      }
+      lanes.push({ row: rr, type: tt, dir: dir, speed: baseSpeed, items: items });
+    }
+
+    frogEl = document.createElement(&#x27;div&#x27;);
+    frogEl.className = &#x27;frog&#x27;;
+    frogEl.innerHTML = FROG_SVG;
+    field.appendChild(frogEl);
+  }
+
+  function frogCenterX() { return frog.col * CELL + CELL / 2 + frog.offset; }
+
+  function paintFrog(squash) {
+    if (!frogEl) return;
+    var x = frogCenterX() - 17;
+    var y = rowTop(frog.row) + (CELL - 34) / 2;
+    frogEl.style.left = x + &#x27;px&#x27;;
+    frogEl.style.top = y + &#x27;px&#x27;;
+    var rot = frog.dir === &#x27;up&#x27; ? 0 : frog.dir === &#x27;down&#x27; ? 180 : frog.dir === &#x27;left&#x27; ? -90 : 90;
+    var sc = squash ? &#x27;scale(1.18,0.78)&#x27; : &#x27;scale(1,1)&#x27;;
+    frogEl.style.transform = &#x27;rotate(&#x27; + rot + &#x27;deg) &#x27; + sc;
+    if (squash) {
+      setTimeout(function () {
+        if (frogEl) frogEl.style.transform = &#x27;rotate(&#x27; + rot + &#x27;deg) scale(1,1)&#x27;;
+      }, 85);
+    }
+  }
+
+  function resetFrog() {
+    frog.col = 6; frog.row = 11; frog.offset = 0; frog.dir = &#x27;up&#x27;;
+    paintFrog(false);
+  }
+
+  function laneForRow(r) {
+    for (var i = 0; i &lt; lanes.length; i++) if (lanes[i].row === r) return lanes[i];
+    return null;
+  }
+
+  function spawnPopup(text, cx, cy) {
+    var p = document.createElement(&#x27;div&#x27;);
+    p.className = &#x27;popup&#x27;;
+    p.textContent = text;
+    p.style.left = (cx - 14) + &#x27;px&#x27;;
+    p.style.top = cy + &#x27;px&#x27;;
+    field.appendChild(p);
+    setTimeout(function () { if (p.parentNode) p.parentNode.removeChild(p); }, 800);
+  }
+  function spawnSplash(emoji, cx, cy) {
+    var s = document.createElement(&#x27;div&#x27;);
+    s.className = &#x27;splash&#x27;;
+    s.textContent = emoji;
+    s.style.left = (cx - 13) + &#x27;px&#x27;;
+    s.style.top = (cy - 10) + &#x27;px&#x27;;
+    field.appendChild(s);
+    setTimeout(function () { if (s.parentNode) s.parentNode.removeChild(s); }, 500);
+  }
+
+  function tick() {
+    if (!running) return;
+    var ss = speedScale();
+    for (var i = 0; i &lt; lanes.length; i++) {
+      var lane = lanes[i];
+      var v = lane.dir * lane.speed * ss;
+      for (var j = 0; j &lt; lane.items.length; j++) {
+        var it = lane.items[j];
+        it.x += v;
+        if (lane.dir &gt; 0 &amp;&amp; it.x &gt; FIELD_W) it.x = -it.w;
+        else if (lane.dir &lt; 0 &amp;&amp; it.x + it.w &lt; 0) it.x = FIELD_W;
+        it.el.style.left = it.x + &#x27;px&#x27;;
+      }
+    }
+
+    if (accepting) {
+      var t = ROW_TYPE[frog.row];
+      var lane2 = laneForRow(frog.row);
+      if (t === &#x27;road&#x27;) {
+        var fx = frogCenterX();
+        if (lane2) for (var c = 0; c &lt; lane2.items.length; c++) {
+          var car = lane2.items[c];
+          if (fx &gt; car.x + 6 &amp;&amp; fx &lt; car.x + car.w - 6) { die(&#x27;💥&#x27;); return; }
+        }
+      } else if (t === &#x27;water&#x27;) {
+        var fx2 = frogCenterX();
+        var onLog = null;
+        if (lane2) for (var l = 0; l &lt; lane2.items.length; l++) {
+          var log = lane2.items[l];
+          if (fx2 &gt; log.x &amp;&amp; fx2 &lt; log.x + log.w) { onLog = log; break; }
+        }
+        if (!onLog) { die(&#x27;💦&#x27;); return; }
+        frog.offset += lane2.dir * lane2.speed * ss;
+        var cx = frogCenterX();
+        if (cx &lt; 8 || cx &gt; FIELD_W - 8) { die(&#x27;💦&#x27;); return; }
+      }
+    }
+
+    paintFrog(false);
+    animId = requestAnimationFrame(tick);
+  }
+
+  var hopLock = false;
+  function move(dc, dr, dirName) {
+    if (!accepting || hopLock) return;
+    hopLock = true;
+    setTimeout(function () { hopLock = false; }, 90);
+
+    frog.dir = dirName;
+    var newRow = Math.max(0, Math.min(ROWS - 1, frog.row + dr));
+    var effectiveCol = Math.round((frogCenterX() - CELL / 2) / CELL);
+    var newCol = Math.max(0, Math.min(COLS - 1, effectiveCol + dc));
+
+    if (newRow === 0) {
+      var landed = null, best = 99;
+      for (var g = 0; g &lt; goalPads.length; g++) {
+        var d = Math.abs(goalPads[g].col - newCol);
+        if (!goalPads[g].filled &amp;&amp; d &lt;= 1 &amp;&amp; d &lt; best) { landed = goalPads[g]; best = d; }
+      }
+      if (landed) {
+        landed.filled = true;
+        landed.el.classList.add(&#x27;filled&#x27;);
+        var gain = 50 + level * 10;
+        score += gain; scoreEl.textContent = score;
+        spawnPopup(&#x27;+&#x27; + gain, landed.col * CELL + CELL / 2, 6);
+        if (goalPads.every(function (p) { return p.filled; })) { nextLevel(); return; }
+        resetFrog();
+        return;
+      } else { die(&#x27;💥&#x27;); return; }
+    }
+
+    frog.row = newRow; frog.col = newCol; frog.offset = 0;
+    paintFrog(true);
+  }
+
+  function nextLevel() {
+    accepting = false;
+    level += 1; levelEl.textContent = level;
+    score += 100; scoreEl.textContent = score;
+    buildField(); resetFrog();
+    showBanner(&#x27;LEVEL &#x27; + level + &#x27;!&#x27;, &#x27;Everything moves faster now&#x27;);
+    setTimeout(function () { if (running) { hideBanner(); startCountdown(); } }, 1200);
+  }
+
+  function die(emoji) {
+    accepting = false;
+    spawnSplash(emoji, frogCenterX(), rowTop(frog.row) + CELL / 2);
+    lives -= 1;
+    renderLives();
+    if (frogEl) frogEl.style.opacity = &#x27;0.25&#x27;;
+    if (lives &lt;= 0) {
+      setTimeout(function () {
+        running = false;
+        if (animId) { cancelAnimationFrame(animId); animId = null; }
+        showBanner(&#x27;GAME OVER&#x27;, &#x27;Final score: &#x27; + score + &#x27; — press Start to play again&#x27;);
+      }, 450);
+      return;
+    }
+    setTimeout(function () {
+      if (!running) return;
+      resetFrog();
+      if (frogEl) frogEl.style.opacity = &#x27;1&#x27;;
+      accepting = true;
+    }, 450);
+  }
+
+  function renderLives() {
+    var s = &#x27;&#x27;;
+    for (var i = 0; i &lt; Math.max(0, lives); i++) s += &#x27;🐸&#x27;;
+    livesEl.textContent = s || &#x27;—&#x27;;
+  }
+
+  function showBanner(title, sub) {
+    banner.innerHTML = &#x27;&lt;div&gt;&#x27; + title + &#x27;&lt;/div&gt;&lt;small&gt;&#x27; + sub + &#x27;&lt;/small&gt;&#x27;;
+    banner.style.display = &#x27;flex&#x27;;
+  }
+  function hideBanner() { banner.style.display = &#x27;none&#x27;; }
+
+  function startCountdown() {
+    var n = 3;
+    countdownEl.style.display = &#x27;flex&#x27;;
+    countdownEl.textContent = n;
+    accepting = false;
+    var iv = setInterval(function () {
+      if (!running) { clearInterval(iv); countdownEl.style.display = &#x27;none&#x27;; return; }
+      n -= 1;
+      if (n === 0) { countdownEl.textContent = &#x27;GO!&#x27;; }
+      else if (n &lt; 0) {
+        clearInterval(iv);
+        countdownEl.style.display = &#x27;none&#x27;;
+        accepting = true;
+      } else { countdownEl.textContent = n; }
+    }, 600);
+  }
+
+  function startGame() {
+    score = 0; lives = 3; level = 1;
+    scoreEl.textContent = &#x27;0&#x27;; renderLives(); levelEl.textContent = &#x27;1&#x27;;
+    hideBanner();
+    buildField(); resetFrog();
+    if (frogEl) frogEl.style.opacity = &#x27;1&#x27;;
+    lastMouseX = null; lastMouseY = null; accMx = 0; accMy = 0;
+    running = true;
+    if (animId) cancelAnimationFrame(animId);
+    animId = requestAnimationFrame(tick);   // cars start moving immediately
+    startCountdown();
+  }
+  function stopGame() {
+    running = false; accepting = false;
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+    countdownEl.style.display = &#x27;none&#x27;;
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27;) { move(-1, 0, &#x27;left&#x27;); e.preventDefault(); }
+    else if (e.key === &#x27;ArrowRight&#x27;) { move(1, 0, &#x27;right&#x27;); e.preventDefault(); }
+    else if (e.key === &#x27;ArrowUp&#x27;) { move(0, -1, &#x27;up&#x27;); e.preventDefault(); }
+    else if (e.key === &#x27;ArrowDown&#x27;) { move(0, 1, &#x27;down&#x27;); e.preventDefault(); }
+  });
+
+  // Mouse-flick controls: accumulate motion, hop once per threshold, reset
+  // accumulator after each hop so a single gesture = a single hop.
+  var lastMouseX = null, lastMouseY = null, accMx = 0, accMy = 0;
+  var THRESHOLD = 26;
+  field.addEventListener(&#x27;mousemove&#x27;, function (e) {
+    if (!accepting) return;
+    var rect = field.getBoundingClientRect();
+    var mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    if (lastMouseX === null) { lastMouseX = mx; lastMouseY = my; return; }
+    accMx += mx - lastMouseX;
+    accMy += my - lastMouseY;
+    lastMouseX = mx; lastMouseY = my;
+    if (Math.abs(accMx) &lt; THRESHOLD &amp;&amp; Math.abs(accMy) &lt; THRESHOLD) return;
+    if (Math.abs(accMx) &gt; Math.abs(accMy)) {
+      if (accMx &gt; 0) move(1, 0, &#x27;right&#x27;); else move(-1, 0, &#x27;left&#x27;);
+    } else {
+      if (accMy &gt; 0) move(0, 1, &#x27;down&#x27;); else move(0, -1, &#x27;up&#x27;);
+    }
+    accMx = 0; accMy = 0;   // reset so the next flick is a fresh gesture
+  });
+  field.addEventListener(&#x27;mouseleave&#x27;, function () { lastMouseX = null; lastMouseY = null; accMx = 0; accMy = 0; });
+  field.addEventListener(&#x27;mouseenter&#x27;, function () { lastMouseX = null; lastMouseY = null; });
+
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  // Initial paint
+  buildField();
+  paintFrog(false);
+  showBanner(&#x27;F R O G G E R&#x27;, &#x27;Press Start below to play&#x27;);
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

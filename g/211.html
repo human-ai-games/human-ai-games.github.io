@@ -1,0 +1,700 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🎧 Neon DJ Pony 🦄</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>🎧 Neon DJ Pony 🦄</b> &middot; Game 211 &middot; Professional producer &middot; Basic game: Space shooter</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #0a0018; color: #fff; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 8px 10px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: 1px;
+       background: linear-gradient(90deg,#ff2fd6,#4dfff0,#a26bff); -webkit-background-clip: text; background-clip: text; color: transparent;
+       text-shadow: 0 0 12px rgba(255,47,214,.4); }
+  .instructions { font-size: 16px; color: #b9a9ff; max-width: 640px; margin: 0; line-height: 1.3; text-align: center; }
+  .layout { display: flex; gap: 10px; width: 100%; }
+  .stage-wrap { flex: 1 1 auto; display: flex; flex-direction: column; align-items: center; position: relative; }
+  #stage { display: block; border-radius: 10px; border: 2px solid #ff2fd6;
+           box-shadow: 0 0 22px rgba(255,47,214,.5), inset 0 0 30px rgba(77,255,240,.15); background: #12002b; }
+  .panel { width: 250px; flex: 0 0 auto; display: flex; flex-direction: column; gap: 4px; }
+  .cat { font-size: 12px; font-weight: 700; color: #4dfff0; margin: 1px 0 0; text-transform: uppercase; letter-spacing: 1px; }
+  .row { display: flex; gap: 5px; }
+  .opt { flex: 1; height: 26px; border: 2px solid #5a3a8a; border-radius: 6px; background: #1c0838; color: #fff;
+         font-size: 14px; cursor: pointer; transition: all .12s; display: flex; align-items: center; justify-content: center; }
+  .opt:hover { border-color: #a26bff; }
+  .opt.sel { border-color: #ff2fd6; background: #33104f; box-shadow: 0 0 10px rgba(255,47,214,.6); }
+  .controls { display: flex; gap: 8px; margin-top: 4px; flex-wrap: wrap; justify-content: center; }
+  .btn { padding: 6px 12px; border-radius: 6px; border: 2px solid #4dfff0; background: #08243a; color: #4dfff0;
+         font-size: 14px; font-weight: 700; cursor: pointer; }
+  .btn:hover { background: #0d3a5c; }
+  .btn.on { background: #4dfff0; color: #001; }
+  .btn.go { border-color: #ff2fd6; color: #ff2fd6; }
+  .btn.go:hover { background: #33104f; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;🎧 Neon DJ Pony 🦄&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot; id=&quot;instr&quot;&gt;Dress up your DJ pony with the buttons on the right and press Beat for the epic soundtrack. When ready, hit &quot;Go Run!&quot; — then tap Space to sprint faster and jump; reach the finish to win!&lt;/p&gt;
+  &lt;div class=&quot;layout&quot;&gt;
+    &lt;div class=&quot;stage-wrap&quot;&gt;
+      &lt;canvas id=&quot;stage&quot; width=&quot;440&quot; height=&quot;420&quot;&gt;&lt;/canvas&gt;
+      &lt;div class=&quot;controls&quot; id=&quot;controls&quot;&gt;
+        &lt;button class=&quot;btn&quot; id=&quot;beatBtn&quot;&gt;▶ Beat: OFF&lt;/button&gt;
+        &lt;button class=&quot;btn&quot; id=&quot;randBtn&quot;&gt;🎲 Randomize&lt;/button&gt;
+        &lt;button class=&quot;btn go&quot; id=&quot;goBtn&quot;&gt;🏃 Go Run! →&lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;panel&quot; id=&quot;panel&quot;&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var canvas = document.getElementById(&#x27;stage&#x27;);
+  var ctx = canvas.getContext(&#x27;2d&#x27;);
+  var panel = document.getElementById(&#x27;panel&#x27;);
+  var beatBtn = document.getElementById(&#x27;beatBtn&#x27;);
+  var randBtn = document.getElementById(&#x27;randBtn&#x27;);
+  var goBtn = document.getElementById(&#x27;goBtn&#x27;);
+  var instr = document.getElementById(&#x27;instr&#x27;);
+  var running = false, animId = null, t0 = 0;
+  var mode = &#x27;dress&#x27;; // &#x27;dress&#x27; | &#x27;run&#x27; | &#x27;win&#x27;
+
+  var CATS = [
+    { key: &#x27;head&#x27;, label: &#x27;Head&#x27;, opts: [&#x27;None&#x27;,&#x27;Headphones&#x27;,&#x27;DJ Cap&#x27;,&#x27;Neon Shades&#x27;] },
+    { key: &#x27;neck&#x27;, label: &#x27;Neck&#x27;, opts: [&#x27;None&#x27;,&#x27;Gold Chain&#x27;,&#x27;Glow Scarf&#x27;,&#x27;Bow Tie&#x27;] },
+    { key: &#x27;body&#x27;, label: &#x27;Body&#x27;, opts: [&#x27;None&#x27;,&#x27;LED Vest&#x27;,&#x27;Rainbow Wings&#x27;,&#x27;Hoodie&#x27;] },
+    { key: &#x27;legs&#x27;, label: &#x27;Legs&#x27;, opts: [&#x27;None&#x27;,&#x27;Glow Boots&#x27;,&#x27;Leg Warmers&#x27;,&#x27;Anklets&#x27;] }
+  ];
+  var sel = { head: 1, neck: 1, body: 2, legs: 1 };
+
+  function buildPanel() {
+    panel.innerHTML = &#x27;&#x27;;
+    CATS.forEach(function(cat) {
+      var lbl = document.createElement(&#x27;div&#x27;); lbl.className = &#x27;cat&#x27;; lbl.textContent = cat.label;
+      panel.appendChild(lbl);
+      var row = document.createElement(&#x27;div&#x27;); row.className = &#x27;row&#x27;;
+      cat.opts.forEach(function(name, i) {
+        var b = document.createElement(&#x27;div&#x27;);
+        b.className = &#x27;opt&#x27; + (sel[cat.key] === i ? &#x27; sel&#x27; : &#x27;&#x27;);
+        b.textContent = (i === 0 ? &#x27;✕&#x27; : (i));
+        b.title = name;
+        b.addEventListener(&#x27;click&#x27;, function() {
+          if (mode !== &#x27;dress&#x27;) return;
+          sel[cat.key] = i; buildPanel(); blip(300 + i * 120);
+        });
+        row.appendChild(b);
+      });
+      panel.appendChild(row);
+    });
+  }
+
+  /* ---------------- AUDIO ---------------- */
+  var ac = null, beatOn = false, beatTimer = null, step = 0;
+  function getAC() {
+    if (!ac) { var AC = window.AudioContext || window.webkitAudioContext; if (AC) ac = new AC(); }
+    if (ac &amp;&amp; ac.state === &#x27;suspended&#x27;) ac.resume();
+    return ac;
+  }
+  function blip(freq) {
+    var a = getAC(); if (!a) return;
+    var o = a.createOscillator(), g = a.createGain();
+    o.type = &#x27;square&#x27;; o.frequency.value = freq;
+    g.gain.value = 0.05; o.connect(g); g.connect(a.destination);
+    o.start(); g.gain.exponentialRampToValueAtTime(0.001, a.currentTime + 0.12);
+    o.stop(a.currentTime + 0.13);
+  }
+  function kick(time, hard) {
+    var o = ac.createOscillator(), g = ac.createGain();
+    o.frequency.setValueAtTime(hard?200:160, time);
+    o.frequency.exponentialRampToValueAtTime(42, time + 0.15);
+    g.gain.setValueAtTime(hard?0.8:0.6, time);
+    g.gain.exponentialRampToValueAtTime(0.001, time + 0.2);
+    o.connect(g); g.connect(ac.destination); o.start(time); o.stop(time + 0.22);
+  }
+  function snare(time) {
+    var bufSize = ac.sampleRate * 0.12;
+    var buf = ac.createBuffer(1, bufSize, ac.sampleRate);
+    var d = buf.getChannelData(0);
+    for (var i=0;i&lt;bufSize;i++) d[i] = (Math.random()*2-1)*(1-i/bufSize);
+    var src = ac.createBufferSource(); src.buffer = buf;
+    var bp = ac.createBiquadFilter(); bp.type=&#x27;bandpass&#x27;; bp.frequency.value=1800;
+    var g = ac.createGain(); g.gain.setValueAtTime(0.35, time);
+    g.gain.exponentialRampToValueAtTime(0.001, time+0.12);
+    src.connect(bp); bp.connect(g); g.connect(ac.destination); src.start(time); src.stop(time+0.13);
+  }
+  function hat(time, open) {
+    var bufSize = ac.sampleRate * (open?0.1:0.03);
+    var buf = ac.createBuffer(1, bufSize, ac.sampleRate);
+    var d = buf.getChannelData(0);
+    for (var i=0;i&lt;bufSize;i++) d[i] = (Math.random()*2-1);
+    var src = ac.createBufferSource(); src.buffer = buf;
+    var hp = ac.createBiquadFilter(); hp.type=&#x27;highpass&#x27;; hp.frequency.value=8000;
+    var g = ac.createGain(); g.gain.setValueAtTime(open?0.14:0.1, time);
+    g.gain.exponentialRampToValueAtTime(0.001, time+(open?0.1:0.03));
+    src.connect(hp); hp.connect(g); g.connect(ac.destination); src.start(time); src.stop(time+(open?0.11:0.04));
+  }
+  function lead(time, freq, dur) {
+    var o = ac.createOscillator(), o2 = ac.createOscillator(), g = ac.createGain();
+    o.type=&#x27;sawtooth&#x27;; o.frequency.value=freq;
+    o2.type=&#x27;square&#x27;; o2.frequency.value=freq*2.005;
+    var f = ac.createBiquadFilter(); f.type=&#x27;lowpass&#x27;;
+    f.frequency.setValueAtTime(2600, time); f.frequency.exponentialRampToValueAtTime(700, time+dur);
+    g.gain.setValueAtTime(0.0, time); g.gain.linearRampToValueAtTime(0.13, time+0.01);
+    g.gain.exponentialRampToValueAtTime(0.001, time+dur);
+    o.connect(f); o2.connect(f); f.connect(g); g.connect(ac.destination);
+    o.start(time); o2.start(time); o.stop(time+dur+0.02); o2.stop(time+dur+0.02);
+  }
+  function bass(time, freq) {
+    var o = ac.createOscillator(), g = ac.createGain();
+    o.type=&#x27;sawtooth&#x27;; o.frequency.value=freq;
+    var f = ac.createBiquadFilter(); f.type=&#x27;lowpass&#x27;; f.frequency.value=400;
+    g.gain.setValueAtTime(0.22, time); g.gain.exponentialRampToValueAtTime(0.001, time+0.28);
+    o.connect(f); f.connect(g); g.connect(ac.destination); o.start(time); o.stop(time+0.3);
+  }
+  // 16-step epic pattern with melody (2-bar feel via step index)
+  var LEAD = [784,0,988,0, 1047,988,880,0, 784,0,659,784, 880,0,988,1047];
+  var LEAD2= [1047,0,988,880, 784,0,880,988, 659,0,784,0, 587,659,784,880];
+  var BASS = [98,98,0,98, 131,0,131,0, 110,110,0,110, 147,0,98,0];
+  var bar = 0;
+  function scheduleStep() {
+    if (!beatOn || !ac) return;
+    var time = ac.currentTime + 0.03;
+    // drums
+    if (step % 4 === 0) kick(time, step===0);
+    if (step % 8 === 4) snare(time);
+    hat(time, step % 4 === 2);
+    // bass
+    if (BASS[step]) bass(time, BASS[step]);
+    // melody alternates each 2 bars
+    var mel = (bar % 4 &lt; 2) ? LEAD : LEAD2;
+    if (mel[step]) lead(time, mel[step], 0.16);
+    step++;
+    if (step &gt;= 16) { step = 0; bar++; }
+  }
+  var STEP_MS = 130;
+  function startBeat() {
+    if (!getAC()) return;
+    beatOn = true; step = 0; bar = 0;
+    beatBtn.textContent = &#x27;⏸ Beat: ON&#x27;; beatBtn.classList.add(&#x27;on&#x27;);
+    if (beatTimer) clearInterval(beatTimer);
+    beatTimer = setInterval(scheduleStep, STEP_MS);
+  }
+  function stopBeat() {
+    beatOn = false;
+    beatBtn.textContent = &#x27;▶ Beat: OFF&#x27;; beatBtn.classList.remove(&#x27;on&#x27;);
+    if (beatTimer) { clearInterval(beatTimer); beatTimer = null; }
+  }
+  function jumpSfx() {
+    var a = getAC(); if (!a) return;
+    var o = a.createOscillator(), g = a.createGain();
+    o.type=&#x27;triangle&#x27;; o.frequency.setValueAtTime(400, a.currentTime);
+    o.frequency.exponentialRampToValueAtTime(900, a.currentTime+0.15);
+    g.gain.setValueAtTime(0.15, a.currentTime); g.gain.exponentialRampToValueAtTime(0.001, a.currentTime+0.2);
+    o.connect(g); g.connect(a.destination); o.start(); o.stop(a.currentTime+0.22);
+  }
+  function winFanfare() {
+    var a = getAC(); if (!a) return;
+    var notes = [523,659,784,1047,1319];
+    notes.forEach(function(n,i){
+      var o=a.createOscillator(), g=a.createGain();
+      o.type=&#x27;sawtooth&#x27;; o.frequency.value=n;
+      var st=a.currentTime+i*0.12;
+      g.gain.setValueAtTime(0.0,st); g.gain.linearRampToValueAtTime(0.18,st+0.02);
+      g.gain.exponentialRampToValueAtTime(0.001,st+0.4);
+      o.connect(g); g.connect(a.destination); o.start(st); o.stop(st+0.42);
+    });
+  }
+  beatBtn.addEventListener(&#x27;click&#x27;, function() { beatOn ? stopBeat() : startBeat(); });
+  randBtn.addEventListener(&#x27;click&#x27;, function() {
+    if (mode!==&#x27;dress&#x27;) return;
+    CATS.forEach(function(c){ sel[c.key] = Math.floor(Math.random()*4); });
+    buildPanel(); blip(600);
+  });
+  goBtn.addEventListener(&#x27;click&#x27;, function(){ if (mode===&#x27;dress&#x27;) startRun(); });
+
+  /* ---------------- STARS ---------------- */
+  var stars = [];
+  function initStars() {
+    stars = [];
+    for (var i=0;i&lt;90;i++) stars.push({ x:Math.random()*440, y:Math.random()*420, r:Math.random()*1.6+0.3, tw:Math.random()*6, sp:Math.random()*0.4+0.1 });
+  }
+
+  /* ---------------- RUN STATE ---------------- */
+  var runX, runProgress, speed, py, vy, onGround, trail, GOAL = 4200;
+  function startRun() {
+    mode = &#x27;run&#x27;;
+    runProgress = 0; speed = 2; py = 0; vy = 0; onGround = true; trail = [];
+    instr.textContent = &#x27;RUN! Tap Space rapidly to sprint faster and jump. Reach the finish line to win — Wow!&#x27;;
+    goBtn.textContent = &#x27;↩ Back to Dress-up&#x27;;
+    randBtn.style.display = &#x27;none&#x27;;
+    if (!beatOn) startBeat();
+  }
+  function backToDress() {
+    mode = &#x27;dress&#x27;;
+    instr.textContent = &#x27;Dress up your DJ pony with the buttons on the right and press Beat for the epic soundtrack. When ready, hit &quot;Go Run!&quot; — then tap Space to sprint faster and jump; reach the finish to win!&#x27;;
+    goBtn.textContent = &#x27;🏃 Go Run! →&#x27;; goBtn.classList.add(&#x27;go&#x27;);
+    randBtn.style.display = &#x27;&#x27;;
+  }
+  goBtn.addEventListener(&#x27;click&#x27;, function(){ if (mode===&#x27;run&#x27;||mode===&#x27;win&#x27;) { backToDress(); } });
+
+  function tapSpace() {
+    if (mode === &#x27;run&#x27;) {
+      speed = Math.min(speed + 0.9, 14);
+      if (onGround) { vy = -9.5; onGround = false; jumpSfx(); }
+    }
+  }
+
+  /* ---------------- DRAWING ---------------- */
+  function rr(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+  function neon(color, blur){ ctx.shadowColor = color; ctx.shadowBlur = blur; }
+  function noNeon(){ ctx.shadowBlur = 0; }
+  var RAINBOW = [&#x27;#ff2f6d&#x27;,&#x27;#ff9a2f&#x27;,&#x27;#ffe62f&#x27;,&#x27;#4dff6a&#x27;,&#x27;#4dfff0&#x27;,&#x27;#4d7bff&#x27;,&#x27;#a26bff&#x27;];
+
+  function drawStars(el) {
+    for (var i=0;i&lt;stars.length;i++){
+      var s = stars[i];
+      var a = 0.4 + 0.6*Math.abs(Math.sin(el*s.sp + s.tw));
+      ctx.fillStyle = &#x27;rgba(255,255,255,&#x27;+a+&#x27;)&#x27;;
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 7); ctx.fill();
+    }
+  }
+
+  function draw(ts) {
+    if (!t0) t0 = ts;
+    var el = (ts - t0) / 1000;
+    var W = canvas.width, H = canvas.height;
+    // galaxy bg
+    var bg = ctx.createRadialGradient(W/2,H*0.4,20, W/2,H*0.4,W*0.9);
+    bg.addColorStop(0,&#x27;#241056&#x27;); bg.addColorStop(0.5,&#x27;#120033&#x27;); bg.addColorStop(1,&#x27;#06001a&#x27;);
+    ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+    drawStars(el);
+
+    if (mode === &#x27;dress&#x27;) drawDress(el);
+    else if (mode === &#x27;run&#x27;) { updateRun(); drawRun(el); }
+    else if (mode === &#x27;win&#x27;) { drawRun(el); drawBanner(el); }
+
+    if (running) animId = requestAnimationFrame(draw);
+  }
+
+  function drawDress(el) {
+    var W = canvas.width, H = canvas.height;
+    var pulse = beatOn ? (0.5 + 0.5*Math.sin(el*7)) : 0.4;
+    // floor grid
+    ctx.strokeStyle = &#x27;rgba(77,255,240,&#x27; + (0.12 + 0.13*pulse) + &#x27;)&#x27;; ctx.lineWidth = 1;
+    for (var gx=0; gx&lt;=W; gx+=40){ ctx.beginPath(); ctx.moveTo(gx,300); ctx.lineTo(W/2+(gx-W/2)*2,H); ctx.stroke(); }
+    for (var gy=300; gy&lt;=H; gy+=22){ ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(W,gy); ctx.stroke(); }
+    // deck
+    ctx.fillStyle=&#x27;#1a0a33&#x27;; rr(120,320,200,60,8); ctx.fill();
+    ctx.strokeStyle=&#x27;#ff2fd6&#x27;; ctx.lineWidth=2; rr(120,320,200,60,8); ctx.stroke();
+    [160,280].forEach(function(cx){
+      var ang = el*(beatOn?9:2)+(cx===280?1:0);
+      ctx.save(); ctx.translate(cx,350); ctx.rotate(ang);
+      ctx.fillStyle=&#x27;#000&#x27;; ctx.beginPath(); ctx.arc(0,0,20,0,7); ctx.fill();
+      ctx.strokeStyle=&#x27;#a26bff&#x27;; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(0,0,20,0,7); ctx.stroke();
+      ctx.fillStyle=&#x27;#4dfff0&#x27;; ctx.fillRect(-2,-18,4,10); ctx.restore();
+    });
+    var bob = beatOn ? Math.sin(el*7)*4 : Math.sin(el*2)*1.5;
+    drawPony(220, 210 + bob, el, false);
+  }
+
+  function updateRun() {
+    // gravity / jump
+    vy += 0.55; py += vy;
+    if (py &gt;= 0) { py = 0; vy = 0; onGround = true; }
+    // natural decel then move
+    speed = Math.max(2, speed - 0.045);
+    runProgress += speed;
+    // rainbow trail
+    var tx = 150, ty = 300 + py;
+    trail.push({ x: tx, y: ty, life: 1, c: RAINBOW[Math.floor((runProgress/12)%RAINBOW.length)] });
+    if (trail.length &gt; 60) trail.shift();
+    for (var i=0;i&lt;trail.length;i++) trail[i].life -= 0.02;
+    if (runProgress &gt;= GOAL) { mode = &#x27;win&#x27;; winFanfare(); }
+  }
+
+  function drawRun(el) {
+    var W = canvas.width, H = canvas.height;
+    // moving ground
+    ctx.fillStyle = &#x27;#1a0a33&#x27;; ctx.fillRect(0, 320, W, H-320);
+    ctx.strokeStyle = &#x27;rgba(255,47,214,0.5)&#x27;; ctx.lineWidth = 2;
+    var off = -(runProgress % 60);
+    for (var gx=off; gx&lt;=W; gx+=60){ ctx.beginPath(); ctx.moveTo(gx,320); ctx.lineTo(gx,H); ctx.stroke(); }
+    ctx.beginPath(); ctx.moveTo(0,320); ctx.lineTo(W,320); ctx.stroke();
+    // finish line if near
+    var fx = 150 + (GOAL - runProgress);
+    if (fx &lt; W + 40) {
+      for (var y=200;y&lt;320;y+=16){
+        ctx.fillStyle = (Math.floor(y/16)%2===0)?&#x27;#fff&#x27;:&#x27;#000&#x27;;
+        ctx.fillRect(fx, y, 14, 16);
+      }
+      neon(&#x27;#ffe62f&#x27;,14); ctx.fillStyle=&#x27;#ffe62f&#x27;; ctx.font=&#x27;bold 14px system-ui&#x27;;
+      ctx.fillText(&#x27;FINISH&#x27;, fx-14, 190); noNeon();
+    }
+    // rainbow trail
+    for (var i=0;i&lt;trail.length;i++){
+      var t = trail[i]; if (t.life&lt;=0) continue;
+      neon(t.c, 10); ctx.fillStyle = t.c; ctx.globalAlpha = Math.max(0,t.life);
+      var sz = 6*t.life+2;
+      ctx.fillRect(t.x - (trail.length-i)*speed*0.4 - 40, t.y+20, sz, sz);
+      ctx.globalAlpha = 1; noNeon();
+    }
+    // progress bar
+    var pct = Math.min(1, runProgress/GOAL);
+    ctx.fillStyle = &#x27;rgba(255,255,255,0.15)&#x27;; rr(20,14,W-40,10,5); ctx.fill();
+    var grad = ctx.createLinearGradient(20,0,W-20,0);
+    grad.addColorStop(0,&#x27;#ff2f6d&#x27;); grad.addColorStop(0.5,&#x27;#4dfff0&#x27;); grad.addColorStop(1,&#x27;#a26bff&#x27;);
+    ctx.fillStyle = grad; rr(20,14,(W-40)*pct,10,5); ctx.fill();
+    ctx.fillStyle=&#x27;#fff&#x27;; ctx.font=&#x27;bold 12px system-ui&#x27;; ctx.textAlign=&#x27;left&#x27;;
+    ctx.fillText(&#x27;Speed: &#x27;+speed.toFixed(1), 22, 40);
+    ctx.textAlign=&#x27;start&#x27;;
+    // pony running
+    var legPhase = el * (2 + speed*0.8);
+    drawPony(150, 210 + py, el, true, legPhase);
+  }
+
+  function drawBanner(el) {
+    var W = canvas.width;
+    var y = 150;
+    // sparkle burst
+    for (var i=0;i&lt;24;i++){
+      var ang = i/24*Math.PI*2 + el;
+      var rad = 60 + 30*Math.sin(el*3+i);
+      ctx.fillStyle = RAINBOW[i%RAINBOW.length];
+      neon(RAINBOW[i%RAINBOW.length],8);
+      ctx.beginPath(); ctx.arc(W/2+Math.cos(ang)*rad, y+40+Math.sin(ang)*rad*0.5, 3, 0,7); ctx.fill();
+    }
+    noNeon();
+    var grad = ctx.createLinearGradient(0,0,W,0);
+    var sh = (el*120)%W;
+    grad.addColorStop(0,&#x27;#ff2fd6&#x27;); grad.addColorStop(0.5,&#x27;#4dfff0&#x27;); grad.addColorStop(1,&#x27;#a26bff&#x27;);
+    ctx.fillStyle = grad; neon(&#x27;#ff2fd6&#x27;,20);
+    rr(W/2-170, y-10, 340, 60, 12); ctx.fill(); noNeon();
+    ctx.fillStyle=&#x27;#0a0018&#x27;; ctx.textAlign=&#x27;center&#x27;;
+    ctx.font=&#x27;bold 20px system-ui&#x27;;
+    ctx.fillText(&#x27;🎉 CONGRATS! YOU HAVE 🎉&#x27;, W/2, y+16);
+    ctx.font=&#x27;bold 22px system-ui&#x27;;
+    ctx.fillText(&#x27;DONE IT. WOW.&#x27;, W/2, y+42);
+    ctx.textAlign=&#x27;start&#x27;;
+  }
+
+  function drawPony(cx, cy, el, isRun, legPhase) {
+    ctx.save();
+    // tail
+    neon(&#x27;#a26bff&#x27;, 12); ctx.fillStyle=&#x27;#a26bff&#x27;;
+    var tw = isRun ? Math.sin(el*10)*10 : Math.sin(el*4)*6;
+    ctx.beginPath(); ctx.moveTo(cx-70, cy-10);
+    ctx.quadraticCurveTo(cx-105, cy+10+tw, cx-92, cy+55);
+    ctx.quadraticCurveTo(cx-80, cy+20, cx-62, cy+15); ctx.closePath(); ctx.fill(); noNeon();
+    // body
+    neon(&#x27;#ff8ff0&#x27;, 10); ctx.fillStyle=&#x27;#ffb6f0&#x27;;
+    ctx.beginPath(); ctx.ellipse(cx-15, cy+5, 55, 34, 0, 0, 7); ctx.fill(); noNeon();
+    // legs (animated when running)
+    ctx.fillStyle=&#x27;#ffb6f0&#x27;;
+    var legX = [cx-45, cx-20, cx+10, cx+30];
+    legX.forEach(function(lx, i){
+      var sw = isRun ? Math.sin(legPhase + i*1.6)*10 : 0;
+      ctx.save(); ctx.translate(lx+6, cy+28); ctx.rotate(sw*0.03);
+      rr(-6, 0, 12, 40, 5); ctx.fill(); ctx.restore();
+    });
+    drawLegs(cx, cy, legX, isRun, legPhase);
+    drawBody(cx, cy, el);
+    // neck + head
+    ctx.fillStyle=&#x27;#ffb6f0&#x27;; rr(cx+30, cy-40, 26, 40, 8); ctx.fill();
+    neon(&#x27;#ff8ff0&#x27;, 10); ctx.beginPath(); ctx.ellipse(cx+55, cy-52, 30, 26, 0.2, 0, 7); ctx.fill(); noNeon();
+    ctx.beginPath(); ctx.ellipse(cx+82, cy-46, 12, 10, 0, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(cx+42, cy-72); ctx.lineTo(cx+50, cy-90); ctx.lineTo(cx+58, cy-70); ctx.closePath(); ctx.fill();
+    ctx.fillStyle=&#x27;#1a0033&#x27;; ctx.beginPath(); ctx.arc(cx+62, cy-54, 4.5, 0, 7); ctx.fill();
+    ctx.fillStyle=&#x27;#fff&#x27;; ctx.beginPath(); ctx.arc(cx+63.5, cy-55.5, 1.6, 0, 7); ctx.fill();
+    // mane
+    neon(&#x27;#4dfff0&#x27;, 12); ctx.fillStyle=&#x27;#4dfff0&#x27;;
+    ctx.beginPath(); ctx.moveTo(cx+30, cy-70);
+    ctx.quadraticCurveTo(cx+20, cy-95, cx+45, cy-96);
+    ctx.quadraticCurveTo(cx+38, cy-80, cx+55, cy-82);
+    ctx.quadraticCurveTo(cx+40, cy-60, cx+30, cy-45); ctx.closePath(); ctx.fill(); noNeon();
+    drawNeck(cx, cy);
+    drawHead(cx, cy);
+    ctx.restore();
+  }
+
+  function drawHead(cx, cy) {
+    var s = sel.head;
+    if (s === 1) {
+      neon(&#x27;#ff2fd6&#x27;, 14); ctx.strokeStyle=&#x27;#ff2fd6&#x27;; ctx.lineWidth=5;
+      ctx.beginPath(); ctx.arc(cx+55, cy-58, 32, Math.PI*1.15, Math.PI*1.95); ctx.stroke(); noNeon();
+      ctx.fillStyle=&#x27;#4dfff0&#x27;; ctx.beginPath(); ctx.ellipse(cx+30, cy-52, 8, 12, 0, 0, 7); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(cx+82, cy-56, 8, 12, 0, 0, 7); ctx.fill();
+    } else if (s === 2) {
+      neon(&#x27;#a26bff&#x27;, 12); ctx.fillStyle=&#x27;#33104f&#x27;; rr(cx+34, cy-78, 46, 18, 6); ctx.fill();
+      ctx.fillStyle=&#x27;#ff2fd6&#x27;; rr(cx+70, cy-70, 26, 8, 4); ctx.fill(); noNeon();
+    } else if (s === 3) {
+      neon(&#x27;#4dfff0&#x27;, 12); ctx.fillStyle=&#x27;#12ffe0&#x27;; rr(cx+50, cy-60, 30, 12, 3); ctx.fill(); noNeon();
+      ctx.fillStyle=&#x27;#0a0022&#x27;; ctx.fillRect(cx+53, cy-58, 10, 8); ctx.fillRect(cx+67, cy-58, 10, 8);
+    }
+  }
+  function drawNeck(cx, cy) {
+    var s = sel.neck;
+    if (s === 1) { neon(&#x27;#ffd84d&#x27;, 12); ctx.strokeStyle=&#x27;#ffd84d&#x27;; ctx.lineWidth=4;
+      ctx.beginPath(); ctx.arc(cx+40, cy-18, 20, 0.1, Math.PI-0.1); ctx.stroke(); noNeon(); }
+    else if (s === 2) { neon(&#x27;#ff2fd6&#x27;, 12); ctx.fillStyle=&#x27;#ff2fd6&#x27;; rr(cx+28, cy-20, 32, 12, 6); ctx.fill(); noNeon(); }
+    else if (s === 3) { neon(&#x27;#4dfff0&#x27;, 12); ctx.fillStyle=&#x27;#4dfff0&#x27;;
+      ctx.beginPath(); ctx.moveTo(cx+42, cy-22); ctx.lineTo(cx+30, cy-30); ctx.lineTo(cx+30, cy-14); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(cx+42, cy-22); ctx.lineTo(cx+54, cy-30); ctx.lineTo(cx+54, cy-14); ctx.closePath(); ctx.fill(); noNeon(); }
+  }
+  function drawBody(cx, cy, el) {
+    var s = sel.body;
+    if (s === 1) {
+      neon(&#x27;#4dfff0&#x27;, 12); ctx.fillStyle=&#x27;#1a0a33&#x27;; rr(cx-40, cy-14, 60, 40, 6); ctx.fill(); noNeon();
+      var cols=[&#x27;#ff2fd6&#x27;,&#x27;#4dfff0&#x27;,&#x27;#a26bff&#x27;,&#x27;#ffd84d&#x27;];
+      for (var i=0;i&lt;4;i++){ ctx.fillStyle=cols[i]; ctx.beginPath(); ctx.arc(cx-28+i*15, cy+6, 3, 0, 7); ctx.fill(); }
+    } else if (s === 2) {
+      // RAINBOW GLOWING WINGS
+      var flap = Math.sin(el*8)*0.35;
+      [-1,1].forEach(function(dir){
+        ctx.save(); ctx.translate(cx-15, cy-8); ctx.rotate(dir* (0.3+flap*(dir&gt;0?1:-1)) - (dir&lt;0?0.2:0.2));
+        for (var f=0; f&lt;RAINBOW.length; f++){
+          neon(RAINBOW[f], 14); ctx.fillStyle = RAINBOW[f];
+          ctx.globalAlpha = 0.9;
+          var len = 62 - f*3;
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.quadraticCurveTo(-25*dir, -18 - f*3, -len*dir, -6 - f*5);
+          ctx.quadraticCurveTo(-30*dir, 4 - f*2, 0, 6);
+          ctx.closePath(); ctx.fill();
+          ctx.globalAlpha = 1;
+        }
+        noNeon(); ctx.restore();
+      });
+    } else if (s === 3) {
+      neon(&#x27;#ff2fd6&#x27;, 10); ctx.fillStyle=&#x27;#33104f&#x27;; rr(cx-48, cy-12, 66, 42, 8); ctx.fill(); noNeon();
+      ctx.strokeStyle=&#x27;#ff2fd6&#x27;; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(cx-15, cy-12); ctx.lineTo(cx-15, cy+28); ctx.stroke();
+    }
+  }
+  function drawLegs(cx, cy, legX, isRun, legPhase) {
+    var s = sel.legs;
+    if (s === 0) return;
+    legX.forEach(function(lx, i){
+      var sw = isRun ? Math.sin(legPhase + i*1.6)*10 : 0;
+      var yb = cy + 58 + Math.abs(sw)*0.2;
+      if (s === 1) { neon(&#x27;#4dfff0&#x27;, 10); ctx.fillStyle=&#x27;#4dfff0&#x27;; rr(lx-1, yb, 14, 12, 4); ctx.fill(); noNeon(); }
+      else if (s === 2) { neon(&#x27;#ff2fd6&#x27;, 8); ctx.fillStyle=&#x27;#ff2fd6&#x27;; rr(lx-1, cy+42, 14, 16, 4); ctx.fill(); noNeon(); }
+      else if (s === 3) { neon(&#x27;#ffd84d&#x27;, 8); ctx.strokeStyle=&#x27;#ffd84d&#x27;; ctx.lineWidth=3;
+        ctx.beginPath(); ctx.moveTo(lx-1, cy+56); ctx.lineTo(lx+13, cy+56); ctx.stroke(); noNeon(); }
+    });
+  }
+
+  /* ---------------- INPUT ---------------- */
+  window.addEventListener(&#x27;keydown&#x27;, function(e) {
+    if (e.key === &#x27; &#x27; || e.code === &#x27;Space&#x27;) {
+      e.preventDefault();
+      if (running) tapSpace();
+    }
+    var n = parseInt(e.key, 10);
+    if (mode===&#x27;dress&#x27; &amp;&amp; n&gt;=1 &amp;&amp; n&lt;=4) { /* no-op quick, keep panel driven */ }
+  });
+
+  /* ---------------- LIFECYCLE ---------------- */
+  function startGame() {
+    if (running) return;
+    running = true; t0 = 0;
+    mode = &#x27;dress&#x27;;
+    initStars();
+    backToDress();
+    animId = requestAnimationFrame(draw);
+  }
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+    stopBeat();
+  }
+  window.addEventListener(&#x27;message&#x27;, function(e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  buildPanel();
+  initStars();
+  (function initial(){ t0 = performance.now(); draw(performance.now()); })();
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

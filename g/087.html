@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rainbow Paddle</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>Rainbow Paddle</b> &middot; Game 087 &middot; Professional producer &middot; Basic game: Paddle and ball</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #222; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 14px; background: white; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 8px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: 0.5px; background: linear-gradient(90deg,#ff4d4d,#ffe14d,#4dff6a,#4dd2ff,#c04dff); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .instructions { font-size: 16px; color: #666; max-width: 620px; margin: 0; line-height: 1.35; text-align: center; }
+  .hud { display: flex; gap: 12px; align-items: center; }
+  .badge { font-size: 18px; padding: 4px 14px; border-radius: 20px; background: #1c1c28; color: #fff; display: flex; gap: 6px; align-items: center; }
+  .badge b { color: #ffe14d; min-width: 14px; text-align: center; }
+  .badge.lives b { color: #ff7a7a; }
+  .badge.speed b { color: #4dd2ff; }
+  .field { position: relative; width: 620px; height: 400px; flex-shrink: 0; margin: 0; background: radial-gradient(ellipse at 50% 30%, #232347 0%, #12121f 70%, #0a0a12 100%); border-radius: 8px; overflow: hidden; box-shadow: inset 0 0 40px rgba(0,0,0,0.6), 0 0 0 2px rgba(120,120,200,0.25); }
+  .stars { position: absolute; inset: 0; pointer-events: none; }
+  .star { position: absolute; background: #fff; border-radius: 50%; animation: twinkle var(--dur) ease-in-out infinite; }
+  @keyframes twinkle { 0%,100% { opacity: var(--min); transform: scale(0.85); } 50% { opacity: var(--max); transform: scale(1.15); } }
+  .trail { position: absolute; width: 16px; height: 16px; border-radius: 50%; pointer-events: none; z-index: 2; }
+  .paddle { position: absolute; height: 14px; background: linear-gradient(#fff,#cfcfe0); border-radius: 7px; bottom: 10px; box-shadow: 0 0 10px rgba(255,255,255,0.5); z-index: 3; transition: box-shadow .12s; }
+  .paddle.hit { box-shadow: 0 0 22px 4px var(--hitc, #fff); }
+  .ball { position: absolute; width: 16px; height: 16px; border-radius: 50%; z-index: 3; }
+  .flash { position: absolute; top: 8px; left: 0; right: 0; text-align: center; color: #fff; font-size: 20px; font-weight: 700; pointer-events: none; opacity: 0; transition: opacity .2s; text-shadow: 0 0 6px #000; z-index: 4; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;Rainbow Paddle&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Move the paddle with the &lt;strong&gt;&amp;larr;&lt;/strong&gt; and &lt;strong&gt;&amp;rarr;&lt;/strong&gt; arrow keys to bounce the ball. Miss the ball and you lose all your points — unless you&#x27;ve earned a spare life.&lt;/p&gt;
+  &lt;div class=&quot;hud&quot;&gt;
+    &lt;span class=&quot;badge&quot;&gt;Score &lt;b id=&quot;score&quot;&gt;0&lt;/b&gt;&lt;/span&gt;
+    &lt;span class=&quot;badge lives&quot;&gt;Lives &lt;b id=&quot;lives&quot;&gt;0&lt;/b&gt;&lt;/span&gt;
+    &lt;span class=&quot;badge speed&quot;&gt;Speed &lt;b id=&quot;speed&quot;&gt;1.0x&lt;/b&gt;&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;
+    &lt;div class=&quot;stars&quot; id=&quot;stars&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;paddle&quot; id=&quot;paddle&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;ball&quot; id=&quot;ball&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;flash&quot; id=&quot;flash&quot;&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var FIELD_W = 620, FIELD_H = 400;
+  var PADDLE_W = 100, PADDLE_H = 14, PADDLE_BOTTOM = 10, PADDLE_SPEED = 6;
+  var BALL_SIZE = 16;
+  var BASE_SPEED = 2.4;
+  var running = false, animId = null;
+  var keysDown = {};
+  var paddleX = (FIELD_W - PADDLE_W) / 2;
+  var paddleW = PADDLE_W;
+  var ballX = FIELD_W / 2, ballY = 50;
+  var ballVX = BASE_SPEED, ballVY = BASE_SPEED;
+  var score = 0, lives = 0;
+  var colorIndex = 0;
+  var bigUntil = 0;
+  var lastLifeMilestone = 0, lastBigMilestone = 0;
+
+  var RAINBOW = [&#x27;#ff4d4d&#x27;,&#x27;#ff9f40&#x27;,&#x27;#ffe14d&#x27;,&#x27;#4dff6a&#x27;,&#x27;#4dd2ff&#x27;,&#x27;#4d6aff&#x27;,&#x27;#c04dff&#x27;];
+
+  var field = document.getElementById(&#x27;field&#x27;);
+  var paddle = document.getElementById(&#x27;paddle&#x27;);
+  var ball = document.getElementById(&#x27;ball&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var livesEl = document.getElementById(&#x27;lives&#x27;);
+  var speedEl = document.getElementById(&#x27;speed&#x27;);
+  var flash = document.getElementById(&#x27;flash&#x27;);
+  var flashTimer = null;
+  var paddleHitTimer = null;
+
+  // Audio
+  var audioCtx = null;
+  function beep(freq, dur, type) {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      var o = audioCtx.createOscillator();
+      var g = audioCtx.createGain();
+      o.type = type || &#x27;sine&#x27;;
+      o.frequency.value = freq;
+      g.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.25, audioCtx.currentTime + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(); o.stop(audioCtx.currentTime + dur + 0.02);
+    } catch (_) {}
+  }
+
+  // Trail dots pool
+  var trailDots = [];
+  (function buildTrail() {
+    for (var i = 0; i &lt; 8; i++) {
+      var t = document.createElement(&#x27;div&#x27;);
+      t.className = &#x27;trail&#x27;;
+      t.style.opacity = &#x27;0&#x27;;
+      field.insertBefore(t, ball);
+      trailDots.push(t);
+    }
+  })();
+  var trailIdx = 0;
+
+  // Build twinkling stars
+  (function buildStars() {
+    var starsEl = document.getElementById(&#x27;stars&#x27;);
+    var N = 70;
+    var frag = document.createDocumentFragment();
+    for (var i = 0; i &lt; N; i++) {
+      var s = document.createElement(&#x27;div&#x27;);
+      s.className = &#x27;star&#x27;;
+      var size = Math.random() &lt; 0.75 ? (1 + Math.random() * 1.5) : (2.5 + Math.random() * 2);
+      s.style.width = size.toFixed(1) + &#x27;px&#x27;;
+      s.style.height = size.toFixed(1) + &#x27;px&#x27;;
+      s.style.left = (Math.random() * 100).toFixed(2) + &#x27;%&#x27;;
+      s.style.top = (Math.random() * 100).toFixed(2) + &#x27;%&#x27;;
+      s.style.setProperty(&#x27;--dur&#x27;, (2 + Math.random() * 4).toFixed(2) + &#x27;s&#x27;);
+      s.style.setProperty(&#x27;--min&#x27;, (0.15 + Math.random() * 0.25).toFixed(2));
+      s.style.setProperty(&#x27;--max&#x27;, (0.7 + Math.random() * 0.3).toFixed(2));
+      s.style.animationDelay = (-Math.random() * 6).toFixed(2) + &#x27;s&#x27;;
+      if (size &gt; 2.5) s.style.boxShadow = &#x27;0 0 4px #fff&#x27;;
+      frag.appendChild(s);
+    }
+    starsEl.appendChild(frag);
+  })();
+
+  function showFlash(msg) {
+    flash.textContent = msg;
+    flash.style.opacity = &#x27;1&#x27;;
+    if (flashTimer) clearTimeout(flashTimer);
+    flashTimer = setTimeout(function(){ flash.style.opacity = &#x27;0&#x27;; }, 1200);
+  }
+
+  function speedFactor() {
+    return 1 + score * 0.03;
+  }
+
+  function updateTrail() {
+    var c = RAINBOW[colorIndex % RAINBOW.length];
+    var t = trailDots[trailIdx];
+    t.style.left = ballX + &#x27;px&#x27;;
+    t.style.top = ballY + &#x27;px&#x27;;
+    t.style.background = c;
+    t.style.opacity = &#x27;0.5&#x27;;
+    t.style.transition = &#x27;opacity .35s&#x27;;
+    setTimeout(function(){ t.style.opacity = &#x27;0&#x27;; }, 20);
+    trailIdx = (trailIdx + 1) % trailDots.length;
+  }
+
+  function paint() {
+    var now = performance.now();
+    if (now &lt; bigUntil) paddleW = PADDLE_W * 2;
+    else paddleW = PADDLE_W;
+    paddle.style.width = paddleW + &#x27;px&#x27;;
+    paddleX = Math.max(0, Math.min(FIELD_W - paddleW, paddleX));
+    paddle.style.left = paddleX + &#x27;px&#x27;;
+    ball.style.left = ballX + &#x27;px&#x27;;
+    ball.style.top = ballY + &#x27;px&#x27;;
+    var c = RAINBOW[colorIndex % RAINBOW.length];
+    ball.style.background = c;
+    ball.style.boxShadow = &#x27;0 0 14px &#x27; + c;
+    scoreEl.textContent = score;
+    livesEl.textContent = lives;
+    speedEl.textContent = speedFactor().toFixed(1) + &#x27;x&#x27;;
+  }
+
+  function currentSpeed() {
+    return BASE_SPEED * speedFactor();
+  }
+
+  function resetBall(dir) {
+    ballX = (FIELD_W - BALL_SIZE) / 2;
+    ballY = 50;
+    var s = currentSpeed();
+    ballVX = (Math.random() &lt; 0.5 ? -1 : 1) * s;
+    ballVY = s;
+  }
+
+  function reNormalizeVelocity() {
+    var s = currentSpeed();
+    var mag = Math.hypot(ballVX, ballVY) || 1;
+    ballVX = ballVX / mag * s;
+    ballVY = ballVY / mag * s;
+  }
+
+  function paddleFlash() {
+    var c = RAINBOW[colorIndex % RAINBOW.length];
+    paddle.style.setProperty(&#x27;--hitc&#x27;, c);
+    paddle.classList.add(&#x27;hit&#x27;);
+    if (paddleHitTimer) clearTimeout(paddleHitTimer);
+    paddleHitTimer = setTimeout(function(){ paddle.classList.remove(&#x27;hit&#x27;); }, 130);
+  }
+
+  function tick() {
+    if (!running) return;
+    if (keysDown[&#x27;ArrowLeft&#x27;]) paddleX -= PADDLE_SPEED;
+    if (keysDown[&#x27;ArrowRight&#x27;]) paddleX += PADDLE_SPEED;
+    paddleX = Math.max(0, Math.min(FIELD_W - paddleW, paddleX));
+    ballX += ballVX;
+    ballY += ballVY;
+    updateTrail();
+    if (ballX &lt;= 0) { ballX = 0; ballVX = -ballVX; beep(300,0.05,&#x27;triangle&#x27;); }
+    if (ballX + BALL_SIZE &gt;= FIELD_W) { ballX = FIELD_W - BALL_SIZE; ballVX = -ballVX; beep(300,0.05,&#x27;triangle&#x27;); }
+    if (ballY &lt;= 0) { ballY = 0; ballVY = -ballVY; beep(300,0.05,&#x27;triangle&#x27;); }
+    var paddleTop = FIELD_H - PADDLE_BOTTOM - PADDLE_H;
+    if (ballVY &gt; 0 &amp;&amp;
+        ballY + BALL_SIZE &gt;= paddleTop &amp;&amp;
+        ballY + BALL_SIZE &lt;= paddleTop + PADDLE_H + 8 &amp;&amp;
+        ballX + BALL_SIZE &gt;= paddleX &amp;&amp;
+        ballX &lt;= paddleX + paddleW) {
+      ballVY = -Math.abs(ballVY);
+      ballY = paddleTop - BALL_SIZE;
+      score += 1;
+      colorIndex += 1;
+      reNormalizeVelocity();
+      paddleFlash();
+      beep(520 + (score % 12) * 30, 0.08, &#x27;square&#x27;);
+
+      if (score % 10 === 0 &amp;&amp; score !== lastBigMilestone) {
+        lastBigMilestone = score;
+        bigUntil = performance.now() + 5000;
+        showFlash(&#x27;BIG PADDLE!&#x27;);
+        beep(700,0.2,&#x27;sawtooth&#x27;);
+      }
+      if (score % 20 === 0 &amp;&amp; score !== lastLifeMilestone) {
+        lastLifeMilestone = score;
+        lives += 1;
+        showFlash(&#x27;+1 LIFE!&#x27;);
+        beep(900,0.25,&#x27;sine&#x27;);
+      }
+    }
+    if (ballY &gt;= FIELD_H) {
+      if (lives &gt; 0) {
+        lives -= 1;
+        showFlash(&#x27;LIFE USED&#x27;);
+        beep(220,0.3,&#x27;sawtooth&#x27;);
+      } else {
+        score = 0;
+        lastLifeMilestone = 0;
+        lastBigMilestone = 0;
+        bigUntil = 0;
+        showFlash(&#x27;MISSED! SCORE RESET&#x27;);
+        beep(140,0.4,&#x27;sawtooth&#x27;);
+      }
+      resetBall();
+    }
+    paint();
+    animId = requestAnimationFrame(tick);
+  }
+
+  function startGame() {
+    if (running) return;
+    score = 0;
+    lives = 0;
+    colorIndex = 0;
+    bigUntil = 0;
+    lastLifeMilestone = 0;
+    lastBigMilestone = 0;
+    paddleW = PADDLE_W;
+    paddleX = (FIELD_W - PADDLE_W) / 2;
+    for (var k in keysDown) keysDown[k] = false;
+    resetBall();
+    paint();
+    running = true;
+    animId = requestAnimationFrame(tick);
+  }
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27; || e.key === &#x27;ArrowRight&#x27;) {
+      keysDown[e.key] = true;
+      e.preventDefault();
+    }
+  });
+  window.addEventListener(&#x27;keyup&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27; || e.key === &#x27;ArrowRight&#x27;) keysDown[e.key] = false;
+  });
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  paint();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

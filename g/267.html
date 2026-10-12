@@ -1,0 +1,635 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>✨ Bloom Blocks: Enchanted Worlds ✨</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>✨ Bloom Blocks: Enchanted Worlds ✨</b> &middot; Game 267 &middot; Amateur producer &middot; Basic game: Falling blocks</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #0e1630; color: #eef; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 6px 10px; box-sizing: border-box; height: 100%; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  h1 { margin: 0; font-size: 19px; font-weight: 800; background: linear-gradient(90deg,#ff6ec4,#7873f5,#42e695,#ffd166); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .instructions { font-size: 16px; color: #cdd6ff; max-width: 668px; margin: 0; line-height: 1.2; text-align: center; }
+  .layout { display: flex; gap: 8px; align-items: flex-start; justify-content: center; }
+  .col { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .score { font-size: 14px; color: #dfe; margin: 0; font-weight: 700; }
+  .field { position: relative; width: 160px; height: 256px; flex-shrink: 0; background: #141d3d; border-radius: 8px; overflow: hidden; box-shadow: inset 0 0 0 2px #2a3765, 0 0 12px rgba(120,115,245,.4); }
+  .block { position: absolute; box-sizing: border-box; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+  .power { box-shadow: 0 0 8px 2px #fff; animation: glow 0.9s infinite alternate; z-index:2; }
+  @keyframes glow { from{filter:brightness(1);} to{filter:brightness(1.7);} }
+  .boom { position:absolute; border-radius:50%; background: radial-gradient(#fff,#ff9,#f60,transparent); animation: boom .4s forwards; pointer-events:none; z-index:5; }
+  @keyframes boom { from{transform:scale(.2);opacity:1;} to{transform:scale(2.4);opacity:0;} }
+  .world { position: relative; width: 280px; height: 280px; border-radius: 10px; overflow: hidden; box-shadow: inset 0 0 0 3px rgba(255,255,255,.15), 0 0 14px rgba(0,0,0,.4); }
+  .worldcell { position: absolute; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 26px; cursor: pointer; }
+  .worldcell.creature { animation: shimmer 1.4s infinite; }
+  @keyframes shimmer { 0%,100%{filter:brightness(1);} 50%{filter:brightness(1.6) drop-shadow(0 0 4px gold);} }
+  .pop { animation: pop .4s; }
+  @keyframes pop { 0%{transform:scale(0);} 60%{transform:scale(1.4);} 100%{transform:scale(1);} }
+  .msg { font-size: 13px; color: #ffd166; min-height: 15px; font-weight: 700; text-align:center; }
+  .label { font-size: 12px; color: #9fb0ff; font-weight: 800; text-transform: uppercase; letter-spacing:.5px; }
+  .panel { width: 150px; background: rgba(255,255,255,.06); border-radius: 8px; padding: 5px 6px; box-sizing: border-box; }
+  .panel h3 { margin: 3px 0 2px; font-size: 12px; color: #9fb0ff; }
+  .coll { display: flex; flex-wrap: wrap; gap: 1px; font-size: 16px; min-height: 18px; }
+  .stat { font-size: 11px; color: #bcc; margin-top:3px; }
+  .legend { font-size: 11px; color: #cdd6ff; line-height:1.5; }
+  #picker { position: absolute; inset: 0; background: rgba(14,22,48,.97); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; z-index: 20; }
+  #picker.hidden { display: none; }
+  .themes { display: flex; gap: 8px; flex-wrap: wrap; justify-content:center; max-width:680px; }
+  .theme-btn { cursor: pointer; border: 3px solid transparent; border-radius: 12px; padding: 10px; width: 150px; text-align: center; background: rgba(255,255,255,.08); transition: transform .15s; }
+  .theme-btn:hover { transform: translateY(-4px); border-color: #42e695; }
+  .theme-btn .icon { font-size: 34px; }
+  .theme-btn .name { font-size: 14px; font-weight: 800; margin-top: 4px; color:#fff; }
+  .theme-btn .desc { font-size: 11px; color: #b8c2f0; margin-top: 2px; }
+  .picker-title { font-size: 18px; font-weight: 800; color: #ffd166; text-align:center; }
+  .flash { animation: flashBoost .5s infinite alternate; }
+  @keyframes flashBoost { from{box-shadow: inset 0 0 0 2px #2a3765, 0 0 12px rgba(120,115,245,.4);} to{box-shadow: inset 0 0 0 3px gold, 0 0 22px gold;} }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot; style=&quot;position:relative;&quot;&gt;
+  &lt;h1&gt;✨ Bloom Blocks: Enchanted Worlds ✨&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;&lt;strong&gt;&amp;larr;/&amp;rarr;&lt;/strong&gt; move, &lt;strong&gt;&amp;uarr;&lt;/strong&gt; rotate, &lt;strong&gt;&amp;darr;&lt;/strong&gt; drop. Clear rows to grow your world — pop glowing power blocks (🌈💣🌱⭐💎) and click shimmering tiles to discover hidden creatures!&lt;/p&gt;
+  &lt;div class=&quot;layout&quot;&gt;
+    &lt;div class=&quot;col&quot;&gt;
+      &lt;div class=&quot;label&quot;&gt;Drop Zone&lt;/div&gt;
+      &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;&lt;/div&gt;
+      &lt;div class=&quot;score&quot;&gt;Rows &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt; · 💎&lt;span id=&quot;gems&quot;&gt;0&lt;/span&gt; · Pts &lt;span id=&quot;pts&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;msg&quot; id=&quot;msg&quot;&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;col&quot;&gt;
+      &lt;div class=&quot;label&quot; id=&quot;worldlabel&quot;&gt;Your World&lt;/div&gt;
+      &lt;div class=&quot;world&quot; id=&quot;world&quot;&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;col&quot;&gt;
+      &lt;div class=&quot;panel&quot;&gt;
+        &lt;h3&gt;🐾 Creatures Found&lt;/h3&gt;
+        &lt;div class=&quot;coll&quot; id=&quot;collCreatures&quot;&gt;&lt;/div&gt;
+        &lt;h3&gt;💎 Treasures&lt;/h3&gt;
+        &lt;div class=&quot;coll&quot; id=&quot;collTreasures&quot;&gt;&lt;/div&gt;
+        &lt;div class=&quot;stat&quot; id=&quot;statLine&quot;&gt;&lt;/div&gt;
+        &lt;div class=&quot;legend&quot;&gt;
+          🌈 fills any gap&lt;br&gt;
+          💣 explodes nearby&lt;br&gt;
+          🌱 plants a tile&lt;br&gt;
+          ⭐ speed boost&lt;br&gt;
+          💎 bonus gems
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div id=&quot;picker&quot;&gt;
+    &lt;div class=&quot;picker-title&quot;&gt;Pick your enchanted world, then press Start below!&lt;/div&gt;
+    &lt;div class=&quot;themes&quot;&gt;
+      &lt;div class=&quot;theme-btn&quot; data-theme=&quot;forest&quot;&gt;
+        &lt;div class=&quot;icon&quot;&gt;🌲&lt;/div&gt;&lt;div class=&quot;name&quot;&gt;Enchanted Forest&lt;/div&gt;
+        &lt;div class=&quot;desc&quot;&gt;Glowing trees, fairies &amp; foxes&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;theme-btn&quot; data-theme=&quot;village&quot;&gt;
+        &lt;div class=&quot;icon&quot;&gt;🏘️&lt;/div&gt;&lt;div class=&quot;name&quot;&gt;Tiny Villages&lt;/div&gt;
+        &lt;div class=&quot;desc&quot;&gt;Cozy homes, mills &amp; farm friends&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;theme-btn&quot; data-theme=&quot;kingdom&quot;&gt;
+        &lt;div class=&quot;icon&quot;&gt;🏰&lt;/div&gt;&lt;div class=&quot;name&quot;&gt;Crazy Kingdom&lt;/div&gt;
+        &lt;div class=&quot;desc&quot;&gt;Castles, dragons &amp; wild wizards&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;theme-btn&quot; data-theme=&quot;underworld&quot;&gt;
+        &lt;div class=&quot;icon&quot;&gt;🌊&lt;/div&gt;&lt;div class=&quot;name&quot;&gt;Underworld Waters&lt;/div&gt;
+        &lt;div class=&quot;desc&quot;&gt;Coral palaces, mermaids &amp; whales&lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;stat&quot; id=&quot;pickHint&quot;&gt;Selected: Enchanted Forest&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  var CELL = 16;
+  var COLS = 10, ROWS = 16;
+  var BASE_MS = 520;
+  var running = false, dropId = null;
+  var boostUntil = 0;
+  var grid = [];       // color or null
+  var powerGrid = [];  // power-type string or null baked into locked blocks
+  var piece = null;
+  var score = 0, gems = 0, pts = 0;
+
+  var field = document.getElementById(&#x27;field&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var gemsEl = document.getElementById(&#x27;gems&#x27;);
+  var ptsEl = document.getElementById(&#x27;pts&#x27;);
+  var msgEl = document.getElementById(&#x27;msg&#x27;);
+  var worldEl = document.getElementById(&#x27;world&#x27;);
+  var worldLabel = document.getElementById(&#x27;worldlabel&#x27;);
+  var picker = document.getElementById(&#x27;picker&#x27;);
+  var pickHint = document.getElementById(&#x27;pickHint&#x27;);
+
+  var WCOLS = 7, WROWS = 7;
+  var world = [];        // emoji or null
+  var creatureCells = {}; // index -&gt; creature emoji (hidden until clicked)
+  var revealed = {};
+  var nextWorldIndex = 0;
+
+  var RAINBOW = [&#x27;#ff4d4d&#x27;,&#x27;#ff9e2c&#x27;,&#x27;#ffe74c&#x27;,&#x27;#4dff88&#x27;,&#x27;#4dd2ff&#x27;,&#x27;#9d5cff&#x27;,&#x27;#ff6ec4&#x27;];
+
+  var THEMES = {
+    forest: {
+      name:&#x27;Enchanted Forest&#x27;, bg:&#x27;linear-gradient(#1e5631,#123d24)&#x27;,
+      base:[&#x27;🌲&#x27;,&#x27;🌿&#x27;,&#x27;🍄&#x27;], plant:[&#x27;🌳&#x27;,&#x27;🌸&#x27;,&#x27;🍄&#x27;,&#x27;🌻&#x27;,&#x27;🌼&#x27;],
+      decor:[&#x27;🧚&#x27;,&#x27;🏕️&#x27;,&#x27;🪵&#x27;,&#x27;🌈&#x27;], creatures:[&#x27;🦊&#x27;,&#x27;🦉&#x27;,&#x27;🦌&#x27;,&#x27;🐿️&#x27;,&#x27;🐇&#x27;,&#x27;🐺&#x27;,&#x27;🦋&#x27;,&#x27;🐸&#x27;],
+      colors:[&#x27;#e74c3c&#x27;,&#x27;#f39c12&#x27;,&#x27;#f1c40f&#x27;,&#x27;#2ecc71&#x27;,&#x27;#1abc9c&#x27;,&#x27;#9b59b6&#x27;,&#x27;#e91e63&#x27;],
+      start:&#x27;🧚&#x27;
+    },
+    village: {
+      name:&#x27;Tiny Villages&#x27;, bg:&#x27;linear-gradient(#a8d8a0,#7cbf74)&#x27;,
+      base:[&#x27;🌾&#x27;,&#x27;🌳&#x27;,&#x27;🚜&#x27;], plant:[&#x27;🏡&#x27;,&#x27;🌷&#x27;,&#x27;🌻&#x27;,&#x27;🍎&#x27;,&#x27;🌽&#x27;],
+      decor:[&#x27;⛪&#x27;,&#x27;🏫&#x27;,&#x27;🌉&#x27;,&#x27;🎡&#x27;], creatures:[&#x27;🐄&#x27;,&#x27;🐖&#x27;,&#x27;🐑&#x27;,&#x27;🐔&#x27;,&#x27;🐕&#x27;,&#x27;🐈&#x27;,&#x27;🦆&#x27;,&#x27;🐝&#x27;],
+      colors:[&#x27;#e67e22&#x27;,&#x27;#e74c3c&#x27;,&#x27;#27ae60&#x27;,&#x27;#f1c40f&#x27;,&#x27;#3498db&#x27;,&#x27;#e91e63&#x27;,&#x27;#16a085&#x27;],
+      start:&#x27;🏘️&#x27;
+    },
+    kingdom: {
+      name:&#x27;Crazy Kingdom&#x27;, bg:&#x27;linear-gradient(#6b3fa0,#3d2260)&#x27;,
+      base:[&#x27;🏰&#x27;,&#x27;🗿&#x27;,&#x27;⚔️&#x27;], plant:[&#x27;🌹&#x27;,&#x27;👑&#x27;,&#x27;🛡️&#x27;,&#x27;💐&#x27;,&#x27;🏵️&#x27;],
+      decor:[&#x27;🧙&#x27;,&#x27;🐉&#x27;,&#x27;🎪&#x27;,&#x27;🎠&#x27;], creatures:[&#x27;🐲&#x27;,&#x27;🦄&#x27;,&#x27;🦅&#x27;,&#x27;🐴&#x27;,&#x27;🦁&#x27;,&#x27;🐆&#x27;,&#x27;🦚&#x27;,&#x27;🐢&#x27;],
+      colors:[&#x27;#8e44ad&#x27;,&#x27;#e74c3c&#x27;,&#x27;#f39c12&#x27;,&#x27;#f1c40f&#x27;,&#x27;#3498db&#x27;,&#x27;#2ecc71&#x27;,&#x27;#ff6ec4&#x27;],
+      start:&#x27;🏰&#x27;
+    },
+    underworld: {
+      name:&#x27;Underworld Waters&#x27;, bg:&#x27;linear-gradient(#0e5a8a,#062f4a)&#x27;,
+      base:[&#x27;🌊&#x27;,&#x27;🪸&#x27;,&#x27;🐚&#x27;], plant:[&#x27;🏝️&#x27;,&#x27;🌴&#x27;,&#x27;🐠&#x27;,&#x27;⚓&#x27;,&#x27;🚢&#x27;],
+      decor:[&#x27;🧜&#x27;,&#x27;🏛️&#x27;,&#x27;⛵&#x27;,&#x27;🦈&#x27;], creatures:[&#x27;🐬&#x27;,&#x27;🐙&#x27;,&#x27;🐳&#x27;,&#x27;🦭&#x27;,&#x27;🐢&#x27;,&#x27;🦑&#x27;,&#x27;🦀&#x27;,&#x27;🐡&#x27;],
+      colors:[&#x27;#1abc9c&#x27;,&#x27;#3498db&#x27;,&#x27;#16a085&#x27;,&#x27;#2980b9&#x27;,&#x27;#48dbfb&#x27;,&#x27;#e74c3c&#x27;,&#x27;#feca57&#x27;],
+      start:&#x27;🧜&#x27;
+    }
+  };
+
+  // Power block types with icons + probability weights
+  var POWERS = [
+    { type:&#x27;rainbow&#x27;, icon:&#x27;🌈&#x27; },
+    { type:&#x27;bomb&#x27;,    icon:&#x27;💣&#x27; },
+    { type:&#x27;seed&#x27;,    icon:&#x27;🌱&#x27; },
+    { type:&#x27;star&#x27;,    icon:&#x27;⭐&#x27; },
+    { type:&#x27;gem&#x27;,     icon:&#x27;💎&#x27; },
+  ];
+  var GEMS = [&#x27;💎&#x27;,&#x27;💍&#x27;,&#x27;👑&#x27;,&#x27;🏆&#x27;,&#x27;🥇&#x27;,&#x27;🔷&#x27;,&#x27;🪙&#x27;,&#x27;💠&#x27;];
+
+  var theme = THEMES.forest, themeKey = &#x27;forest&#x27;;
+  var collected = { creatures:{}, treasures:{} };
+
+  function newGrid() {
+    grid = []; powerGrid = [];
+    for (var r=0;r&lt;ROWS;r++){ var a=[],b=[]; for(var c=0;c&lt;COLS;c++){a.push(null);b.push(null);} grid.push(a);powerGrid.push(b);}
+  }
+
+  function newWorld() {
+    world=[]; creatureCells={}; revealed={};
+    for (var i=0;i&lt;WCOLS*WROWS;i++) world.push(null);
+    var startIdx = Math.floor(WCOLS*WROWS/2);
+    world[startIdx] = theme.start;
+    nextWorldIndex = 0;
+    worldEl.style.background = theme.bg;
+    paintWorld();
+  }
+
+  function plantTile(specific) {
+    var t = specific || theme.base.concat(theme.plant)[Math.floor(Math.random()*(theme.base.length+theme.plant.length))];
+    var placeIdx;
+    if (nextWorldIndex &gt;= world.length) {
+      var empty=[]; for(var i=0;i&lt;world.length;i++) if(!world[i]) empty.push(i);
+      if (!empty.length) { placeIdx = Math.floor(Math.random()*world.length); }
+      else placeIdx = empty[Math.floor(Math.random()*empty.length)];
+    } else {
+      while (nextWorldIndex&lt;world.length &amp;&amp; world[nextWorldIndex]) nextWorldIndex++;
+      placeIdx = (nextWorldIndex&lt;world.length)? nextWorldIndex++ : Math.floor(Math.random()*world.length);
+    }
+    world[placeIdx] = t;
+    // ~18% chance this new tile secretly hides a creature to discover
+    if (!creatureCells[placeIdx] &amp;&amp; !revealed[placeIdx] &amp;&amp; Math.random() &lt; 0.18) {
+      creatureCells[placeIdx] = theme.creatures[Math.floor(Math.random()*theme.creatures.length)];
+    }
+    paintWorld(true, placeIdx);
+  }
+
+  var SHAPES = [
+    [[0,0],[1,0],[0,1],[1,1]],
+    [[0,0],[1,0],[2,0],[3,0]],
+    [[0,0],[1,0],[2,0],[1,1]],
+    [[0,0],[0,1],[1,1],[2,1]],
+    [[2,0],[0,1],[1,1],[2,1]],
+    [[1,0],[2,0],[0,1],[1,1]],
+    [[0,0],[1,0],[1,1],[2,1]],
+  ];
+
+  function randomPiece() {
+    var s = SHAPES[Math.floor(Math.random()*SHAPES.length)];
+    var cells = s.map(function(c){return [c[0],c[1]];});
+    var color = theme.colors[Math.floor(Math.random()*theme.colors.length)];
+    var powers = {};
+    if (Math.random() &lt; 0.35) {
+      var idx = Math.floor(Math.random()*cells.length);
+      powers[idx] = POWERS[Math.floor(Math.random()*POWERS.length)].type;
+    }
+    return { cells:cells, color:color, powers:powers, x:3, y:0 };
+  }
+
+  function powerIcon(type){ for(var i=0;i&lt;POWERS.length;i++) if(POWERS[i].type===type) return POWERS[i].icon; return null; }
+
+  function pieceCells(p){ return p.cells.map(function(c,i){ return {x:p.x+c[0],y:p.y+c[1],power:p.powers[i]||null}; }); }
+
+  function collides(p){
+    var cells=pieceCells(p);
+    for(var i=0;i&lt;cells.length;i++){var cx=cells[i].x,cy=cells[i].y;
+      if(cx&lt;0||cx&gt;=COLS||cy&gt;=ROWS) return true;
+      if(cy&gt;=0 &amp;&amp; grid[cy][cx]) return true;}
+    return false;
+  }
+
+  function rotate(p){
+    var maxY=0; p.cells.forEach(function(c){if(c[1]&gt;maxY)maxY=c[1];});
+    var rot=p.cells.map(function(c){return [maxY-c[1],c[0]];});
+    return {cells:rot,color:p.color,powers:p.powers,x:p.x,y:p.y};
+  }
+
+  function spawnPiece(){ piece=randomPiece(); return !collides(piece); }
+
+  function lockPiece(){
+    var cells=pieceCells(piece);
+    for(var i=0;i&lt;cells.length;i++){var c=cells[i];
+      if(c.y&gt;=0&amp;&amp;c.y&lt;ROWS&amp;&amp;c.x&gt;=0&amp;&amp;c.x&lt;COLS){ grid[c.y][c.x]=piece.color; powerGrid[c.y][c.x]=c.power; }}
+    piece=null;
+  }
+
+  function explodeAt(r,c){
+    var fx = field.getBoundingClientRect ? null : null;
+    // visual explosion
+    var b=document.createElement(&#x27;div&#x27;); b.className=&#x27;boom&#x27;;
+    b.style.left=(c*CELL-CELL)+&#x27;px&#x27;; b.style.top=(r*CELL-CELL)+&#x27;px&#x27;;
+    b.style.width=(CELL*3)+&#x27;px&#x27;; b.style.height=(CELL*3)+&#x27;px&#x27;;
+    field.appendChild(b); setTimeout(function(){ if(b.parentNode)b.parentNode.removeChild(b); },400);
+    for(var dr=-1;dr&lt;=1;dr++) for(var dc=-1;dc&lt;=1;dc++){
+      var nr=r+dr,nc=c+dc;
+      if(nr&gt;=0&amp;&amp;nr&lt;ROWS&amp;&amp;nc&gt;=0&amp;&amp;nc&lt;COLS){ grid[nr][nc]=null; powerGrid[nr][nc]=null; }
+    }
+  }
+
+  function collapseGravity(){
+    // let blocks fall into gaps after explosions
+    for(var c=0;c&lt;COLS;c++){
+      var stack=[];
+      for(var r=ROWS-1;r&gt;=0;r--){ if(grid[r][c]){ stack.push({col:grid[r][c],pw:powerGrid[r][c]}); } }
+      for(var r2=ROWS-1;r2&gt;=0;r2--){
+        if(stack.length){ var it=stack.shift(); grid[r2][c]=it.col; powerGrid[r2][c]=it.pw; }
+        else { grid[r2][c]=null; powerGrid[r2][c]=null; }
+      }
+    }
+  }
+
+  function activateBombs(){
+    var found=false;
+    for(var r=0;r&lt;ROWS;r++) for(var c=0;c&lt;COLS;c++){
+      if(powerGrid[r][c]===&#x27;bomb&#x27;){ explodeAt(r,c); found=true; }
+    }
+    if(found){ collapseGravity(); pts+=25; }
+    return found;
+  }
+
+  function clearFullRows(){
+    var cleared=0; var foundPowers=[];
+    for(var r=ROWS-1;r&gt;=0;r--){
+      var full=true;
+      for(var c=0;c&lt;COLS;c++){
+        // rainbow blocks count as filling any gap
+        if(!grid[r][c]) { full=false; break; }
+      }
+      if(full){
+        for(var c2=0;c2&lt;COLS;c2++){ if(powerGrid[r][c2]) foundPowers.push(powerGrid[r][c2]); }
+        grid.splice(r,1); powerGrid.splice(r,1);
+        var e=[],pe=[]; for(var c3=0;c3&lt;COLS;c3++){e.push(null);pe.push(null);}
+        grid.unshift(e); powerGrid.unshift(pe);
+        cleared++; r++;
+      }
+    }
+    if(cleared&gt;0){
+      score+=cleared; scoreEl.textContent=score;
+      pts += cleared*10*(boostUntil&gt;Date.now()?2:1);
+      for(var k=0;k&lt;cleared;k++) plantTile();
+      var msgs=[];
+      foundPowers.forEach(function(pw){
+        if(pw===&#x27;gem&#x27;){ var g=2+Math.floor(Math.random()*3); gems+=g; gemsEl.textContent=gems;
+          var t=GEMS[Math.floor(Math.random()*GEMS.length)]; collected.treasures[t]=1; plantTile(t); msgs.push(&#x27;💎+&#x27;+g); }
+        else if(pw===&#x27;seed&#x27;){ plantTile(); plantTile(); msgs.push(&#x27;🌱 planted!&#x27;); }
+        else if(pw===&#x27;star&#x27;){ boostUntil=Date.now()+6000; pts+=30; startBoost(); msgs.push(&#x27;⭐ boost!&#x27;); }
+        else if(pw===&#x27;rainbow&#x27;){ pts+=20; gems+=1; gemsEl.textContent=gems; msgs.push(&#x27;🌈 bonus!&#x27;); }
+        else if(pw===&#x27;bomb&#x27;){ /* handled after */ }
+      });
+      ptsEl.textContent=pts;
+      updateCollections();
+      if(msgs.length) msgEl.textContent = msgs.join(&#x27; &#x27;);
+      else { var p=[&#x27;Lovely!&#x27;,&#x27;Beautiful!&#x27;,&#x27;Wonderful!&#x27;,&#x27;Amazing!&#x27;,&#x27;Magical!&#x27;]; msgEl.textContent=p[Math.floor(Math.random()*p.length)]+&#x27; +&#x27;+cleared; }
+      setTimeout(function(){ if(msgEl) msgEl.textContent=&#x27;&#x27;; },1500);
+    }
+  }
+
+  function startBoost(){
+    field.classList.add(&#x27;flash&#x27;);
+    setTimeout(function(){ field.classList.remove(&#x27;flash&#x27;); }, 6000);
+    restartDrop();
+    setTimeout(function(){ if(running) restartDrop(); }, 6000);
+  }
+
+  function currentDropMs(){ return boostUntil&gt;Date.now() ? 200 : BASE_MS; }
+  function restartDrop(){ if(dropId) clearInterval(dropId); if(running) dropId=setInterval(stepDown, currentDropMs()); }
+
+  function paint(){
+    field.innerHTML=&#x27;&#x27;;
+    for(var r=0;r&lt;ROWS;r++) for(var c=0;c&lt;COLS;c++){ if(grid[r][c]) drawBlock(c,r,grid[r][c],powerGrid[r][c]); }
+    if(piece){ var cells=pieceCells(piece); for(var i=0;i&lt;cells.length;i++){ if(cells[i].y&gt;=0) drawBlock(cells[i].x,cells[i].y,piece.color,cells[i].power); } }
+  }
+
+  function drawBlock(cx,cy,color,power){
+    var el=document.createElement(&#x27;div&#x27;);
+    el.className=&#x27;block&#x27;+(power?&#x27; power&#x27;:&#x27;&#x27;);
+    el.style.left=(cx*CELL)+&#x27;px&#x27;; el.style.top=(cy*CELL)+&#x27;px&#x27;;
+    el.style.width=CELL+&#x27;px&#x27;; el.style.height=CELL+&#x27;px&#x27;;
+    if(power===&#x27;rainbow&#x27;){ el.style.background=&#x27;linear-gradient(45deg,#ff4d4d,#ffe74c,#4dff88,#4dd2ff,#9d5cff)&#x27;; }
+    else { el.style.background=&#x27;linear-gradient(135deg,&#x27;+color+&#x27;,rgba(255,255,255,.5) 200%)&#x27;; el.style.background=color; }
+    el.style.boxShadow=&#x27;inset -2px -2px 3px rgba(0,0,0,.3), inset 2px 2px 3px rgba(255,255,255,.5)&#x27;;
+    el.style.border=&#x27;1px solid rgba(255,255,255,.25)&#x27;;
+    if(power) el.textContent=powerIcon(power);
+    field.appendChild(el);
+  }
+
+  function paintWorld(animate,animIdx){
+    worldEl.innerHTML=&#x27;&#x27;;
+    for(var i=0;i&lt;world.length;i++){
+      var wc=i%WCOLS, wr=Math.floor(i/WCOLS);
+      var isCreatureHidden = creatureCells[i] &amp;&amp; !revealed[i];
+      var content = world[i];
+      if (revealed[i]) content = revealed[i];
+      if(!content &amp;&amp; !isCreatureHidden) continue;
+      var el=document.createElement(&#x27;div&#x27;);
+      el.className=&#x27;worldcell&#x27;+((animate&amp;&amp;i===animIdx)?&#x27; pop&#x27;:&#x27;&#x27;)+(isCreatureHidden?&#x27; creature&#x27;:&#x27;&#x27;);
+      el.style.left=(wc*40)+&#x27;px&#x27;; el.style.top=(wr*40)+&#x27;px&#x27;;
+      el.textContent = content || &#x27;❔&#x27;;
+      (function(idx){ el.addEventListener(&#x27;click&#x27;, function(){ discover(idx); }); })(i);
+      worldEl.appendChild(el);
+    }
+  }
+
+  function discover(idx){
+    if(creatureCells[idx] &amp;&amp; !revealed[idx]){
+      var cr = creatureCells[idx];
+      revealed[idx] = cr;
+      collected.creatures[cr]=1;
+      gems += 1; gemsEl.textContent=gems;
+      pts += 15; ptsEl.textContent=pts;
+      msgEl.textContent = &#x27;Discovered &#x27;+cr+&#x27;! +1💎&#x27;;
+      setTimeout(function(){ if(msgEl) msgEl.textContent=&#x27;&#x27;; },1500);
+      updateCollections();
+      paintWorld(true, idx);
+    }
+  }
+
+  function updateCollections(){
+    fillColl(&#x27;collCreatures&#x27;, collected.creatures);
+    fillColl(&#x27;collTreasures&#x27;, collected.treasures);
+    var cN=Object.keys(collected.creatures).length, tN=Object.keys(collected.treasures).length;
+    document.getElementById(&#x27;statLine&#x27;).textContent=&#x27;Creatures &#x27;+cN+&#x27; · Treasures &#x27;+tN;
+  }
+  function fillColl(id,obj){ var el=document.getElementById(id); el.innerHTML=&#x27;&#x27;; Object.keys(obj).forEach(function(k){var s=document.createElement(&#x27;span&#x27;);s.textContent=k;el.appendChild(s);}); }
+
+  function stepDown(){
+    if(!piece) return;
+    var next={cells:piece.cells,color:piece.color,powers:piece.powers,x:piece.x,y:piece.y+1};
+    if(collides(next)){
+      lockPiece();
+      var didBomb = activateBombs();
+      clearFullRows();
+      if(didBomb){ ptsEl.textContent=pts; msgEl.textContent=&#x27;💥 Boom!&#x27;; setTimeout(function(){if(msgEl&amp;&amp;msgEl.textContent===&#x27;💥 Boom!&#x27;)msgEl.textContent=&#x27;&#x27;;},900); }
+      if(!spawnPiece()){ endGame(); paint(); msgEl.textContent=&#x27;Blocks reached the top — press Start to rebuild!&#x27;; return; }
+    } else { piece=next; }
+    paint();
+  }
+
+  function move(dx){ if(!running||!piece) return; var n={cells:piece.cells,color:piece.color,powers:piece.powers,x:piece.x+dx,y:piece.y}; if(!collides(n)){piece=n;paint();} }
+  function doRotate(){ if(!running||!piece) return; var r=rotate(piece); var kicks=[0,-1,1,-2,2];
+    for(var k=0;k&lt;kicks.length;k++){ var t={cells:r.cells,color:r.color,powers:r.powers,x:r.x+kicks[k],y:r.y}; if(!collides(t)){piece=t;paint();return;} } }
+
+  function endGame(){ running=false; if(dropId){clearInterval(dropId);dropId=null;} }
+
+  function startGame(){
+    theme=THEMES[themeKey]; worldLabel.textContent=theme.name;
+    picker.classList.add(&#x27;hidden&#x27;);
+    score=0;gems=0;pts=0;boostUntil=0;
+    scoreEl.textContent=&#x27;0&#x27;;gemsEl.textContent=&#x27;0&#x27;;ptsEl.textContent=&#x27;0&#x27;;
+    collected={creatures:{},treasures:{}};
+    msgEl.textContent=&#x27;&#x27;; field.classList.remove(&#x27;flash&#x27;);
+    newGrid(); newWorld(); updateCollections();
+    spawnPiece(); paint();
+    running=true; if(dropId)clearInterval(dropId); dropId=setInterval(stepDown, currentDropMs());
+  }
+  function stopGame(){ if(!running)return; running=false; if(dropId){clearInterval(dropId);dropId=null;} }
+
+  document.querySelectorAll(&#x27;.theme-btn&#x27;).forEach(function(btn){
+    btn.addEventListener(&#x27;click&#x27;, function(){
+      themeKey=btn.getAttribute(&#x27;data-theme&#x27;);
+      pickHint.textContent=&#x27;Selected: &#x27;+THEMES[themeKey].name;
+      document.querySelectorAll(&#x27;.theme-btn&#x27;).forEach(function(b){b.style.borderColor=&#x27;transparent&#x27;;});
+      btn.style.borderColor=&#x27;#42e695&#x27;;
+    });
+  });
+
+  window.addEventListener(&#x27;keydown&#x27;, function(e){
+    if(e.key===&#x27;ArrowLeft&#x27;){move(-1);e.preventDefault();}
+    else if(e.key===&#x27;ArrowRight&#x27;){move(1);e.preventDefault();}
+    else if(e.key===&#x27;ArrowDown&#x27;){if(running)stepDown();e.preventDefault();}
+    else if(e.key===&#x27;ArrowUp&#x27;){doRotate();e.preventDefault();}
+  });
+  window.addEventListener(&#x27;message&#x27;, function(e){
+    if(!e.data||typeof e.data!==&#x27;object&#x27;)return;
+    if(e.data.type===&#x27;wd_start&#x27;)startGame();
+    else if(e.data.type===&#x27;wd_stop&#x27;)stopGame();
+  });
+
+  // Initial paint (stopped, picker shown)
+  newGrid(); newWorld(); piece=randomPiece(); paint();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

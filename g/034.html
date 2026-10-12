@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Snake</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>Snake</b> &middot; Game 034 &middot; Amateur producer &middot; Basic game: Snake</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #222; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 14px; background: white; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 8px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 600; }
+  .instructions { font-size: 16px; color: #666; max-width: 600px; margin: 0; line-height: 1.35; text-align: center; }
+  .topbar { width: 600px; display: flex; justify-content: space-between; align-items: center; }
+  .score { font-size: 22px; color: #555; margin: 0; }
+  .timer { font-size: 22px; font-weight: 700; color: #e11; margin: 0; font-variant-numeric: tabular-nums; }
+  .field { position: relative; width: 600px; height: 400px; flex-shrink: 0; margin: 0; background: #ececec; border-radius: 8px; overflow: hidden; border: 5px solid #000; box-sizing: content-box; }
+  .cell { position: absolute; box-sizing: border-box; }
+  .snake { background: #555; border-radius: 2px; }
+  .food { background: #444; border-radius: 50%; }
+  .field.over .snake { background: #e11 !important; }
+  .field.over .food { background: #e11 !important; }
+  .gameover {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0.5);
+    color: #e11; font-size: 46px; font-weight: 800; letter-spacing: 2px;
+    text-shadow: 0 0 8px rgba(255,255,255,0.9);
+    opacity: 0; pointer-events: none; white-space: nowrap;
+  }
+  .gameover.show { animation: pop 1.4s ease-out forwards, pulse 0.8s ease-in-out 1.4s infinite; }
+  @keyframes pop {
+    0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+    60%  { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
+    100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  }
+  @keyframes pulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(1);   text-shadow: 0 0 8px rgba(255,0,0,0.4); }
+    50%      { transform: translate(-50%, -50%) scale(1.08); text-shadow: 0 0 18px rgba(255,0,0,0.8); }
+  }
+  .difficulty { display: flex; gap: 16px; margin-top: 4px; }
+  .diff-btn {
+    font-size: 18px; font-weight: 700; padding: 8px 24px; border: 3px solid transparent;
+    border-radius: 8px; cursor: pointer; color: white; opacity: 0.65; transition: opacity 0.15s, transform 0.1s;
+  }
+  .diff-btn:hover { opacity: 0.85; }
+  .diff-btn.easy { background: #1a9e3a; }
+  .diff-btn.hard { background: #e11; }
+  .diff-btn.selected { opacity: 1; border-color: #000; transform: scale(1.05); }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;Snake&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Steer the snake with the arrow keys, eat food to grow, and speed climbs as you go. Choose Easy or Hard below, then press the &lt;strong&gt;Start&lt;/strong&gt;/&lt;strong&gt;Restart&lt;/strong&gt; button below the game.&lt;/p&gt;
+  &lt;div class=&quot;topbar&quot;&gt;
+    &lt;div class=&quot;score&quot;&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;timer&quot;&gt;Time: &lt;span id=&quot;timer&quot;&gt;0&lt;/span&gt;s&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;
+    &lt;div class=&quot;gameover&quot; id=&quot;gameover&quot;&gt;GAME IS OVER&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;difficulty&quot;&gt;
+    &lt;button class=&quot;diff-btn easy selected&quot; id=&quot;btnEasy&quot;&gt;EASY&lt;/button&gt;
+    &lt;button class=&quot;diff-btn hard&quot; id=&quot;btnHard&quot;&gt;HARD&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var CELL = 20;
+  var DOT = 10;
+  var COLS = 30, ROWS = 20;
+  var MIN_TICK = 40;
+  var difficulty = &#x27;easy&#x27;;
+  // Speed settings per difficulty.
+  var SETTINGS = {
+    easy: { base: 200, step: 3 },
+    hard: { base: 110, step: 5 }
+  };
+  var running = false, tickId = null, gameOver = false;
+  var timerId = null, elapsed = 0;
+  var snake = [];
+  var dir = { x: 1, y: 0 };
+  var pendingDir = { x: 1, y: 0 };
+  var food = { x: 10, y: 10 };
+  var score = 0;
+  var growPending = 0;
+  var GROW_PER_FOOD = 2;
+  var field = document.getElementById(&#x27;field&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var timerEl = document.getElementById(&#x27;timer&#x27;);
+  var gameoverEl = document.getElementById(&#x27;gameover&#x27;);
+  var btnEasy = document.getElementById(&#x27;btnEasy&#x27;);
+  var btnHard = document.getElementById(&#x27;btnHard&#x27;);
+
+  function clearCells() {
+    var cells = field.querySelectorAll(&#x27;.cell&#x27;);
+    for (var i = 0; i &lt; cells.length; i++) cells[i].remove();
+  }
+
+  function drawCell(cls, x, y) {
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;cell &#x27; + cls;
+    var offset = (CELL - DOT) / 2;
+    el.style.left = (x * CELL + offset) + &#x27;px&#x27;;
+    el.style.top = (y * CELL + offset) + &#x27;px&#x27;;
+    el.style.width = DOT + &#x27;px&#x27;;
+    el.style.height = DOT + &#x27;px&#x27;;
+    field.appendChild(el);
+  }
+
+  function paint() {
+    clearCells();
+    drawCell(&#x27;food&#x27;, food.x, food.y);
+    for (var i = 0; i &lt; snake.length; i++) drawCell(&#x27;snake&#x27;, snake[i].x, snake[i].y);
+  }
+
+  function cellOccupied(x, y) {
+    for (var i = 0; i &lt; snake.length; i++) if (snake[i].x === x &amp;&amp; snake[i].y === y) return true;
+    return false;
+  }
+
+  function placeFood() {
+    for (var tries = 0; tries &lt; 200; tries++) {
+      var x = Math.floor(Math.random() * COLS);
+      var y = Math.floor(Math.random() * ROWS);
+      if (!cellOccupied(x, y)) { food = { x: x, y: y }; return; }
+    }
+  }
+
+  function initSnake() {
+    snake = [ { x: 5, y: 10 }, { x: 4, y: 10 }, { x: 3, y: 10 } ];
+    dir = { x: 1, y: 0 };
+    pendingDir = { x: 1, y: 0 };
+    growPending = 0;
+  }
+
+  function currentTick() {
+    var s = SETTINGS[difficulty];
+    var t = s.base - score * s.step;
+    return t &lt; MIN_TICK ? MIN_TICK : t;
+  }
+
+  function restartTimer() {
+    if (tickId) clearInterval(tickId);
+    tickId = setInterval(tick, currentTick());
+  }
+
+  function tick() {
+    if (!running) return;
+    if (!(pendingDir.x === -dir.x &amp;&amp; pendingDir.y === -dir.y)) dir = pendingDir;
+    var head = snake[0];
+    var nx = head.x + dir.x, ny = head.y + dir.y;
+    if (nx &lt; 0 || nx &gt;= COLS || ny &lt; 0 || ny &gt;= ROWS) { endGame(); return; }
+    var ateFood = (nx === food.x &amp;&amp; ny === food.y);
+    var body = (ateFood || growPending &gt; 0) ? snake : snake.slice(0, snake.length - 1);
+    for (var i = 0; i &lt; body.length; i++) {
+      if (body[i].x === nx &amp;&amp; body[i].y === ny) { endGame(); return; }
+    }
+    snake.unshift({ x: nx, y: ny });
+    if (ateFood) {
+      score += 1;
+      scoreEl.textContent = score;
+      growPending += GROW_PER_FOOD - 1;
+      placeFood();
+      restartTimer();
+    } else if (growPending &gt; 0) {
+      growPending -= 1;
+    } else {
+      snake.pop();
+    }
+    paint();
+  }
+
+  function endGame() {
+    running = false;
+    gameOver = true;
+    if (tickId) { clearInterval(tickId); tickId = null; }
+    if (timerId) { clearInterval(timerId); timerId = null; }
+    field.classList.add(&#x27;over&#x27;);
+    gameoverEl.classList.add(&#x27;show&#x27;);
+  }
+
+  function startGame() {
+    score = 0;
+    scoreEl.textContent = &#x27;0&#x27;;
+    elapsed = 0;
+    timerEl.textContent = &#x27;0&#x27;;
+    gameOver = false;
+    field.classList.remove(&#x27;over&#x27;);
+    gameoverEl.classList.remove(&#x27;show&#x27;);
+    initSnake();
+    placeFood();
+    paint();
+    running = true;
+    restartTimer();
+    if (timerId) clearInterval(timerId);
+    timerId = setInterval(function () {
+      if (!running) return;
+      elapsed += 1;
+      timerEl.textContent = elapsed;
+    }, 1000);
+  }
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    if (tickId) { clearInterval(tickId); tickId = null; }
+    if (timerId) { clearInterval(timerId); timerId = null; }
+  }
+
+  function setDifficulty(d) {
+    difficulty = d;
+    if (d === &#x27;easy&#x27;) { btnEasy.classList.add(&#x27;selected&#x27;); btnHard.classList.remove(&#x27;selected&#x27;); }
+    else { btnHard.classList.add(&#x27;selected&#x27;); btnEasy.classList.remove(&#x27;selected&#x27;); }
+    if (running) restartTimer();
+  }
+  btnEasy.addEventListener(&#x27;click&#x27;, function () { setDifficulty(&#x27;easy&#x27;); });
+  btnHard.addEventListener(&#x27;click&#x27;, function () { setDifficulty(&#x27;hard&#x27;); });
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27;) { pendingDir = { x: -1, y: 0 }; e.preventDefault(); }
+    else if (e.key === &#x27;ArrowRight&#x27;) { pendingDir = { x: 1, y: 0 }; e.preventDefault(); }
+    else if (e.key === &#x27;ArrowUp&#x27;) { pendingDir = { x: 0, y: -1 }; e.preventDefault(); }
+    else if (e.key === &#x27;ArrowDown&#x27;) { pendingDir = { x: 0, y: 1 }; e.preventDefault(); }
+  });
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  initSnake();
+  paint();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

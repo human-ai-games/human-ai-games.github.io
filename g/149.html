@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🦆 Duck Hunt</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>🦆 Duck Hunt</b> &middot; Game 149 &middot; Professional producer &middot; Basic game: Whack-a-mole</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #222; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 14px; background: white; height: 100%; box-sizing: border-box; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 600; }
+  .instructions { font-size: 16px; color: #666; max-width: 620px; margin: 0; line-height: 1.4; }
+  .hud { font-size: 20px; color: #555; margin: 0; display: flex; gap: 24px; }
+  .board { position: relative; width: 640px; height: 440px; flex-shrink: 0; margin: 0; border-radius: 8px; overflow: hidden; cursor: crosshair; }
+  .board svg.scene { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
+  .bird, .dog { position: absolute; will-change: transform; z-index: 2; }
+  .dog { z-index: 3; }
+  .burst { position: absolute; z-index: 5; pointer-events: none; font-weight: 900; font-family: &quot;Comic Sans MS&quot;, &quot;Arial Black&quot;, sans-serif;
+    -webkit-text-stroke: 2px #222; text-stroke: 2px #222; transform: translate(-50%,-50%) scale(0.4) rotate(-8deg);
+    animation: pop 0.55s ease-out forwards; }
+  @keyframes pop {
+    0% { transform: translate(-50%,-50%) scale(0.3) rotate(-14deg); opacity: 0; }
+    30% { transform: translate(-50%,-50%) scale(1.25) rotate(6deg); opacity: 1; }
+    70% { transform: translate(-50%,-50%) scale(1.0) rotate(-3deg); opacity: 1; }
+    100% { transform: translate(-50%,-50%) scale(1.15) rotate(0deg); opacity: 0; }
+  }
+  .overlay { position: absolute; inset: 0; z-index: 20; display: none; flex-direction: column; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.6); color: #fff; }
+  .overlay.show { display: flex; }
+  .overlay h2 { font-size: 46px; margin: 0 0 8px; font-family: &quot;Comic Sans MS&quot;, &quot;Arial Black&quot;, sans-serif; color: #ff4f6d; -webkit-text-stroke: 2px #222; }
+  .overlay p { font-size: 20px; margin: 4px; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;🦆 Duck Hunt&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Shoot ducks for points and blast the rabid dogs before they reach you, but never shoot the pigeons. Use the &lt;strong&gt;Start&lt;/strong&gt;/&lt;strong&gt;Restart&lt;/strong&gt; button below the game.&lt;/p&gt;
+  &lt;div class=&quot;hud&quot;&gt;
+    &lt;span&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/span&gt;
+    &lt;span&gt;Missed: &lt;span id=&quot;missed&quot;&gt;0&lt;/span&gt;&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;board&quot; id=&quot;board&quot;&gt;
+    &lt;svg class=&quot;scene&quot; viewBox=&quot;0 0 640 440&quot; preserveAspectRatio=&quot;none&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;&gt;
+      &lt;defs&gt;
+        &lt;linearGradient id=&quot;sky&quot; x1=&quot;0&quot; y1=&quot;0&quot; x2=&quot;0&quot; y2=&quot;1&quot;&gt;
+          &lt;stop offset=&quot;0%&quot; stop-color=&quot;#5bb4ea&quot;/&gt;
+          &lt;stop offset=&quot;60%&quot; stop-color=&quot;#a8dcf5&quot;/&gt;
+          &lt;stop offset=&quot;100%&quot; stop-color=&quot;#d6eefb&quot;/&gt;
+        &lt;/linearGradient&gt;
+        &lt;radialGradient id=&quot;sun&quot; cx=&quot;50%&quot; cy=&quot;50%&quot; r=&quot;50%&quot;&gt;
+          &lt;stop offset=&quot;0%&quot; stop-color=&quot;#fff6c4&quot;/&gt;
+          &lt;stop offset=&quot;100%&quot; stop-color=&quot;#ffe37a&quot;/&gt;
+        &lt;/radialGradient&gt;
+      &lt;/defs&gt;
+      &lt;rect x=&quot;0&quot; y=&quot;0&quot; width=&quot;640&quot; height=&quot;440&quot; fill=&quot;url(#sky)&quot;/&gt;
+      &lt;circle cx=&quot;90&quot; cy=&quot;80&quot; r=&quot;38&quot; fill=&quot;url(#sun)&quot;/&gt;
+      &lt;ellipse cx=&quot;150&quot; cy=&quot;70&quot; rx=&quot;55&quot; ry=&quot;24&quot; fill=&quot;#ffffff&quot; opacity=&quot;0.85&quot;/&gt;
+      &lt;ellipse cx=&quot;195&quot; cy=&quot;80&quot; rx=&quot;40&quot; ry=&quot;20&quot; fill=&quot;#ffffff&quot; opacity=&quot;0.85&quot;/&gt;
+      &lt;ellipse cx=&quot;470&quot; cy=&quot;95&quot; rx=&quot;60&quot; ry=&quot;26&quot; fill=&quot;#ffffff&quot; opacity=&quot;0.8&quot;/&gt;
+      &lt;ellipse cx=&quot;520&quot; cy=&quot;105&quot; rx=&quot;42&quot; ry=&quot;20&quot; fill=&quot;#ffffff&quot; opacity=&quot;0.8&quot;/&gt;
+      &lt;path d=&quot;M0 320 Q160 250 320 310 Q480 360 640 300 L640 440 L0 440 Z&quot; fill=&quot;#8fce6f&quot;/&gt;
+      &lt;path d=&quot;M0 350 Q200 300 400 345 Q520 372 640 340 L640 440 L0 440 Z&quot; fill=&quot;#6fb84f&quot;/&gt;
+      &lt;rect x=&quot;0&quot; y=&quot;308&quot; width=&quot;640&quot; height=&quot;132&quot; fill=&quot;#5aa63e&quot;/&gt;
+      &lt;g&gt;
+        &lt;rect x=&quot;72&quot; y=&quot;285&quot; width=&quot;14&quot; height=&quot;45&quot; fill=&quot;#7a4a26&quot;/&gt;
+        &lt;circle cx=&quot;79&quot; cy=&quot;272&quot; r=&quot;34&quot; fill=&quot;#3f8f37&quot;/&gt;
+        &lt;circle cx=&quot;55&quot; cy=&quot;285&quot; r=&quot;24&quot; fill=&quot;#4aa03f&quot;/&gt;
+        &lt;circle cx=&quot;103&quot; cy=&quot;285&quot; r=&quot;24&quot; fill=&quot;#4aa03f&quot;/&gt;
+      &lt;/g&gt;
+      &lt;g&gt;
+        &lt;rect x=&quot;558&quot; y=&quot;292&quot; width=&quot;16&quot; height=&quot;48&quot; fill=&quot;#7a4a26&quot;/&gt;
+        &lt;circle cx=&quot;566&quot; cy=&quot;276&quot; r=&quot;38&quot; fill=&quot;#3f8f37&quot;/&gt;
+        &lt;circle cx=&quot;538&quot; cy=&quot;292&quot; r=&quot;26&quot; fill=&quot;#4aa03f&quot;/&gt;
+        &lt;circle cx=&quot;594&quot; cy=&quot;292&quot; r=&quot;26&quot; fill=&quot;#4aa03f&quot;/&gt;
+      &lt;/g&gt;
+      &lt;g&gt;
+        &lt;rect x=&quot;300&quot; y=&quot;300&quot; width=&quot;12&quot; height=&quot;40&quot; fill=&quot;#8a5a30&quot;/&gt;
+        &lt;circle cx=&quot;306&quot; cy=&quot;290&quot; r=&quot;28&quot; fill=&quot;#46983c&quot;/&gt;
+        &lt;circle cx=&quot;285&quot; cy=&quot;300&quot; r=&quot;19&quot; fill=&quot;#54ab48&quot;/&gt;
+        &lt;circle cx=&quot;327&quot; cy=&quot;300&quot; r=&quot;19&quot; fill=&quot;#54ab48&quot;/&gt;
+      &lt;/g&gt;
+    &lt;/svg&gt;
+    &lt;div class=&quot;overlay&quot; id=&quot;overlay&quot;&gt;
+      &lt;h2 id=&quot;overTitle&quot;&gt;GAME OVER&lt;/h2&gt;
+      &lt;p id=&quot;overMsg&quot;&gt;&lt;/p&gt;
+      &lt;p&gt;Press &lt;strong&gt;Restart&lt;/strong&gt; below to play again.&lt;/p&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var BOARD_W = 640, BOARD_H = 440, DUCK_W = 74, DUCK_H = 60;
+  var GROUND_Y = BOARD_H * 0.70;
+  var DOG_W = 88, DOG_H = 56;
+  var score = 0, missed = 0;
+  var running = false;
+  var spawnTimer = null, dogTimer = null;
+  var rafId = null;
+  var birds = [], dogs = [];
+  var lastTime = 0;
+  var audioCtx = null;
+
+  var board = document.getElementById(&#x27;board&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var missedEl = document.getElementById(&#x27;missed&#x27;);
+  var overlay = document.getElementById(&#x27;overlay&#x27;);
+  var overMsg = document.getElementById(&#x27;overMsg&#x27;);
+
+  function duckSVG(colorBody, colorHead) {
+    return &#x27;&lt;svg viewBox=&quot;0 0 74 60&quot; width=&quot;74&quot; height=&quot;60&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;&gt;&#x27; +
+      &#x27;&lt;ellipse cx=&quot;34&quot; cy=&quot;40&quot; rx=&quot;24&quot; ry=&quot;15&quot; fill=&quot;&#x27;+colorBody+&#x27;&quot;/&gt;&#x27; +
+      &#x27;&lt;path class=&quot;wing&quot; d=&quot;M30 34 Q20 6 8 14 Q22 20 26 40 Z&quot; fill=&quot;#8a5a2b&quot;/&gt;&#x27; +
+      &#x27;&lt;circle cx=&quot;56&quot; cy=&quot;30&quot; r=&quot;11&quot; fill=&quot;&#x27;+colorHead+&#x27;&quot;/&gt;&#x27; +
+      &#x27;&lt;circle cx=&quot;60&quot; cy=&quot;27&quot; r=&quot;2.2&quot; fill=&quot;#1a1a1a&quot;/&gt;&#x27; +
+      &#x27;&lt;path d=&quot;M66 30 Q76 28 74 34 Q68 36 64 33 Z&quot; fill=&quot;#f2a900&quot;/&gt;&#x27; +
+      &#x27;&lt;path d=&quot;M18 50 Q6 48 4 54 Q14 55 22 52 Z&quot; fill=&quot;&#x27;+colorBody+&#x27;&quot;/&gt;&#x27; +
+      &#x27;&lt;/svg&gt;&#x27;;
+  }
+
+  // Pigeon: plump round body, small head, short neck, fanned tail — clearly a different silhouette.
+  function pigeonSVG() {
+    return &#x27;&lt;svg viewBox=&quot;0 0 74 60&quot; width=&quot;74&quot; height=&quot;60&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;&gt;&#x27; +
+      &#x27;&lt;path d=&quot;M60 44 L74 40 L74 50 L58 47 Z&quot; fill=&quot;#7f858f&quot;/&gt;&#x27; +           // fanned tail
+      &#x27;&lt;circle cx=&quot;34&quot; cy=&quot;40&quot; r=&quot;18&quot; fill=&quot;#9aa0aa&quot;/&gt;&#x27; +                    // round plump body
+      &#x27;&lt;ellipse cx=&quot;34&quot; cy=&quot;46&quot; rx=&quot;17&quot; ry=&quot;10&quot; fill=&quot;#aab0ba&quot;/&gt;&#x27; +          // pale belly
+      &#x27;&lt;path class=&quot;wing&quot; d=&quot;M32 34 Q26 16 16 22 Q24 30 28 42 Z&quot; fill=&quot;#6f757f&quot;/&gt;&#x27; + // small tucked wing
+      &#x27;&lt;path d=&quot;M22 33 Q24 22 32 26&quot; stroke=&quot;#8b91a0&quot; stroke-width=&quot;3&quot; fill=&quot;none&quot;/&gt;&#x27; +
+      &#x27;&lt;path d=&quot;M20 34 Q20 26 26 26 L27 32 Z&quot; fill=&quot;#9aa0aa&quot;/&gt;&#x27; +            // short neck
+      &#x27;&lt;circle cx=&quot;20&quot; cy=&quot;27&quot; r=&quot;8&quot; fill=&quot;#b6bcc6&quot;/&gt;&#x27; +                     // small head
+      &#x27;&lt;circle cx=&quot;17&quot; cy=&quot;25&quot; r=&quot;1.8&quot; fill=&quot;#1a1a1a&quot;/&gt;&#x27; +
+      &#x27;&lt;path d=&quot;M12 27 Q6 26 9 30 Q13 30 15 28 Z&quot; fill=&quot;#d98a5a&quot;/&gt;&#x27; +        // small beak
+      &#x27;&lt;circle cx=&quot;10&quot; cy=&quot;26&quot; r=&quot;1.6&quot; fill=&quot;#e0e0e0&quot;/&gt;&#x27; +                   // cere
+      &#x27;&lt;/svg&gt;&#x27;;
+  }
+
+  // Rabid dog: snarling, foaming mouth, red eyes, running.
+  function dogSVG() {
+    return &#x27;&lt;svg viewBox=&quot;0 0 88 56&quot; width=&quot;88&quot; height=&quot;56&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;&gt;&#x27; +
+      &#x27;&lt;path class=&quot;legs&quot; d=&quot;M24 42 L20 54 M34 44 L38 54 M54 44 L50 54 M64 42 L68 54&quot; stroke=&quot;#6b4a2a&quot; stroke-width=&quot;5&quot; stroke-linecap=&quot;round&quot;/&gt;&#x27; +
+      &#x27;&lt;ellipse cx=&quot;44&quot; cy=&quot;34&quot; rx=&quot;28&quot; ry=&quot;15&quot; fill=&quot;#7a5230&quot;/&gt;&#x27; +          // body
+      &#x27;&lt;path d=&quot;M66 22 L84 10 L80 26 Z&quot; fill=&quot;#7a5230&quot;/&gt;&#x27; +                  // tail up
+      &#x27;&lt;circle cx=&quot;20&quot; cy=&quot;26&quot; r=&quot;14&quot; fill=&quot;#835a34&quot;/&gt;&#x27; +                    // head
+      &#x27;&lt;path d=&quot;M8 16 L4 4 L16 12 Z&quot; fill=&quot;#6b4a2a&quot;/&gt;&#x27; +                     // ear
+      &#x27;&lt;path d=&quot;M18 34 Q6 34 2 30 Q4 40 16 40 Z&quot; fill=&quot;#5a3d22&quot;/&gt;&#x27; +         // snarling jaw
+      &#x27;&lt;path d=&quot;M6 30 L9 36 L12 30 L15 36 L18 30&quot; stroke=&quot;#fff&quot; stroke-width=&quot;1.5&quot; fill=&quot;none&quot;/&gt;&#x27; + // teeth
+      &#x27;&lt;circle cx=&quot;18&quot; cy=&quot;22&quot; r=&quot;2.4&quot; fill=&quot;#ff2020&quot;/&gt;&#x27; +                   // red eye
+      &#x27;&lt;circle cx=&quot;4&quot; cy=&quot;28&quot; r=&quot;2&quot; fill=&quot;#fff&quot; opacity=&quot;0.9&quot;/&gt;&#x27; +           // foam
+      &#x27;&lt;circle cx=&quot;2&quot; cy=&quot;33&quot; r=&quot;1.6&quot; fill=&quot;#fff&quot; opacity=&quot;0.9&quot;/&gt;&#x27; +
+      &#x27;&lt;circle cx=&quot;7&quot; cy=&quot;34&quot; r=&quot;1.4&quot; fill=&quot;#fff&quot; opacity=&quot;0.9&quot;/&gt;&#x27; +
+      &#x27;&lt;circle cx=&quot;4&quot; cy=&quot;30&quot; r=&quot;2.5&quot; fill=&quot;#111&quot;/&gt;&#x27; +                       // nose
+      &#x27;&lt;/svg&gt;&#x27;;
+  }
+
+  function beep(freq, dur, type, vol) {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      var o = audioCtx.createOscillator();
+      var g = audioCtx.createGain();
+      o.type = type || &#x27;square&#x27;;
+      o.frequency.value = freq;
+      o.connect(g); g.connect(audioCtx.destination);
+      g.gain.setValueAtTime(vol || 0.18, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+      o.start(); o.stop(audioCtx.currentTime + dur);
+    } catch(_) {}
+  }
+  function shotSound() { beep(140, 0.12, &#x27;square&#x27;); }
+  function hitSound() { beep(520, 0.15, &#x27;triangle&#x27;); setTimeout(function(){beep(300,0.18,&#x27;triangle&#x27;);},80); }
+  function errSound() { beep(120, 0.25, &#x27;sawtooth&#x27;); }
+  function dogHitSound() { beep(200,0.12,&#x27;sawtooth&#x27;); setTimeout(function(){beep(90,0.2,&#x27;sawtooth&#x27;);},60); }
+  function growl() { beep(70, 0.3, &#x27;sawtooth&#x27;, 0.12); }
+  function gameOverSound() { beep(220,0.2,&#x27;square&#x27;); setTimeout(function(){beep(160,0.25,&#x27;square&#x27;);},180); setTimeout(function(){beep(90,0.45,&#x27;sawtooth&#x27;);},380); }
+
+  function showBurst(x, y, kind) {
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;burst&#x27;;
+    var word, color, size;
+    if (kind === &#x27;duck&#x27;) {
+      var words = [&#x27;POW!&#x27;, &#x27;BOOM!&#x27;, &#x27;BANG!&#x27;, &#x27;WHAM!&#x27;];
+      word = words[Math.floor(Math.random()*words.length)];
+      color = [&#x27;#ffd23f&#x27;,&#x27;#ff7b3f&#x27;,&#x27;#ff4f6d&#x27;][Math.floor(Math.random()*3)];
+      size = 44;
+    } else if (kind === &#x27;dog&#x27;) {
+      word = [&#x27;KAPOW!&#x27;,&#x27;SPLAT!&#x27;,&#x27;BLAM!&#x27;][Math.floor(Math.random()*3)];
+      color = &#x27;#ff4f6d&#x27;; size = 46;
+    } else {
+      word = &#x27;OOPS!&#x27;; color = &#x27;#c0392b&#x27;; size = 40;
+    }
+    el.textContent = word;
+    el.style.color = color; el.style.fontSize = size + &#x27;px&#x27;;
+    el.style.left = x + &#x27;px&#x27;; el.style.top = y + &#x27;px&#x27;;
+    board.appendChild(el);
+    setTimeout(function(){ if (el.parentNode) el.parentNode.removeChild(el); }, 560);
+  }
+
+  var duckPalettes = [
+    {body:&#x27;#6b7a3a&#x27;, head:&#x27;#2e6b3e&#x27;},
+    {body:&#x27;#7a5a2b&#x27;, head:&#x27;#4a3a1a&#x27;},
+    {body:&#x27;#5a5a6b&#x27;, head:&#x27;#3a3a4a&#x27;}
+  ];
+
+  function spawnBird() {
+    var isPigeon = Math.random() &lt; 0.3;
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;bird&#x27;;
+    el.style.width = DUCK_W+&#x27;px&#x27;; el.style.height = DUCK_H+&#x27;px&#x27;;
+    if (isPigeon) el.innerHTML = pigeonSVG();
+    else { var p = duckPalettes[Math.floor(Math.random()*duckPalettes.length)]; el.innerHTML = duckSVG(p.body, p.head); }
+
+    var fromLeft = Math.random() &lt; 0.5;
+    var startY = 30 + Math.random() * (GROUND_Y - DUCK_H - 30);
+    var speed = 90 + Math.random() * 90;
+    var vy = (Math.random() - 0.5) * 60;
+
+    var bird = {
+      el: el, isPigeon: isPigeon,
+      x: fromLeft ? -DUCK_W : BOARD_W, y: startY,
+      vx: fromLeft ? speed : -speed, vy: vy,
+      facing: fromLeft ? 1 : -1,
+      alive: true, falling: false, wingPhase: Math.random()*Math.PI*2
+    };
+
+    el.addEventListener(&#x27;mousedown&#x27;, function(ev) {
+      ev.stopPropagation();
+      if (!bird.alive || bird.falling) return;
+      var cx = bird.x + DUCK_W/2, cy = bird.y + DUCK_H/2;
+      if (bird.isPigeon) {
+        score -= 2; scoreEl.textContent = score; errSound();
+        showBurst(cx, cy, &#x27;pigeon&#x27;);
+        el.style.filter = &#x27;grayscale(1) brightness(0.7)&#x27;;
+      } else {
+        score += 1; scoreEl.textContent = score; hitSound();
+        showBurst(cx, cy, &#x27;duck&#x27;);
+        el.style.filter = &#x27;brightness(1.6)&#x27;;
+      }
+      bird.falling = true; bird.vx = 0; bird.vy = 0;
+    });
+
+    board.appendChild(el);
+    birds.push(bird);
+    renderBird(bird);
+  }
+
+  function spawnDog() {
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;dog&#x27;;
+    el.style.width = DOG_W+&#x27;px&#x27;; el.style.height = DOG_H+&#x27;px&#x27;;
+    el.innerHTML = dogSVG();
+    var fromLeft = Math.random() &lt; 0.5;
+    // Dogs run along a lane in the ground zone, slowly advancing downward toward the player.
+    var dog = {
+      el: el,
+      x: fromLeft ? -DOG_W : BOARD_W,
+      y: GROUND_Y - 10 + Math.random() * 20,
+      vx: (fromLeft ? 1 : -1) * (120 + Math.random()*60),
+      vy: 26 + Math.random()*14,   // creeps toward the bottom (the player)
+      facing: fromLeft ? -1 : 1,   // dog art faces left by default
+      alive: true, dead: false, runPhase: 0
+    };
+    growl();
+    el.addEventListener(&#x27;mousedown&#x27;, function(ev) {
+      ev.stopPropagation();
+      if (!dog.alive || dog.dead) return;
+      dog.dead = true; dog.vx = 0; dog.vy = 0;
+      score += 3; scoreEl.textContent = score;
+      dogHitSound();
+      showBurst(dog.x + DOG_W/2, dog.y + DOG_H/2, &#x27;dog&#x27;);
+      el.style.filter = &#x27;brightness(1.7) saturate(0)&#x27;;
+      el.style.transition = &#x27;opacity 0.4s&#x27;;
+      setTimeout(function(){ el.style.opacity = &#x27;0&#x27;; }, 100);
+    });
+    board.appendChild(el);
+    dogs.push(dog);
+    renderDog(dog);
+  }
+
+  function renderBird(b) {
+    var flap = b.falling ? 0 : Math.sin(b.wingPhase) * 18;
+    var wing = b.el.querySelector(&#x27;.wing&#x27;);
+    if (wing) wing.setAttribute(&#x27;transform&#x27;, &#x27;rotate(&#x27;+flap+&#x27; 30 34)&#x27;);
+    var rot = b.falling ? 160 : 0;
+    b.el.style.transform = &#x27;translate(&#x27;+b.x+&#x27;px,&#x27;+b.y+&#x27;px) scaleX(&#x27;+b.facing+&#x27;) rotate(&#x27;+rot+&#x27;deg)&#x27;;
+  }
+
+  function renderDog(d) {
+    var bob = d.dead ? 0 : Math.sin(d.runPhase) * 3;
+    d.el.style.transform = &#x27;translate(&#x27;+d.x+&#x27;px,&#x27;+(d.y + bob)+&#x27;px) scaleX(&#x27;+d.facing+&#x27;)&#x27;;
+  }
+
+  function endGame(reason) {
+    overMsg.textContent = reason + &#x27; Final score: &#x27; + score;
+    overlay.classList.add(&#x27;show&#x27;);
+    gameOverSound();
+    running = false;
+    if (spawnTimer) { clearInterval(spawnTimer); spawnTimer = null; }
+    if (dogTimer) { clearInterval(dogTimer); dogTimer = null; }
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+  }
+
+  function loop(t) {
+    if (!running) return;
+    if (!lastTime) lastTime = t;
+    var dt = Math.min((t - lastTime)/1000, 0.05);
+    lastTime = t;
+
+    for (var i = birds.length - 1; i &gt;= 0; i--) {
+      var b = birds[i];
+      if (b.falling) {
+        b.fallV = (b.fallV || 40) + 700 * dt;
+        b.y += b.fallV * dt;
+        renderBird(b);
+        if (b.y &gt; BOARD_H) { if (b.el.parentNode) b.el.parentNode.removeChild(b.el); birds.splice(i,1); }
+        continue;
+      }
+      b.wingPhase += dt * 12;
+      b.x += b.vx * dt; b.y += b.vy * dt;
+      if (b.y &lt; 20) { b.y = 20; b.vy = Math.abs(b.vy); }
+      if (b.y &gt; GROUND_Y - DUCK_H) { b.y = GROUND_Y - DUCK_H; b.vy = -Math.abs(b.vy); }
+      renderBird(b);
+      if ((b.vx &gt; 0 &amp;&amp; b.x &gt; BOARD_W) || (b.vx &lt; 0 &amp;&amp; b.x &lt; -DUCK_W)) {
+        if (!b.isPigeon) { missed += 1; missedEl.textContent = missed; }
+        if (b.el.parentNode) b.el.parentNode.removeChild(b.el); birds.splice(i,1);
+      }
+    }
+
+    for (var j = dogs.length - 1; j &gt;= 0; j--) {
+      var d = dogs[j];
+      if (d.dead) {
+        renderDog(d);
+        if (d.el.style.opacity === &#x27;0&#x27;) { /* wait for fade */ }
+        d.fadeT = (d.fadeT || 0) + dt;
+        if (d.fadeT &gt; 0.5) { if (d.el.parentNode) d.el.parentNode.removeChild(d.el); dogs.splice(j,1); }
+        continue;
+      }
+      d.runPhase += dt * 16;
+      d.x += d.vx * dt; d.y += d.vy * dt;
+      // bounce off side edges so they keep charging
+      if (d.x &lt; 0) { d.x = 0; d.vx = Math.abs(d.vx); d.facing = -1; }
+      if (d.x &gt; BOARD_W - DOG_W) { d.x = BOARD_W - DOG_W; d.vx = -Math.abs(d.vx); d.facing = 1; }
+      renderDog(d);
+      // reached the player (bottom) =&gt; game over
+      if (d.y + DOG_H &gt;= BOARD_H) {
+        endGame(&#x27;A rabid dog got you!&#x27;);
+        return;
+      }
+    }
+    rafId = requestAnimationFrame(loop);
+  }
+
+  board.addEventListener(&#x27;mousedown&#x27;, function() { if (running) shotSound(); });
+
+  function clearAll() {
+    birds.forEach(function(b){ if (b.el.parentNode) b.el.parentNode.removeChild(b.el); });
+    dogs.forEach(function(d){ if (d.el.parentNode) d.el.parentNode.removeChild(d.el); });
+    birds = []; dogs = [];
+    board.querySelectorAll(&#x27;.burst&#x27;).forEach(function(x){ if (x.parentNode) x.parentNode.removeChild(x); });
+  }
+
+  function startGame() {
+    running = true;
+    score = 0; missed = 0;
+    scoreEl.textContent = &#x27;0&#x27;; missedEl.textContent = &#x27;0&#x27;;
+    overlay.classList.remove(&#x27;show&#x27;);
+    clearAll();
+    if (spawnTimer) clearInterval(spawnTimer);
+    if (dogTimer) clearInterval(dogTimer);
+    spawnBird();
+    spawnTimer = setInterval(function(){
+      if (birds.filter(function(b){return !b.falling;}).length &lt; 4) spawnBird();
+    }, 1100);
+    dogTimer = setInterval(function(){
+      if (dogs.filter(function(d){return !d.dead;}).length &lt; 2) spawnDog();
+    }, 4200);
+    setTimeout(function(){ if (running) spawnDog(); }, 1800);
+    lastTime = 0;
+    rafId = requestAnimationFrame(loop);
+  }
+
+  function stopGame() {
+    running = false;
+    if (spawnTimer) { clearInterval(spawnTimer); spawnTimer = null; }
+    if (dogTimer) { clearInterval(dogTimer); dogTimer = null; }
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+    clearAll();
+    overlay.classList.remove(&#x27;show&#x27;);
+  }
+
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  // Suppress in-iframe scrollbars. The parent fits the iframe layout
+  // box to match the content size, so internal scroll is redundant —
+  // and if the LLM&#x27;s CSS sets body overflow: auto, the scrollbar shows
+  // briefly before the fit lands. Force hidden so it never appears.
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  // Iframe-internal JS error capture. window.onerror inside a sandboxed
+  // iframe can&#x27;t post to /api/js_error directly, so we relay to the
+  // parent via postMessage; parent&#x27;s error_logger.js forwards to the
+  // server. Catches LLM-emitted broken HTML (invalid hex, undefined
+  // variables, etc.) that would otherwise fail silently inside the
+  // iframe.
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      // Debounce: don&#x27;t fire more than ~10× per second. ResizeObserver
+      // fires repeatedly during layout/font load; we only need the latest.
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      // Clamp: reject obviously bogus dimensions. Any browser-game viewport
+      // is well under 4000×4000 logical px; readings beyond that are layout
+      // noise during load/visibility transitions.
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  // Parent posts wd_remeasure when it makes the iframe visible (the body&#x27;s
+  // ResizeObserver doesn&#x27;t fire on display:none→block of an outer ancestor
+  // because the iframe document didn&#x27;t actually resize). Wait a frame for
+  // layout to settle before measuring.
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>✨ Slide Quest</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>✨ Slide Quest</b> &middot; Game 207 &middot; Amateur producer &middot; Basic game: Gravity jumper</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0;
+    background: linear-gradient(160deg, #1e2746, #2d1b4e); color: #eee; }
+  .game { max-width: 720px; margin: 0 auto; padding: 12px; height: 100%; box-sizing: border-box;
+    display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  h1 { margin: 0; font-size: 24px; font-weight: 800; letter-spacing: .5px;
+    background: linear-gradient(90deg,#7ef,#f7a); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .instructions { font-size: 16px; color: #cbd0e8; max-width: 620px; margin: 0; line-height: 1.35; text-align: center; }
+  .hud { display: flex; gap: 18px; font-size: 17px; color: #d6dcff; font-weight: 600; align-items: center; flex-wrap: wrap; justify-content: center; }
+  .hud .lvl { color: #ffd479; }
+  .hud .win { color: #8ff0a4; }
+  .board-wrap { position: relative; }
+  .board { position: relative; background: rgba(255,255,255,0.06); border-radius: 14px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4), inset 0 0 0 2px rgba(255,255,255,0.08); }
+  .tile { position: absolute; box-sizing: border-box; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; font-weight: 800;
+    cursor: pointer; user-select: none;
+    background: linear-gradient(150deg, #6a8bff, #9a6bff);
+    color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.35), inset 0 2px 4px rgba(255,255,255,0.25);
+    transition: left .18s cubic-bezier(.2,.9,.3,1), top .18s cubic-bezier(.2,.9,.3,1), transform .1s; }
+  .tile:hover { filter: brightness(1.08); }
+  .tile.hint { animation: pulse 0.7s ease-in-out infinite; box-shadow: 0 0 0 3px #ffd479, 0 4px 12px rgba(0,0,0,0.4); }
+  @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(0.93); } }
+  .tile.solved { background: linear-gradient(150deg, #46c98b, #2fa672); }
+  .btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  button.act { font-size: 15px; font-weight: 700; padding: 8px 16px; border: none; border-radius: 20px;
+    cursor: pointer; color: #22143a; background: linear-gradient(90deg,#ffd479,#ffb057); box-shadow: 0 3px 8px rgba(0,0,0,0.3); }
+  button.act:disabled { opacity: .45; cursor: default; }
+  button.act.alt { background: linear-gradient(90deg,#8fd0ff,#8f9bff); }
+  .overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: rgba(20,16,40,0.86); border-radius: 14px; text-align: center; gap: 8px; padding: 16px; box-sizing: border-box; }
+  .overlay .big { font-size: 26px; font-weight: 800; color: #8ff0a4; }
+  .overlay .sub { font-size: 16px; color: #cbd0e8; }
+  .hidden { display: none; }
+  .confetti { position: absolute; width: 9px; height: 9px; border-radius: 2px; top: -12px; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;✨ Slide Quest&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Click a tile next to the empty space to slide it — arrange the numbers in order (empty spot last) to solve each puzzle. Beat all 10 levels; tap &lt;strong&gt;Hint&lt;/strong&gt; if you get stuck.&lt;/p&gt;
+  &lt;div class=&quot;hud&quot;&gt;
+    &lt;div class=&quot;lvl&quot;&gt;Level &lt;span id=&quot;level&quot;&gt;1&lt;/span&gt;/10&lt;/div&gt;
+    &lt;div&gt;Moves: &lt;span id=&quot;moves&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;win&quot;&gt;Solved: &lt;span id=&quot;solved&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;board-wrap&quot;&gt;
+    &lt;div class=&quot;board&quot; id=&quot;board&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;overlay hidden&quot; id=&quot;overlay&quot;&gt;
+      &lt;div class=&quot;big&quot; id=&quot;ovBig&quot;&gt;Ready?&lt;/div&gt;
+      &lt;div class=&quot;sub&quot; id=&quot;ovSub&quot;&gt;Press Start below to begin.&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;btns&quot;&gt;
+    &lt;button class=&quot;act&quot; id=&quot;hintBtn&quot; disabled&gt;💡 Hint&lt;/button&gt;
+    &lt;button class=&quot;act alt&quot; id=&quot;shuffleBtn&quot; disabled&gt;🔀 Restart Level&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  // 10 levels: grid size grows, so does shuffle depth (difficulty).
+  var LEVELS = [
+    { n: 3, shuffle: 12 },
+    { n: 3, shuffle: 25 },
+    { n: 3, shuffle: 60 },
+    { n: 3, shuffle: 120 },
+    { n: 4, shuffle: 40 },
+    { n: 4, shuffle: 90 },
+    { n: 4, shuffle: 160 },
+    { n: 4, shuffle: 260 },
+    { n: 5, shuffle: 120 },
+    { n: 5, shuffle: 300 }
+  ];
+  var BOARD_PX = 360;
+  var GAP = 8;
+
+  var board = document.getElementById(&#x27;board&#x27;);
+  var overlay = document.getElementById(&#x27;overlay&#x27;);
+  var ovBig = document.getElementById(&#x27;ovBig&#x27;);
+  var ovSub = document.getElementById(&#x27;ovSub&#x27;);
+  var levelEl = document.getElementById(&#x27;level&#x27;);
+  var movesEl = document.getElementById(&#x27;moves&#x27;);
+  var solvedEl = document.getElementById(&#x27;solved&#x27;);
+  var hintBtn = document.getElementById(&#x27;hintBtn&#x27;);
+  var shuffleBtn = document.getElementById(&#x27;shuffleBtn&#x27;);
+
+  var running = false;
+  var levelIdx = 0;
+  var solvedCount = 0;
+  var moves = 0;
+  var n = 3;
+  var tiles = [];        // grid values, length n*n, 0 = empty
+  var tileEls = {};      // value -&gt; element
+  var tileSize = 0;
+  var busy = false;      // block input during transitions
+  var state = &#x27;idle&#x27;;    // idle | playing | won-level | won-all
+
+  // ---- Sound ----
+  var audioCtx = null;
+  function beep(freq, dur, type, vol) {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = type || &#x27;sine&#x27;; o.frequency.value = freq;
+      var now = audioCtx.currentTime;
+      g.gain.setValueAtTime(vol || 0.12, now);
+      g.gain.exponentialRampToValueAtTime(0.001, now + dur);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(now); o.stop(now + dur);
+    } catch (_) {}
+  }
+  function slideSound() { beep(420, 0.07, &#x27;triangle&#x27;, 0.1); }
+  function solveSound() { beep(660,0.14,&#x27;sine&#x27;); setTimeout(function(){beep(880,0.16,&#x27;sine&#x27;);},120); setTimeout(function(){beep(1180,0.22,&#x27;sine&#x27;);},260); }
+  function winAllSound() { [523,659,784,1046].forEach(function(f,i){ setTimeout(function(){ beep(f,0.25,&#x27;sine&#x27;); }, i*160); }); }
+
+  function idx(r, c) { return r * n + c; }
+  function rowOf(i) { return Math.floor(i / n); }
+  function colOf(i) { return i % n; }
+
+  function goalArr() {
+    var a = [];
+    for (var i = 1; i &lt; n * n; i++) a.push(i);
+    a.push(0);
+    return a;
+  }
+
+  function isSolved() {
+    var g = goalArr();
+    for (var i = 0; i &lt; g.length; i++) if (tiles[i] !== g[i]) return false;
+    return true;
+  }
+
+  function emptyIndex() { return tiles.indexOf(0); }
+
+  function neighborsOfEmpty() {
+    var e = emptyIndex(), r = rowOf(e), c = colOf(e), res = [];
+    if (r &gt; 0) res.push(idx(r - 1, c));
+    if (r &lt; n - 1) res.push(idx(r + 1, c));
+    if (c &gt; 0) res.push(idx(r, c - 1));
+    if (c &lt; n - 1) res.push(idx(r, c + 1));
+    return res;
+  }
+
+  function buildBoard() {
+    board.style.width = BOARD_PX + &#x27;px&#x27;;
+    board.style.height = BOARD_PX + &#x27;px&#x27;;
+    board.innerHTML = &#x27;&#x27;;
+    tileEls = {};
+    tileSize = (BOARD_PX - GAP * (n + 1)) / n;
+    var fontSz = Math.max(16, Math.round(tileSize * 0.4));
+    for (var v = 1; v &lt; n * n; v++) {
+      var el = document.createElement(&#x27;div&#x27;);
+      el.className = &#x27;tile&#x27;;
+      el.textContent = v;
+      el.style.width = tileSize + &#x27;px&#x27;;
+      el.style.height = tileSize + &#x27;px&#x27;;
+      el.style.fontSize = fontSz + &#x27;px&#x27;;
+      (function (val) {
+        el.addEventListener(&#x27;click&#x27;, function () { tryMove(val); });
+      })(v);
+      board.appendChild(el);
+      tileEls[v] = el;
+    }
+    positionTiles();
+  }
+
+  function positionTiles() {
+    for (var i = 0; i &lt; tiles.length; i++) {
+      var v = tiles[i];
+      if (v === 0) continue;
+      var el = tileEls[v];
+      var r = rowOf(i), c = colOf(i);
+      el.style.left = (GAP + c * (tileSize + GAP)) + &#x27;px&#x27;;
+      el.style.top = (GAP + r * (tileSize + GAP)) + &#x27;px&#x27;;
+      el.classList.toggle(&#x27;solved&#x27;, v === i + 1);
+    }
+  }
+
+  function tryMove(val) {
+    if (state !== &#x27;playing&#x27; || busy) return;
+    var pos = tiles.indexOf(val);
+    var e = emptyIndex();
+    if (neighborsOfEmpty().indexOf(pos) === -1) return; // not adjacent
+    // swap
+    tiles[e] = val;
+    tiles[pos] = 0;
+    moves++;
+    movesEl.textContent = moves;
+    clearHint();
+    slideSound();
+    busy = true;
+    positionTiles();
+    setTimeout(function () {
+      busy = false;
+      if (isSolved()) onLevelSolved();
+    }, 180);
+  }
+
+  function clearHint() {
+    for (var v in tileEls) tileEls[v].classList.remove(&#x27;hint&#x27;);
+  }
+
+  // Hint: pick the neighbor tile whose move most reduces total Manhattan
+  // distance to goal (a simple greedy heuristic — good enough to unstick).
+  function showHint() {
+    if (state !== &#x27;playing&#x27; || busy) return;
+    clearHint();
+    var best = null, bestScore = Infinity;
+    var neigh = neighborsOfEmpty();
+    var e = emptyIndex();
+    for (var k = 0; k &lt; neigh.length; k++) {
+      var p = neigh[k];
+      var val = tiles[p];
+      // simulate swap
+      var copy = tiles.slice();
+      copy[e] = val; copy[p] = 0;
+      var d = totalDistance(copy);
+      if (d &lt; bestScore) { bestScore = d; best = val; }
+    }
+    if (best != null) {
+      tileEls[best].classList.add(&#x27;hint&#x27;);
+      beep(700, 0.1, &#x27;sine&#x27;, 0.08);
+      setTimeout(clearHint, 2200);
+    }
+  }
+
+  function totalDistance(arr) {
+    var total = 0;
+    for (var i = 0; i &lt; arr.length; i++) {
+      var v = arr[i];
+      if (v === 0) continue;
+      var goalPos = v - 1;
+      total += Math.abs(rowOf(i) - rowOf(goalPos)) + Math.abs(colOf(i) - colOf(goalPos));
+    }
+    return total;
+  }
+
+  function shuffleTiles(depth) {
+    tiles = goalArr();
+    var last = -1;
+    for (var s = 0; s &lt; depth; s++) {
+      var neigh = neighborsOfEmpty();
+      // avoid immediately undoing the previous move
+      var choices = neigh.filter(function (p) { return p !== last; });
+      if (choices.length === 0) choices = neigh;
+      var pick = choices[Math.floor(Math.random() * choices.length)];
+      var e = emptyIndex();
+      last = e;
+      tiles[e] = tiles[pick];
+      tiles[pick] = 0;
+    }
+    if (isSolved()) shuffleTiles(depth); // extremely unlikely, but be safe
+  }
+
+  function loadLevel(i) {
+    var cfg = LEVELS[i];
+    n = cfg.n;
+    moves = 0;
+    movesEl.textContent = &#x27;0&#x27;;
+    levelEl.textContent = (i + 1);
+    buildBoard();
+    shuffleTiles(cfg.shuffle);
+    positionTiles();
+    state = &#x27;playing&#x27;;
+    hideOverlay();
+    hintBtn.disabled = false;
+    shuffleBtn.disabled = false;
+  }
+
+  function onLevelSolved() {
+    state = &#x27;won-level&#x27;;
+    solvedCount++;
+    solvedEl.textContent = solvedCount;
+    positionTiles();
+    hintBtn.disabled = true;
+    if (levelIdx &lt; LEVELS.length - 1) {
+      solveSound();
+      showOverlay(&#x27;Level &#x27; + (levelIdx + 1) + &#x27; solved! 🎉&#x27;, &#x27;In &#x27; + moves + &#x27; moves. Next level starting…&#x27;);
+      setTimeout(function () {
+        if (state !== &#x27;won-level&#x27;) return;
+        levelIdx++;
+        loadLevel(levelIdx);
+      }, 1500);
+    } else {
+      state = &#x27;won-all&#x27;;
+      winAllSound();
+      launchConfetti();
+      hintBtn.disabled = true;
+      shuffleBtn.disabled = true;
+      showOverlay(&#x27;🏆 All 10 solved!&#x27;, &#x27;You conquered Slide Quest! Press Start below to play again.&#x27;);
+    }
+  }
+
+  function showOverlay(big, sub) {
+    ovBig.textContent = big; ovSub.textContent = sub || &#x27;&#x27;;
+    overlay.classList.remove(&#x27;hidden&#x27;);
+  }
+  function hideOverlay() { overlay.classList.add(&#x27;hidden&#x27;); }
+
+  function launchConfetti() {
+    var colors = [&#x27;#ffd479&#x27;,&#x27;#8ff0a4&#x27;,&#x27;#8fd0ff&#x27;,&#x27;#f78fb3&#x27;,&#x27;#c58fff&#x27;];
+    for (var i = 0; i &lt; 40; i++) {
+      (function () {
+        var c = document.createElement(&#x27;div&#x27;);
+        c.className = &#x27;confetti&#x27;;
+        c.style.background = colors[i % colors.length];
+        c.style.left = (Math.random() * 100) + &#x27;%&#x27;;
+        overlay.appendChild(c);
+        var fall = 260 + Math.random() * 120;
+        var dur = 900 + Math.random() * 900;
+        c.animate([
+          { transform: &#x27;translateY(0) rotate(0deg)&#x27;, opacity: 1 },
+          { transform: &#x27;translateY(&#x27; + fall + &#x27;px) rotate(&#x27; + (360 + Math.random()*360) + &#x27;deg)&#x27;, opacity: 0 }
+        ], { duration: dur, easing: &#x27;ease-in&#x27; });
+        setTimeout(function(){ if (c.parentNode) c.parentNode.removeChild(c); }, dur);
+      })();
+    }
+  }
+
+  function startGame() {
+    levelIdx = 0;
+    solvedCount = 0;
+    solvedEl.textContent = &#x27;0&#x27;;
+    running = true;
+    busy = false;
+    loadLevel(0);
+  }
+
+  function stopGame() {
+    running = false;
+    if (state === &#x27;playing&#x27;) {
+      state = &#x27;idle&#x27;;
+      hintBtn.disabled = true;
+      shuffleBtn.disabled = true;
+      showOverlay(&#x27;Paused&#x27;, &#x27;Press Start below to play again.&#x27;);
+    }
+  }
+
+  hintBtn.addEventListener(&#x27;click&#x27;, showHint);
+  shuffleBtn.addEventListener(&#x27;click&#x27;, function () {
+    if (state !== &#x27;playing&#x27;) return;
+    loadLevel(levelIdx);
+    beep(500, 0.1, &#x27;triangle&#x27;, 0.1);
+  });
+
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  // initial static preview
+  n = 3; tiles = goalArr(); buildBoard();
+  showOverlay(&#x27;Ready?&#x27;, &#x27;Press Start below to begin.&#x27;);
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paddle ball</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>Paddle ball</b> &middot; Game 343 &middot; Amateur producer &middot; Basic game: Paddle and ball</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #222; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 18px; background: white; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 10px; }
+  h1 { margin: 0; font-size: 28px; font-weight: 600; }
+  .instructions { font-size: 16px; color: #666; max-width: 600px; margin: 0; line-height: 1.4; text-align: center; }
+  .score { font-size: 22px; color: #555; margin: 0; }
+  .field { position: relative; width: 620px; height: 420px; flex-shrink: 0; margin: 0; background: #ececec; border-radius: 8px; overflow: hidden; }
+  .paddle { position: absolute; width: 100px; height: 14px; background: #555; border-radius: 4px; bottom: 10px; }
+  .ball { position: absolute; width: 16px; height: 16px; background: #555; border-radius: 50%; }
+  .bomb { position: absolute; width: 20px; height: 20px; text-align: center; line-height: 20px; font-size: 18px; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;Paddle ball&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Move the paddle with the &lt;strong&gt;&amp;larr;&lt;/strong&gt; and &lt;strong&gt;&amp;rarr;&lt;/strong&gt; arrow keys to bounce the balls for points, but dodge the falling 💣 bombs &amp;mdash; each one that hits you costs 3 points. Use the &lt;strong&gt;Start&lt;/strong&gt;/&lt;strong&gt;Restart&lt;/strong&gt; button below.&lt;/p&gt;
+  &lt;div class=&quot;score&quot;&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt; &amp;nbsp;·&amp;nbsp; Balls: &lt;span id=&quot;ballcount&quot;&gt;1&lt;/span&gt;&lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;
+    &lt;div class=&quot;paddle&quot; id=&quot;paddle&quot;&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var FIELD_W = 620, FIELD_H = 420;
+  var PADDLE_W = 100, PADDLE_H = 14, PADDLE_BOTTOM = 10, PADDLE_SPEED = 6;
+  var BALL_SIZE = 14;
+  var BALL_SPEED = 3.0;        // slowed down a little
+  var SPEED_INCREMENT = 0.3;   // added to speed on every paddle hit
+  var MAX_SPEED = 9.0;         // cap so it stays playable
+  var BOMB_SIZE = 20;
+  var BOMB_MIN_SPEED = 2.2, BOMB_MAX_SPEED = 4.2;
+  var BOMB_INTERVAL = 1600;    // ms between bomb spawns
+  var BOMB_PENALTY = 3;
+  var running = false, animId = null, bombTimer = null;
+  var keysDown = {};
+  var paddleX = (FIELD_W - PADDLE_W) / 2;
+  var score = 0;
+  var nextBallThreshold = 5;
+  var balls = [];              // each: {x, y, vx, vy, el}
+  var bombs = [];              // each: {x, y, vy, el}
+  var field = document.getElementById(&#x27;field&#x27;);
+  var paddle = document.getElementById(&#x27;paddle&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var ballCountEl = document.getElementById(&#x27;ballcount&#x27;);
+
+  function makeBall() {
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;ball&#x27;;
+    field.appendChild(el);
+    var b = {
+      x: (FIELD_W - BALL_SIZE) / 2,
+      y: 50,
+      vx: (Math.random() &lt; 0.5 ? -1 : 1) * BALL_SPEED,
+      vy: BALL_SPEED,
+      el: el
+    };
+    balls.push(b);
+    return b;
+  }
+
+  function makeBomb() {
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;bomb&#x27;;
+    el.textContent = &#x27;💣&#x27;;
+    field.appendChild(el);
+    var b = {
+      x: Math.random() * (FIELD_W - BOMB_SIZE),
+      y: -BOMB_SIZE,
+      vy: BOMB_MIN_SPEED + Math.random() * (BOMB_MAX_SPEED - BOMB_MIN_SPEED),
+      el: el
+    };
+    bombs.push(b);
+    return b;
+  }
+
+  function removeBomb(i) {
+    var b = bombs[i];
+    if (b.el &amp;&amp; b.el.parentNode) b.el.parentNode.removeChild(b.el);
+    bombs.splice(i, 1);
+  }
+
+  function clearBalls() {
+    for (var i = 0; i &lt; balls.length; i++) {
+      if (balls[i].el &amp;&amp; balls[i].el.parentNode) balls[i].el.parentNode.removeChild(balls[i].el);
+    }
+    balls = [];
+  }
+
+  function clearBombs() {
+    for (var i = 0; i &lt; bombs.length; i++) {
+      if (bombs[i].el &amp;&amp; bombs[i].el.parentNode) bombs[i].el.parentNode.removeChild(bombs[i].el);
+    }
+    bombs = [];
+  }
+
+  function resetBallPos(b) {
+    b.x = (FIELD_W - BALL_SIZE) / 2;
+    b.y = 50;
+    b.vx = (Math.random() &lt; 0.5 ? -1 : 1) * BALL_SPEED;
+    b.vy = BALL_SPEED;
+  }
+
+  function paint() {
+    paddle.style.left = paddleX + &#x27;px&#x27;;
+    for (var i = 0; i &lt; balls.length; i++) {
+      balls[i].el.style.left = balls[i].x + &#x27;px&#x27;;
+      balls[i].el.style.top = balls[i].y + &#x27;px&#x27;;
+    }
+    for (var j = 0; j &lt; bombs.length; j++) {
+      bombs[j].el.style.left = bombs[j].x + &#x27;px&#x27;;
+      bombs[j].el.style.top = bombs[j].y + &#x27;px&#x27;;
+    }
+  }
+
+  function tick() {
+    if (!running) return;
+    if (keysDown[&#x27;ArrowLeft&#x27;]) paddleX -= PADDLE_SPEED;
+    if (keysDown[&#x27;ArrowRight&#x27;]) paddleX += PADDLE_SPEED;
+    paddleX = Math.max(0, Math.min(FIELD_W - PADDLE_W, paddleX));
+
+    var paddleTop = FIELD_H - PADDLE_BOTTOM - PADDLE_H;
+
+    for (var i = 0; i &lt; balls.length; i++) {
+      var b = balls[i];
+      b.x += b.vx;
+      b.y += b.vy;
+      if (b.x &lt;= 0) { b.x = 0; b.vx = -b.vx; }
+      if (b.x + BALL_SIZE &gt;= FIELD_W) { b.x = FIELD_W - BALL_SIZE; b.vx = -b.vx; }
+      if (b.y &lt;= 0) { b.y = 0; b.vy = -b.vy; }
+
+      if (b.vy &gt; 0 &amp;&amp;
+          b.y + BALL_SIZE &gt;= paddleTop &amp;&amp;
+          b.y + BALL_SIZE &lt;= paddleTop + PADDLE_H + 6 &amp;&amp;
+          b.x + BALL_SIZE &gt;= paddleX &amp;&amp;
+          b.x &lt;= paddleX + PADDLE_W) {
+        var speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+        var newSpeed = Math.min(speed + SPEED_INCREMENT, MAX_SPEED);
+        var scale = newSpeed / speed;
+        b.vx *= scale;
+        b.vy = -Math.abs(b.vy * scale);
+        b.y = paddleTop - BALL_SIZE;
+        score += 1;
+        scoreEl.textContent = score;
+
+        if (score &gt;= nextBallThreshold) {
+          makeBall();
+          nextBallThreshold += 5;
+          ballCountEl.textContent = balls.length;
+        }
+      }
+
+      if (b.y &gt;= FIELD_H) resetBallPos(b);
+    }
+
+    // Bombs fall straight down; penalty if they hit the paddle.
+    for (var k = bombs.length - 1; k &gt;= 0; k--) {
+      var bo = bombs[k];
+      bo.y += bo.vy;
+      if (bo.vy &gt; 0 &amp;&amp;
+          bo.y + BOMB_SIZE &gt;= paddleTop &amp;&amp;
+          bo.y + BOMB_SIZE &lt;= paddleTop + PADDLE_H + 8 &amp;&amp;
+          bo.x + BOMB_SIZE &gt;= paddleX &amp;&amp;
+          bo.x &lt;= paddleX + PADDLE_W) {
+        score -= BOMB_PENALTY;
+        scoreEl.textContent = score;
+        removeBomb(k);
+        continue;
+      }
+      if (bo.y &gt;= FIELD_H) { removeBomb(k); }
+    }
+
+    paint();
+    animId = requestAnimationFrame(tick);
+  }
+
+  function spawnBombTick() {
+    if (!running) return;
+    makeBomb();
+    bombTimer = setTimeout(spawnBombTick, BOMB_INTERVAL);
+  }
+
+  function startGame() {
+    if (running) return;
+    score = 0;
+    scoreEl.textContent = &#x27;0&#x27;;
+    nextBallThreshold = 5;
+    paddleX = (FIELD_W - PADDLE_W) / 2;
+    for (var k in keysDown) keysDown[k] = false;
+    clearBalls();
+    clearBombs();
+    makeBall();
+    ballCountEl.textContent = balls.length;
+    paint();
+    running = true;
+    animId = requestAnimationFrame(tick);
+    // First bomb appears quickly so there&#x27;s immediate motion.
+    makeBomb();
+    bombTimer = setTimeout(spawnBombTick, BOMB_INTERVAL);
+  }
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+    if (bombTimer) { clearTimeout(bombTimer); bombTimer = null; }
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27; || e.key === &#x27;ArrowRight&#x27;) {
+      keysDown[e.key] = true;
+      e.preventDefault();
+    }
+  });
+  window.addEventListener(&#x27;keyup&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27; || e.key === &#x27;ArrowRight&#x27;) keysDown[e.key] = false;
+  });
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  paint();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

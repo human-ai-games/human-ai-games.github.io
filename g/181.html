@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brainstorm Blitz 💡</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>Brainstorm Blitz 💡</b> &middot; Game 181 &middot; Professional producer &middot; Basic game: Whack-a-mole</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #222; }
+  .game { max-width: 720px; margin: 0 auto; padding: 14px; background: white; height: 100%; box-sizing: border-box; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 600; }
+  .instructions { font-size: 16px; color: #666; max-width: 620px; margin: 0; line-height: 1.4; }
+  .stats { font-size: 20px; color: #555; margin: 0; display: flex; gap: 26px; }
+  .stats span { font-weight: 600; color: #222; }
+  .prompt { background: linear-gradient(135deg, #6a8cff, #4a63d0); color: white; border-radius: 12px; padding: 14px 20px; width: 560px; box-sizing: border-box; }
+  .prompt .cat { font-size: 24px; font-weight: 700; }
+  .prompt .letter { font-size: 15px; margin-top: 4px; opacity: 0.9; }
+  .inputrow { display: flex; gap: 8px; width: 560px; }
+  #word { flex: 1; font-size: 20px; padding: 10px 12px; border: 2px solid #cfd6e6; border-radius: 8px; outline: none; box-sizing: border-box; }
+  #word:focus { border-color: #4a63d0; }
+  #word:disabled { background: #eee; }
+  .submit { font-size: 18px; padding: 10px 18px; border: none; border-radius: 8px; background: #4a63d0; color: white; cursor: pointer; font-weight: 600; }
+  .submit:disabled { background: #aab; cursor: default; }
+  .words { width: 560px; min-height: 120px; max-height: 150px; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 6px; align-content: flex-start; padding: 6px; border: 1px dashed #d5d5d5; border-radius: 8px; box-sizing: border-box; }
+  .chip { background: #eafaf0; border: 1px solid #b6e6c6; color: #2a7d20; border-radius: 14px; padding: 4px 12px; font-size: 16px; }
+  .chip.bad { background: #fdeaea; border-color: #f0b6b6; color: #c0392b; }
+  .msg { font-size: 18px; font-weight: 600; color: #2a7d20; min-height: 22px; margin: 0; }
+  .idle { color: #999; font-weight: 400; }
+  .timebar { width: 560px; height: 10px; background: #e5e8f0; border-radius: 6px; overflow: hidden; }
+  .timefill { height: 100%; width: 100%; background: linear-gradient(90deg, #3ba55c, #ffd23f, #e63946); transition: width 0.2s linear; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;Brainstorm Blitz 💡&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Type as many words as you can that fit the category and start with the given letter, pressing Enter after each. Score points before time runs out — use the Start/Restart button below.&lt;/p&gt;
+  &lt;div class=&quot;stats&quot;&gt;
+    &lt;div&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;div&gt;Words: &lt;span id=&quot;count&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;div&gt;Time: &lt;span id=&quot;time&quot;&gt;0&lt;/span&gt;s&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;prompt&quot;&gt;
+    &lt;div class=&quot;cat&quot; id=&quot;cat&quot;&gt;—&lt;/div&gt;
+    &lt;div class=&quot;letter&quot; id=&quot;letterline&quot;&gt;Press Start below to begin!&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;timebar&quot;&gt;&lt;div class=&quot;timefill&quot; id=&quot;timefill&quot;&gt;&lt;/div&gt;&lt;/div&gt;
+  &lt;div class=&quot;inputrow&quot;&gt;
+    &lt;input id=&quot;word&quot; type=&quot;text&quot; placeholder=&quot;Type a word and press Enter…&quot; autocomplete=&quot;off&quot; disabled&gt;
+    &lt;button class=&quot;submit&quot; id=&quot;submit&quot; disabled&gt;Add&lt;/button&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;msg idle&quot; id=&quot;msg&quot;&gt;Beat the clock!&lt;/div&gt;
+  &lt;div class=&quot;words&quot; id=&quot;words&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var CATEGORIES = [
+    &#x27;Animals&#x27;,&#x27;Foods&#x27;,&#x27;Countries&#x27;,&#x27;Cities&#x27;,&#x27;Sports&#x27;,&#x27;Colors&#x27;,
+    &#x27;Jobs / Professions&#x27;,&#x27;Movies&#x27;,&#x27;Boy or Girl Names&#x27;,&#x27;Things in a Kitchen&#x27;,
+    &#x27;Fruits or Vegetables&#x27;,&#x27;Things That Are Cold&#x27;,&#x27;Musical Instruments&#x27;,
+    &#x27;Board Games&#x27;,&#x27;Things in Space&#x27;,&#x27;Modes of Transport&#x27;,&#x27;School Subjects&#x27;,
+    &#x27;Things at the Beach&#x27;,&#x27;Superheroes&#x27;,&#x27;Types of Drinks&#x27;
+  ];
+  var LETTERS = &#x27;ABCDEFGHIJKLMNOPRSTW&#x27;;
+
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var countEl = document.getElementById(&#x27;count&#x27;);
+  var timeEl = document.getElementById(&#x27;time&#x27;);
+  var catEl = document.getElementById(&#x27;cat&#x27;);
+  var letterLine = document.getElementById(&#x27;letterline&#x27;);
+  var timeFill = document.getElementById(&#x27;timefill&#x27;);
+  var wordInput = document.getElementById(&#x27;word&#x27;);
+  var submitBtn = document.getElementById(&#x27;submit&#x27;);
+  var wordsEl = document.getElementById(&#x27;words&#x27;);
+  var msgEl = document.getElementById(&#x27;msg&#x27;);
+
+  var TOTAL_TIME = 60;
+  var running = false;
+  var timeLeft = TOTAL_TIME;
+  var tickId = null;
+  var score = 0;
+  var used = {};
+  var curLetter = &#x27;A&#x27;;
+
+  var audioCtx = null;
+  function beep(freq, dur, type, vol) {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      var o = audioCtx.createOscillator();
+      var g = audioCtx.createGain();
+      o.type = type || &#x27;sine&#x27;;
+      o.frequency.value = freq;
+      o.connect(g); g.connect(audioCtx.destination);
+      g.gain.setValueAtTime(vol || 0.15, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+      o.start(); o.stop(audioCtx.currentTime + dur);
+    } catch (_) {}
+  }
+
+  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+  function newPrompt() {
+    catEl.textContent = pick(CATEGORIES);
+    curLetter = pick(LETTERS.split(&#x27;&#x27;));
+    letterLine.textContent = &#x27;Words must start with the letter &quot;&#x27; + curLetter + &#x27;&quot;&#x27;;
+    used = {};
+    wordsEl.innerHTML = &#x27;&#x27;;
+    score = 0;
+    scoreEl.textContent = &#x27;0&#x27;;
+    countEl.textContent = &#x27;0&#x27;;
+  }
+
+  function addChip(text, bad, note) {
+    var chip = document.createElement(&#x27;span&#x27;);
+    chip.className = &#x27;chip&#x27; + (bad ? &#x27; bad&#x27; : &#x27;&#x27;);
+    chip.textContent = text + (note ? &#x27; (&#x27; + note + &#x27;)&#x27; : &#x27;&#x27;);
+    wordsEl.appendChild(chip);
+    wordsEl.scrollTop = wordsEl.scrollHeight;
+  }
+
+  function submitWord() {
+    if (!running) return;
+    var raw = wordInput.value.trim();
+    wordInput.value = &#x27;&#x27;;
+    wordInput.focus();
+    if (!raw) return;
+    var w = raw.toLowerCase();
+
+    if (w.charAt(0).toUpperCase() !== curLetter) {
+      msgEl.className = &#x27;msg&#x27;; msgEl.style.color = &#x27;#c0392b&#x27;;
+      msgEl.textContent = &#x27;Must start with &quot;&#x27; + curLetter + &#x27;&quot;!&#x27;;
+      addChip(raw, true, &#x27;wrong letter&#x27;);
+      beep(180, 0.15, &#x27;sawtooth&#x27;, 0.18);
+      return;
+    }
+    if (w.length &lt; 2) {
+      msgEl.className = &#x27;msg&#x27;; msgEl.style.color = &#x27;#c0392b&#x27;;
+      msgEl.textContent = &#x27;Too short!&#x27;;
+      beep(180, 0.15, &#x27;sawtooth&#x27;, 0.18);
+      return;
+    }
+    if (used[w]) {
+      msgEl.className = &#x27;msg&#x27;; msgEl.style.color = &#x27;#c0392b&#x27;;
+      msgEl.textContent = &#x27;Already used that one!&#x27;;
+      addChip(raw, true, &#x27;repeat&#x27;);
+      beep(220, 0.15, &#x27;sawtooth&#x27;, 0.18);
+      return;
+    }
+    // Accept it — this is a creativity game, we trust the player.
+    used[w] = true;
+    var pts = 1 + Math.max(0, w.length - 4); // longer words score more
+    score += pts;
+    scoreEl.textContent = score;
+    countEl.textContent = Object.keys(used).length;
+    addChip(raw, false, pts &gt; 1 ? &#x27;+&#x27; + pts : &#x27;&#x27;);
+    msgEl.className = &#x27;msg&#x27;; msgEl.style.color = &#x27;#2a7d20&#x27;;
+    msgEl.textContent = &#x27;Nice! +&#x27; + pts;
+    beep(560 + Math.min(300, w.length * 20), 0.1, &#x27;triangle&#x27;, 0.18);
+    // small time bonus for keeping momentum
+  }
+
+  function tick() {
+    timeLeft--;
+    if (timeLeft &lt; 0) timeLeft = 0;
+    timeEl.textContent = timeLeft;
+    timeFill.style.width = (timeLeft / TOTAL_TIME * 100) + &#x27;%&#x27;;
+    if (timeLeft &lt;= 5 &amp;&amp; timeLeft &gt; 0) beep(700, 0.06, &#x27;square&#x27;, 0.12);
+    if (timeLeft &lt;= 0) endRound();
+  }
+
+  function endRound() {
+    running = false;
+    if (tickId) { clearInterval(tickId); tickId = null; }
+    wordInput.disabled = true;
+    submitBtn.disabled = true;
+    msgEl.className = &#x27;msg&#x27;; msgEl.style.color = &#x27;#4a63d0&#x27;;
+    var n = Object.keys(used).length;
+    msgEl.textContent = &quot;⏰ Time! &quot; + n + &#x27; words, &#x27; + score + &#x27; points!&#x27; +
+      (score &gt;= 20 ? &#x27; Brilliant!&#x27; : score &gt;= 10 ? &#x27; Well done!&#x27; : &#x27;&#x27;);
+    beep(440, 0.2, &#x27;sine&#x27;, 0.2);
+    setTimeout(function(){ beep(330, 0.25, &#x27;sine&#x27;, 0.2); }, 150);
+  }
+
+  function startGame() {
+    running = true;
+    timeLeft = TOTAL_TIME;
+    timeEl.textContent = timeLeft;
+    timeFill.style.width = &#x27;100%&#x27;;
+    newPrompt();
+    wordInput.disabled = false;
+    submitBtn.disabled = false;
+    wordInput.focus();
+    msgEl.className = &#x27;msg&#x27;; msgEl.style.color = &#x27;#2a7d20&#x27;;
+    msgEl.textContent = &#x27;Go! Type your first word.&#x27;;
+    if (tickId) clearInterval(tickId);
+    tickId = setInterval(tick, 1000);
+  }
+
+  function stopGame() {
+    running = false;
+    if (tickId) { clearInterval(tickId); tickId = null; }
+    wordInput.disabled = true;
+    submitBtn.disabled = true;
+  }
+
+  wordInput.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27;Enter&#x27;) { submitWord(); e.preventDefault(); }
+  });
+  submitBtn.addEventListener(&#x27;click&#x27;, function () { submitWord(); });
+
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  // Suppress in-iframe scrollbars. The parent fits the iframe layout
+  // box to match the content size, so internal scroll is redundant —
+  // and if the LLM&#x27;s CSS sets body overflow: auto, the scrollbar shows
+  // briefly before the fit lands. Force hidden so it never appears.
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  // Iframe-internal JS error capture. window.onerror inside a sandboxed
+  // iframe can&#x27;t post to /api/js_error directly, so we relay to the
+  // parent via postMessage; parent&#x27;s error_logger.js forwards to the
+  // server. Catches LLM-emitted broken HTML (invalid hex, undefined
+  // variables, etc.) that would otherwise fail silently inside the
+  // iframe.
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      // Debounce: don&#x27;t fire more than ~10× per second. ResizeObserver
+      // fires repeatedly during layout/font load; we only need the latest.
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      // Clamp: reject obviously bogus dimensions. Any browser-game viewport
+      // is well under 4000×4000 logical px; readings beyond that are layout
+      // noise during load/visibility transitions.
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  // Parent posts wd_remeasure when it makes the iframe visible (the body&#x27;s
+  // ResizeObserver doesn&#x27;t fire on display:none→block of an outer ancestor
+  // because the iframe document didn&#x27;t actually resize). Wait a frame for
+  // layout to settle before measuring.
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

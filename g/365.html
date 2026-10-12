@@ -1,0 +1,621 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HIGHWAY DODGE</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>HIGHWAY DODGE</b> &middot; Game 365 &middot; Professional producer &middot; Basic game: Gravity jumper</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; margin: 0; padding: 0; }
+  body { font-family: system-ui, -apple-system, sans-serif; background: #0a0a14; color: #e6e6ff; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 12px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 8px; height: 100%; }
+  h1 { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: 1px;
+       background: linear-gradient(90deg,#ffd000,#ff5e00); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .instructions { font-size: 16px; color: #9aa0d0; max-width: 620px; margin: 0; line-height: 1.35; text-align: center; }
+  .hud { display: flex; gap: 22px; font-size: 18px; }
+  .hud b { color: #ffd000; }
+  .combo { color: #33ff88; }
+  #stage { position: relative; width: 440px; height: 500px; flex-shrink: 0; border-radius: 12px; overflow: hidden;
+           background: #05050c; box-shadow: 0 0 24px rgba(255,208,0,.2), inset 0 0 40px rgba(0,0,0,.6); }
+  canvas { display: block; }
+  #overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+             background: rgba(5,5,12,.78); color: #e6e6ff; text-align: center; gap: 8px; }
+  #overlay h2 { margin: 0; font-size: 26px; color: #ffd000; }
+  #overlay p { margin: 0; font-size: 16px; color: #9aa0d0; }
+  .hidden { display: none !important; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;HIGHWAY DODGE&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Use ← → (or A / D) to switch lanes and dodge the cars and barriers. Hit green speed boosts for a burst of speed and bonus points — the world changes as your score climbs, press Start below.&lt;/p&gt;
+  &lt;div class=&quot;hud&quot;&gt;
+    &lt;div&gt;Score &lt;b id=&quot;score&quot;&gt;0&lt;/b&gt;&lt;/div&gt;
+    &lt;div&gt;Best &lt;b id=&quot;best&quot;&gt;0&lt;/b&gt;&lt;/div&gt;
+    &lt;div class=&quot;combo&quot;&gt;Boost x&lt;span id=&quot;combo&quot;&gt;1&lt;/span&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div id=&quot;stage&quot;&gt;
+    &lt;canvas id=&quot;cv&quot; width=&quot;440&quot; height=&quot;500&quot;&gt;&lt;/canvas&gt;
+    &lt;div id=&quot;overlay&quot;&gt;
+      &lt;h2 id=&quot;ovTitle&quot;&gt;HIGHWAY DODGE&lt;/h2&gt;
+      &lt;p id=&quot;ovMsg&quot;&gt;Press Start below to begin your drive.&lt;/p&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var cv = document.getElementById(&#x27;cv&#x27;), ctx = cv.getContext(&#x27;2d&#x27;);
+  var W = cv.width, H = cv.height;
+  var scoreEl = document.getElementById(&#x27;score&#x27;),
+      bestEl = document.getElementById(&#x27;best&#x27;),
+      comboEl = document.getElementById(&#x27;combo&#x27;),
+      overlay = document.getElementById(&#x27;overlay&#x27;),
+      ovTitle = document.getElementById(&#x27;ovTitle&#x27;),
+      ovMsg = document.getElementById(&#x27;ovMsg&#x27;);
+
+  // 3 lanes, top-down highway scrolling. Camera zoomed out: taller road,
+  // smaller cars =&gt; obstacles appear higher and give more reaction time.
+  var LANES = 3;
+  var ROAD_LEFT = 80, ROAD_RIGHT = W - 80;
+  var ROAD_W = ROAD_RIGHT - ROAD_LEFT;
+  var LANE_W = ROAD_W / LANES;
+
+  var CAR_W = 34, CAR_H = 58;
+  var PLAYER_Y = H - 95;
+
+  var running = false, animId = null;
+  var lastT = 0;
+  var score = 0, best = 0, combo = 1;
+  var speed = 0, baseSpeed = 260, maxSpeed = 900, distance = 0;
+  var dashOffset = 0;
+  var boostTimer = 0;
+  var shake = 0;
+
+  // player
+  var pLane = 1, pTargetLane = 1, pLaneF = 1;
+
+  var items = [];
+  var spawnAcc = 0;
+  var decos = []; // roadside decorations {y, side, kind}
+  var decoAcc = 0;
+
+  // ---- ZONES (change with score) ----
+  var ZONES = [
+    { name:&#x27;GRASSLAND&#x27;, at:0,    sky:[&#x27;#7ec8e3&#x27;,&#x27;#bfe8c8&#x27;], side:&#x27;#3a7d3a&#x27;, side2:&#x27;#2e6b2e&#x27;, road:&#x27;#33363e&#x27;, deco:&#x27;tree&#x27;, accent:&#x27;#ffd000&#x27; },
+    { name:&#x27;DESERT&#x27;,    at:800,  sky:[&#x27;#ffcf7a&#x27;,&#x27;#ffe6b0&#x27;], side:&#x27;#d9a css&#x27;.replace(&#x27; css&#x27;,&#x27;b566&#x27;), side2:&#x27;#c99a54&#x27;, road:&#x27;#3a352c&#x27;, deco:&#x27;cactus&#x27;, accent:&#x27;#ff8800&#x27; },
+    { name:&#x27;NEON CITY&#x27;, at:2000, sky:[&#x27;#1a0033&#x27;,&#x27;#3a0a5e&#x27;], side:&#x27;#12122a&#x27;, side2:&#x27;#0c0c1e&#x27;, road:&#x27;#1c1e2c&#x27;, deco:&#x27;building&#x27;, accent:&#x27;#00f0ff&#x27; },
+    { name:&#x27;SNOW PASS&#x27;, at:3600, sky:[&#x27;#9fbfe0&#x27;,&#x27;#eaf2fb&#x27;], side:&#x27;#dfe8f2&#x27;, side2:&#x27;#c7d4e2&#x27;, road:&#x27;#3a3e46&#x27;, deco:&#x27;pine&#x27;, accent:&#x27;#66ccff&#x27; },
+    { name:&#x27;LAVA ZONE&#x27;, at:5600, sky:[&#x27;#2a0505&#x27;,&#x27;#661010&#x27;], side:&#x27;#3a0d0d&#x27;, side2:&#x27;#280808&#x27;, road:&#x27;#26201e&#x27;, deco:&#x27;rock&#x27;, accent:&#x27;#ff3b00&#x27; }
+  ];
+  // fix desert side color (avoid earlier hack)
+  ZONES[1].side = &#x27;#d9ab66&#x27;;
+  var zoneIdx = 0;
+
+  function currentZone(){
+    var z = ZONES[0];
+    for (var i=0;i&lt;ZONES.length;i++){ if (score &gt;= ZONES[i].at) z = ZONES[i]; }
+    return z;
+  }
+
+  var audioCtx = null;
+  function beep(freq, dur, type, vol) {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+      var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = type||&#x27;sine&#x27;; o.frequency.value = freq;
+      g.gain.value = vol||0.06;
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime+dur);
+      o.stop(audioCtx.currentTime+dur);
+    } catch(_){}
+  }
+
+  function laneCenterX(lane) { return ROAD_LEFT + LANE_W * (lane + 0.5); }
+
+  function reset() {
+    score = 0; combo = 1;
+    speed = baseSpeed; distance = 0; dashOffset = 0;
+    boostTimer = 0; shake = 0; zoneIdx = 0;
+    pLane = 1; pTargetLane = 1; pLaneF = 1;
+    items = []; spawnAcc = 0; decos = []; decoAcc = 0;
+    scoreEl.textContent = &#x27;0&#x27;;
+    comboEl.textContent = &#x27;1&#x27;;
+  }
+
+  var CAR_COLORS = [&#x27;#ff2d55&#x27;,&#x27;#ff8800&#x27;,&#x27;#a64dff&#x27;,&#x27;#00c2ff&#x27;,&#x27;#ff4dd8&#x27;,&#x27;#4dff8f&#x27;];
+
+  function spawnRow() {
+    var lanesArr = [0,1,2];
+    for (var k = lanesArr.length-1; k&gt;0; k--){ var j=Math.floor(Math.random()*(k+1)); var t=lanesArr[k];lanesArr[k]=lanesArr[j];lanesArr[j]=t; }
+    var nOb = Math.random() &lt; 0.4 ? 2 : 1;
+    var blocked = {};
+    for (var i=0;i&lt;nOb;i++){
+      var ln = lanesArr[i];
+      blocked[ln] = true;
+      var isBarrier = Math.random() &lt; 0.3;
+      items.push({
+        y: -90, lane: ln,
+        type: isBarrier ? &#x27;barrier&#x27; : &#x27;car&#x27;,
+        color: CAR_COLORS[Math.floor(Math.random()*CAR_COLORS.length)]
+      });
+    }
+    if (Math.random() &lt; 0.35) {
+      var open = lanesArr.filter(function(l){ return !blocked[l]; });
+      if (open.length) items.push({ y:-90, lane: open[Math.floor(Math.random()*open.length)], type:&#x27;boost&#x27; });
+    }
+  }
+
+  function spawnDeco() {
+    var side = Math.random() &lt; 0.5 ? 0 : 1;
+    decos.push({ y:-40, side: side, kind: currentZone().deco, x: (Math.random()*0.7+0.1) });
+  }
+
+  function update(dt) {
+    var ramp = Math.min(maxSpeed*0.6, baseSpeed + distance * 0.015);
+    var target = ramp + (boostTimer &gt; 0 ? 380 : 0);
+    speed += (target - speed) * Math.min(1, dt*4);
+    distance += speed * dt;
+    score += speed * dt * 0.02 * (boostTimer &gt; 0 ? 2 : 1);
+    scoreEl.textContent = Math.floor(score);
+    dashOffset = (dashOffset + speed * dt * 0.5) % 60;
+
+    if (boostTimer &gt; 0) { boostTimer -= dt; if (boostTimer &lt;= 0) { combo = 1; comboEl.textContent = &#x27;1&#x27;; } }
+    if (shake &gt; 0) shake -= dt;
+
+    pLaneF += (pTargetLane - pLaneF) * Math.min(1, dt*14);
+    pLane = pTargetLane;
+
+    spawnAcc += speed * dt;
+    if (spawnAcc &gt;= 210) { spawnAcc -= 210; spawnRow(); }
+    decoAcc += speed * dt;
+    if (decoAcc &gt;= 130) { decoAcc -= 130; spawnDeco(); }
+
+    for (var i = items.length-1; i&gt;=0; i--) {
+      var it = items[i];
+      it.y += speed * dt;
+      var ix = laneCenterX(it.lane);
+      var px = laneCenterX(pLaneF);
+      var overlapY = Math.abs(it.y - PLAYER_Y) &lt; (CAR_H*0.75);
+      var overlapX = Math.abs(ix - px) &lt; (CAR_W*0.7);
+      if (!it.hit &amp;&amp; overlapY &amp;&amp; overlapX) {
+        if (it.type === &#x27;boost&#x27;) {
+          it.hit = true;
+          combo = Math.min(9, combo + 1);
+          comboEl.textContent = combo;
+          boostTimer = 2.6;
+          score += 40 * combo;
+          beep(700 + combo*40, 0.15, &#x27;triangle&#x27;, 0.06);
+          beep(1000 + combo*40, 0.15, &#x27;triangle&#x27;, 0.04);
+        } else {
+          if (boostTimer &gt; 0) {
+            it.hit = true; score += 15; shake = 0.25;
+            beep(220, 0.12, &#x27;sawtooth&#x27;, 0.05);
+          } else {
+            it.hit = true; gameOver(); return;
+          }
+        }
+      }
+      if (it.y &gt; H + 100) items.splice(i,1);
+    }
+
+    for (var d = decos.length-1; d&gt;=0; d--){
+      decos[d].y += speed * dt;
+      if (decos[d].y &gt; H + 60) decos.splice(d,1);
+    }
+  }
+
+  function drawRoad(zone) {
+    // scenery gradient (sky/ground colored)
+    var bg = ctx.createLinearGradient(0,0,0,H);
+    bg.addColorStop(0, zone.sky[0]); bg.addColorStop(1, zone.sky[1]);
+    ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+
+    // roadside strips
+    ctx.fillStyle = zone.side;
+    ctx.fillRect(0,0,ROAD_LEFT,H);
+    ctx.fillRect(ROAD_RIGHT,0,W-ROAD_RIGHT,H);
+
+    // decorations
+    for (var i=0;i&lt;decos.length;i++){
+      var dc = decos[i];
+      var zx = dc.side===0 ? (dc.x*ROAD_LEFT) : (ROAD_RIGHT + dc.x*(W-ROAD_RIGHT));
+      drawDeco(zx, dc.y, dc.kind);
+    }
+
+    // road surface
+    ctx.fillStyle = zone.road;
+    ctx.fillRect(ROAD_LEFT, 0, ROAD_W, H);
+
+    // road edges
+    ctx.fillStyle = zone.accent;
+    ctx.fillRect(ROAD_LEFT-5, 0, 5, H);
+    ctx.fillRect(ROAD_RIGHT, 0, 5, H);
+
+    // lane dashes
+    ctx.strokeStyle = &#x27;rgba(255,255,255,.55)&#x27;;
+    ctx.lineWidth = 4;
+    ctx.setLineDash([26,34]);
+    for (var l=1; l&lt;LANES; l++){
+      var x = ROAD_LEFT + LANE_W*l;
+      ctx.beginPath();
+      ctx.lineDashOffset = -dashOffset;
+      ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+  }
+
+  function drawDeco(x, y, kind) {
+    ctx.save();
+    if (kind===&#x27;tree&#x27; || kind===&#x27;pine&#x27;) {
+      ctx.fillStyle = &#x27;#6b4423&#x27;;
+      ctx.fillRect(x-3, y, 6, 16);
+      ctx.fillStyle = kind===&#x27;pine&#x27; ? &#x27;#1f6b3a&#x27; : &#x27;#2f8f3f&#x27;;
+      ctx.beginPath();
+      ctx.moveTo(x, y-22); ctx.lineTo(x-14, y+4); ctx.lineTo(x+14, y+4); ctx.closePath(); ctx.fill();
+    } else if (kind===&#x27;cactus&#x27;) {
+      ctx.fillStyle = &#x27;#3a8f4a&#x27;;
+      ctx.fillRect(x-4, y-18, 8, 30);
+      ctx.fillRect(x-14, y-6, 10, 6); ctx.fillRect(x-14, y-14, 6, 12);
+      ctx.fillRect(x+4, y-2, 10, 6); ctx.fillRect(x+8, y-10, 6, 14);
+    } else if (kind===&#x27;building&#x27;) {
+      ctx.fillStyle = &#x27;#151530&#x27;;
+      ctx.fillRect(x-12, y-30, 24, 44);
+      ctx.fillStyle = &#x27;#00f0ff&#x27;;
+      for (var r=0;r&lt;4;r++) for (var c=0;c&lt;3;c++){
+        if ((r+c+Math.floor(y/40))%2===0){ ctx.fillRect(x-9+c*7, y-26+r*10, 4, 5); }
+      }
+    } else if (kind===&#x27;rock&#x27;) {
+      ctx.fillStyle = &#x27;#4a2020&#x27;;
+      ctx.beginPath(); ctx.arc(x, y, 12, 0, 7); ctx.fill();
+      ctx.fillStyle = &#x27;#ff6a2b&#x27;;
+      ctx.beginPath(); ctx.arc(x-3, y+2, 4, 0, 7); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawCarShape(x, y, w, h, color, isPlayer) {
+    ctx.save();
+    ctx.shadowColor = color; ctx.shadowBlur = isPlayer ? 14 : 6;
+    ctx.fillStyle = color;
+    roundRect(x - w/2, y - h/2, w, h, 7); ctx.fill();
+    ctx.restore();
+    ctx.fillStyle = &#x27;rgba(0,0,0,.45)&#x27;;
+    roundRect(x - w*0.32, y - h*0.28, w*0.64, h*0.42, 4); ctx.fill();
+    ctx.fillStyle = &#x27;rgba(150,220,255,.5)&#x27;;
+    roundRect(x - w*0.28, y - h*0.30, w*0.56, h*0.14, 2); ctx.fill();
+    if (isPlayer) {
+      ctx.fillStyle = &#x27;#fffbcc&#x27;;
+      ctx.fillRect(x - w*0.36, y - h*0.5, w*0.16, 4);
+      ctx.fillRect(x + w*0.20, y - h*0.5, w*0.16, 4);
+    } else {
+      ctx.fillStyle = &#x27;#ff3020&#x27;;
+      ctx.fillRect(x - w*0.36, y + h*0.5 - 4, w*0.16, 4);
+      ctx.fillRect(x + w*0.20, y + h*0.5 - 4, w*0.16, 4);
+    }
+  }
+
+  function drawBarrier(x, y, w) {
+    ctx.save();
+    ctx.shadowColor = &#x27;#ff3b3b&#x27;; ctx.shadowBlur = 6;
+    var bw = w*1.15, bh = 20;
+    for (var s=0; s&lt;5; s++){
+      ctx.fillStyle = (s%2===0) ? &#x27;#ff3b3b&#x27; : &#x27;#f5f5f5&#x27;;
+      ctx.fillRect(x - bw/2 + s*(bw/5), y - bh/2, bw/5, bh);
+    }
+    ctx.restore();
+    ctx.fillStyle = &#x27;#888&#x27;;
+    ctx.fillRect(x - bw/2, y + bh/2 - 3, 4, 10);
+    ctx.fillRect(x + bw/2 - 4, y + bh/2 - 3, 4, 10);
+  }
+
+  function drawBoost(x, y) {
+    var t = Date.now()/200;
+    var pulse = 1 + Math.sin(t)*0.12;
+    ctx.save();
+    ctx.shadowColor = &#x27;#33ff88&#x27;; ctx.shadowBlur = 16;
+    ctx.fillStyle = &#x27;rgba(51,255,136,.18)&#x27;;
+    roundRect(x - 20*pulse, y - 24*pulse, 40*pulse, 48*pulse, 8); ctx.fill();
+    ctx.fillStyle = &#x27;#33ff88&#x27;;
+    for (var c=0;c&lt;3;c++){
+      var cy = y + 12 - c*13;
+      ctx.beginPath();
+      ctx.moveTo(x, cy - 8);
+      ctx.lineTo(x + 12, cy + 3);
+      ctx.lineTo(x + 7, cy + 3);
+      ctx.lineTo(x, cy - 3);
+      ctx.lineTo(x - 7, cy + 3);
+      ctx.lineTo(x - 12, cy + 3);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function roundRect(x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r);
+    ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r);
+    ctx.arcTo(x,y,x+w,y,r);
+    ctx.closePath();
+  }
+
+  function drawPlayer() {
+    var x = laneCenterX(pLaneF);
+    var y = PLAYER_Y;
+    if (boostTimer &gt; 0) {
+      for (var i=0;i&lt;5;i++){
+        ctx.fillStyle = &#x27;rgba(51,255,136,&#x27; + (0.28 - i*0.05) + &#x27;)&#x27;;
+        roundRect(x - CAR_W*0.3, y + CAR_H*0.5 + i*12, CAR_W*0.6, 10, 3);
+        ctx.fill();
+      }
+    }
+    var col = boostTimer &gt; 0 ? &#x27;#33ff88&#x27; : &#x27;#00c2ff&#x27;;
+    drawCarShape(x, y, CAR_W, CAR_H, col, true);
+  }
+
+  function render() {
+    var zone = currentZone();
+    ctx.save();
+    if (shake &gt; 0) ctx.translate((Math.random()-0.5)*8*shake*4, (Math.random()-0.5)*8*shake*4);
+    drawRoad(zone);
+    for (var i=0;i&lt;items.length;i++){
+      var it = items[i];
+      if (it.hit &amp;&amp; it.type===&#x27;boost&#x27;) continue;
+      if (it.hit &amp;&amp; boostTimer&lt;=0) continue;
+      var x = laneCenterX(it.lane);
+      if (it.type===&#x27;car&#x27;) drawCarShape(x, it.y, CAR_W, CAR_H, it.color, false);
+      else if (it.type===&#x27;barrier&#x27;) drawBarrier(x, it.y, CAR_W);
+      else if (it.type===&#x27;boost&#x27;) drawBoost(x, it.y);
+    }
+    drawPlayer();
+    if (boostTimer &gt; 0) {
+      ctx.strokeStyle = &#x27;rgba(51,255,136,&#x27; + (0.4 + 0.3*Math.sin(Date.now()/80)) + &#x27;)&#x27;;
+      ctx.lineWidth = 6;
+      ctx.strokeRect(3,3,W-6,H-6);
+    }
+    ctx.restore();
+
+    // zone label
+    ctx.fillStyle = &#x27;rgba(0,0,0,.4)&#x27;;
+    roundRect(8, 8, ctx.measureText(zone.name).width + 24, 24, 6); ctx.fill();
+    ctx.fillStyle = zone.accent;
+    ctx.font = &#x27;bold 14px system-ui, sans-serif&#x27;;
+    ctx.textBaseline = &#x27;middle&#x27;;
+    ctx.fillText(zone.name, 18, 21);
+  }
+
+  function loop(t) {
+    if (!running) return;
+    if (!lastT) lastT = t;
+    var dt = Math.min(0.05, (t - lastT)/1000);
+    lastT = t;
+    update(dt);
+    if (!running) return;
+    render();
+    animId = requestAnimationFrame(loop);
+  }
+
+  function startGame() {
+    reset();
+    overlay.classList.add(&#x27;hidden&#x27;);
+    running = true; lastT = 0;
+    spawnRow();
+    animId = requestAnimationFrame(loop);
+  }
+  function stopGame() {
+    running = false;
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+  }
+  function gameOver() {
+    running = false;
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+    if (Math.floor(score) &gt; best) { best = Math.floor(score); bestEl.textContent = best; }
+    beep(160,0.4,&#x27;sawtooth&#x27;,0.07);
+    ovTitle.textContent = &#x27;CRASHED&#x27;;
+    ovMsg.textContent = &#x27;Score &#x27; + Math.floor(score) + &#x27; · Reached &#x27; + currentZone().name + &#x27; · Press Start to drive again.&#x27;;
+    overlay.classList.remove(&#x27;hidden&#x27;);
+  }
+
+  function moveLeft(){ if (running) pTargetLane = Math.max(0, pTargetLane-1); }
+  function moveRight(){ if (running) pTargetLane = Math.min(2, pTargetLane+1); }
+
+  window.addEventListener(&#x27;keydown&#x27;, function(e){
+    var k = e.key;
+    if (k===&#x27;ArrowLeft&#x27; || k===&#x27;a&#x27; || k===&#x27;A&#x27;){ moveLeft(); e.preventDefault(); }
+    else if (k===&#x27;ArrowRight&#x27; || k===&#x27;d&#x27; || k===&#x27;D&#x27;){ moveRight(); e.preventDefault(); }
+  });
+  cv.addEventListener(&#x27;click&#x27;, function(e){
+    var rect = cv.getBoundingClientRect();
+    var mx = e.clientX - rect.left;
+    if (mx &lt; W/2) moveLeft(); else moveRight();
+  });
+
+  window.addEventListener(&#x27;message&#x27;, function(e){
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  render();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

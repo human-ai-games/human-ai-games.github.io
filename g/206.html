@@ -1,0 +1,689 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cross the lanes</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>Cross the lanes</b> &middot; Game 206 &middot; Amateur producer &middot; Basic game: Road crossing</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #222; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 14px; background: white; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 8px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 600; }
+  .instructions { font-size: 16px; color: #666; max-width: 620px; margin: 0; line-height: 1.35; text-align: center; }
+  .score { font-size: 20px; color: #555; margin: 0; }
+  .field { position: relative; width: 620px; height: 432px; flex-shrink: 0; margin: 0; background: #ececec; border-radius: 8px; overflow: hidden; border: 7px solid #e63946; box-sizing: content-box; }
+  .obstacle { position: absolute; border-radius: 4px; border: 2px solid gold; box-sizing: border-box; }
+  .lane-divider { position: absolute; left: 0; right: 0; height: 1px; background: #d5d5d5; }
+  .pond { position: absolute; left: 0; right: 0; background: #4fc3f7; box-shadow: inset 0 0 24px rgba(255,255,255,0.5); }
+  .powerup { position: absolute; font-size: 24px; line-height: 1; text-align: center; z-index: 2; filter: drop-shadow(0 0 4px rgba(255,255,255,0.9)); animation: bob 1.2s ease-in-out infinite; pointer-events: none; }
+  @keyframes bob { 0%,100% { transform: translateY(-2px);} 50% { transform: translateY(2px);} }
+  .hero { position: absolute; font-size: 30px; line-height: 1; text-align: center; color: midnightblue; text-shadow: 0 0 1px #000; transition: filter 0.1s; pointer-events: none; z-index: 3; }
+  .hero.shield { filter: drop-shadow(0 0 6px #b026ff) drop-shadow(0 0 3px #d580ff); }
+  .hero.starman { filter: drop-shadow(0 0 7px #ffd400) drop-shadow(0 0 3px #fff36b); }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;Cross the lanes&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Move the star with the arrow keys (half-steps) to dodge cars and reach the blue pond up top for a point. Grab floating powerups and use the Start/Restart button below — ⭐Starman, 🛡Shield, 🐢Slow, 🌀Warp, 💰Coins.&lt;/p&gt;
+  &lt;div class=&quot;score&quot;&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt; &amp;nbsp; Shields: &lt;span id=&quot;shieldCount&quot;&gt;0&lt;/span&gt; &amp;nbsp; &lt;span id=&quot;status&quot;&gt;&lt;/span&gt;&lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var CELL = 48;
+  var COLS = 12;
+  var LANES = 7;
+  var ROWS = LANES + 2;
+  var HALF = CELL / 2;
+  var SUBCOLS = COLS * 2;    // half-cell columns
+  var SUBROWS = ROWS * 2;    // half-cell rows
+  var FIELD_W = COLS * CELL, FIELD_H = ROWS * CELL;
+  var HERO_SIZE = CELL - 12;
+  var OBSTACLE_W = CELL * 2 - 12, OBSTACLE_H = CELL - 16;
+  var GAP_MIN = 10;
+  var running = false, animId = null, gameOver = false;
+  // hero position now in half-cells
+  var hero = { sc: COLS, sr: SUBROWS - 1 };  // start bottom-center
+  var lanes = [];
+  var score = 0, shields = 0;
+  var invincibleUntil = 0, starmanUntil = 0, slowUntil = 0;
+  var lastStarBonusRow = -1;
+  var field = document.getElementById(&#x27;field&#x27;);
+  var heroEl = null;
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var shieldEl = document.getElementById(&#x27;shieldCount&#x27;);
+  var statusEl = document.getElementById(&#x27;status&#x27;);
+  var borderColors = [&#x27;#e63946&#x27;, &#x27;#457b9d&#x27;, &#x27;#2a9d8f&#x27;, &#x27;#f4a261&#x27;, &#x27;#8338ec&#x27;, &#x27;#ffb703&#x27;];
+  var carColors = [&#x27;#d62828&#x27;, &#x27;#0077b6&#x27;, &#x27;#588157&#x27;, &#x27;#9d4edd&#x27;];
+  var borderTimer = null, hopTimer = null, speedTimer = null, powerupTimer = null;
+  var powerups = [];  // {type, sc, sr, el}
+  // milestone tracking
+  var starmanMilestones = [17, 34];
+  var shieldMilestones = [18];
+  var slowMilestones = [36];
+  var grantedMilestones = {};
+
+  function rand(a, b) { return a + Math.random() * (b - a); }
+
+  function pickCarColor() { return carColors[Math.floor(Math.random() * carColors.length)]; }
+
+  function buildLanes() {
+    lanes.forEach(function (lane) {
+      lane.obstacles.forEach(function (o) { if (o.el.parentNode) o.el.parentNode.removeChild(o.el); });
+    });
+    lanes = [];
+    for (var i = 0; i &lt; LANES; i++) {
+      var laneRow = i + 1;
+      var y = laneRow * CELL + (CELL - OBSTACLE_H) / 2;
+      var dir = (i % 2 === 0) ? 1 : -1;
+      var speed = 0.5 + (i % 3) * 0.2;
+      var obstacles = [];
+      var count = 2 + (i % 2);
+      var gap = FIELD_W / count;
+      for (var j = 0; j &lt; count; j++) {
+        var x = j * gap + (i * 30) % gap;
+        var el = document.createElement(&#x27;div&#x27;);
+        el.className = &#x27;obstacle&#x27;;
+        el.style.width = OBSTACLE_W + &#x27;px&#x27;;
+        el.style.height = OBSTACLE_H + &#x27;px&#x27;;
+        el.style.top = y + &#x27;px&#x27;;
+        el.style.left = x + &#x27;px&#x27;;
+        el.style.background = pickCarColor();
+        field.appendChild(el);
+        obstacles.push({ x: x, el: el });
+      }
+      lanes.push({ y: y, row: laneRow, dir: dir, speed: speed, obstacles: obstacles });
+    }
+    enforceBlackRatio();
+  }
+
+  // Ensure 51-57% of on-screen cars are pure black.
+  function enforceBlackRatio() {
+    var all = [];
+    for (var i = 0; i &lt; lanes.length; i++)
+      for (var j = 0; j &lt; lanes[i].obstacles.length; j++)
+        all.push(lanes[i].obstacles[j]);
+    var target = Math.round(all.length * rand(0.51, 0.57));
+    all.sort(function () { return Math.random() - 0.5; });
+    for (var k = 0; k &lt; all.length; k++) {
+      all[k].el.style.background = (k &lt; target) ? &#x27;#000000&#x27; : pickCarColor();
+    }
+  }
+
+  function drawDividers() {
+    for (var r = 2; r &lt; ROWS; r++) {
+      var d = document.createElement(&#x27;div&#x27;);
+      d.className = &#x27;lane-divider&#x27;;
+      d.style.top = (r * CELL) + &#x27;px&#x27;;
+      field.appendChild(d);
+    }
+  }
+
+  function drawPond() {
+    var p = document.createElement(&#x27;div&#x27;);
+    p.className = &#x27;pond&#x27;;
+    p.style.top = &#x27;0px&#x27;;
+    p.style.height = CELL + &#x27;px&#x27;;
+    field.appendChild(p);
+  }
+
+  function makeHero() {
+    if (heroEl &amp;&amp; heroEl.parentNode) heroEl.parentNode.removeChild(heroEl);
+    heroEl = document.createElement(&#x27;div&#x27;);
+    heroEl.className = &#x27;hero&#x27;;
+    heroEl.textContent = &#x27;\u2605&#x27;;
+    heroEl.style.width = HERO_SIZE + &#x27;px&#x27;;
+    heroEl.style.height = HERO_SIZE + &#x27;px&#x27;;
+    field.appendChild(heroEl);
+  }
+
+  function heroPx() {
+    var cx = hero.sc * HALF;   // center x in field
+    var cy = hero.sr * HALF;
+    return { cx: cx, cy: cy };
+  }
+
+  function paintHero() {
+    var p = heroPx();
+    heroEl.style.left = (p.cx - HERO_SIZE / 2) + &#x27;px&#x27;;
+    heroEl.style.top = (p.cy - HERO_SIZE / 2 - 2) + &#x27;px&#x27;;
+    heroEl.classList.remove(&#x27;shield&#x27;, &#x27;starman&#x27;);
+    if (Date.now() &lt; starmanUntil) heroEl.classList.add(&#x27;starman&#x27;);
+    else if (Date.now() &lt; invincibleUntil) heroEl.classList.add(&#x27;shield&#x27;);
+  }
+
+  function resetHero() {
+    hero.sc = COLS;
+    hero.sr = SUBROWS - 1;
+    lastStarBonusRow = -1;
+    paintHero();
+  }
+
+  function resolveOverlaps(lane) {
+    var obs = lane.obstacles;
+    if (obs.length &lt; 2) return;
+    obs.sort(function (a, b) { return a.x - b.x; });
+    for (var pass = 0; pass &lt; 3; pass++) {
+      for (var i = 1; i &lt; obs.length; i++) {
+        var need = obs[i - 1].x + OBSTACLE_W + GAP_MIN;
+        if (obs[i].x &lt; need) obs[i].x = need;
+      }
+    }
+  }
+
+  var borderIdx = 0;
+  function cycleBorder() {
+    borderIdx = (borderIdx + 1) % borderColors.length;
+    field.style.borderColor = borderColors[borderIdx];
+  }
+
+  function scheduleHop() {
+    hopTimer = setTimeout(function () {
+      if (running) doHop();
+      scheduleHop();
+    }, rand(4000, 9000));
+  }
+  function visibleObstacles() {
+    var list = [];
+    for (var i = 0; i &lt; lanes.length; i++) {
+      var lane = lanes[i];
+      for (var j = 0; j &lt; lane.obstacles.length; j++) {
+        var o = lane.obstacles[j];
+        if (o.x &gt; -OBSTACLE_W &amp;&amp; o.x &lt; FIELD_W) list.push({ laneIdx: i, obs: o });
+      }
+    }
+    return list;
+  }
+  function fitsInLane(lane, x) {
+    for (var i = 0; i &lt; lane.obstacles.length; i++) {
+      var o = lane.obstacles[i];
+      if (x &lt; o.x + OBSTACLE_W + GAP_MIN &amp;&amp; x + OBSTACLE_W + GAP_MIN &gt; o.x) return false;
+    }
+    return true;
+  }
+  // Would this hop create an unwinnable box around the hero? Check that the
+  // hero still has at least one free adjacent half-cell to escape to.
+  function heroBoxedIfAdd(laneRow, x) {
+    // hero&#x27;s bounding box after considering the phantom car
+    var p = heroPx();
+    var hx = p.cx - HERO_SIZE / 2, hy = p.cy - HERO_SIZE / 2;
+    // if the car isn&#x27;t in/near the hero&#x27;s row, it can&#x27;t box us
+    var carTop = laneRow * CELL + (CELL - OBSTACLE_H) / 2;
+    // Count escape directions that stay collision-free.
+    var dirs = [[-1,0],[1,0],[0,-1],[0,1]];
+    var free = 0;
+    for (var d = 0; d &lt; dirs.length; d++) {
+      var nsc = hero.sc + dirs[d][0], nsr = hero.sr + dirs[d][1];
+      if (nsc &lt; 1 || nsc &gt; SUBCOLS - 1 || nsr &lt; 0 || nsr &gt; SUBROWS) continue;
+      var ncx = nsc * HALF, ncy = nsr * HALF;
+      var nhx = ncx - HERO_SIZE / 2, nhy = ncy - HERO_SIZE / 2;
+      // collide against phantom?
+      var collide = (nhx &lt; x + OBSTACLE_W &amp;&amp; nhx + HERO_SIZE &gt; x &amp;&amp;
+                     nhy &lt; carTop + OBSTACLE_H &amp;&amp; nhy + HERO_SIZE &gt; carTop);
+      if (!collide) free++;
+    }
+    return free === 0;
+  }
+  function doHop() {
+    var vis = visibleObstacles();
+    vis.sort(function () { return Math.random() - 0.5; });
+    var hopped = 0;
+    for (var v = 0; v &lt; vis.length &amp;&amp; hopped &lt; 2; v++) {
+      var item = vis[v];
+      var li = item.laneIdx;
+      var choices = [];
+      if (li &gt; 0) choices.push(li - 1);
+      if (li &lt; LANES - 1) choices.push(li + 1);
+      if (!choices.length) continue;
+      choices.sort(function () { return Math.random() - 0.5; });
+      for (var c = 0; c &lt; choices.length; c++) {
+        var target = choices[c];
+        var tgt = lanes[target];
+        if (fitsInLane(tgt, item.obs.x) &amp;&amp; !heroBoxedIfAdd(tgt.row, item.obs.x)) {
+          var lane = lanes[li];
+          var idx = lane.obstacles.indexOf(item.obs);
+          lane.obstacles.splice(idx, 1);
+          item.obs.el.style.top = tgt.y + &#x27;px&#x27;;
+          tgt.obstacles.push(item.obs);
+          hopped++;
+          break;
+        }
+      }
+    }
+    enforceBlackRatio();
+  }
+
+  function scheduleSpeed() {
+    speedTimer = setTimeout(function () {
+      if (running) doSpeed();
+      scheduleSpeed();
+    }, rand(7000, 12000));
+  }
+  function doSpeed() {
+    var idxs = [];
+    for (var i = 0; i &lt; LANES; i++) idxs.push(i);
+    idxs.sort(function () { return Math.random() - 0.5; });
+    var picked = idxs.slice(0, 2);
+    for (var p = 0; p &lt; picked.length; p++) {
+      if (Math.random() &lt; 0.36) {
+        var factor = 1 + rand(0.05, 0.43);
+        lanes[picked[p]].speed *= factor;
+      }
+    }
+  }
+
+  // ---- Powerups ----
+  var powerupTypes = [
+    { type: &#x27;starman&#x27;, icon: &#x27;\u2B50&#x27; },
+    { type: &#x27;shield&#x27;,  icon: &#x27;\uD83D\uDEE1&#x27; },
+    { type: &#x27;slow&#x27;,    icon: &#x27;\uD83D\uDC22&#x27; },
+    { type: &#x27;warp&#x27;,    icon: &#x27;\uD83C\uDF00&#x27; },
+    { type: &#x27;coin&#x27;,    icon: &#x27;\uD83D\uDCB0&#x27; }
+  ];
+  function spawnPowerup() {
+    if (powerups.length &gt;= 3) return;   // keep them rare
+    var t = powerupTypes[Math.floor(Math.random() * powerupTypes.length)];
+    // place on a lane row, at a random half-col
+    var laneRow = 1 + Math.floor(Math.random() * LANES);
+    var sc = 1 + Math.floor(Math.random() * (SUBCOLS - 1));
+    var sr = laneRow * 2 + 1;  // center of lane
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;powerup&#x27;;
+    el.textContent = t.icon;
+    el.style.left = (sc * HALF - 12) + &#x27;px&#x27;;
+    el.style.top = (sr * HALF - 12) + &#x27;px&#x27;;
+    field.appendChild(el);
+    powerups.push({ type: t.type, sc: sc, sr: sr, el: el });
+  }
+  function schedulePowerup() {
+    powerupTimer = setTimeout(function () {
+      if (running) spawnPowerup();
+      schedulePowerup();
+    }, rand(5000, 9000));
+  }
+  function removePowerup(pu) {
+    if (pu.el.parentNode) pu.el.parentNode.removeChild(pu.el);
+    var idx = powerups.indexOf(pu);
+    if (idx &gt;= 0) powerups.splice(idx, 1);
+  }
+  function applyPowerup(type) {
+    if (type === &#x27;starman&#x27;) { starmanUntil = Date.now() + 4000; }
+    else if (type === &#x27;shield&#x27;) { shields++; shieldEl.textContent = shields; }
+    else if (type === &#x27;slow&#x27;) { slowUntil = Date.now() + 2000; }
+    else if (type === &#x27;warp&#x27;) {
+      hero.sr = Math.max(1, hero.sr - 6);   // jump ~3 rows up
+    }
+    else if (type === &#x27;coin&#x27;) { addScore(2); }
+    paintHero();
+  }
+  function checkPowerupPickup() {
+    var p = heroPx();
+    for (var i = powerups.length - 1; i &gt;= 0; i--) {
+      var pu = powerups[i];
+      var px = pu.sc * HALF, py = pu.sr * HALF;
+      if (Math.abs(px - p.cx) &lt; HERO_SIZE &amp;&amp; Math.abs(py - p.cy) &lt; HERO_SIZE) {
+        applyPowerup(pu.type);
+        removePowerup(pu);
+      }
+    }
+  }
+
+  function updateStatus() {
+    var now = Date.now(), parts = [];
+    if (now &lt; starmanUntil) parts.push(&#x27;\u2B50&#x27;);
+    if (now &lt; invincibleUntil) parts.push(&#x27;\uD83D\uDEE1&#x27;);
+    if (now &lt; slowUntil) parts.push(&#x27;\uD83D\uDC22&#x27;);
+    statusEl.textContent = parts.join(&#x27; &#x27;);
+  }
+
+  function addScore(n) {
+    score += n;
+    scoreEl.textContent = score;
+    checkMilestones();
+  }
+
+  function checkMilestones() {
+    starmanMilestones.forEach(function (m) {
+      if (score &gt;= m &amp;&amp; !grantedMilestones[&#x27;star&#x27; + m]) {
+        grantedMilestones[&#x27;star&#x27; + m] = true;
+        starmanUntil = Date.now() + 4000;
+      }
+    });
+    shieldMilestones.forEach(function (m) {
+      if (score &gt;= m &amp;&amp; !grantedMilestones[&#x27;shield&#x27; + m]) {
+        grantedMilestones[&#x27;shield&#x27; + m] = true;
+        shields++; shieldEl.textContent = shields;
+      }
+    });
+    slowMilestones.forEach(function (m) {
+      if (score &gt;= m &amp;&amp; !grantedMilestones[&#x27;slow&#x27; + m]) {
+        grantedMilestones[&#x27;slow&#x27; + m] = true;
+        slowUntil = Date.now() + 2000;
+      }
+    });
+  }
+
+  function tick() {
+    if (!running) return;
+    var now = Date.now();
+    var slowFactor = (now &lt; slowUntil) ? 0.35 : 1;
+    for (var i = 0; i &lt; lanes.length; i++) {
+      var lane = lanes[i];
+      for (var j = 0; j &lt; lane.obstacles.length; j++) {
+        var o = lane.obstacles[j];
+        o.x += lane.dir * lane.speed * slowFactor;
+        if (lane.dir &gt; 0 &amp;&amp; o.x &gt; FIELD_W) o.x = -OBSTACLE_W;
+        else if (lane.dir &lt; 0 &amp;&amp; o.x + OBSTACLE_W &lt; 0) o.x = FIELD_W;
+      }
+      resolveOverlaps(lane);
+      for (var j2 = 0; j2 &lt; lane.obstacles.length; j2++) {
+        lane.obstacles[j2].el.style.left = lane.obstacles[j2].x + &#x27;px&#x27;;
+      }
+    }
+
+    // Starman: incremental bonus points as you advance rows.
+    if (now &lt; starmanUntil) {
+      var curRow = Math.floor(hero.sr / 2);
+      if (curRow &lt; lastStarBonusRow || lastStarBonusRow === -1) {
+        lastStarBonusRow = curRow;
+      } else if (curRow &lt; lastStarBonusRow) {
+        lastStarBonusRow = curRow;
+      }
+    }
+
+    // collision check
+    var p = heroPx();
+    var hx = p.cx - HERO_SIZE / 2, hy = p.cy - HERO_SIZE / 2;
+    var laneRow = Math.round((hy + HERO_SIZE / 2) / CELL);
+    for (var L = 0; L &lt; lanes.length; L++) {
+      var lane2 = lanes[L];
+      // only test lanes overlapping vertically
+      if (hy + HERO_SIZE &lt;= lane2.y || hy &gt;= lane2.y + OBSTACLE_H) continue;
+      for (var k = 0; k &lt; lane2.obstacles.length; k++) {
+        var o2 = lane2.obstacles[k];
+        if (hx &lt; o2.x + OBSTACLE_W &amp;&amp; hx + HERO_SIZE &gt; o2.x) {
+          if (now &lt; starmanUntil) {
+            // starman smashes through; small bonus and shove car offscreen
+            continue;
+          } else if (now &lt; invincibleUntil) {
+            continue;
+          } else if (shields &gt; 0) {
+            shields--; shieldEl.textContent = shields;
+            invincibleUntil = now + 3000;
+            paintHero();
+          } else {
+            endGame(); return;
+          }
+        }
+      }
+    }
+
+    checkPowerupPickup();
+    updateStatus();
+    if (now &gt;= invincibleUntil &amp;&amp; now &gt;= starmanUntil) {
+      heroEl.classList.remove(&#x27;shield&#x27;, &#x27;starman&#x27;);
+    }
+    animId = requestAnimationFrame(tick);
+  }
+
+  function move(dsc, dsr) {
+    if (!running) return;
+    hero.sc = Math.max(1, Math.min(SUBCOLS - 1, hero.sc + dsc));
+    hero.sr = Math.max(0, Math.min(SUBROWS - 1, hero.sr + dsr));
+
+    // starman incremental point per new higher row reached
+    if (Date.now() &lt; starmanUntil &amp;&amp; dsr &lt; 0) {
+      addScore(1);
+    }
+
+    paintHero();
+    checkPowerupPickup();
+    if (hero.sr &lt;= 1) {   // reached the pond
+      addScore(1);
+      // legacy shield: every 3 pts, 57% chance (still active alongside milestones)
+      if (score % 3 === 0 &amp;&amp; Math.random() &lt; 0.57) {
+        shields++; shieldEl.textContent = shields;
+      }
+      resetHero();
+    }
+  }
+
+  function clearTimers() {
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+    if (borderTimer) { clearInterval(borderTimer); borderTimer = null; }
+    if (hopTimer) { clearTimeout(hopTimer); hopTimer = null; }
+    if (speedTimer) { clearTimeout(speedTimer); speedTimer = null; }
+    if (powerupTimer) { clearTimeout(powerupTimer); powerupTimer = null; }
+  }
+
+  function endGame() {
+    running = false; gameOver = true;
+    clearTimers();
+  }
+
+  function startGame() {
+    if (running) return;
+    score = 0; shields = 0;
+    invincibleUntil = 0; starmanUntil = 0; slowUntil = 0;
+    grantedMilestones = {};
+    scoreEl.textContent = &#x27;0&#x27;;
+    shieldEl.textContent = &#x27;0&#x27;;
+    statusEl.textContent = &#x27;&#x27;;
+    gameOver = false;
+    field.innerHTML = &#x27;&#x27;;
+    powerups = [];
+    drawPond();
+    drawDividers();
+    buildLanes();
+    makeHero();
+    resetHero();
+    running = true;
+    borderIdx = 0;
+    field.style.borderColor = borderColors[0];
+    borderTimer = setInterval(cycleBorder, 700);
+    scheduleHop();
+    scheduleSpeed();
+    schedulePowerup();
+    spawnPowerup();   // one visible immediately
+    animId = requestAnimationFrame(tick);
+  }
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    clearTimers();
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27;) { move(-1, 0); e.preventDefault(); }
+    else if (e.key === &#x27;ArrowRight&#x27;) { move(1, 0); e.preventDefault(); }
+    else if (e.key === &#x27;ArrowUp&#x27;) { move(0, -1); e.preventDefault(); }
+    else if (e.key === &#x27;ArrowDown&#x27;) { move(0, 1); e.preventDefault(); }
+  });
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  // Initial paint
+  drawPond();
+  drawDividers();
+  buildLanes();
+  makeHero();
+  paintHero();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

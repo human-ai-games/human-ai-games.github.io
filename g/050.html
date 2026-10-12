@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🎯 Carnival Shooting Gallery 🎯</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>🎯 Carnival Shooting Gallery 🎯</b> &middot; Game 050 &middot; Professional producer &middot; Basic game: Whack-a-mole</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #1a1030; color: #222; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 10px; height: 100%; box-sizing: border-box; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 5px; }
+  h1 { margin: 0; font-size: 24px; font-weight: 700; color: #ffe66d; text-shadow: 2px 2px 0 #c1121f, 4px 4px 0 rgba(0,0,0,0.3); letter-spacing: 1px; }
+  .instructions { font-size: 16px; color: #fff; max-width: 640px; margin: 0; line-height: 1.3; }
+  .records { display: flex; gap: 10px; justify-content: center; color: #fff; font-size: 14px; font-weight: 700; }
+  .records .rec { background: #2c2050; border: 2px solid #8b1a1a; border-radius: 8px; padding: 2px 10px; }
+  .records .rec.first { border-color: #ffd700; color: #ffe66d; }
+  .board {
+    position: relative; width: 640px; height: 350px; flex-shrink: 0; margin: 0;
+    border-radius: 10px; overflow: hidden; cursor: none;
+    border: 6px solid #8b1a1a;
+    background: radial-gradient(ellipse at 50% 30%, #2c2050 0%, #140c26 70%, #0c0718 100%);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  }
+  .board::after {
+    content: &quot;🎪  🎡  🎠  🎪  🎡  🎠&quot;;
+    position: absolute; top: 5px; left: 0; width: 100%;
+    text-align: center; font-size: 18px; letter-spacing: 14px;
+    pointer-events: none; opacity: 0.5;
+  }
+  .target {
+    position: absolute; width: 64px; height: 64px; border-radius: 50%;
+    cursor: none; z-index: 2;
+    border: 3px solid rgba(0,0,0,0.35);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.5);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 17px; color: #111;
+  }
+  .target .lbl { background: rgba(255,255,255,0.9); border-radius: 8px; padding: 0 4px; line-height: 1.1; }
+  .target.hit { animation: pop 0.18s ease-out forwards; }
+  @keyframes pop { to { transform: scale(1.6); opacity: 0; } }
+  .sight { position: absolute; width: 54px; height: 54px; pointer-events: none; z-index: 10; transform: translate(-50%, -50%); display: none; }
+  .sight .ring1 { position: absolute; inset: 0; border: 3px solid #fff; border-radius: 50%; box-shadow: 0 0 0 1px rgba(0,0,0,0.6); }
+  .sight .ring2 { position: absolute; inset: 14px; border: 2px solid #fff; border-radius: 50%; }
+  .sight .dot { position: absolute; left: 50%; top: 50%; width: 5px; height: 5px; background: #ffe66d; border-radius: 50%; transform: translate(-50%,-50%); }
+  .banner { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; flex-direction: column; background: rgba(10,6,20,0.82); z-index: 20; color: #fff; }
+  .banner h2 { margin: 0 0 6px; font-size: 30px; color: #ffe66d; }
+  .banner p { margin: 0; font-size: 18px; }
+  .hud { width: 640px; display: flex; align-items: center; gap: 12px; margin-top: 2px; }
+  .scorewrap { flex: 1; text-align: left; }
+  .scorelabel { font-size: 20px; color: #ffe66d; font-weight: 800; }
+  .timer { font-size: 22px; font-weight: 800; color: #fff; min-width: 84px; text-align: right; }
+  .timer .num { color: #ffe66d; }
+  .barbg { width: 100%; height: 12px; background: #2c2050; border-radius: 8px; overflow: hidden; border: 2px solid #8b1a1a; margin-top: 3px; }
+  .barfill { height: 100%; width: 100%; background: linear-gradient(90deg, #3ba55c, #ffe66d); transition: width 1s linear; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;🎯 Carnival Shooting Gallery 🎯&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Aim the gunsight and shoot targets — colored ones add points, red ones subtract. Rack up the highest score before the 60-second timer runs out!&lt;/p&gt;
+  &lt;div class=&quot;records&quot; id=&quot;records&quot;&gt;
+    &lt;div class=&quot;rec first&quot;&gt;🥇 —&lt;/div&gt;
+    &lt;div class=&quot;rec&quot;&gt;🥈 —&lt;/div&gt;
+    &lt;div class=&quot;rec&quot;&gt;🥉 —&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;board&quot; id=&quot;board&quot;&gt;
+    &lt;div class=&quot;sight&quot; id=&quot;sight&quot;&gt;
+      &lt;div class=&quot;ring1&quot;&gt;&lt;/div&gt;&lt;div class=&quot;ring2&quot;&gt;&lt;/div&gt;&lt;div class=&quot;dot&quot;&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;banner&quot; id=&quot;banner&quot;&gt;
+      &lt;h2 id=&quot;bannerTitle&quot;&gt;Time&#x27;s Up!&lt;/h2&gt;
+      &lt;p id=&quot;bannerText&quot;&gt;&lt;/p&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;hud&quot;&gt;
+    &lt;div class=&quot;scorewrap&quot;&gt;
+      &lt;div class=&quot;scorelabel&quot;&gt;Score: &lt;span id=&quot;scoreNum&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;barbg&quot;&gt;&lt;div class=&quot;barfill&quot; id=&quot;barfill&quot;&gt;&lt;/div&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;timer&quot;&gt;⏱ &lt;span class=&quot;num&quot; id=&quot;timeNum&quot;&gt;60&lt;/span&gt;s&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var BOARD_W = 640, BOARD_H = 350, T_SIZE = 64;
+  var GAME_SECONDS = 60;
+  var score = 0, timeLeft = GAME_SECONDS;
+  var running = false;
+  var spawnId = null, rafId = null, timerId = null;
+  var targets = [];
+  var highScores = [];
+  var board = document.getElementById(&#x27;board&#x27;);
+  var scoreNum = document.getElementById(&#x27;scoreNum&#x27;);
+  var timeNum = document.getElementById(&#x27;timeNum&#x27;);
+  var barfill = document.getElementById(&#x27;barfill&#x27;);
+  var sight = document.getElementById(&#x27;sight&#x27;);
+  var banner = document.getElementById(&#x27;banner&#x27;);
+  var bannerTitle = document.getElementById(&#x27;bannerTitle&#x27;);
+  var bannerText = document.getElementById(&#x27;bannerText&#x27;);
+  var recEls = document.getElementById(&#x27;records&#x27;).children;
+
+  // Each positive value has its own color, ramping yellow -&gt; green.
+  var POS = [
+    { v: 1,  c: &#x27;#ffe600&#x27; },   // yellow
+    { v: 5,  c: &#x27;#ff9800&#x27; },   // orange
+    { v: 10, c: &#x27;#c7e02a&#x27; },   // lime
+    { v: 20, c: &#x27;#3ba55c&#x27; }    // green
+  ];
+  var NEG = [
+    { v: -1,  c: &#x27;#ff8a80&#x27; },
+    { v: -5,  c: &#x27;#ff5252&#x27; },
+    { v: -10, c: &#x27;#d50000&#x27; }
+  ];
+
+  var actx = null;
+  function tone(good) {
+    try {
+      if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+      var o = actx.createOscillator(), g = actx.createGain();
+      o.type = good ? &#x27;square&#x27; : &#x27;sawtooth&#x27;;
+      var f0 = good ? 660 : 240, f1 = good ? 980 : 90;
+      o.frequency.setValueAtTime(f0, actx.currentTime);
+      o.frequency.exponentialRampToValueAtTime(f1, actx.currentTime + 0.14);
+      g.gain.setValueAtTime(0.16, actx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + 0.16);
+      o.connect(g); g.connect(actx.destination);
+      o.start(); o.stop(actx.currentTime + 0.17);
+    } catch (_) {}
+  }
+
+  // Difficulty ramps with elapsed time (0..1 as clock runs down).
+  function progress() { return 1 - (timeLeft / GAME_SECONDS); }
+
+  function updateHud() {
+    scoreNum.textContent = score;
+    timeNum.textContent = timeLeft;
+    barfill.style.width = (timeLeft / GAME_SECONDS * 100) + &#x27;%&#x27;;
+  }
+
+  function renderRecords() {
+    var medals = [&#x27;🥇&#x27;, &#x27;🥈&#x27;, &#x27;🥉&#x27;];
+    for (var i = 0; i &lt; 3; i++) {
+      var v = (highScores[i] !== undefined) ? highScores[i] : &#x27;—&#x27;;
+      recEls[i].textContent = medals[i] + &#x27; &#x27; + v;
+    }
+  }
+
+  function clearAllTargets() {
+    for (var i = 0; i &lt; targets.length; i++) {
+      if (targets[i].el.parentNode === board) board.removeChild(targets[i].el);
+    }
+    targets = [];
+  }
+
+  function pickValue() {
+    // Negatives ~1/5 of the time.
+    if (Math.random() &lt; 0.2) {
+      return NEG[Math.floor(Math.random() * NEG.length)];
+    }
+    // As game progresses, drop the lowest positive values so minimums rise.
+    var p = progress();
+    var minIdx = 0;
+    if (p &gt; 0.66) minIdx = 2;
+    else if (p &gt; 0.33) minIdx = 1;
+    var pool = POS.slice(minIdx);
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
+  function spawnTarget() {
+    var pv = pickValue();
+    var val = pv.v;
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;target&#x27;;
+    el.style.background = &#x27;radial-gradient(circle at center, &#x27; +
+      pv.c + &#x27; 0 40%, #fff 40% 55%, &#x27; + pv.c + &#x27; 55% 100%)&#x27;;
+    var lbl = document.createElement(&#x27;span&#x27;);
+    lbl.className = &#x27;lbl&#x27;;
+    lbl.textContent = (val &gt; 0 ? &#x27;+&#x27; : &#x27;&#x27;) + val;
+    lbl.style.color = val &lt; 0 ? &#x27;#b30000&#x27; : &#x27;#222&#x27;;
+    el.appendChild(lbl);
+
+    var dir = Math.random() &lt; 0.5 ? 1 : -1;
+    var y = 40 + Math.random() * (BOARD_H - T_SIZE - 54);
+    var x = dir === 1 ? -T_SIZE : BOARD_W;
+    // Base speed grows with progress.
+    var base = 1.8 + progress() * 3.5;
+    var speed = (base + Math.random() * 2.2) * dir;
+    el.style.left = x + &#x27;px&#x27;;
+    el.style.top = y + &#x27;px&#x27;;
+    var t = { el: el, x: x, speed: speed, hit: false, val: val };
+    el.addEventListener(&#x27;mousedown&#x27;, function (e) {
+      e.stopPropagation();
+      if (t.hit || !running) return;
+      t.hit = true;
+      score += val;
+      if (score &lt; 0) score = 0;
+      updateHud();
+      el.classList.add(&#x27;hit&#x27;);
+      tone(val &gt;= 0);
+      setTimeout(function () {
+        if (el.parentNode === board) board.removeChild(el);
+      }, 180);
+    });
+    board.appendChild(el);
+    targets.push(t);
+  }
+
+  function tick() {
+    if (!running) return;
+    for (var i = targets.length - 1; i &gt;= 0; i--) {
+      var t = targets[i];
+      if (t.hit) { if (t.el.parentNode !== board) targets.splice(i, 1); continue; }
+      t.x += t.speed;
+      t.el.style.left = t.x + &#x27;px&#x27;;
+      if (t.x &lt; -T_SIZE - 4 || t.x &gt; BOARD_W + 4) {
+        if (t.el.parentNode === board) board.removeChild(t.el);
+        targets.splice(i, 1);
+      }
+    }
+    rafId = requestAnimationFrame(tick);
+  }
+
+  var spawnAccum = 0, lastSpawn = 0;
+  function tickTimer() {
+    timeLeft -= 1;
+    if (timeLeft &lt;= 0) { timeLeft = 0; updateHud(); endGame(); return; }
+    updateHud();
+    // Spawn faster as time runs down.
+    var interval = 850 - progress() * 450; // 850ms -&gt; 400ms
+    if (spawnId) clearInterval(spawnId);
+    spawnId = setInterval(spawnTarget, interval);
+  }
+
+  board.addEventListener(&#x27;mousemove&#x27;, function (e) {
+    var r = board.getBoundingClientRect();
+    sight.style.left = (e.clientX - r.left) + &#x27;px&#x27;;
+    sight.style.top = (e.clientY - r.top) + &#x27;px&#x27;;
+    sight.style.display = &#x27;block&#x27;;
+  });
+  board.addEventListener(&#x27;mouseleave&#x27;, function () { sight.style.display = &#x27;none&#x27;; });
+  board.addEventListener(&#x27;mousedown&#x27;, function () { if (running) tone(true); });
+
+  function startGame() {
+    if (running) return;
+    running = true;
+    score = 0;
+    timeLeft = GAME_SECONDS;
+    banner.style.display = &#x27;none&#x27;;
+    updateHud();
+    clearAllTargets();
+    spawnTarget();
+    if (spawnId) clearInterval(spawnId);
+    if (timerId) clearInterval(timerId);
+    spawnId = setInterval(spawnTarget, 850);
+    timerId = setInterval(tickTimer, 1000);
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function recordScore() {
+    highScores.push(score);
+    highScores.sort(function (a, b) { return b - a; });
+    highScores = highScores.slice(0, 3);
+    renderRecords();
+  }
+
+  function endGame() {
+    running = false;
+    if (spawnId) { clearInterval(spawnId); spawnId = null; }
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+    if (timerId) { clearInterval(timerId); timerId = null; }
+    clearAllTargets();
+    sight.style.display = &#x27;none&#x27;;
+    var isBest = highScores.length === 0 || score &gt; (highScores[0] || 0);
+    recordScore();
+    bannerTitle.textContent = isBest &amp;&amp; score &gt; 0 ? &#x27;🏆 New Record!&#x27; : &quot;Time&#x27;s Up!&quot;;
+    bannerText.textContent = &#x27;Final score: &#x27; + score;
+    banner.style.display = &#x27;flex&#x27;;
+  }
+
+  function stopGame() {
+    running = false;
+    if (spawnId) { clearInterval(spawnId); spawnId = null; }
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+    if (timerId) { clearInterval(timerId); timerId = null; }
+    clearAllTargets();
+    sight.style.display = &#x27;none&#x27;;
+  }
+
+  updateHud();
+  renderRecords();
+
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  // Suppress in-iframe scrollbars. The parent fits the iframe layout
+  // box to match the content size, so internal scroll is redundant —
+  // and if the LLM&#x27;s CSS sets body overflow: auto, the scrollbar shows
+  // briefly before the fit lands. Force hidden so it never appears.
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  // Iframe-internal JS error capture. window.onerror inside a sandboxed
+  // iframe can&#x27;t post to /api/js_error directly, so we relay to the
+  // parent via postMessage; parent&#x27;s error_logger.js forwards to the
+  // server. Catches LLM-emitted broken HTML (invalid hex, undefined
+  // variables, etc.) that would otherwise fail silently inside the
+  // iframe.
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      // Debounce: don&#x27;t fire more than ~10× per second. ResizeObserver
+      // fires repeatedly during layout/font load; we only need the latest.
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      // Clamp: reject obviously bogus dimensions. Any browser-game viewport
+      // is well under 4000×4000 logical px; readings beyond that are layout
+      // noise during load/visibility transitions.
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  // Parent posts wd_remeasure when it makes the iframe visible (the body&#x27;s
+  // ResizeObserver doesn&#x27;t fire on display:none→block of an outer ancestor
+  // because the iframe document didn&#x27;t actually resize). Wait a frame for
+  // layout to settle before measuring.
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

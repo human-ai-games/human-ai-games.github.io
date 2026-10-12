@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🐍 Focus Snake</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>🐍 Focus Snake</b> &middot; Game 277 &middot; Professional producer &middot; Basic game: Snake</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #222; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 12px; background: white; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  h1 { margin: 0; font-size: 24px; font-weight: 600; }
+  .instructions { font-size: 16px; color: #666; max-width: 640px; margin: 0; line-height: 1.4; text-align: center; }
+  .topbar { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; justify-content: center; }
+  .score, .weather { font-size: 18px; color: #555; margin: 0; }
+  .weather { padding: 3px 10px; border-radius: 14px; background: #eee; transition: background .4s; }
+  .meterwrap { display: flex; align-items: center; gap: 6px; font-size: 15px; color: #555; }
+  .meter { width: 130px; height: 14px; background: #ddd; border-radius: 8px; overflow: hidden; }
+  .meterfill { height: 100%; width: 100%; background: linear-gradient(90deg,#e44,#f4c400,#3c9); transition: width .3s; }
+  .fieldwrap { position: relative; width: 600px; height: 380px; flex-shrink: 0; }
+  .field { position: absolute; inset: 0; background: #ececec; border-radius: 8px; overflow: hidden; transition: background .5s; }
+  .cell { position: absolute; box-sizing: border-box; }
+  .snake { background: #2c7; border-radius: 3px; box-shadow: inset 0 0 0 1px #1a5; }
+  .head { background: #1a5; }
+  .food { background: radial-gradient(circle at 35% 30%, #fff5a0, #f4c400); border-radius: 50%; box-shadow: 0 0 8px 2px rgba(244,196,0,.7); }
+  .calm { background: radial-gradient(circle at 35% 30%, #bfffe0, #2fd694); border-radius: 50%; box-shadow: 0 0 10px 3px rgba(47,214,148,.8); }
+  .phantom { background: radial-gradient(circle at 35% 30%, #fff5a0, #f4c400); border-radius: 50%; opacity: .5; }
+  .ghost { border-radius: 3px; }
+  .banner { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 700; color: #fff; background: rgba(0,0,0,.55); text-align: center; z-index: 5; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;🐍 Focus Snake&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Steer with the arrow keys to eat glowing yellow balls and grow. As your Focus drops the screen trembles, blurs, leaves trails and shows flickering fake orbs — grab a green Calm orb to clear your head and steady your vision.&lt;/p&gt;
+  &lt;div class=&quot;topbar&quot;&gt;
+    &lt;div class=&quot;score&quot;&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;weather&quot; id=&quot;weather&quot;&gt;☀️ Clear&lt;/div&gt;
+    &lt;div class=&quot;meterwrap&quot;&gt;Focus &lt;div class=&quot;meter&quot;&gt;&lt;div class=&quot;meterfill&quot; id=&quot;meterfill&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;fieldwrap&quot;&gt;
+    &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage({ type: &#x27;game_input&#x27;, kind: t, key: e.key || null }, &#x27;*&#x27;);
+      } catch (_) {}
+    }, true);
+  });
+
+  var CELL = 20;
+  var COLS = 30, ROWS = 19;
+  var BASE_TICK = 130;
+  var FOOD_COUNT = 5;
+  var running = false, tickId = null, weatherId = null;
+  var snake = [], dir = { x: 1, y: 0 }, pendingDir = { x: 1, y: 0 };
+  var foods = [], calmOrbs = [], score = 0, tickCount = 0;
+  var focus = 100;
+  var trail = [];        // recent head positions for afterimage effect
+  var phantom = null;    // fake orb that flickers when focus is low
+
+  var field = document.getElementById(&#x27;field&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var weatherEl = document.getElementById(&#x27;weather&#x27;);
+  var meterFill = document.getElementById(&#x27;meterfill&#x27;);
+
+  var EFFECTS = [
+    { key: &#x27;clear&#x27;,  label: &#x27;☀️ Clear&#x27;,    bg: &#x27;#ececec&#x27;, speed: 1.0,  wind: 0 },
+    { key: &#x27;gusty&#x27;,  label: &#x27;💨 Gusty&#x27;,    bg: &#x27;#d6e6ee&#x27;, speed: 1.0,  wind: 1 },
+    { key: &#x27;haze&#x27;,   label: &#x27;🌫️ Haze&#x27;,     bg: &#x27;#cfcfcf&#x27;, speed: 1.0,  wind: 0 },
+    { key: &#x27;chill&#x27;,  label: &#x27;❄️ Chill&#x27;,    bg: &#x27;#dfeef7&#x27;, speed: 1.5,  wind: 0 },
+    { key: &#x27;buzz&#x27;,   label: &#x27;⚡ Buzz&#x27;,     bg: &#x27;#f7eecf&#x27;, speed: 0.65, wind: 0 }
+  ];
+  var effect = EFFECTS[0];
+
+  function clearCells() {
+    var kids = field.querySelectorAll(&#x27;.cell&#x27;);
+    for (var i = 0; i &lt; kids.length; i++) kids[i].remove();
+  }
+
+  function drawCell(cls, x, y, extra) {
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;cell &#x27; + cls;
+    el.style.left = (x * CELL) + &#x27;px&#x27;;
+    el.style.top = (y * CELL) + &#x27;px&#x27;;
+    el.style.width = CELL + &#x27;px&#x27;;
+    el.style.height = CELL + &#x27;px&#x27;;
+    if (extra) for (var k in extra) el.style[k] = extra[k];
+    field.appendChild(el);
+  }
+
+  // Symptom-style distortions scale with how low Focus is.
+  function applyPerception() {
+    var lack = 1 - focus / 100;             // 0 calm .. 1 frazzled
+    var blur = (effect.key === &#x27;haze&#x27; ? 1.2 : 0) + lack * 2.4;
+    var bright = 1 - lack * 0.35 - (effect.key === &#x27;haze&#x27; ? 0.15 : 0);
+    var hue = Math.round(lack * 40 * (effect.key === &#x27;chill&#x27; ? -1 : 1));
+    // Anxious tremble: rapid tiny jitter, grows as focus falls.
+    var amp = lack * 5;
+    var tx = (Math.random() - 0.5) * amp;
+    var ty = (Math.random() - 0.5) * amp;
+    var tilt = (Math.random() - 0.5) * lack * 4;
+    field.style.filter = &#x27;blur(&#x27; + blur.toFixed(2) + &#x27;px) brightness(&#x27; + bright.toFixed(2) + &#x27;) hue-rotate(&#x27; + hue + &#x27;deg)&#x27;;
+    field.style.transform = &#x27;translate(&#x27; + tx.toFixed(1) + &#x27;px,&#x27; + ty.toFixed(1) + &#x27;px) rotate(&#x27; + tilt.toFixed(2) + &#x27;deg)&#x27;;
+    field.style.background = effect.bg;
+  }
+
+  function paint(msg) {
+    clearCells();
+    var lack = 1 - focus / 100;
+
+    // Afterimage trails: fading ghosts of where the head recently was.
+    if (lack &gt; 0.25) {
+      for (var g = 0; g &lt; trail.length; g++) {
+        var op = (0.35 * lack) * (1 - g / trail.length);
+        drawCell(&#x27;ghost&#x27;, trail[g].x, trail[g].y, { background: &#x27;#2c7&#x27;, opacity: op.toFixed(2), borderRadius: &#x27;3px&#x27; });
+      }
+    }
+
+    for (var f = 0; f &lt; foods.length; f++) drawCell(&#x27;food&#x27;, foods[f].x, foods[f].y);
+    for (var c = 0; c &lt; calmOrbs.length; c++) drawCell(&#x27;calm&#x27;, calmOrbs[c].x, calmOrbs[c].y);
+
+    // Phantom orb: flickers in when focus is low; it&#x27;s not real, don&#x27;t chase it.
+    if (phantom &amp;&amp; lack &gt; 0.35 &amp;&amp; (tickCount % 4 &lt; 2)) drawCell(&#x27;phantom&#x27;, phantom.x, phantom.y);
+
+    for (var i = 0; i &lt; snake.length; i++) drawCell(i === 0 ? &#x27;snake head&#x27; : &#x27;snake&#x27;, snake[i].x, snake[i].y);
+
+    var old = field.querySelector(&#x27;.banner&#x27;);
+    if (old) old.remove();
+    if (msg) {
+      var b = document.createElement(&#x27;div&#x27;);
+      b.className = &#x27;banner&#x27;;
+      b.textContent = msg;
+      field.appendChild(b);
+    }
+    meterFill.style.width = Math.max(0, focus) + &#x27;%&#x27;;
+    applyPerception();
+  }
+
+  function occupied(x, y) {
+    for (var i = 0; i &lt; snake.length; i++) if (snake[i].x === x &amp;&amp; snake[i].y === y) return true;
+    for (var j = 0; j &lt; foods.length; j++) if (foods[j].x === x &amp;&amp; foods[j].y === y) return true;
+    for (var k = 0; k &lt; calmOrbs.length; k++) if (calmOrbs[k].x === x &amp;&amp; calmOrbs[k].y === y) return true;
+    return false;
+  }
+
+  function findFree() {
+    for (var t = 0; t &lt; 300; t++) {
+      var x = Math.floor(Math.random() * COLS);
+      var y = Math.floor(Math.random() * ROWS);
+      if (!occupied(x, y)) return { x: x, y: y };
+    }
+    return null;
+  }
+
+  function spawnFood() { var p = findFree(); if (p) foods.push(p); }
+  function spawnCalm() { var p = findFree(); if (p) calmOrbs.push(p); }
+
+  function initSnake() {
+    snake = [ { x: 5, y: 9 }, { x: 4, y: 9 }, { x: 3, y: 9 } ];
+    dir = { x: 1, y: 0 };
+    pendingDir = { x: 1, y: 0 };
+    trail = [];
+    phantom = null;
+  }
+
+  function applyEffect(e) {
+    effect = e;
+    weatherEl.textContent = e.label;
+    if (running) {
+      if (tickId) clearInterval(tickId);
+      tickId = setInterval(tick, Math.round(BASE_TICK * e.speed));
+    }
+    applyPerception();
+  }
+
+  function newEffect() {
+    applyEffect(EFFECTS[Math.floor(Math.random() * EFFECTS.length)]);
+  }
+
+  function tick() {
+    if (!running) return;
+    tickCount++;
+
+    var drain = 0.35 + (effect.wind ? 0.25 : 0) + (effect.key === &#x27;buzz&#x27; ? 0.3 : 0);
+    focus = Math.max(0, focus - drain);
+
+    // Manage the phantom (fake) orb when focus is low.
+    var lack = 1 - focus / 100;
+    if (lack &gt; 0.35) {
+      if (!phantom || tickCount % 30 === 0) phantom = findFree();
+    } else {
+      phantom = null;
+    }
+
+    if (!(pendingDir.x === -dir.x &amp;&amp; pendingDir.y === -dir.y)) dir = pendingDir;
+
+    var head = snake[0];
+    var nx = head.x + dir.x, ny = head.y + dir.y;
+
+    // Control jitter symptom: low focus occasionally veers you off course.
+    if (focus &lt; 40 &amp;&amp; Math.random() &lt; (40 - focus) / 300) {
+      if (dir.x !== 0) ny += (Math.random() &lt; 0.5 ? -1 : 1);
+      else nx += (Math.random() &lt; 0.5 ? -1 : 1);
+    }
+    if (effect.wind &amp;&amp; tickCount % 4 === 0) {
+      if (dir.x !== 0) ny += (Math.random() &lt; 0.5 ? -1 : 1);
+      else nx += (Math.random() &lt; 0.5 ? -1 : 1);
+    }
+
+    if (nx &lt; 0 || nx &gt;= COLS || ny &lt; 0 || ny &gt;= ROWS) { endGame(); return; }
+
+    var eatIdx = -1;
+    for (var f = 0; f &lt; foods.length; f++) if (foods[f].x === nx &amp;&amp; foods[f].y === ny) eatIdx = f;
+    var calmIdx = -1;
+    for (var c = 0; c &lt; calmOrbs.length; c++) if (calmOrbs[c].x === nx &amp;&amp; calmOrbs[c].y === ny) calmIdx = c;
+
+    var grows = (eatIdx &gt;= 0);
+    var body = grows ? snake : snake.slice(0, snake.length - 1);
+    for (var i = 0; i &lt; body.length; i++) if (body[i].x === nx &amp;&amp; body[i].y === ny) { endGame(); return; }
+
+    // Record trail before moving.
+    trail.unshift({ x: head.x, y: head.y });
+    if (trail.length &gt; 5) trail.pop();
+
+    snake.unshift({ x: nx, y: ny });
+    if (eatIdx &gt;= 0) {
+      foods.splice(eatIdx, 1);
+      score += 1;
+      scoreEl.textContent = score;
+      spawnFood();
+    } else if (calmIdx &gt;= 0) {
+      calmOrbs.splice(calmIdx, 1);
+      focus = Math.min(100, focus + 35);
+      snake.pop();
+    } else {
+      snake.pop();
+    }
+
+    if (focus &lt;= 0) { endGame(); return; }
+    paint();
+  }
+
+  function endGame() {
+    running = false;
+    if (tickId) { clearInterval(tickId); tickId = null; }
+    if (weatherId) { clearInterval(weatherId); weatherId = null; }
+    var reason = focus &lt;= 0 ? &#x27;Focus ran out&#x27; : &#x27;Crashed&#x27;;
+    paint(reason + &#x27; — Score &#x27; + score);
+  }
+
+  function startGame() {
+    score = 0; scoreEl.textContent = &#x27;0&#x27;; tickCount = 0; focus = 100;
+    initSnake();
+    foods = []; calmOrbs = [];
+    for (var i = 0; i &lt; FOOD_COUNT; i++) spawnFood();
+    spawnCalm();
+    applyEffect(EFFECTS[0]);
+    running = true;
+    if (tickId) clearInterval(tickId);
+    tickId = setInterval(tick, Math.round(BASE_TICK * effect.speed));
+    if (weatherId) clearInterval(weatherId);
+    weatherId = setInterval(function () {
+      newEffect();
+      if (calmOrbs.length &lt; 2 &amp;&amp; Math.random() &lt; 0.7) spawnCalm();
+    }, 10000);
+    paint();
+  }
+
+  function stopGame() {
+    running = false;
+    if (tickId) { clearInterval(tickId); tickId = null; }
+    if (weatherId) { clearInterval(weatherId); weatherId = null; }
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27;) { pendingDir = { x: -1, y: 0 }; e.preventDefault(); }
+    else if (e.key === &#x27;ArrowRight&#x27;) { pendingDir = { x: 1, y: 0 }; e.preventDefault(); }
+    else if (e.key === &#x27;ArrowUp&#x27;) { pendingDir = { x: 0, y: -1 }; e.preventDefault(); }
+    else if (e.key === &#x27;ArrowDown&#x27;) { pendingDir = { x: 0, y: 1 }; e.preventDefault(); }
+  });
+
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  initSnake();
+  foods = []; calmOrbs = [];
+  for (var k = 0; k &lt; FOOD_COUNT; k++) spawnFood();
+  spawnCalm();
+  paint();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

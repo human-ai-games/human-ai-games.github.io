@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🦘 Kangaroo Hop: Hell Run</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>🦘 Kangaroo Hop: Hell Run</b> &middot; Game 436 &middot; Amateur producer &middot; Basic game: Gravity jumper</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #222; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 18px; background: white; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 10px; }
+  h1 { margin: 0; font-size: 28px; font-weight: 600; color: #b5301f; }
+  .instructions { font-size: 16px; color: #666; max-width: 600px; margin: 0; line-height: 1.4; text-align: center; }
+  .score { font-size: 22px; color: #555; margin: 0; }
+  .field { position: relative; width: 620px; height: 420px; flex-shrink: 0; margin: 0; border-radius: 8px; overflow: hidden;
+    background: linear-gradient(#2a0505 0%, #6b0f0f 40%, #b5301f 70%, #ff6a00 100%); }
+  .lava { position: absolute; left: 0; right: 0; bottom: 30px; height: 40px; background: linear-gradient(#ff9a00, #ff3b00); opacity: .55; filter: blur(2px); }
+  .ember { position: absolute; font-size: 20px; opacity: .8; }
+  .mountain { position: absolute; bottom: 30px; right: -20px; width: 0; height: 0;
+    border-left: 150px solid transparent; border-right: 90px solid transparent; border-bottom: 260px solid #1a0202; }
+  .devil { position: absolute; right: 22px; bottom: 250px; font-size: 46px; text-align: center; z-index: 4; }
+  .throne { position: absolute; right: 14px; bottom: 232px; font-size: 60px; z-index: 3; opacity: .9; }
+  .shades { position: absolute; right: 27px; bottom: 288px; font-size: 26px; z-index: 5; opacity: 0; transition: opacity .15s; }
+  .ground { position: absolute; left: 0; right: 0; bottom: 0; height: 30px; background: #3a1005; border-top: 5px solid #ff6a00; }
+  .hero { position: absolute; text-align: center; transform: scaleX(-1); z-index: 6; }
+  .obstacle { position: absolute; text-align: center; bottom: 30px; }
+  .obstacle .fire { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); font-size: 26px; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;🦘 Kangaroo Hop: Hell Run&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Press &lt;strong&gt;Space&lt;/strong&gt; (or click the field) to hop the kangaroo over the flaming monsters, and it pukes with joy on every clean jump. The devil on his throne even puts on shades when you clear one — use the &lt;strong&gt;Start&lt;/strong&gt;/&lt;strong&gt;Restart&lt;/strong&gt; button below.&lt;/p&gt;
+  &lt;div class=&quot;score&quot;&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;
+    &lt;span class=&quot;ember&quot; id=&quot;ember1&quot; style=&quot;top:40px;left:120px;&quot;&gt;🔥&lt;/span&gt;
+    &lt;span class=&quot;ember&quot; id=&quot;ember2&quot; style=&quot;top:90px;left:300px;&quot;&gt;✨&lt;/span&gt;
+    &lt;span class=&quot;ember&quot; id=&quot;ember3&quot; style=&quot;top:60px;left:450px;&quot;&gt;🔥&lt;/span&gt;
+    &lt;div class=&quot;mountain&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;throne&quot;&gt;🪑&lt;/div&gt;
+    &lt;div class=&quot;devil&quot; id=&quot;devil&quot;&gt;😈&lt;/div&gt;
+    &lt;div class=&quot;shades&quot; id=&quot;shades&quot;&gt;🕶️&lt;/div&gt;
+    &lt;div class=&quot;lava&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;ground&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;hero&quot; id=&quot;hero&quot;&gt;🦘&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var FIELD_W = 620, FIELD_H = 420;
+  var GROUND_H = 30;
+  var GRAVITY = 0.58, JUMP_V = -15.5;
+  var BASE_SPEED = 3.4;
+  var running = false, animId = null, spawnId = null;
+
+  var HERO_BASE = 46, HERO_MAX = 96;
+  var heroSize = HERO_BASE;
+  var heroX = 60;
+  var heroY = FIELD_H - GROUND_H - heroSize;
+  var heroVY = 0;
+
+  var obstacles = [];
+  var score = 0;
+  var gameOver = false;
+  var monsters = [&#x27;🧛&#x27;,&#x27;🧟&#x27;,&#x27;🧌&#x27;,&#x27;🧙&#x27;,&#x27;👹&#x27;,&#x27;👿&#x27;];
+
+  var field = document.getElementById(&#x27;field&#x27;);
+  var hero = document.getElementById(&#x27;hero&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var devil = document.getElementById(&#x27;devil&#x27;);
+  var shades = document.getElementById(&#x27;shades&#x27;);
+  var embers = [
+    { el: document.getElementById(&#x27;ember1&#x27;), x: 120, s: 0.4 },
+    { el: document.getElementById(&#x27;ember2&#x27;), x: 300, s: 0.6 },
+    { el: document.getElementById(&#x27;ember3&#x27;), x: 450, s: 0.3 }
+  ];
+  var shadesTimer = 0;
+  var pukeTimer = 0;
+  var pukeEl = null;
+
+  function curSpeed() { return BASE_SPEED + Math.min(score * 0.12, 3.5); }
+
+  function paintHero() {
+    hero.style.width = heroSize + &#x27;px&#x27;;
+    hero.style.height = heroSize + &#x27;px&#x27;;
+    hero.style.fontSize = (heroSize - 6) + &#x27;px&#x27;;
+    hero.style.lineHeight = heroSize + &#x27;px&#x27;;
+    hero.style.left = heroX + &#x27;px&#x27;;
+    hero.style.top = heroY + &#x27;px&#x27;;
+  }
+
+  function makeObstacle(x) {
+    var r = Math.random();
+    var size;
+    if (r &lt; 0.4) size = 34 + Math.random() * 12;
+    else if (r &lt; 0.8) size = 50 + Math.random() * 14;
+    else size = 66 + Math.random() * 18;
+    var w = size + 6;
+    var o = { x: x, w: w, h: size, hitH: size * 0.72, scored: false, el: null };
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;obstacle&#x27;;
+    el.style.left = o.x + &#x27;px&#x27;;
+    el.style.width = w + &#x27;px&#x27;;
+    el.style.fontSize = size + &#x27;px&#x27;;
+    el.style.lineHeight = size + &#x27;px&#x27;;
+    el.textContent = monsters[Math.floor(Math.random() * monsters.length)];
+    var fire = document.createElement(&#x27;span&#x27;);
+    fire.className = &#x27;fire&#x27;;
+    fire.style.fontSize = (size * 0.5) + &#x27;px&#x27;;
+    fire.textContent = &#x27;🔥&#x27;;
+    el.appendChild(fire);
+    field.appendChild(el);
+    o.el = el;
+    obstacles.push(o);
+    return o;
+  }
+
+  // easier: smaller bursts (1-2), roomier gaps
+  function spawnBurst() {
+    var count = 1 + Math.floor(Math.random() * 2);
+    var x = FIELD_W;
+    for (var i = 0; i &lt; count; i++) {
+      var o = makeObstacle(x);
+      x += o.w + 30 + Math.random() * 26;
+    }
+  }
+
+  function showPuke() {
+    if (!pukeEl) {
+      pukeEl = document.createElement(&#x27;div&#x27;);
+      pukeEl.style.position = &#x27;absolute&#x27;;
+      pukeEl.style.zIndex = &#x27;7&#x27;;
+      pukeEl.style.textContent = &#x27;&#x27;;
+      pukeEl.textContent = &#x27;🤮&#x27;;
+      field.appendChild(pukeEl);
+    }
+    pukeEl.style.fontSize = (heroSize * 0.7) + &#x27;px&#x27;;
+    pukeEl.style.opacity = &#x27;1&#x27;;
+    pukeTimer = 20;
+  }
+
+  function showShades() {
+    devil.textContent = &#x27;😎&#x27;;
+    shades.style.opacity = &#x27;1&#x27;;
+    shadesTimer = 30;
+  }
+
+  function jump() {
+    if (!running || gameOver) return;
+    if (heroY &gt;= FIELD_H - GROUND_H - heroSize - 1) heroVY = JUMP_V;
+  }
+
+  function tick() {
+    if (!running) return;
+    for (var e = 0; e &lt; embers.length; e++) {
+      var em = embers[e];
+      em.x -= em.s; if (em.x &lt; -30) em.x = FIELD_W;
+      em.el.style.left = em.x + &#x27;px&#x27;;
+    }
+
+    heroVY += GRAVITY;
+    heroY += heroVY;
+    var floorY = FIELD_H - GROUND_H - heroSize;
+    if (heroY &gt; floorY) { heroY = floorY; heroVY = 0; }
+    if (heroY &lt; 0) { heroY = 0; heroVY = 0; }
+    hero.style.transform = heroVY &lt; 0 ? &#x27;scaleX(-1) scaleY(1.12) rotate(8deg)&#x27; : &#x27;scaleX(-1)&#x27;;
+    paintHero();
+
+    if (pukeTimer &gt; 0) {
+      pukeTimer--;
+      if (pukeEl) {
+        pukeEl.style.left = (heroX + heroSize - 6) + &#x27;px&#x27;;
+        pukeEl.style.top = (heroY + heroSize * 0.25) + &#x27;px&#x27;;
+        if (pukeTimer === 0) pukeEl.style.opacity = &#x27;0&#x27;;
+      }
+    }
+
+    if (shadesTimer &gt; 0) {
+      shadesTimer--;
+      if (shadesTimer === 0) { devil.textContent = &#x27;😈&#x27;; shades.style.opacity = &#x27;0&#x27;; }
+    }
+
+    var spd = curSpeed();
+    for (var i = obstacles.length - 1; i &gt;= 0; i--) {
+      var o = obstacles[i];
+      o.x -= spd;
+      o.el.style.left = o.x + &#x27;px&#x27;;
+      if (o.x + o.w &lt; 0) {
+        field.removeChild(o.el);
+        obstacles.splice(i, 1);
+        continue;
+      }
+      if (!o.scored &amp;&amp; o.x + o.w &lt; heroX) {
+        o.scored = true;
+        score += 1;
+        scoreEl.textContent = score;
+        if (heroSize &lt; HERO_MAX) heroSize = Math.min(HERO_MAX, heroSize + 4);
+        showPuke();
+        showShades();
+      }
+      var obstacleTop = FIELD_H - GROUND_H - o.hitH;
+      var pad = 8;
+      if (heroX + heroSize - pad &gt; o.x &amp;&amp; heroX + pad &lt; o.x + o.w &amp;&amp;
+          heroY + heroSize - pad &gt; obstacleTop) {
+        gameOver = true;
+        stopGame();
+        return;
+      }
+    }
+    animId = requestAnimationFrame(tick);
+  }
+
+  function clearObstacles() {
+    obstacles.forEach(function (o) { if (o.el.parentNode) o.el.parentNode.removeChild(o.el); });
+    obstacles = [];
+  }
+
+  function placeInitialObstacle() {
+    clearObstacles();
+    makeObstacle(FIELD_W - 60);
+    paintHero();
+  }
+
+  function startGame() {
+    if (running) return;
+    score = 0;
+    scoreEl.textContent = &#x27;0&#x27;;
+    heroSize = HERO_BASE;
+    heroX = 60;
+    heroY = FIELD_H - GROUND_H - heroSize;
+    heroVY = 0;
+    gameOver = false;
+    hero.style.transform = &#x27;scaleX(-1)&#x27;;
+    devil.textContent = &#x27;😈&#x27;;
+    shades.style.opacity = &#x27;0&#x27;;
+    shadesTimer = 0;
+    pukeTimer = 0;
+    if (pukeEl) pukeEl.style.opacity = &#x27;0&#x27;;
+    paintHero();
+    clearObstacles();
+    spawnBurst();
+    running = true;
+    animId = requestAnimationFrame(tick);
+    scheduleSpawn();
+  }
+
+  // easier: longer gaps between bursts, gentle ramp
+  function curGap() { return Math.max(1300, 2400 - score * 35); }
+
+  function scheduleSpawn() {
+    spawnId = setTimeout(function () {
+      if (!running) return;
+      spawnBurst();
+      scheduleSpawn();
+    }, curGap());
+  }
+
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+    if (spawnId) { clearTimeout(spawnId); spawnId = null; }
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27; &#x27; || e.code === &#x27;Space&#x27;) {
+      jump();
+      e.preventDefault();
+    }
+  });
+  field.addEventListener(&#x27;click&#x27;, function () { jump(); });
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  placeInitialObstacle();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

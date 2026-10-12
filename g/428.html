@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🧸 Whack-a-Teddy</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>🧸 Whack-a-Teddy</b> &middot; Game 428 &middot; Professional producer &middot; Basic game: Whack-a-mole</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #222; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 12px; height: 100%; box-sizing: border-box; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 7px; }
+  h1 { margin: 0; font-size: 24px; font-weight: 700; color: #4a3b8c; }
+  .instructions { font-size: 16px; color: #555; max-width: 620px; margin: 0; line-height: 1.3; }
+  .scorebar { display: flex; gap: 14px; align-items: center; justify-content: center; }
+  .score { font-size: 34px; font-weight: 800; color: #2b2b4a; margin: 0; background: linear-gradient(135deg,#fff,#ffe9f3); padding: 6px 28px; border-radius: 24px; box-shadow: 0 3px 10px rgba(74,59,140,.25); border: 2px solid #ffd6e8; }
+  .score.bump { animation: bump .25s ease; }
+  @keyframes bump { 0%{transform:scale(1);} 50%{transform:scale(1.18);} 100%{transform:scale(1);} }
+  .streak { font-size: 16px; font-weight: 700; color: #d81b8c; min-width: 78px; }
+  .legend { display: flex; gap: 16px; font-size: 14px; color: #444; margin: 0; flex-wrap: wrap; justify-content: center; }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .dot { width: 13px; height: 13px; border-radius: 50%; display: inline-block; }
+  .board { position: relative; width: 640px; height: 372px; flex-shrink: 0; margin: 0; border-radius: 12px; overflow: hidden;
+    background:
+      radial-gradient(circle at 20% 30%, rgba(255,255,255,.35) 0 40px, transparent 41px),
+      radial-gradient(circle at 75% 60%, rgba(255,255,255,.30) 0 55px, transparent 56px),
+      radial-gradient(circle at 50% 85%, rgba(255,255,255,.25) 0 35px, transparent 36px),
+      linear-gradient(135deg, #7ec8e3 0%, #a6e3a1 50%, #ffd6e0 100%);
+    box-shadow: inset 0 0 0 3px rgba(255,255,255,.5);
+  }
+  .bear { position: absolute; width: 100px; height: 100px; cursor: pointer; user-select: none;
+    animation: bounceIn .28s cubic-bezier(.34,1.56,.64,1); }
+  .bear svg { display: block; filter: drop-shadow(0 3px 4px rgba(0,0,0,.2)); }
+  @keyframes bounceIn { from { transform: scale(.2); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .bear.caught { animation: caughtPop .3s ease-out forwards; }
+  @keyframes caughtPop { 0% { transform: scale(1) rotate(0); } 40% { transform: scale(1.35) rotate(-8deg); } 100% { transform: scale(0) rotate(12deg); opacity: 0; } }
+  .pop { position: absolute; font-weight: 800; font-size: 26px; pointer-events: none; animation: floatUp .7s ease-out forwards; text-shadow: 0 1px 2px rgba(255,255,255,.8); }
+  @keyframes floatUp { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(-46px) scale(1.2); } }
+  .spark { position: absolute; font-size: 22px; pointer-events: none; }
+  @keyframes sparkFly { from { opacity: 1; transform: translate(0,0) scale(1); } to { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(.3); } }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;🧸 Whack-a-Teddy&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Tap the teddy bears fast: green gives 1 point, pink gives 3, but never hit the red ones — they cost you a point!&lt;/p&gt;
+  &lt;div class=&quot;scorebar&quot;&gt;
+    &lt;div class=&quot;score&quot; id=&quot;scoreBox&quot;&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;streak&quot; id=&quot;streak&quot;&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;legend&quot;&gt;
+    &lt;span&gt;&lt;span class=&quot;dot&quot; style=&quot;background:#5bc46a&quot;&gt;&lt;/span&gt;Green +1&lt;/span&gt;
+    &lt;span&gt;&lt;span class=&quot;dot&quot; style=&quot;background:#ff69b4&quot;&gt;&lt;/span&gt;Pink +3&lt;/span&gt;
+    &lt;span&gt;&lt;span class=&quot;dot&quot; style=&quot;background:#e53935&quot;&gt;&lt;/span&gt;Red −1 (avoid!)&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;board&quot; id=&quot;board&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var BOARD_W = 640, BOARD_H = 372, BEAR_SIZE = 100;
+  var SPAWN_MS = 800;
+  var score = 0, streak = 0;
+  var intervalId = null;
+  var bearTimeouts = [];
+  var running = false;
+  var board = document.getElementById(&#x27;board&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var scoreBox = document.getElementById(&#x27;scoreBox&#x27;);
+  var streakEl = document.getElementById(&#x27;streak&#x27;);
+  var audioCtx = null;
+
+  var TYPES = {
+    green: { body: &#x27;#5bc46a&#x27;, dark: &#x27;#3a9e4a&#x27;, light: &#x27;#7ed98b&#x27;, points: 1, life: 1500 },
+    pink:  { body: &#x27;#ff69b4&#x27;, dark: &#x27;#d81b8c&#x27;, light: &#x27;#ff9ed0&#x27;, points: 3, life: 1150 },
+    red:   { body: &#x27;#e53935&#x27;, dark: &#x27;#b71c1c&#x27;, light: &#x27;#f26a68&#x27;, points: -1, life: 1300 }
+  };
+
+  function ac() {
+    try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (_) {}
+    return audioCtx;
+  }
+
+  function tone(freq, start, dur, type, vol) {
+    var a = ac(); if (!a) return;
+    var o = a.createOscillator(), g = a.createGain();
+    o.type = type; o.frequency.value = freq;
+    var t0 = a.currentTime + start;
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(vol, t0 + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    o.connect(g); g.connect(a.destination);
+    o.start(t0); o.stop(t0 + dur + 0.02);
+  }
+
+  function spawnSound() { tone(660, 0, 0.09, &#x27;sine&#x27;, 0.06); }
+
+  function goodSound(s) {
+    var base = 523 + Math.min(s, 8) * 45; // rises with streak
+    [base, base * 1.26, base * 1.5].forEach(function (f, i) {
+      tone(f, i * 0.06, 0.18, &#x27;triangle&#x27;, 0.16);
+    });
+  }
+
+  function badSound() {
+    tone(200, 0, 0.18, &#x27;sawtooth&#x27;, 0.18);
+    tone(140, 0.08, 0.2, &#x27;sawtooth&#x27;, 0.16);
+  }
+
+  function bearSVG(t) {
+    var c = t.body, d = t.dark, l = t.light;
+    return &#x27;&lt;svg viewBox=&quot;0 0 100 100&quot; width=&quot;100&quot; height=&quot;100&quot;&gt;&#x27; +
+      &#x27;&lt;circle cx=&quot;26&quot; cy=&quot;26&quot; r=&quot;16&quot; fill=&quot;&#x27;+c+&#x27;&quot;/&gt;&lt;circle cx=&quot;74&quot; cy=&quot;26&quot; r=&quot;16&quot; fill=&quot;&#x27;+c+&#x27;&quot;/&gt;&#x27; +
+      &#x27;&lt;circle cx=&quot;26&quot; cy=&quot;26&quot; r=&quot;8&quot; fill=&quot;&#x27;+d+&#x27;&quot;/&gt;&lt;circle cx=&quot;74&quot; cy=&quot;26&quot; r=&quot;8&quot; fill=&quot;&#x27;+d+&#x27;&quot;/&gt;&#x27; +
+      &#x27;&lt;circle cx=&quot;50&quot; cy=&quot;56&quot; r=&quot;38&quot; fill=&quot;&#x27;+c+&#x27;&quot;/&gt;&#x27; +
+      &#x27;&lt;circle cx=&quot;42&quot; cy=&quot;45&quot; r=&quot;12&quot; fill=&quot;&#x27;+l+&#x27;&quot; opacity=&quot;0.5&quot;/&gt;&#x27; +
+      &#x27;&lt;ellipse cx=&quot;50&quot; cy=&quot;68&quot; rx=&quot;21&quot; ry=&quot;17&quot; fill=&quot;#fff6e8&quot;/&gt;&#x27; +
+      &#x27;&lt;circle cx=&quot;30&quot; cy=&quot;62&quot; r=&quot;7&quot; fill=&quot;#ff9db0&quot; opacity=&quot;0.7&quot;/&gt;&#x27; +
+      &#x27;&lt;circle cx=&quot;70&quot; cy=&quot;62&quot; r=&quot;7&quot; fill=&quot;#ff9db0&quot; opacity=&quot;0.7&quot;/&gt;&#x27; +
+      &#x27;&lt;ellipse cx=&quot;50&quot; cy=&quot;61&quot; rx=&quot;7&quot; ry=&quot;5.5&quot; fill=&quot;&#x27;+d+&#x27;&quot;/&gt;&#x27; +
+      &#x27;&lt;ellipse cx=&quot;47.5&quot; cy=&quot;59.5&quot; rx=&quot;2&quot; ry=&quot;1.5&quot; fill=&quot;#fff&quot; opacity=&quot;0.7&quot;/&gt;&#x27; +
+      &#x27;&lt;path d=&quot;M50 66 L50 72 M50 72 Q43 78 38 73 M50 72 Q57 78 62 73&quot; stroke=&quot;&#x27;+d+&#x27;&quot; stroke-width=&quot;2.6&quot; fill=&quot;none&quot; stroke-linecap=&quot;round&quot;/&gt;&#x27; +
+      &#x27;&lt;circle cx=&quot;38&quot; cy=&quot;50&quot; r=&quot;6&quot; fill=&quot;#2b2b2b&quot;/&gt;&lt;circle cx=&quot;62&quot; cy=&quot;50&quot; r=&quot;6&quot; fill=&quot;#2b2b2b&quot;/&gt;&#x27; +
+      &#x27;&lt;circle cx=&quot;40&quot; cy=&quot;48&quot; r=&quot;2.2&quot; fill=&quot;#fff&quot;/&gt;&lt;circle cx=&quot;64&quot; cy=&quot;48&quot; r=&quot;2.2&quot; fill=&quot;#fff&quot;/&gt;&#x27; +
+      &#x27;&lt;/svg&gt;&#x27;;
+  }
+
+  function showPop(x, y, txt, color) {
+    var p = document.createElement(&#x27;div&#x27;);
+    p.className = &#x27;pop&#x27;;
+    p.textContent = txt;
+    p.style.color = color;
+    p.style.left = x + &#x27;px&#x27;;
+    p.style.top = y + &#x27;px&#x27;;
+    board.appendChild(p);
+    setTimeout(function () { if (p.parentNode === board) board.removeChild(p); }, 700);
+  }
+
+  function sparkle(cx, cy) {
+    var emojis = [&#x27;✨&#x27;,&#x27;⭐&#x27;,&#x27;💖&#x27;,&#x27;🌟&#x27;,&#x27;💫&#x27;];
+    for (var i = 0; i &lt; 6; i++) {
+      var s = document.createElement(&#x27;div&#x27;);
+      s.className = &#x27;spark&#x27;;
+      s.textContent = emojis[i % emojis.length];
+      var ang = (Math.PI * 2 * i) / 6 + Math.random();
+      var dist = 40 + Math.random() * 30;
+      s.style.left = cx + &#x27;px&#x27;;
+      s.style.top = cy + &#x27;px&#x27;;
+      s.style.setProperty(&#x27;--dx&#x27;, Math.cos(ang) * dist + &#x27;px&#x27;);
+      s.style.setProperty(&#x27;--dy&#x27;, Math.sin(ang) * dist + &#x27;px&#x27;);
+      s.style.animation = &#x27;sparkFly .6s ease-out forwards&#x27;;
+      board.appendChild(s);
+      (function (el) { setTimeout(function () { if (el.parentNode === board) board.removeChild(el); }, 650); })(s);
+    }
+  }
+
+  function updateStreak() {
+    streakEl.textContent = streak &gt;= 2 ? (&#x27;🔥 x&#x27; + streak) : &#x27;&#x27;;
+  }
+
+  function bumpScore() {
+    scoreBox.classList.remove(&#x27;bump&#x27;);
+    void scoreBox.offsetWidth;
+    scoreBox.classList.add(&#x27;bump&#x27;);
+  }
+
+  function clearAllBears() {
+    for (var i = 0; i &lt; bearTimeouts.length; i++) clearTimeout(bearTimeouts[i]);
+    bearTimeouts = [];
+    board.innerHTML = &#x27;&#x27;;
+  }
+
+  function pickType() {
+    var r = Math.random();
+    if (r &lt; 0.45) return &#x27;green&#x27;;
+    if (r &lt; 0.75) return &#x27;pink&#x27;;
+    return &#x27;red&#x27;;
+  }
+
+  function spawnBear() {
+    var key = pickType();
+    var t = TYPES[key];
+    var bear = document.createElement(&#x27;div&#x27;);
+    bear.className = &#x27;bear&#x27;;
+    var left = Math.random() * (BOARD_W - BEAR_SIZE);
+    var top = Math.random() * (BOARD_H - BEAR_SIZE);
+    bear.style.left = left + &#x27;px&#x27;;
+    bear.style.top = top + &#x27;px&#x27;;
+    bear.innerHTML = bearSVG(t);
+    spawnSound();
+    var hit = false;
+    bear.addEventListener(&#x27;click&#x27;, function () {
+      if (hit) return;
+      hit = true;
+      score += t.points;
+      scoreEl.textContent = score;
+      bumpScore();
+      var good = t.points &gt; 0;
+      var txt = (good ? &#x27;+&#x27; : &#x27;&#x27;) + t.points;
+      showPop(left + 30, top + 20, txt, good ? &#x27;#1b5e20&#x27; : &#x27;#b71c1c&#x27;);
+      if (good) {
+        streak += 1;
+        updateStreak();
+        goodSound(streak);
+        sparkle(left + BEAR_SIZE / 2, top + BEAR_SIZE / 2);
+        bear.classList.add(&#x27;caught&#x27;);
+        setTimeout(function () { if (bear.parentNode === board) board.removeChild(bear); }, 300);
+      } else {
+        streak = 0;
+        updateStreak();
+        badSound();
+        bear.style.transition = &#x27;transform .1s&#x27;;
+        bear.style.transform = &#x27;scale(.85)&#x27;;
+        board.style.boxShadow = &#x27;inset 0 0 0 3px rgba(255,255,255,.5), inset 0 0 40px rgba(229,57,53,.6)&#x27;;
+        setTimeout(function () { board.style.boxShadow = &#x27;inset 0 0 0 3px rgba(255,255,255,.5)&#x27;; }, 180);
+        setTimeout(function () { if (bear.parentNode === board) board.removeChild(bear); }, 150);
+      }
+    });
+    board.appendChild(bear);
+    bearTimeouts.push(setTimeout(function () {
+      if (bear.parentNode === board) board.removeChild(bear);
+    }, t.life));
+  }
+
+  function startGame() {
+    if (running) return;
+    running = true;
+    score = 0; streak = 0;
+    scoreEl.textContent = &#x27;0&#x27;;
+    updateStreak();
+    if (intervalId) clearInterval(intervalId);
+    clearAllBears();
+    spawnBear();
+    intervalId = setInterval(spawnBear, SPAWN_MS);
+  }
+
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    if (intervalId) { clearInterval(intervalId); intervalId = null; }
+    clearAllBears();
+  }
+
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

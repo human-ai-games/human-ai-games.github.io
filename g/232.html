@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🚀 Meteor Devourer</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>🚀 Meteor Devourer</b> &middot; Game 232 &middot; Amateur producer &middot; Basic game: Snake</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #05010f; color: #e8e8ff; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 12px; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 6px; }
+  h1 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: 1px; text-shadow: 0 0 12px #6a4bff; }
+  .instructions { font-size: 16px; color: #b9b9e6; max-width: 640px; margin: 0; line-height: 1.3; text-align: center; }
+  .hud { display: flex; gap: 24px; align-items: center; }
+  .score { font-size: 20px; color: #ffd27a; margin: 0; text-shadow: 0 0 8px #ff9d3a; }
+  .lives { font-size: 20px; color: #ff6a8a; margin: 0; text-shadow: 0 0 8px #ff2a5a; }
+  .field { position: relative; width: 600px; height: 400px; flex-shrink: 0; margin: 0; border-radius: 8px; overflow: hidden; border: 1px solid #2a2050; box-shadow: 0 0 20px rgba(106,75,255,0.3) inset; background:
+      radial-gradient(2px 2px at 20% 30%, #fff, transparent),
+      radial-gradient(1px 1px at 60% 70%, #cfe, transparent),
+      radial-gradient(1.5px 1.5px at 80% 20%, #fff, transparent),
+      radial-gradient(1px 1px at 40% 80%, #fdd, transparent),
+      radial-gradient(2px 2px at 10% 60%, #fff, transparent),
+      radial-gradient(1px 1px at 90% 50%, #dfe, transparent),
+      radial-gradient(1.5px 1.5px at 30% 10%, #fff, transparent),
+      radial-gradient(1px 1px at 70% 40%, #eef, transparent),
+      radial-gradient(ellipse at center, #10082a 0%, #05010f 100%); }
+  .cell { position: absolute; box-sizing: border-box; }
+  .snake { background: radial-gradient(circle at 35% 30%, #ffd27a, #ff7a2a 60%, #7a2a00); border-radius: 50%; box-shadow: 0 0 8px #ff9d3a; }
+  .head { box-shadow: 0 0 12px #ffcf6a, 0 0 20px #ff7a2a; }
+  .charging { animation: whiteflash 0.4s infinite alternate; }
+  @keyframes whiteflash { from { box-shadow: 0 0 12px #ffcf6a, 0 0 20px #ff7a2a; } to { box-shadow: 0 0 20px #fff, 0 0 40px #fff, 0 0 60px #fff; } }
+  .food { background: radial-gradient(circle at 35% 30%, #cfe8ff, #6a9bff 60%, #223); border-radius: 50%; box-shadow: 0 0 6px #6a9bff; }
+  .star { display:flex; align-items:center; justify-content:center; font-size:16px; text-shadow:0 0 10px #ffe66a; animation: pulse 0.8s infinite alternate; }
+  @keyframes pulse { from { transform: scale(0.85); } to { transform: scale(1.1); } }
+  .enemy { display:flex; align-items:center; justify-content:center; font-size:18px; filter: drop-shadow(0 0 6px #3aff6a); transition: opacity 0.3s; }
+  .mimic { display:flex; align-items:center; justify-content:center; font-size:18px; filter: drop-shadow(0 0 8px #b06aff); }
+  .ambush { display:flex; align-items:center; justify-content:center; font-size:18px; filter: drop-shadow(0 0 8px #fff); }
+  .laser { position:absolute; background: linear-gradient(90deg, rgba(58,255,106,0), #3aff6a, rgba(58,255,106,0)); box-shadow: 0 0 10px #3aff6a, 0 0 20px #3aff6a; border-radius: 3px; }
+  .laserV { background: linear-gradient(180deg, rgba(58,255,106,0), #3aff6a, rgba(58,255,106,0)); }
+  .warn { position:absolute; background: linear-gradient(90deg, rgba(255,58,58,0), rgba(255,58,58,0.6), rgba(255,58,58,0)); box-shadow: 0 0 8px #ff3a3a; border-radius:3px; animation: warnpulse 0.3s infinite alternate; }
+  .warnV { background: linear-gradient(180deg, rgba(255,58,58,0), rgba(255,58,58,0.6), rgba(255,58,58,0)); }
+  @keyframes warnpulse { from { opacity:0.4; } to { opacity:1; } }
+  .msg { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:24px; text-align:center; color:#fff; text-shadow:0 0 14px #6a4bff; pointer-events:none; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;🚀 Meteor Devourer&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Steer with arrow keys, eat blue meteors to grow, grab ⭐ for a life. After 5 points, watch out: snipers show a red beam before firing green, purple mimics copy you, and ambushers appear where a white flash warns.&lt;/p&gt;
+  &lt;div class=&quot;hud&quot;&gt;
+    &lt;div class=&quot;score&quot;&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;lives&quot;&gt;Lives: &lt;span id=&quot;lives&quot;&gt;1&lt;/span&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var CELL = 20;
+  var COLS = 30, ROWS = 20;
+  var TICK_MS = 150;
+  var running = false, tickId = null;
+  var snake = [];
+  var dir = { x: 1, y: 0 };
+  var pendingDir = { x: 1, y: 0 };
+  var food = { x: 10, y: 10 };
+  var score = 0, lives = 1;
+  var eatenSinceStar = 0;
+  var star = null;
+  var sniper = null;   // {x,y,phase:&#x27;in&#x27;|&#x27;warn&#x27;|&#x27;fire&#x27;|&#x27;out&#x27;,timer,vertical}
+  var mimic = null;    // {x,y,trail:[]} follows head with delay
+  var ambush = null;   // {phase:&#x27;charge&#x27;|&#x27;appear&#x27;|&#x27;gone&#x27;,timer,x,y}
+  var spawnCd = 0;
+  var field = document.getElementById(&#x27;field&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var livesEl = document.getElementById(&#x27;lives&#x27;);
+
+  // ---- Audio ----
+  var actx = null, musicTimer = null;
+  function ensureAudio() {
+    if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { actx = null; } }
+    if (actx &amp;&amp; actx.state === &#x27;suspended&#x27;) actx.resume();
+  }
+  function tone(type, f0, f1, dur, vol) {
+    if (!actx) return;
+    var o = actx.createOscillator(), g = actx.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(f0, actx.currentTime);
+    if (f1) o.frequency.exponentialRampToValueAtTime(f1, actx.currentTime + dur);
+    g.gain.setValueAtTime(0.0001, actx.currentTime);
+    g.gain.exponentialRampToValueAtTime(vol, actx.currentTime + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + dur);
+    o.connect(g); g.connect(actx.destination);
+    o.start(); o.stop(actx.currentTime + dur + 0.05);
+  }
+  function playBlip()   { tone(&#x27;sine&#x27;, 660, 1320, 0.16, 0.25); }
+  function playStar()   { tone(&#x27;sine&#x27;, 880, 1760, 0.15, 0.25); tone(&#x27;sine&#x27;, 1320, 2640, 0.25, 0.18); }
+  function playLaser()  { tone(&#x27;sawtooth&#x27;, 1200, 300, 0.3, 0.2); }
+  function playWarn()   { tone(&#x27;square&#x27;, 500, 500, 0.15, 0.12); }
+  function playCharge() { tone(&#x27;sine&#x27;, 300, 1400, 0.5, 0.15); }
+  function playHit()    { tone(&#x27;square&#x27;, 200, 60, 0.4, 0.25); }
+  function playCrash()  { tone(&#x27;sawtooth&#x27;, 300, 40, 0.5, 0.3); }
+
+  var scale = [110, 138.59, 164.81, 220, 261.63, 329.63];
+  var seq = [0, 2, 4, 2, 5, 4, 2, 0];
+  var seqIdx = 0;
+  function musicStep() {
+    if (!actx || !running) return;
+    var base = scale[seq[seqIdx % seq.length]]; seqIdx++;
+    var o = actx.createOscillator(), g = actx.createGain(), f = actx.createBiquadFilter();
+    o.type = &#x27;triangle&#x27;; o.frequency.value = base;
+    f.type = &#x27;lowpass&#x27;; f.frequency.value = 800;
+    g.gain.setValueAtTime(0.0001, actx.currentTime);
+    g.gain.linearRampToValueAtTime(0.1, actx.currentTime + 0.1);
+    g.gain.linearRampToValueAtTime(0.0001, actx.currentTime + 0.75);
+    o.connect(f); f.connect(g); g.connect(actx.destination);
+    o.start(); o.stop(actx.currentTime + 0.8);
+    var o2 = actx.createOscillator(), g2 = actx.createGain();
+    o2.type = &#x27;sine&#x27;; o2.frequency.value = base * 2;
+    g2.gain.setValueAtTime(0.0001, actx.currentTime);
+    g2.gain.linearRampToValueAtTime(0.04, actx.currentTime + 0.05);
+    g2.gain.linearRampToValueAtTime(0.0001, actx.currentTime + 0.5);
+    o2.connect(g2); g2.connect(actx.destination);
+    o2.start(); o2.stop(actx.currentTime + 0.55);
+  }
+  function startMusic() { if (!actx) return; stopMusic(); seqIdx = 0; musicStep(); musicTimer = setInterval(musicStep, 420); }
+  function stopMusic() { if (musicTimer) { clearInterval(musicTimer); musicTimer = null; } }
+
+  function clearField() { field.innerHTML = &#x27;&#x27;; }
+  function drawCell(cls, x, y, txt) {
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;cell &#x27; + cls;
+    el.style.left = (x * CELL) + &#x27;px&#x27;;
+    el.style.top = (y * CELL) + &#x27;px&#x27;;
+    el.style.width = CELL + &#x27;px&#x27;;
+    el.style.height = CELL + &#x27;px&#x27;;
+    if (txt) el.textContent = txt;
+    field.appendChild(el);
+    return el;
+  }
+  function drawBeam(cls, vertical, idx) {
+    var l = document.createElement(&#x27;div&#x27;);
+    l.className = cls;
+    if (vertical) {
+      l.style.left = (idx * CELL + CELL/2 - 2) + &#x27;px&#x27;;
+      l.style.top = &#x27;0px&#x27;; l.style.width = &#x27;4px&#x27;; l.style.height = (ROWS*CELL)+&#x27;px&#x27;;
+    } else {
+      l.style.top = (idx * CELL + CELL/2 - 2) + &#x27;px&#x27;;
+      l.style.left = &#x27;0px&#x27;; l.style.height = &#x27;4px&#x27;; l.style.width = (COLS*CELL)+&#x27;px&#x27;;
+    }
+    field.appendChild(l);
+  }
+
+  function paint() {
+    clearField();
+    drawCell(&#x27;food&#x27;, food.x, food.y);
+    if (star) drawCell(&#x27;star&#x27;, star.x, star.y, &#x27;⭐&#x27;);
+    // sniper beams behind ship
+    if (sniper) {
+      if (sniper.phase === &#x27;warn&#x27;) drawBeam(&#x27;warn&#x27; + (sniper.vertical?&#x27; warnV&#x27;:&#x27;&#x27;), sniper.vertical, sniper.vertical?sniper.x:sniper.y);
+      if (sniper.phase === &#x27;fire&#x27;) drawBeam(&#x27;laser&#x27; + (sniper.vertical?&#x27; laserV&#x27;:&#x27;&#x27;), sniper.vertical, sniper.vertical?sniper.x:sniper.y);
+    }
+    if (mimic) drawCell(&#x27;mimic&#x27;, mimic.x, mimic.y, &#x27;👾&#x27;);
+    if (ambush &amp;&amp; ambush.phase === &#x27;appear&#x27;) drawCell(&#x27;ambush&#x27;, ambush.x, ambush.y, &#x27;🛰️&#x27;);
+    // snake head gets charging glow when ambush is charging
+    var charging = (ambush &amp;&amp; ambush.phase === &#x27;charge&#x27;);
+    for (var i = 0; i &lt; snake.length; i++) {
+      var cls = &#x27;snake&#x27; + (i===0 ? &#x27; head&#x27; : &#x27;&#x27;) + (i===0 &amp;&amp; charging ? &#x27; charging&#x27; : &#x27;&#x27;);
+      drawCell(cls, snake[i].x, snake[i].y);
+    }
+    if (sniper &amp;&amp; sniper.phase !== &#x27;gone&#x27;) {
+      var el = drawCell(&#x27;enemy&#x27;, sniper.x, sniper.y, &#x27;🛸&#x27;);
+      el.style.opacity = (sniper.phase === &#x27;in&#x27;) ? &#x27;0.4&#x27; : (sniper.phase === &#x27;out&#x27; ? &#x27;0.3&#x27; : &#x27;1&#x27;);
+    }
+  }
+
+  function occupiedBySnake(x, y) {
+    for (var i = 0; i &lt; snake.length; i++) if (snake[i].x === x &amp;&amp; snake[i].y === y) return true;
+    return false;
+  }
+  function randCell() { return { x: Math.floor(Math.random()*COLS), y: Math.floor(Math.random()*ROWS) }; }
+  function placeFood() { for (var t=0;t&lt;200;t++){var c=randCell(); if(!occupiedBySnake(c.x,c.y)&amp;&amp;!(star&amp;&amp;star.x===c.x&amp;&amp;star.y===c.y)){food=c;return;}} }
+  function placeStar() { for (var t=0;t&lt;200;t++){var c=randCell(); if(!occupiedBySnake(c.x,c.y)&amp;&amp;!(c.x===food.x&amp;&amp;c.y===food.y)){star=c;return;}} }
+  function initSnake() { snake=[{x:5,y:10},{x:4,y:10},{x:3,y:10}]; dir={x:1,y:0}; pendingDir={x:1,y:0}; }
+
+  function spawnSniper() { var c=randCell(); sniper={x:c.x,y:c.y,phase:&#x27;in&#x27;,timer:2,vertical:Math.random()&lt;0.5}; }
+  function spawnMimic() {
+    var head = snake[0];
+    // spawn a few cells behind the head&#x27;s direction
+    var mx = head.x - dir.x*4, my = head.y - dir.y*4;
+    mx = Math.max(0, Math.min(COLS-1, mx)); my = Math.max(0, Math.min(ROWS-1, my));
+    mimic = { x: mx, y: my, delay: [] };
+    flash(&#x27;👾 Mimic incoming!&#x27;);
+  }
+  function spawnAmbush() { ambush = { phase:&#x27;charge&#x27;, timer:3 }; playCharge(); }
+
+  function stepSniper() {
+    if (!sniper) return;
+    sniper.timer--;
+    if (sniper.phase===&#x27;in&#x27; &amp;&amp; sniper.timer&lt;=0) { sniper.phase=&#x27;warn&#x27;; sniper.timer=2; playWarn(); }
+    else if (sniper.phase===&#x27;warn&#x27; &amp;&amp; sniper.timer&lt;=0) { sniper.phase=&#x27;fire&#x27;; sniper.timer=2; playLaser(); checkSniperHit(); }
+    else if (sniper.phase===&#x27;fire&#x27; &amp;&amp; sniper.timer&lt;=0) { sniper.phase=&#x27;out&#x27;; sniper.timer=1; }
+    else if (sniper.phase===&#x27;out&#x27; &amp;&amp; sniper.timer&lt;=0) { sniper=null; }
+  }
+  function checkSniperHit() {
+    if (!sniper || sniper.phase!==&#x27;fire&#x27;) return;
+    var h = snake[0];
+    if (sniper.vertical ? (h.x===sniper.x) : (h.y===sniper.y)) loseLife(&#x27;Sniper hit!&#x27;);
+  }
+
+  function stepMimic() {
+    if (!mimic) return;
+    var h = snake[0];
+    // move one step toward head (copying movement, one behind)
+    var dx = h.x - mimic.x, dy = h.y - mimic.y;
+    if (Math.abs(dx) &gt;= Math.abs(dy)) mimic.x += Math.sign(dx);
+    else mimic.y += Math.sign(dy);
+    if (mimic.x===h.x &amp;&amp; mimic.y===h.y) loseLife(&#x27;Mimic caught you!&#x27;);
+  }
+
+  function stepAmbush() {
+    if (!ambush) return;
+    ambush.timer--;
+    if (ambush.phase===&#x27;charge&#x27; &amp;&amp; ambush.timer&lt;=0) {
+      // appear directly in front of head
+      var h = snake[0];
+      var ax = h.x + dir.x, ay = h.y + dir.y;
+      if (ax&lt;0||ax&gt;=COLS||ay&lt;0||ay&gt;=ROWS) { ambush=null; return; }
+      ambush.x=ax; ambush.y=ay; ambush.phase=&#x27;appear&#x27;; ambush.timer=3;
+      playWarn();
+      // immediate check
+      if (snake[0].x===ax &amp;&amp; snake[0].y===ay) loseLife(&#x27;Ambushed!&#x27;);
+    } else if (ambush.phase===&#x27;appear&#x27; &amp;&amp; ambush.timer&lt;=0) {
+      ambush=null;
+    }
+  }
+
+  function loseLife(reason) {
+    lives -= 1; livesEl.textContent = lives;
+    if (lives &lt;= 0) { endGame(); return; }
+    playHit();
+    initSnake();
+    mimic = null; ambush = null;
+    flash((reason||&#x27;Hit!&#x27;) + &#x27; Lives: &#x27; + lives);
+  }
+
+  var msgTimer = null;
+  function flash(text) {
+    var m=document.createElement(&#x27;div&#x27;); m.className=&#x27;msg&#x27;; m.textContent=text; field.appendChild(m);
+    if (msgTimer) clearTimeout(msgTimer);
+    msgTimer = setTimeout(function(){ if(m.parentNode) m.parentNode.removeChild(m); }, 900);
+  }
+
+  function maybeSpawn() {
+    if (score &lt;= 5) return;
+    spawnCd--;
+    if (spawnCd &gt; 0) return;
+    spawnCd = 10 + Math.floor(Math.random()*14);
+    var r = Math.random();
+    if (r &lt; 0.4 &amp;&amp; !sniper) spawnSniper();
+    else if (r &lt; 0.7 &amp;&amp; !mimic) spawnMimic();
+    else if (!ambush) spawnAmbush();
+  }
+
+  function tick() {
+    if (!running) return;
+    maybeSpawn();
+    stepSniper();
+    stepAmbush();
+    if (!(pendingDir.x===-dir.x &amp;&amp; pendingDir.y===-dir.y)) dir = pendingDir;
+    var head = snake[0];
+    var nx = head.x + dir.x, ny = head.y + dir.y;
+    if (nx&lt;0||nx&gt;=COLS||ny&lt;0||ny&gt;=ROWS) { loseLife(&#x27;Crashed!&#x27;); paint(); return; }
+    var ateFood = (nx===food.x &amp;&amp; ny===food.y);
+    var body = ateFood ? snake : snake.slice(0, snake.length-1);
+    for (var i=0;i&lt;body.length;i++) if (body[i].x===nx &amp;&amp; body[i].y===ny) { loseLife(&#x27;Crashed!&#x27;); paint(); return; }
+    // ambush collision
+    if (ambush &amp;&amp; ambush.phase===&#x27;appear&#x27; &amp;&amp; nx===ambush.x &amp;&amp; ny===ambush.y) { loseLife(&#x27;Ambushed!&#x27;); paint(); return; }
+    snake.unshift({x:nx,y:ny});
+    if (star &amp;&amp; nx===star.x &amp;&amp; ny===star.y) { lives+=1; livesEl.textContent=lives; star=null; playStar(); flash(&#x27;+1 Life ⭐&#x27;); }
+    if (ateFood) {
+      score+=1; scoreEl.textContent=score; playBlip(); eatenSinceStar++;
+      if (eatenSinceStar&gt;=5 &amp;&amp; !star) { eatenSinceStar=0; placeStar(); }
+      placeFood();
+    } else { snake.pop(); }
+    stepMimic();
+    checkSniperHit();
+    paint();
+  }
+
+  function endGame() {
+    running=false; playCrash(); stopMusic();
+    if (tickId) { clearInterval(tickId); tickId=null; }
+    flash(&#x27;GAME OVER — Score &#x27;+score);
+  }
+  function startGame() {
+    if (running) return;
+    ensureAudio();
+    score=0; lives=1; eatenSinceStar=0; star=null; sniper=null; mimic=null; ambush=null; spawnCd=8;
+    scoreEl.textContent=&#x27;0&#x27;; livesEl.textContent=&#x27;1&#x27;;
+    initSnake(); placeFood(); paint();
+    running=true;
+    if (tickId) clearInterval(tickId);
+    tickId=setInterval(tick, TICK_MS);
+    startMusic();
+  }
+  function stopGame() {
+    if (!running) return;
+    running=false; stopMusic();
+    if (tickId) { clearInterval(tickId); tickId=null; }
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27;) { pendingDir = { x: -1, y: 0 }; e.preventDefault(); }
+    else if (e.key === &#x27;ArrowRight&#x27;) { pendingDir = { x: 1, y: 0 }; e.preventDefault(); }
+    else if (e.key === &#x27;ArrowUp&#x27;) { pendingDir = { x: 0, y: -1 }; e.preventDefault(); }
+    else if (e.key === &#x27;ArrowDown&#x27;) { pendingDir = { x: 0, y: 1 }; e.preventDefault(); }
+  });
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  initSnake();
+  paint();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  // Suppress in-iframe scrollbars. The parent fits the iframe layout
+  // box to match the content size, so internal scroll is redundant —
+  // and if the LLM&#x27;s CSS sets body overflow: auto, the scrollbar shows
+  // briefly before the fit lands. Force hidden so it never appears.
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  // Iframe-internal JS error capture. window.onerror inside a sandboxed
+  // iframe can&#x27;t post to /api/js_error directly, so we relay to the
+  // parent via postMessage; parent&#x27;s error_logger.js forwards to the
+  // server. Catches LLM-emitted broken HTML (invalid hex, undefined
+  // variables, etc.) that would otherwise fail silently inside the
+  // iframe.
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      // Debounce: don&#x27;t fire more than ~10× per second. ResizeObserver
+      // fires repeatedly during layout/font load; we only need the latest.
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      // Clamp: reject obviously bogus dimensions. Any browser-game viewport
+      // is well under 4000×4000 logical px; readings beyond that are layout
+      // noise during load/visibility transitions.
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  // Parent posts wd_remeasure when it makes the iframe visible (the body&#x27;s
+  // ResizeObserver doesn&#x27;t fire on display:none→block of an outer ancestor
+  // because the iframe document didn&#x27;t actually resize). Wait a frame for
+  // layout to settle before measuring.
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

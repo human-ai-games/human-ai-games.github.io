@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🐸 Frog Dash</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>🐸 Frog Dash</b> &middot; Game 476 &middot; Amateur producer &middot; Basic game: Gravity jumper</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #0f1424; color: #eaf2ff; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 12px 18px; box-sizing: border-box; height: 100%; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: .5px; background: linear-gradient(90deg,#7ef0c2,#7ec8ff,#c79bff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .instructions { font-size: 16px; color: #b8c6e0; max-width: 620px; margin: 0; line-height: 1.35; text-align: center; }
+  .hud { display: flex; gap: 18px; align-items: center; font-size: 18px; color: #dfe8ff; }
+  .hud .val { font-weight: 700; color: #fff; }
+  .shields { letter-spacing: 2px; font-size: 20px; }
+  .field {
+    position: relative; width: 640px; height: 420px; flex-shrink: 0;
+    border-radius: 14px; overflow: hidden;
+    box-shadow: 0 0 0 3px #0b1020, 0 0 0 7px #ffcf5c, 0 0 0 10px #0b1020, 0 12px 40px rgba(0,0,0,.5);
+    outline: 2px solid rgba(255,255,255,.15); outline-offset: -13px;
+  }
+  .sky { position:absolute; inset:0; z-index:0; }
+  .sky.calm { background: linear-gradient(#243b6b 0%, #2e5a8f 55%, #3d7fae 72%, #6fa88c 72%, #57935f 100%); }
+  .sky.storm { background: linear-gradient(#161c2e 0%, #22293f 55%, #2b3350 72%, #3a5a4a 72%, #315436 100%); }
+  .glimmer { position:absolute; inset:0; z-index:1; pointer-events:none; }
+  .flash { position:absolute; inset:0; z-index:2; background:#eaf2ff; opacity:0; pointer-events:none; }
+  .cloud { position:absolute; z-index:1; pointer-events:none; }
+  .hills { position:absolute; bottom:30px; left:0; height:70px; z-index:1; pointer-events:none; }
+  .ground { position: absolute; left: 0; right: 0; bottom: 0; height: 30px; z-index:3;
+    background: linear-gradient(#4c8a4c, #356b34); border-top: 3px solid #7bd07b; }
+  .frog { position: absolute; width: 40px; height: 36px; z-index: 6; }
+  .shieldBubble { position:absolute; z-index:5; pointer-events:none; width:66px; height:66px; display:none; }
+  .obstacle { position: absolute; z-index: 4; }
+  .saw { position: absolute; z-index: 4; }
+  .particle { position: absolute; border-radius: 50%; pointer-events: none; z-index: 8; }
+  .starBadge { position:absolute; top:8px; left:8px; z-index:9; display:none;
+    padding:4px 10px; border-radius:8px; background:rgba(20,10,40,.72);
+    border:1px solid #ffe36b; color:#ffe36b; }
+  .starBadge .lbl { font-family:&#x27;Peignot&#x27;,&#x27;Copperplate&#x27;,&#x27;Papyrus&#x27;,fantasy; font-size:11px; letter-spacing:2px; text-transform:uppercase; display:block; }
+  .starBadge .num { font-family:&#x27;Peignot&#x27;,&#x27;Copperplate&#x27;,&#x27;Papyrus&#x27;,fantasy; font-size:22px; font-weight:700; line-height:1; }
+  .comboBox { position:absolute; top:8px; right:10px; z-index:9; text-align:right; pointer-events:none; }
+  .comboNum { font-family:&#x27;Arial Black&#x27;,&#x27;Impact&#x27;,sans-serif; font-style:italic; font-weight:900;
+    font-size:40px; line-height:1; color:#fff; text-shadow:0 0 8px rgba(0,0,0,.6);
+    transform:scale(1); transition:transform .08s ease; }
+  .comboNum .x { font-size:24px; }
+  .comboRank { font-family:&#x27;Arial Black&#x27;,&#x27;Impact&#x27;,sans-serif; font-style:italic; font-weight:900;
+    font-size:18px; letter-spacing:1px; text-shadow:0 0 6px rgba(0,0,0,.6); }
+  .overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; background: rgba(8,12,26,.55); color: #fff; font-size: 22px; font-weight: 700; text-align: center; z-index: 20; }
+  .overlay small { font-size: 15px; font-weight: 500; color: #cfe; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;🐸 Frog Dash&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Press &lt;strong&gt;Space&lt;/strong&gt; or &lt;strong&gt;↑&lt;/strong&gt; to hop — tap again in the air for a triple jump. Chain jumps for combos, use shields to bash blocks, and grab the Starman to obliterate everything; use the Start/Restart button below.&lt;/p&gt;
+  &lt;div class=&quot;hud&quot;&gt;
+    &lt;div&gt;Score: &lt;span class=&quot;val&quot; id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;shields&quot;&gt;🛡️ &lt;span id=&quot;shieldIcons&quot;&gt;&lt;/span&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;
+    &lt;div class=&quot;sky calm&quot; id=&quot;sky&quot;&gt;&lt;/div&gt;
+    &lt;canvas class=&quot;glimmer&quot; id=&quot;glimmer&quot; width=&quot;640&quot; height=&quot;420&quot;&gt;&lt;/canvas&gt;
+    &lt;div class=&quot;hills&quot; id=&quot;hills&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;flash&quot; id=&quot;flash&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;ground&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;shieldBubble&quot; id=&quot;shieldBubble&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;frog&quot; id=&quot;frog&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;starBadge&quot; id=&quot;starBadge&quot;&gt;&lt;span class=&quot;lbl&quot;&gt;Starman&lt;/span&gt;&lt;span class=&quot;num&quot; id=&quot;starNum&quot;&gt;14&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;comboBox&quot; id=&quot;comboBox&quot;&gt;
+      &lt;div class=&quot;comboNum&quot; id=&quot;comboNum&quot;&gt;&lt;/div&gt;
+      &lt;div class=&quot;comboRank&quot; id=&quot;comboRank&quot;&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;overlay&quot; id=&quot;overlay&quot;&gt;Press Start below&lt;small&gt;Hop with Space or ↑&lt;/small&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var FIELD_W = 640, FIELD_H = 420, GROUND_H = 30;
+  var FROG_W = 40, FROG_H = 36;
+  var GRAVITY = 0.62, JUMP_V = -14.5;
+  // second jump ~1/5 base height, third ~1/6 (height ∝ v²)
+  var JUMP2_V = -Math.sqrt(1/5) * 14.5; // ≈ -6.48
+  var JUMP3_V = -Math.sqrt(1/6) * 14.5; // ≈ -5.92
+  var BASE_SPEED = 4.1;
+
+  var field = document.getElementById(&#x27;field&#x27;);
+  var frog = document.getElementById(&#x27;frog&#x27;);
+  var sky = document.getElementById(&#x27;sky&#x27;);
+  var hills = document.getElementById(&#x27;hills&#x27;);
+  var flash = document.getElementById(&#x27;flash&#x27;);
+  var shieldBubble = document.getElementById(&#x27;shieldBubble&#x27;);
+  var starBadge = document.getElementById(&#x27;starBadge&#x27;);
+  var starNum = document.getElementById(&#x27;starNum&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var shieldIconsEl = document.getElementById(&#x27;shieldIcons&#x27;);
+  var overlay = document.getElementById(&#x27;overlay&#x27;);
+  var glimmer = document.getElementById(&#x27;glimmer&#x27;);
+  var gctx = glimmer.getContext(&#x27;2d&#x27;);
+  var comboNumEl = document.getElementById(&#x27;comboNum&#x27;);
+  var comboRankEl = document.getElementById(&#x27;comboRank&#x27;);
+
+  var running = false, animId = null, spawnTimer = 0, spawnDelay = 90;
+  var frogX = 60, frogY = FIELD_H - GROUND_H - FROG_H, frogVY = 0;
+  var jumpsUsed = 0; // 0 ground, 1 after first, up to 3
+  var obstacles = [], particles = [], clouds = [], glimmers = [];
+  var score = 0, gameOver = false;
+  var shieldList = []; // each = {life:4}
+  var starObstacles = 0;
+  var speedMult = 1, surgeObstacles = 0, surgeTimer = 0;
+  var gavePreviewStar = false, starCountingStarted = false, nextStarScore = 0;
+  var bgTimer = 0, stormFrames = 0, lightningTimer = 0;
+  var frame = 0, shieldBash = 0;
+  // combo
+  var combo = 0, comboFlash = 0;
+
+  frog.innerHTML = &#x27;&lt;svg viewBox=&quot;0 0 40 36&quot; width=&quot;40&quot; height=&quot;36&quot;&gt;&#x27; +
+    &#x27;&lt;ellipse cx=&quot;20&quot; cy=&quot;26&quot; rx=&quot;18&quot; ry=&quot;10&quot; fill=&quot;#4caf50&quot;/&gt;&#x27; +
+    &#x27;&lt;ellipse cx=&quot;20&quot; cy=&quot;24&quot; rx=&quot;14&quot; ry=&quot;8&quot; fill=&quot;#66c46a&quot;/&gt;&#x27; +
+    &#x27;&lt;circle cx=&quot;10&quot; cy=&quot;10&quot; r=&quot;7&quot; fill=&quot;#4caf50&quot;/&gt;&lt;circle cx=&quot;30&quot; cy=&quot;10&quot; r=&quot;7&quot; fill=&quot;#4caf50&quot;/&gt;&#x27; +
+    &#x27;&lt;circle cx=&quot;10&quot; cy=&quot;9&quot; r=&quot;4&quot; fill=&quot;#fff&quot;/&gt;&lt;circle cx=&quot;30&quot; cy=&quot;9&quot; r=&quot;4&quot; fill=&quot;#fff&quot;/&gt;&#x27; +
+    &#x27;&lt;circle cx=&quot;11&quot; cy=&quot;10&quot; r=&quot;2&quot; fill=&quot;#111&quot;/&gt;&lt;circle cx=&quot;31&quot; cy=&quot;10&quot; r=&quot;2&quot; fill=&quot;#111&quot;/&gt;&#x27; +
+    &#x27;&lt;path d=&quot;M13 26 Q20 32 27 26&quot; stroke=&quot;#2e7d32&quot; stroke-width=&quot;2&quot; fill=&quot;none&quot;/&gt;&#x27; +
+    &#x27;&lt;circle cx=&quot;14&quot; cy=&quot;24&quot; r=&quot;1.5&quot; fill=&quot;#2e7d32&quot;/&gt;&lt;circle cx=&quot;26&quot; cy=&quot;24&quot; r=&quot;1.5&quot; fill=&quot;#2e7d32&quot;/&gt;&lt;/svg&gt;&#x27;;
+
+  function shieldBubbleSVG(count) {
+    return &#x27;&lt;svg viewBox=&quot;0 0 66 66&quot; width=&quot;66&quot; height=&quot;66&quot;&gt;&#x27; +
+      &#x27;&lt;circle cx=&quot;33&quot; cy=&quot;33&quot; r=&quot;27&quot; fill=&quot;rgba(120,200,255,.18)&quot; stroke=&quot;#7ec8ff&quot; stroke-width=&quot;3&quot;/&gt;&#x27; +
+      &#x27;&lt;circle cx=&quot;33&quot; cy=&quot;33&quot; r=&quot;21&quot; fill=&quot;none&quot; stroke=&quot;rgba(255,255,255,.5)&quot; stroke-width=&quot;1.5&quot;/&gt;&#x27; +
+      &#x27;&lt;path d=&quot;M33 13 L47 21 V35 C47 45 41 51 33 55 C25 51 19 45 19 35 V21 Z&quot; fill=&quot;rgba(120,200,255,.4)&quot; stroke=&quot;#bfe6ff&quot; stroke-width=&quot;2&quot;/&gt;&#x27; +
+      &#x27;&lt;text x=&quot;33&quot; y=&quot;40&quot; text-anchor=&quot;middle&quot; font-family=&quot;Arial Black,Impact,sans-serif&quot; font-size=&quot;20&quot; font-weight=&quot;900&quot; fill=&quot;#ffffff&quot;&gt;&#x27;+count+&#x27;&lt;/text&gt;&#x27; +
+      &#x27;&lt;/svg&gt;&#x27;;
+  }
+
+  hills.innerHTML = &#x27;&lt;svg viewBox=&quot;0 0 1280 70&quot; width=&quot;1280&quot; height=&quot;70&quot; preserveAspectRatio=&quot;none&quot;&gt;&#x27; +
+    &#x27;&lt;path d=&quot;M0 70 Q120 20 260 45 T520 40 T780 48 T1040 38 T1280 46 V70 Z&quot; fill=&quot;rgba(60,120,70,.55)&quot;/&gt;&#x27; +
+    &#x27;&lt;path d=&quot;M0 70 Q160 40 340 55 T700 52 T1060 55 T1280 58 V70 Z&quot; fill=&quot;rgba(40,90,50,.6)&quot;/&gt;&lt;/svg&gt;&#x27;;
+  var hillsX = 0;
+
+  function rnd(a,b){ return a + Math.random()*(b-a); }
+
+  function makeCloud(x) {
+    var el = document.createElement(&#x27;div&#x27;); el.className = &#x27;cloud&#x27;;
+    var scale = rnd(0.6, 1.3);
+    el.innerHTML = &#x27;&lt;svg viewBox=&quot;0 0 120 60&quot; width=&quot;&#x27;+(120*scale)+&#x27;&quot; height=&quot;&#x27;+(60*scale)+&#x27;&quot;&gt;&#x27; +
+      &#x27;&lt;ellipse cx=&quot;40&quot; cy=&quot;38&quot; rx=&quot;34&quot; ry=&quot;20&quot; fill=&quot;rgba(255,255,255,.85)&quot;/&gt;&#x27; +
+      &#x27;&lt;ellipse cx=&quot;70&quot; cy=&quot;34&quot; rx=&quot;30&quot; ry=&quot;22&quot; fill=&quot;rgba(255,255,255,.9)&quot;/&gt;&#x27; +
+      &#x27;&lt;ellipse cx=&quot;90&quot; cy=&quot;42&quot; rx=&quot;26&quot; ry=&quot;16&quot; fill=&quot;rgba(255,255,255,.8)&quot;/&gt;&lt;/svg&gt;&#x27;;
+    el.style.left = x + &#x27;px&#x27;; el.style.top = rnd(10, 120) + &#x27;px&#x27;;
+    field.appendChild(el);
+    return { el: el, x: x, speed: rnd(0.3, 0.9) * scale };
+  }
+
+  function paintFrog() {
+    frog.style.left = frogX + &#x27;px&#x27;; frog.style.top = frogY + &#x27;px&#x27;;
+    frog.style.filter = starObstacles &gt; 0
+      ? &#x27;drop-shadow(0 0 8px #ffe36b) drop-shadow(0 0 14px #ffb347) hue-rotate(&#x27; + ((Date.now()/8)%360) + &#x27;deg)&#x27;
+      : &#x27;none&#x27;;
+    if (shieldList.length &gt; 0) {
+      shieldBubble.style.display = &#x27;block&#x27;;
+      var push = shieldBash &gt; 0 ? (shieldBash * 1.2) : 0;
+      shieldBubble.style.left = (frogX + FROG_W - 22 + push) + &#x27;px&#x27;;
+      shieldBubble.style.top = (frogY + FROG_H/2 - 33) + &#x27;px&#x27;;
+      shieldBubble.style.opacity = 0.8 + 0.2*Math.sin(frame/6);
+    } else shieldBubble.style.display = &#x27;none&#x27;;
+  }
+
+  function currentSpeed() { return BASE_SPEED * speedMult; }
+
+  function makeBlock(x, w, h, offY, color) {
+    var el = document.createElement(&#x27;div&#x27;); el.className = &#x27;obstacle&#x27;;
+    el.style.width = w+&#x27;px&#x27;; el.style.height = h+&#x27;px&#x27;; el.style.left = x+&#x27;px&#x27;;
+    el.style.top = (FIELD_H - GROUND_H - h - (offY||0)) + &#x27;px&#x27;;
+    el.style.background = &#x27;linear-gradient(&#x27; + color[0] + &#x27;,&#x27; + color[1] + &#x27;)&#x27;;
+    el.style.borderRadius = &#x27;5px&#x27;;
+    el.style.boxShadow = &#x27;inset 0 2px 0 rgba(255,255,255,.25), 0 3px 6px rgba(0,0,0,.3)&#x27;;
+    field.appendChild(el);
+    return { el:el, x:x, w:w, h:h, offY:offY||0, scored:false, isSaw:false, dead:false };
+  }
+  function makeSaw(x) {
+    var el = document.createElement(&#x27;div&#x27;); el.className = &#x27;saw&#x27;;
+    el.style.left = x+&#x27;px&#x27;; el.style.top = (FIELD_H - GROUND_H - 30 + 4) + &#x27;px&#x27;;
+    el.innerHTML = &#x27;&lt;svg viewBox=&quot;0 0 30 30&quot; width=&quot;30&quot; height=&quot;30&quot;&gt;&lt;g class=&quot;sawg&quot;&gt;&#x27; +
+      &#x27;&lt;circle cx=&quot;15&quot; cy=&quot;15&quot; r=&quot;9&quot; fill=&quot;#b0bac9&quot;/&gt;&lt;circle cx=&quot;15&quot; cy=&quot;15&quot; r=&quot;4&quot; fill=&quot;#5a6473&quot;/&gt;&#x27; +
+      &#x27;&lt;g fill=&quot;#dfe6f0&quot;&gt;&lt;polygon points=&quot;15,0 18,6 12,6&quot;/&gt;&lt;polygon points=&quot;30,15 24,18 24,12&quot;/&gt;&#x27; +
+      &#x27;&lt;polygon points=&quot;15,30 12,24 18,24&quot;/&gt;&lt;polygon points=&quot;0,15 6,12 6,18&quot;/&gt;&#x27; +
+      &#x27;&lt;polygon points=&quot;25,5 22,10 28,10&quot;/&gt;&lt;polygon points=&quot;25,25 20,22 22,28&quot;/&gt;&#x27; +
+      &#x27;&lt;polygon points=&quot;5,25 10,22 8,28&quot;/&gt;&lt;polygon points=&quot;5,5 8,10 2,8&quot;/&gt;&lt;/g&gt;&lt;/g&gt;&lt;/svg&gt;&#x27;;
+    field.appendChild(el);
+    return { el:el, x:x, w:26, h:24, offY:4, scored:false, isSaw:true, dead:false, spin:0, bobT:rnd(0,6) };
+  }
+
+  var palettes = [[&#x27;#ff6b6b&#x27;,&#x27;#c0392b&#x27;],[&#x27;#ffa94d&#x27;,&#x27;#e8590c&#x27;],[&#x27;#845ef7&#x27;,&#x27;#5f3dc4&#x27;],[&#x27;#20c997&#x27;,&#x27;#0ca678&#x27;],[&#x27;#4dabf7&#x27;,&#x27;#1971c2&#x27;],[&#x27;#f06595&#x27;,&#x27;#c2255c&#x27;]];
+  function pal() { return palettes[Math.floor(Math.random()*palettes.length)]; }
+
+  function spawnPattern() {
+    var x = FIELD_W + 5, p = pal(), pick = Math.floor(Math.random()*6);
+    if (pick===0) { obstacles.push(makeBlock(x,26,rnd(24,32),0,p)); spawnDelay=82; }
+    else if (pick===1) { obstacles.push(makeBlock(x,30,rnd(46,58),0,p)); spawnDelay=95; }
+    else if (pick===2) { obstacles.push(makeBlock(x,24,rnd(26,34),0,p)); obstacles.push(makeBlock(x+78,24,rnd(26,40),0,p)); spawnDelay=100; }
+    else if (pick===3) { obstacles.push(makeBlock(x,22,26,0,p)); obstacles.push(makeBlock(x+32,22,40,0,p)); obstacles.push(makeBlock(x+64,22,54,0,p)); spawnDelay=112; }
+    else if (pick===4) { obstacles.push(makeBlock(x,30,24,rnd(52,72),p)); obstacles.push(makeBlock(x,26,24,0,p)); spawnDelay=92; }
+    else { obstacles.push(makeSaw(x)); if (Math.random()&lt;0.5) obstacles.push(makeBlock(x+84,24,30,0,p)); spawnDelay=100; }
+    if (Math.random()&lt;0.26) obstacles.push(makeSaw(x + rnd(150,240)));
+  }
+
+  function burst(cx, cy, color, n) {
+    n = n || 14;
+    for (var i=0;i&lt;n;i++){
+      var el = document.createElement(&#x27;div&#x27;); el.className=&#x27;particle&#x27;;
+      var sz = rnd(4,9); el.style.width=sz+&#x27;px&#x27;; el.style.height=sz+&#x27;px&#x27;;
+      el.style.left=cx+&#x27;px&#x27;; el.style.top=cy+&#x27;px&#x27;;
+      el.style.background = color || (Math.random()&lt;.5?&#x27;#ffe36b&#x27;:&#x27;#ff9f43&#x27;);
+      field.appendChild(el);
+      particles.push({ el:el, x:cx, y:cy, vx:rnd(-4,4), vy:rnd(-6,1), life:rnd(26,44) });
+    }
+  }
+  function updateParticles() {
+    for (var i=particles.length-1;i&gt;=0;i--){
+      var q=particles[i]; q.vy+=0.28; q.x+=q.vx; q.y+=q.vy; q.life--;
+      q.el.style.left=q.x+&#x27;px&#x27;; q.el.style.top=q.y+&#x27;px&#x27;; q.el.style.opacity=Math.max(0,q.life/40);
+      if (q.life&lt;=0){ if(q.el.parentNode) q.el.parentNode.removeChild(q.el); particles.splice(i,1); }
+    }
+  }
+
+  // rainbow glimmer on destruction (persistent-ish background sparkle)
+  function addGlimmer(cx, cy) {
+    for (var i=0;i&lt;10;i++){
+      glimmers.push({ x:cx+rnd(-20,20), y:cy+rnd(-20,20), hue:rnd(0,360), r:rnd(2,5), life:rnd(120,220), max:220 });
+    }
+  }
+  function drawGlimmers() {
+    gctx.clearRect(0,0,FIELD_W,FIELD_H);
+    for (var i=glimmers.length-1;i&gt;=0;i--){
+      var g=glimmers[i]; g.life--; g.hue=(g.hue+2)%360; g.x -= currentSpeed()*0.2;
+      if (g.life&lt;=0 || g.x &lt; -10){ glimmers.splice(i,1); continue; }
+      var a = (g.life/g.max)*0.7;
+      gctx.beginPath();
+      gctx.fillStyle = &#x27;hsla(&#x27;+g.hue+&#x27;,95%,65%,&#x27;+a+&#x27;)&#x27;;
+      gctx.arc(g.x, g.y, g.r, 0, Math.PI*2); gctx.fill();
+    }
+  }
+
+  var RANKS = [
+    {n:3,  t:&#x27;NICE&#x27;,    c:&#x27;#7ef0c2&#x27;},
+    {n:6,  t:&#x27;GREAT&#x27;,   c:&#x27;#7ec8ff&#x27;},
+    {n:10, t:&#x27;AMAZING&#x27;, c:&#x27;#c79bff&#x27;},
+    {n:16, t:&#x27;BLAZING&#x27;, c:&#x27;#ffa94d&#x27;},
+    {n:24, t:&#x27;GODLIKE&#x27;, c:&#x27;#ff5b7f&#x27;}
+  ];
+  function rankFor(c) {
+    var r = null;
+    for (var i=0;i&lt;RANKS.length;i++) if (c&gt;=RANKS[i].n) r=RANKS[i];
+    return r;
+  }
+  function updateCombo() {
+    if (combo &gt;= 2) {
+      var r = rankFor(combo);
+      comboNumEl.innerHTML = &#x27;&lt;span class=&quot;x&quot;&gt;×&lt;/span&gt;&#x27; + combo;
+      comboNumEl.style.color = r ? r.c : &#x27;#fff&#x27;;
+      comboNumEl.style.transform = comboFlash&gt;0 ? &#x27;scale(1.35)&#x27; : &#x27;scale(1)&#x27;;
+      comboRankEl.textContent = r ? r.t : &#x27;&#x27;;
+      comboRankEl.style.color = r ? r.c : &#x27;#fff&#x27;;
+    } else {
+      comboNumEl.innerHTML = &#x27;&#x27;; comboRankEl.textContent = &#x27;&#x27;;
+    }
+  }
+
+  function updateHUD() {
+    scoreEl.textContent = score;
+    var s = &#x27;&#x27;;
+    for (var i=0;i&lt;5;i++) s += i&lt;shieldList.length ? &#x27;🟢&#x27; : &#x27;⚪&#x27;;
+    shieldIconsEl.textContent = s;
+    if (shieldList.length &gt; 0) shieldBubble.innerHTML = shieldBubbleSVG(shieldList[0].life);
+    if (starObstacles &gt; 0) { starBadge.style.display=&#x27;block&#x27;; starNum.textContent=starObstacles; }
+    else if (starCountingStarted &amp;&amp; !gavePreviewStar) { starBadge.style.display=&#x27;block&#x27;; starBadge.querySelector(&#x27;.lbl&#x27;).textContent=&#x27;Star in&#x27;; starNum.textContent=Math.max(0,nextStarScore-score); }
+    else if (starCountingStarted) { starBadge.style.display=&#x27;block&#x27;; starBadge.querySelector(&#x27;.lbl&#x27;).textContent=&#x27;Star in&#x27;; starNum.textContent=Math.max(0,nextStarScore-score); }
+    else starBadge.style.display=&#x27;none&#x27;;
+  }
+
+  function onPoint() {
+    score++;
+    // preview star at 11
+    if (!gavePreviewStar &amp;&amp; score &gt;= 11) { gavePreviewStar = true; startStar(); }
+    // start counting toward first real star at 35
+    if (!starCountingStarted &amp;&amp; score &gt;= 35) { starCountingStarted = true; nextStarScore = score + 24; }
+    else if (starCountingStarted &amp;&amp; starObstacles &lt;= 0 &amp;&amp; score &gt;= nextStarScore) { startStar(); nextStarScore = score + 24; }
+    // shields also awarded every 11 (kept from before)
+    shieldProgress++;
+    if (shieldProgress &gt;= 11) { shieldProgress = 0; if (shieldList.length &lt; 5) shieldList.push({life:4}); }
+    updateHUD();
+  }
+  var shieldProgress = 0;
+
+  function startStar() { starObstacles = 14; starBadge.querySelector(&#x27;.lbl&#x27;).textContent=&#x27;Starman&#x27;; burst(frogX+FROG_W/2, frogY+FROG_H/2, &#x27;#ffe36b&#x27;); updateHUD(); }
+
+  function jump() {
+    if (!running || gameOver) return;
+    var onGround = frogY &gt;= FIELD_H - GROUND_H - FROG_H - 1;
+    if (onGround) { frogVY = JUMP_V; jumpsUsed = 1; addCombo(); }
+    else if (jumpsUsed === 1) { frogVY = JUMP2_V; jumpsUsed = 2; addCombo(); burst(frogX+FROG_W/2, frogY+FROG_H, &#x27;#bfe6ff&#x27;, 6); }
+    else if (jumpsUsed === 2) { frogVY = JUMP3_V; jumpsUsed = 3; addCombo(); burst(frogX+FROG_W/2, frogY+FROG_H, &#x27;#c79bff&#x27;, 6); }
+  }
+
+  function addCombo() {
+    combo++; comboFlash = 8; updateCombo();
+  }
+  function breakCombo() { combo = 0; updateCombo(); }
+
+  function scheduleSurge() { surgeTimer = Math.round(rnd(8,14) * 60); }
+
+  function tick() {
+    if (!running) return;
+    frame++;
+    if (shieldBash &gt; 0) shieldBash--;
+    if (comboFlash &gt; 0) { comboFlash--; if (comboFlash===0) updateCombo(); }
+
+    bgTimer++;
+    if (stormFrames &gt; 0) {
+      stormFrames--; lightningTimer--;
+      if (lightningTimer &lt;= 0) {
+        flash.style.opacity = 0.85;
+        setTimeout(function(){ flash.style.opacity = 0.2; }, 60);
+        setTimeout(function(){ flash.style.opacity = 0; }, 160);
+        lightningTimer = Math.round(rnd(1.2,2.8)*60);
+      }
+      if (stormFrames === 0) { sky.style.transition=&#x27;background 1.2s ease&#x27;; sky.className=&#x27;sky calm&#x27;; }
+    } else if (bgTimer &gt;= 13*60) {
+      bgTimer = 0; stormFrames = 23*60; lightningTimer = 30; // storm lasts 23s
+      sky.style.transition=&#x27;background 1.2s ease&#x27;; sky.className=&#x27;sky storm&#x27;;
+    }
+
+    if (surgeObstacles &lt;= 0) {
+      speedMult = 1; surgeTimer--;
+      if (surgeTimer &lt;= 0) { speedMult = 1 + rnd(0.18, 0.43); surgeObstacles = Math.round(rnd(7,19)); scheduleSurge(); }
+    }
+
+    frogVY += GRAVITY; frogY += frogVY;
+    var floorY = FIELD_H - GROUND_H - FROG_H;
+    if (frogY &gt; floorY) { frogY = floorY; frogVY = 0; jumpsUsed = 0; }
+    if (frogY &lt; 0) { frogY = 0; frogVY = 0; }
+    paintFrog();
+
+    for (var c=0;c&lt;clouds.length;c++){
+      var cl=clouds[c]; cl.x -= cl.speed*(0.5+speedMult*0.3);
+      if (cl.x &lt; -160){ cl.x = FIELD_W + rnd(20,120); cl.el.style.top = rnd(10,120)+&#x27;px&#x27;; }
+      cl.el.style.left = cl.x+&#x27;px&#x27;;
+    }
+    hillsX -= currentSpeed()*0.35; if (hillsX &lt;= -640) hillsX += 640; hills.style.left = hillsX+&#x27;px&#x27;;
+
+    var spd = currentSpeed(), starActive = starObstacles &gt; 0;
+
+    spawnTimer--;
+    if (spawnTimer &lt;= 0) { spawnPattern(); spawnTimer = spawnDelay; }
+
+    for (var i=obstacles.length-1;i&gt;=0;i--){
+      var o=obstacles[i];
+      if (o.dead){ obstacles.splice(i,1); continue; }
+      o.x -= spd;
+      if (o.isSaw){ o.spin+=20; o.bobT+=0.12; var bob=Math.sin(o.bobT)*3;
+        o.el.style.top=(FIELD_H-GROUND_H-30+4+bob)+&#x27;px&#x27;;
+        var g=o.el.querySelector(&#x27;.sawg&#x27;); if(g) g.setAttribute(&#x27;transform&#x27;,&#x27;rotate(&#x27;+o.spin+&#x27; 15 15)&#x27;); }
+      o.el.style.left = o.x+&#x27;px&#x27;;
+
+      if (o.x + o.w &lt; 0){ if(o.el.parentNode) o.el.parentNode.removeChild(o.el); obstacles.splice(i,1); continue; }
+
+      if (!o.scored &amp;&amp; o.x + o.w &lt; frogX){
+        o.scored = true;
+        if (surgeObstacles &gt; 0) surgeObstacles--;
+        if (starObstacles &gt; 0) { starObstacles--; if (starObstacles===0) gavePreviewStar = gavePreviewStar; updateHUD(); }
+        onPoint();
+      }
+
+      var oTop = FIELD_H - GROUND_H - o.h - o.offY;
+      var hit = frogX + FROG_W - 6 &gt; o.x &amp;&amp; frogX + 6 &lt; o.x + o.w &amp;&amp;
+                frogY + FROG_H - 4 &gt; oTop &amp;&amp; frogY + 4 &lt; oTop + o.h;
+      if (hit){
+        var cx = o.x + o.w/2, cy = oTop + o.h/2;
+        if (starActive){
+          burst(cx,cy,&#x27;#7ef0c2&#x27;); burst(cx,cy,&#x27;#ffe36b&#x27;); addGlimmer(cx,cy);
+          o.dead=true; if(o.el.parentNode) o.el.parentNode.removeChild(o.el); continue;
+        } else if (shieldList.length &gt; 0){
+          shieldList[0].life--;
+          shieldBash = 10; burst(cx,cy,&#x27;#7ec8ff&#x27;,18); addGlimmer(cx,cy);
+          if (shieldList[0].life &lt;= 0) shieldList.shift();
+          updateHUD();
+          o.dead=true; if(o.el.parentNode) o.el.parentNode.removeChild(o.el); continue;
+        } else {
+          burst(frogX+FROG_W/2, frogY+FROG_H/2, &#x27;#ff6b6b&#x27;);
+          breakCombo();
+          endGame(); return;
+        }
+      }
+    }
+
+    updateParticles();
+    drawGlimmers();
+    animId = requestAnimationFrame(tick);
+  }
+
+  function clearAll() {
+    obstacles.forEach(function(o){ if(o.el.parentNode) o.el.parentNode.removeChild(o.el); }); obstacles=[];
+    particles.forEach(function(q){ if(q.el.parentNode) q.el.parentNode.removeChild(q.el); }); particles=[];
+    glimmers = []; gctx.clearRect(0,0,FIELD_W,FIELD_H);
+  }
+  function initClouds() {
+    clouds.forEach(function(c){ if(c.el.parentNode) c.el.parentNode.removeChild(c.el); }); clouds=[];
+    for (var i=0;i&lt;4;i++) clouds.push(makeCloud(rnd(0,FIELD_W)));
+  }
+
+  function startGame() {
+    if (running) return;
+    clearAll(); initClouds();
+    score = 0; shieldList = []; shieldProgress = 0;
+    starObstacles = 0; gavePreviewStar = false; starCountingStarted = false; nextStarScore = 0;
+    speedMult = 1; surgeObstacles = 0; scheduleSurge();
+    frogX = 60; frogY = FIELD_H - GROUND_H - FROG_H; frogVY = 0; jumpsUsed = 0;
+    combo = 0; comboFlash = 0; updateCombo();
+    bgTimer = 0; stormFrames = 0; lightningTimer = 0; frame = 0;
+    sky.style.transition=&#x27;none&#x27;; sky.className=&#x27;sky calm&#x27;; flash.style.opacity=0;
+    gameOver = false; spawnTimer = 1; spawnDelay = 90;
+    overlay.style.display=&#x27;none&#x27;;
+    starBadge.querySelector(&#x27;.lbl&#x27;).textContent=&#x27;Starman&#x27;;
+    updateHUD(); paintFrog();
+    running = true; animId = requestAnimationFrame(tick);
+  }
+  function stopGame() { running = false; if (animId){ cancelAnimationFrame(animId); animId=null; } }
+  function endGame() {
+    gameOver=true; running=false; if (animId){ cancelAnimationFrame(animId); animId=null; }
+    overlay.innerHTML = &#x27;Game Over&lt;small&gt;Score: &#x27; + score + &#x27; — press Restart below&lt;/small&gt;&#x27;;
+    overlay.style.display=&#x27;flex&#x27;;
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function(e){
+    if (e.key===&#x27; &#x27;||e.code===&#x27;Space&#x27;||e.key===&#x27;ArrowUp&#x27;||e.code===&#x27;ArrowUp&#x27;){ jump(); e.preventDefault(); }
+  });
+  window.addEventListener(&#x27;message&#x27;, function(e){
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type===&#x27;wd_start&#x27;) startGame();
+    else if (e.data.type===&#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  initClouds(); updateHUD(); paintFrog();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage({ type: &#x27;game_input&#x27;, kind: t, key: e.key || null }, &#x27;*&#x27;);
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;, line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement, b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage({ type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;);
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () { requestAnimationFrame(reportSize); });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () { requestAnimationFrame(reportSize); });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) init();
+  else window.addEventListener(&#x27;load&#x27;, init);
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

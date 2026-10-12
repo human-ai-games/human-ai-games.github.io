@@ -1,0 +1,684 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🍉 Whack-a-Fruit! 🍓</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>🍉 Whack-a-Fruit! 🍓</b> &middot; Game 284 &middot; Amateur producer &middot; Basic game: Whack-a-mole</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: &#x27;Segoe UI&#x27;, system-ui, -apple-system, sans-serif; margin: 0; padding: 0;
+    background: linear-gradient(#2a1240, #4a2470); color: #333; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 10px; box-sizing: border-box; height: 100%;
+    text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  h1 { margin: 0; font-size: 32px; font-weight: 800; color: #ffd7f6;
+    text-shadow: 0 2px 0 #a13fc4, 0 4px 8px rgba(0,0,0,0.4); letter-spacing: 1px; }
+  .instructions { font-size: 16px; color: #e7d3ff; max-width: 620px; margin: 0; line-height: 1.3; font-weight: 600; }
+  .topbar { display: flex; align-items: center; gap: 18px; }
+  .score { font-size: 24px; font-weight: 800; color: #fff; margin: 0;
+    background: linear-gradient(#ff7bd0, #c93fb0); padding: 4px 20px; border-radius: 20px;
+    box-shadow: 0 3px 0 #922b83, inset 0 2px 4px rgba(255,255,255,0.4); }
+  .lives { display: flex; align-items: center; gap: 3px;
+    background: rgba(255,255,255,0.12); padding: 4px 12px; border-radius: 20px; }
+  .lives .lbl { font-size: 15px; font-weight: 800; color: #ffd7f6; margin-right: 4px; }
+  .life { font-size: 24px; transition: transform 0.3s, opacity 0.3s; display: inline-block; }
+  .life.lost { transform: scale(0) rotate(180deg); opacity: 0; }
+
+  .board { position: relative; width: 640px; height: 420px; flex-shrink: 0; margin: 0;
+    border-radius: 20px; overflow: hidden; cursor: none;
+    background:
+      radial-gradient(ellipse at 30% 12%, rgba(255,255,255,0.4) 0%, transparent 42%),
+      radial-gradient(ellipse at 70% 92%, rgba(0,0,0,0.45) 0%, transparent 52%),
+      linear-gradient(135deg, #8a4fc0 0%, #4a2075 45%, #7a40b0 70%, #3a1560 100%);
+    box-shadow: inset 0 0 60px rgba(0,0,0,0.35), 0 6px 0 #2e1050, 0 12px 24px rgba(0,0,0,0.5);
+  }
+  .board::before {
+    content: &quot;&quot;; position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(115deg, rgba(255,255,255,0.06) 0 1px, transparent 1px 22px);
+  }
+
+  .hole { position: absolute; width: 120px; height: 120px; cursor: none; }
+  .hole-mouth { position: absolute; bottom: 12px; left: 18px; width: 84px; height: 30px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse at center 30%, #1a0730 0 55%, #3a1560 100%);
+    box-shadow: inset 0 6px 12px rgba(0,0,0,0.75), 0 2px 3px rgba(255,255,255,0.18); }
+
+  .fruit-clip { position: absolute; left: 18px; bottom: 22px; width: 84px; height: 104px;
+    overflow: hidden; pointer-events: none; }
+  .fruit { position: absolute; left: 2px; bottom: -110px; width: 80px; height: 88px;
+    transition: bottom 0.22s cubic-bezier(.34,1.7,.5,1); pointer-events: none; }
+  .fruit.up { bottom: 4px; }
+  .fruit.down { bottom: -110px; transition: bottom 0.28s ease-in; }
+  .fruit svg { display: block; width: 80px; height: 88px;
+    filter: drop-shadow(0 8px 5px rgba(0,0,0,0.45)); }
+  .fruit.up { animation: fruitBob 1.5s ease-in-out infinite 0.25s; }
+  @keyframes fruitBob { 0%,100% { transform: translateY(0) rotate(-3deg) scale(1); }
+    50% { transform: translateY(-4px) rotate(3deg) scale(1.03); } }
+
+  .fast-glow svg { animation: rainbowGlow 1s linear infinite; }
+  @keyframes rainbowGlow { 0%{filter:drop-shadow(0 0 10px #ff5b6e) drop-shadow(0 8px 5px rgba(0,0,0,.45));}
+    33%{filter:drop-shadow(0 0 10px #ffe600) drop-shadow(0 8px 5px rgba(0,0,0,.45));}
+    66%{filter:drop-shadow(0 0 10px #4aa8ff) drop-shadow(0 8px 5px rgba(0,0,0,.45));}
+    100%{filter:drop-shadow(0 0 10px #ff5b6e) drop-shadow(0 8px 5px rgba(0,0,0,.45));} }
+
+  .splash { position: absolute; pointer-events: none; transform: translate(-50%,-50%); z-index: 6; }
+  .drop { position: absolute; left: 50%; top: 50%; border-radius: 50% 50% 50% 0;
+    transform-origin: 50% 50%; animation: dropFly 0.7s cubic-bezier(.2,.7,.4,1) forwards;
+    box-shadow: inset -2px -3px 4px rgba(0,0,0,0.25), inset 2px 2px 3px rgba(255,255,255,0.6); }
+  @keyframes dropFly {
+    0% { opacity: 1; transform: rotate(var(--rot)) translateY(0) scale(0.3); }
+    40% { opacity: 1; }
+    100% { opacity: 0; transform: rotate(var(--rot)) translateY(var(--dist)) scale(1.2); } }
+  .spark { position: absolute; left: 50%; top: 50%; width: 7px; height: 7px; border-radius: 50%;
+    background: #fff; box-shadow: 0 0 8px #fff; animation: sparkFly 0.6s ease-out forwards; }
+  @keyframes sparkFly {
+    0% { opacity: 1; transform: rotate(var(--rot)) translateY(0) scale(1); }
+    100% { opacity: 0; transform: rotate(var(--rot)) translateY(var(--dist)) scale(0.2); } }
+  .puddle { position: absolute; transform: translate(-50%,-50%) scaleY(0.4); border-radius: 50%;
+    pointer-events: none; z-index: 5; animation: puddleGrow 0.7s ease-out forwards; }
+  @keyframes puddleGrow { 0%{opacity:0.7; transform: translate(-50%,-50%) scale(0.1);}
+    60%{opacity:0.55;} 100%{opacity:0; transform: translate(-50%,-50%) scale(1);} }
+
+  .wow { position: absolute; transform: translate(-50%,-50%); pointer-events: none;
+    font-size: 46px; font-weight: 900; color: #fff; letter-spacing: 1px;
+    text-shadow: 0 0 12px #ff6ad5, 2px 2px 0 #ff7b3f, -2px 2px 0 #4aa8ff, 0 4px 8px rgba(0,0,0,0.4);
+    animation: wowPop 1s ease-out forwards; z-index: 8; }
+  @keyframes wowPop { 0% { transform: translate(-50%,-50%) scale(0.2); opacity: 0; }
+    30% { transform: translate(-50%,-72%) scale(1.3); opacity: 1; }
+    100% { transform: translate(-50%,-130%) scale(1); opacity: 0; } }
+
+  .mallet { position: absolute; width: 66px; height: 66px; pointer-events: none;
+    transform-origin: 70% 80%; z-index: 20; display: none;
+    transform: translate(-14px,-6px) rotate(-15deg); }
+  .mallet.swing { animation: swing 0.28s ease-out; }
+  @keyframes swing { 0% { transform: translate(-14px,-6px) rotate(-15deg); }
+    40% { transform: translate(-14px,-6px) rotate(64deg); }
+    100% { transform: translate(-14px,-6px) rotate(-15deg); } }
+
+  .overlay { position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 10px;
+    font-size: 26px; font-weight: 800; color: #fff; text-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    background: rgba(20,5,40,0.35); pointer-events: none; z-index: 15; }
+  .gameover { display: none; }
+  .gameover .go-title { font-size: 60px; font-weight: 900; color: #fff;
+    text-shadow: 0 0 16px #ff6ad5, 3px 3px 0 #ff7b3f, -3px 3px 0 #4aa8ff, 0 6px 12px rgba(0,0,0,0.5);
+    animation: goPop 0.6s cubic-bezier(.2,1.6,.4,1) forwards; }
+  @keyframes goPop { 0%{transform:scale(0) rotate(-15deg); opacity:0;} 100%{transform:scale(1) rotate(0); opacity:1;} }
+  .gameover .go-score { font-size: 30px; font-weight: 800; color: #ffe14a;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.5); }
+
+  .flyfruit { position: absolute; pointer-events: none; z-index: 18; will-change: transform; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;🍉 Whack-a-Fruit! 🍓&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Move your mallet and whack a fruit before it drops for 100 points — miss one and you lose a life! Catch the shimmering rainbow fast fruit for 1000 points; it won&#x27;t cost you a life if you miss it.&lt;/p&gt;
+  &lt;div class=&quot;topbar&quot;&gt;
+    &lt;div class=&quot;score&quot;&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;lives&quot;&gt;&lt;span class=&quot;lbl&quot;&gt;Lives&lt;/span&gt;&lt;span id=&quot;livesRow&quot;&gt;&lt;/span&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;board&quot; id=&quot;board&quot;&gt;
+    &lt;div class=&quot;overlay&quot; id=&quot;overlay&quot;&gt;Press Start below to play!&lt;/div&gt;
+    &lt;div class=&quot;overlay gameover&quot; id=&quot;gameover&quot;&gt;
+      &lt;div class=&quot;go-title&quot;&gt;GAME OVER!&lt;/div&gt;
+      &lt;div class=&quot;go-score&quot;&gt;Score: &lt;span id=&quot;finalScore&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;mallet&quot; id=&quot;mallet&quot;&gt;
+      &lt;svg viewBox=&quot;0 0 66 66&quot;&gt;
+        &lt;rect x=&quot;29&quot; y=&quot;27&quot; width=&quot;9&quot; height=&quot;37&quot; rx=&quot;4.5&quot; fill=&quot;#c98a4a&quot; stroke=&quot;#8a5a26&quot; stroke-width=&quot;2&quot;/&gt;
+        &lt;rect x=&quot;8&quot; y=&quot;6&quot; width=&quot;50&quot; height=&quot;28&quot; rx=&quot;9&quot; fill=&quot;#eee&quot; stroke=&quot;#9a9a9a&quot; stroke-width=&quot;2&quot;/&gt;
+        &lt;rect x=&quot;8&quot; y=&quot;6&quot; width=&quot;13&quot; height=&quot;28&quot; rx=&quot;6.5&quot; fill=&quot;#c8c8c8&quot;/&gt;
+        &lt;rect x=&quot;45&quot; y=&quot;6&quot; width=&quot;13&quot; height=&quot;28&quot; rx=&quot;6.5&quot; fill=&quot;#c8c8c8&quot;/&gt;
+        &lt;ellipse cx=&quot;25&quot; cy=&quot;14&quot; rx=&quot;7&quot; ry=&quot;3.5&quot; fill=&quot;rgba(255,255,255,0.75)&quot;/&gt;
+      &lt;/svg&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var BOARD_W = 640, BOARD_H = 420;
+  var MAX_LIVES = 5;
+  var score = 0, lives = MAX_LIVES, running = false, over = false;
+  var spawnTimer = null;
+  var activeFruits = [];
+  var board = document.getElementById(&#x27;board&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var overlay = document.getElementById(&#x27;overlay&#x27;);
+  var gameoverEl = document.getElementById(&#x27;gameover&#x27;);
+  var finalScoreEl = document.getElementById(&#x27;finalScore&#x27;);
+  var mallet = document.getElementById(&#x27;mallet&#x27;);
+  var livesRow = document.getElementById(&#x27;livesRow&#x27;);
+
+  function renderLives() {
+    livesRow.innerHTML = &#x27;&#x27;;
+    for (var i = 0; i &lt; MAX_LIVES; i++) {
+      var s = document.createElement(&#x27;span&#x27;);
+      s.className = &#x27;life&#x27; + (i &gt;= lives ? &#x27; lost&#x27; : &#x27;&#x27;);
+      s.textContent = &#x27;🍎&#x27;;
+      livesRow.appendChild(s);
+    }
+  }
+
+  var HOLES = [];
+  (function () {
+    var cols = 4, rows = 3;
+    var padX = 28, padY = 14;
+    var gapX = (BOARD_W - padX*2 - 120) / (cols-1);
+    var gapY = (BOARD_H - padY*2 - 120) / (rows-1);
+    for (var r = 0; r &lt; rows; r++)
+      for (var c = 0; c &lt; cols; c++)
+        HOLES.push({ x: padX + c*gapX, y: padY + r*gapY, busy: false });
+  })();
+
+  HOLES.forEach(function (h) {
+    var hole = document.createElement(&#x27;div&#x27;);
+    hole.className = &#x27;hole&#x27;;
+    hole.style.left = h.x + &#x27;px&#x27;;
+    hole.style.top = h.y + &#x27;px&#x27;;
+    hole.innerHTML = &#x27;&lt;div class=&quot;hole-mouth&quot;&gt;&lt;/div&gt;&#x27;;
+    board.appendChild(hole);
+    h.el = hole;
+    // entire hole area is clickable
+    hole.addEventListener(&#x27;mousedown&#x27;, function (ev) {
+      ev.stopPropagation();
+      if (!running || over) { swingMallet(); return; }
+      swingMallet();
+      // find an active un-hit fruit in this hole
+      for (var k = 0; k &lt; activeFruits.length; k++) {
+        if (activeFruits[k].h === h &amp;&amp; !activeFruits[k].hit) {
+          hitFruit(activeFruits[k]);
+          return;
+        }
+      }
+    });
+  });
+
+  var FRUITS = [
+    { name:&#x27;apple&#x27;, juice:&#x27;#ff3b52&#x27;, svg:
+      &#x27;&lt;radialGradient id=&quot;g_ap&quot; cx=&quot;36%&quot; cy=&quot;26%&quot; r=&quot;72%&quot;&gt;&lt;stop offset=&quot;0%&quot; stop-color=&quot;#ffb0b6&quot;/&gt;&lt;stop offset=&quot;45%&quot; stop-color=&quot;#ff5b6a&quot;/&gt;&lt;stop offset=&quot;100%&quot; stop-color=&quot;#a81f2c&quot;/&gt;&lt;/radialGradient&gt;&#x27;
+      +&#x27;&lt;path d=&quot;M40 20 C40 10 48 6 54 10&quot; stroke=&quot;#7a4a26&quot; stroke-width=&quot;4&quot; fill=&quot;none&quot; stroke-linecap=&quot;round&quot;/&gt;&#x27;
+      +&#x27;&lt;path d=&quot;M42 22 C50 12 66 16 60 30 C54 40 44 30 42 22Z&quot; fill=&quot;#5cc85f&quot;/&gt;&#x27;
+      +&#x27;&lt;ellipse cx=&quot;40&quot; cy=&quot;54&quot; rx=&quot;31&quot; ry=&quot;30&quot; fill=&quot;url(#g_ap)&quot;/&gt;&#x27;
+      +&#x27;&lt;ellipse cx=&quot;29&quot; cy=&quot;42&quot; rx=&quot;11&quot; ry=&quot;7&quot; fill=&quot;rgba(255,255,255,0.55)&quot;/&gt;&#x27; },
+    { name:&#x27;orange&#x27;, juice:&#x27;#ff8a00&#x27;, svg:
+      &#x27;&lt;radialGradient id=&quot;g_or&quot; cx=&quot;36%&quot; cy=&quot;26%&quot; r=&quot;72%&quot;&gt;&lt;stop offset=&quot;0%&quot; stop-color=&quot;#ffe0a8&quot;/&gt;&lt;stop offset=&quot;50%&quot; stop-color=&quot;#ffa524&quot;/&gt;&lt;stop offset=&quot;100%&quot; stop-color=&quot;#d05e00&quot;/&gt;&lt;/radialGradient&gt;&#x27;
+      +&#x27;&lt;circle cx=&quot;40&quot; cy=&quot;52&quot; r=&quot;31&quot; fill=&quot;url(#g_or)&quot;/&gt;&#x27;
+      +&#x27;&lt;ellipse cx=&quot;40&quot; cy=&quot;22&quot; rx=&quot;7&quot; ry=&quot;4&quot; fill=&quot;#5cc85f&quot;/&gt;&#x27;
+      +&#x27;&lt;ellipse cx=&quot;28&quot; cy=&quot;40&quot; rx=&quot;11&quot; ry=&quot;7&quot; fill=&quot;rgba(255,255,255,0.5)&quot;/&gt;&#x27; },
+    { name:&#x27;lemon&#x27;, juice:&#x27;#ffe14a&#x27;, svg:
+      &#x27;&lt;radialGradient id=&quot;g_le&quot; cx=&quot;36%&quot; cy=&quot;26%&quot; r=&quot;76%&quot;&gt;&lt;stop offset=&quot;0%&quot; stop-color=&quot;#fffbcf&quot;/&gt;&lt;stop offset=&quot;50%&quot; stop-color=&quot;#ffe14a&quot;/&gt;&lt;stop offset=&quot;100%&quot; stop-color=&quot;#dcb400&quot;/&gt;&lt;/radialGradient&gt;&#x27;
+      +&#x27;&lt;ellipse cx=&quot;40&quot; cy=&quot;52&quot; rx=&quot;33&quot; ry=&quot;27&quot; fill=&quot;url(#g_le)&quot;/&gt;&#x27;
+      +&#x27;&lt;circle cx=&quot;73&quot; cy=&quot;52&quot; r=&quot;5&quot; fill=&quot;#dcb400&quot;/&gt;&lt;circle cx=&quot;7&quot; cy=&quot;52&quot; r=&quot;5&quot; fill=&quot;#dcb400&quot;/&gt;&#x27;
+      +&#x27;&lt;ellipse cx=&quot;28&quot; cy=&quot;40&quot; rx=&quot;11&quot; ry=&quot;7&quot; fill=&quot;rgba(255,255,255,0.55)&quot;/&gt;&#x27; },
+    { name:&#x27;strawberry&#x27;, juice:&#x27;#ff3b6e&#x27;, svg:
+      &#x27;&lt;radialGradient id=&quot;g_st&quot; cx=&quot;38%&quot; cy=&quot;24%&quot; r=&quot;76%&quot;&gt;&lt;stop offset=&quot;0%&quot; stop-color=&quot;#ffb0c0&quot;/&gt;&lt;stop offset=&quot;50%&quot; stop-color=&quot;#ff2e5c&quot;/&gt;&lt;stop offset=&quot;100%&quot; stop-color=&quot;#c00e3a&quot;/&gt;&lt;/radialGradient&gt;&#x27;
+      +&#x27;&lt;path d=&quot;M40 28 L26 20 L32 30 L20 28 L30 36 L20 40&quot; fill=&quot;#5cc85f&quot;/&gt;&#x27;
+      +&#x27;&lt;path d=&quot;M40 28 L54 20 L48 30 L60 28 L50 36 L60 40&quot; fill=&quot;#5cc85f&quot;/&gt;&#x27;
+      +&#x27;&lt;path d=&quot;M12 44 Q40 24 68 44 Q57 80 40 82 Q23 80 12 44Z&quot; fill=&quot;url(#g_st)&quot;/&gt;&#x27;
+      +&#x27;&lt;circle cx=&quot;30&quot; cy=&quot;50&quot; r=&quot;2&quot; fill=&quot;#ffe14a&quot;/&gt;&lt;circle cx=&quot;44&quot; cy=&quot;48&quot; r=&quot;2&quot; fill=&quot;#ffe14a&quot;/&gt;&#x27;
+      +&#x27;&lt;circle cx=&quot;52&quot; cy=&quot;56&quot; r=&quot;2&quot; fill=&quot;#ffe14a&quot;/&gt;&lt;circle cx=&quot;36&quot; cy=&quot;62&quot; r=&quot;2&quot; fill=&quot;#ffe14a&quot;/&gt;&#x27;
+      +&#x27;&lt;circle cx=&quot;24&quot; cy=&quot;60&quot; r=&quot;2&quot; fill=&quot;#ffe14a&quot;/&gt;&#x27;
+      +&#x27;&lt;ellipse cx=&quot;30&quot; cy=&quot;44&quot; rx=&quot;8&quot; ry=&quot;5&quot; fill=&quot;rgba(255,255,255,0.4)&quot;/&gt;&#x27; },
+    { name:&#x27;grape&#x27;, juice:&#x27;#a24aff&#x27;, svg:
+      &#x27;&lt;radialGradient id=&quot;g_gr&quot; cx=&quot;36%&quot; cy=&quot;26%&quot; r=&quot;72%&quot;&gt;&lt;stop offset=&quot;0%&quot; stop-color=&quot;#d9baff&quot;/&gt;&lt;stop offset=&quot;50%&quot; stop-color=&quot;#9a4ff0&quot;/&gt;&lt;stop offset=&quot;100%&quot; stop-color=&quot;#5a1fa0&quot;/&gt;&lt;/radialGradient&gt;&#x27;
+      +&#x27;&lt;path d=&quot;M40 18 C40 10 46 8 50 12&quot; stroke=&quot;#7a4a26&quot; stroke-width=&quot;3&quot; fill=&quot;none&quot; stroke-linecap=&quot;round&quot;/&gt;&#x27;
+      +&#x27;&lt;circle cx=&quot;40&quot; cy=&quot;30&quot; r=&quot;12&quot; fill=&quot;url(#g_gr)&quot;/&gt;&#x27;
+      +&#x27;&lt;circle cx=&quot;27&quot; cy=&quot;47&quot; r=&quot;12&quot; fill=&quot;url(#g_gr)&quot;/&gt;&lt;circle cx=&quot;53&quot; cy=&quot;47&quot; r=&quot;12&quot; fill=&quot;url(#g_gr)&quot;/&gt;&#x27;
+      +&#x27;&lt;circle cx=&quot;40&quot; cy=&quot;51&quot; r=&quot;12&quot; fill=&quot;url(#g_gr)&quot;/&gt;&#x27;
+      +&#x27;&lt;circle cx=&quot;33&quot; cy=&quot;68&quot; r=&quot;12&quot; fill=&quot;url(#g_gr)&quot;/&gt;&lt;circle cx=&quot;47&quot; cy=&quot;68&quot; r=&quot;12&quot; fill=&quot;url(#g_gr)&quot;/&gt;&#x27; },
+    { name:&#x27;watermelon&#x27;, juice:&#x27;#ff3b6e&#x27;, svg:
+      &#x27;&lt;linearGradient id=&quot;g_wm&quot; x1=&quot;0&quot; y1=&quot;0&quot; x2=&quot;0&quot; y2=&quot;1&quot;&gt;&lt;stop offset=&quot;0%&quot; stop-color=&quot;#ff9bad&quot;/&gt;&lt;stop offset=&quot;100%&quot; stop-color=&quot;#e2244f&quot;/&gt;&lt;/linearGradient&gt;&#x27;
+      +&#x27;&lt;path d=&quot;M7 46 A33 33 0 0 0 73 46 Z&quot; fill=&quot;#2d8140&quot;/&gt;&#x27;
+      +&#x27;&lt;path d=&quot;M10 46 A30 30 0 0 0 70 46 Z&quot; fill=&quot;#6cc86f&quot;/&gt;&#x27;
+      +&#x27;&lt;path d=&quot;M14 46 A26 26 0 0 0 66 46 Z&quot; fill=&quot;url(#g_wm)&quot;/&gt;&#x27;
+      +&#x27;&lt;circle cx=&quot;30&quot; cy=&quot;54&quot; r=&quot;2.5&quot; fill=&quot;#2a1030&quot;/&gt;&lt;circle cx=&quot;42&quot; cy=&quot;60&quot; r=&quot;2.5&quot; fill=&quot;#2a1030&quot;/&gt;&#x27;
+      +&#x27;&lt;circle cx=&quot;52&quot; cy=&quot;52&quot; r=&quot;2.5&quot; fill=&quot;#2a1030&quot;/&gt;&lt;circle cx=&quot;40&quot; cy=&quot;50&quot; r=&quot;2.5&quot; fill=&quot;#2a1030&quot;/&gt;&#x27;
+      +&#x27;&lt;path d=&quot;M18 48 A22 22 0 0 1 62 48&quot; fill=&quot;none&quot; stroke=&quot;rgba(255,255,255,0.35)&quot; stroke-width=&quot;3&quot;/&gt;&#x27; }
+  ];
+
+  var FRUIT_EMOJI = [&#x27;🍎&#x27;,&#x27;🍊&#x27;,&#x27;🍋&#x27;,&#x27;🍓&#x27;,&#x27;🍇&#x27;,&#x27;🍉&#x27;,&#x27;🍑&#x27;,&#x27;🥝&#x27;,&#x27;🍒&#x27;];
+
+  function fruitSVG(def) { return &#x27;&lt;svg viewBox=&quot;0 0 80 88&quot;&gt;&lt;defs&gt;&lt;/defs&gt;&#x27; + def.svg + &#x27;&lt;/svg&gt;&#x27;; }
+  function rainbowSVG() {
+    return &#x27;&lt;svg viewBox=&quot;0 0 80 88&quot;&gt;&#x27;
+      +&#x27;&lt;radialGradient id=&quot;g_rb&quot; cx=&quot;38%&quot; cy=&quot;26%&quot; r=&quot;76%&quot;&gt;&#x27;
+      +&#x27;&lt;stop offset=&quot;0%&quot; stop-color=&quot;#fff&quot;/&gt;&lt;stop offset=&quot;25%&quot; stop-color=&quot;#ffe14a&quot;/&gt;&#x27;
+      +&#x27;&lt;stop offset=&quot;50%&quot; stop-color=&quot;#4aff9b&quot;/&gt;&lt;stop offset=&quot;75%&quot; stop-color=&quot;#4aa8ff&quot;/&gt;&#x27;
+      +&#x27;&lt;stop offset=&quot;100%&quot; stop-color=&quot;#c24aff&quot;/&gt;&lt;/radialGradient&gt;&#x27;
+      +&#x27;&lt;ellipse cx=&quot;40&quot; cy=&quot;22&quot; rx=&quot;6&quot; ry=&quot;4&quot; fill=&quot;#5cc85f&quot;/&gt;&#x27;
+      +&#x27;&lt;circle cx=&quot;40&quot; cy=&quot;52&quot; r=&quot;31&quot; fill=&quot;url(#g_rb)&quot;/&gt;&#x27;
+      +&#x27;&lt;path d=&quot;M40 28 L44 40 L56 40 L46 48 L50 60 L40 52 L30 60 L34 48 L24 40 L36 40 Z&quot; fill=&quot;#fff&quot; opacity=&quot;0.9&quot;/&gt;&#x27;
+      +&#x27;&lt;ellipse cx=&quot;28&quot; cy=&quot;42&quot; rx=&quot;10&quot; ry=&quot;6&quot; fill=&quot;rgba(255,255,255,0.6)&quot;/&gt;&#x27;
+      +&#x27;&lt;/svg&gt;&#x27;;
+  }
+
+  function spawnFruit() {
+    if (!running || over) return;
+    var free = HOLES.filter(function (h) { return !h.busy; });
+    if (free.length === 0) return;
+    var h = free[Math.floor(Math.random() * free.length)];
+    h.busy = true;
+    var fast = Math.random() &lt; 0.10;
+    var life = fast ? 1000 : 2000;
+    var def = fast ? { name:&#x27;rainbow&#x27;, juice:&#x27;rainbow&#x27; } : FRUITS[Math.floor(Math.random()*FRUITS.length)];
+
+    var clip = document.createElement(&#x27;div&#x27;);
+    clip.className = &#x27;fruit-clip&#x27;;
+    var fruit = document.createElement(&#x27;div&#x27;);
+    fruit.className = &#x27;fruit&#x27; + (fast ? &#x27; fast-glow&#x27; : &#x27;&#x27;);
+    fruit.innerHTML = fast ? rainbowSVG() : fruitSVG(def);
+    clip.appendChild(fruit);
+    h.el.appendChild(clip);
+
+    var record = { h: h, clip: clip, fruit: fruit, hit: false, fast: fast, def: def, timer: null };
+    activeFruits.push(record);
+
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){ fruit.classList.add(&#x27;up&#x27;); }); });
+
+    record.timer = setTimeout(function () {
+      if (record.hit) return;
+      // MISSED
+      fruit.classList.remove(&#x27;up&#x27;); fruit.classList.add(&#x27;down&#x27;);
+      cleanup(record, 320);
+      if (!record.fast) loseLife();
+    }, life);
+  }
+
+  function hitFruit(record) {
+    if (record.hit || !running || over) return;
+    record.hit = true;
+    if (record.timer) clearTimeout(record.timer);
+    var h = record.h;
+    var cx = h.x + 60, cy = h.y + 56;
+    if (record.fast) { makeSplash(cx, cy, &#x27;rainbow&#x27;, true); score += 1000; showWow(cx, cy); }
+    else { makeSplash(cx, cy, record.def.juice, false); score += 100; }
+    scoreEl.textContent = score;
+    if (record.clip.parentNode) record.clip.parentNode.removeChild(record.clip);
+    h.busy = false;
+    var i = activeFruits.indexOf(record); if (i&gt;=0) activeFruits.splice(i,1);
+  }
+
+  function loseLife() {
+    if (over) return;
+    lives--;
+    renderLives();
+    if (lives &lt;= 0) endGame();
+  }
+
+  function cleanup(record, delay) {
+    setTimeout(function () {
+      if (record.clip.parentNode) record.clip.parentNode.removeChild(record.clip);
+      record.h.busy = false;
+      var i = activeFruits.indexOf(record);
+      if (i &gt;= 0) activeFruits.splice(i, 1);
+    }, delay);
+  }
+
+  function makeSplash(x, y, color, big) {
+    var rainbow = [&#x27;#ff5b6e&#x27;,&#x27;#ffb400&#x27;,&#x27;#ffe600&#x27;,&#x27;#4aff9b&#x27;,&#x27;#4aa8ff&#x27;,&#x27;#c24aff&#x27;];
+    // puddle
+    var pud = document.createElement(&#x27;div&#x27;);
+    pud.className = &#x27;puddle&#x27;;
+    pud.style.left = x+&#x27;px&#x27;; pud.style.top = (y+10)+&#x27;px&#x27;;
+    pud.style.width = (big?150:80)+&#x27;px&#x27;; pud.style.height = (big?150:80)+&#x27;px&#x27;;
+    pud.style.background = color === &#x27;rainbow&#x27; ? &#x27;radial-gradient(circle,#ffb0e0,#c24aff)&#x27; : color;
+    board.appendChild(pud);
+    setTimeout(function(){ if (pud.parentNode) pud.parentNode.removeChild(pud); }, 700);
+
+    var s = document.createElement(&#x27;div&#x27;);
+    s.className = &#x27;splash&#x27;;
+    s.style.left = x + &#x27;px&#x27;; s.style.top = y + &#x27;px&#x27;;
+    var dropCount = big ? 30 : 18;
+    var sparkCount = big ? 22 : 12;
+    var maxDist = big ? 140 : 70;
+    for (var i = 0; i &lt; dropCount; i++) {
+      var d = document.createElement(&#x27;div&#x27;);
+      d.className = &#x27;drop&#x27;;
+      var rot = (360/dropCount)*i + (Math.random()*24-12);
+      var dist = (big ? 70 : 35) + Math.random()*maxDist;
+      var sz = (big ? 12 : 9) + Math.random()*(big?18:11);
+      d.style.width = sz+&#x27;px&#x27;; d.style.height = sz+&#x27;px&#x27;;
+      d.style.background = color === &#x27;rainbow&#x27; ? rainbow[i % rainbow.length] : color;
+      d.style.setProperty(&#x27;--rot&#x27;, rot+&#x27;deg&#x27;);
+      d.style.setProperty(&#x27;--dist&#x27;, dist+&#x27;px&#x27;);
+      s.appendChild(d);
+    }
+    for (var j = 0; j &lt; sparkCount; j++) {
+      var sp = document.createElement(&#x27;div&#x27;);
+      sp.className = &#x27;spark&#x27;;
+      var srot = Math.random()*360;
+      var sdist = (big ? 80 : 40) + Math.random()*maxDist;
+      sp.style.setProperty(&#x27;--rot&#x27;, srot+&#x27;deg&#x27;);
+      sp.style.setProperty(&#x27;--dist&#x27;, sdist+&#x27;px&#x27;);
+      if (color === &#x27;rainbow&#x27;) { sp.style.background = rainbow[j%rainbow.length]; sp.style.boxShadow = &#x27;0 0 10px &#x27;+rainbow[j%rainbow.length]; }
+      if (big) { sp.style.width=&#x27;10px&#x27;; sp.style.height=&#x27;10px&#x27;; }
+      s.appendChild(sp);
+    }
+    board.appendChild(s);
+    setTimeout(function(){ if (s.parentNode) s.parentNode.removeChild(s); }, 750);
+  }
+
+  function showWow(x, y) {
+    var w = document.createElement(&#x27;div&#x27;);
+    w.className = &#x27;wow&#x27;;
+    w.style.left = x + &#x27;px&#x27;; w.style.top = (y - 20) + &#x27;px&#x27;;
+    w.textContent = Math.random() &lt; 0.5 ? &#x27;WOW!&#x27; : &#x27;GREAT!&#x27;;
+    board.appendChild(w);
+    setTimeout(function(){ if (w.parentNode) w.parentNode.removeChild(w); }, 1000);
+  }
+
+  function swingMallet() {
+    mallet.classList.remove(&#x27;swing&#x27;);
+    void mallet.offsetWidth;
+    mallet.classList.add(&#x27;swing&#x27;);
+  }
+
+  board.addEventListener(&#x27;mousemove&#x27;, function (e) {
+    var rect = board.getBoundingClientRect();
+    mallet.style.left = (e.clientX - rect.left) + &#x27;px&#x27;;
+    mallet.style.top = (e.clientY - rect.top) + &#x27;px&#x27;;
+  });
+  board.addEventListener(&#x27;mouseenter&#x27;, function () { if (running &amp;&amp; !over) mallet.style.display = &#x27;block&#x27;; });
+  board.addEventListener(&#x27;mouseleave&#x27;, function () { mallet.style.display = &#x27;none&#x27;; });
+  board.addEventListener(&#x27;mousedown&#x27;, function () { if (running &amp;&amp; !over) swingMallet(); });
+
+  function fruitExplosion() {
+    // launch a big spray of fruit emojis across the whole board
+    for (var i = 0; i &lt; 40; i++) {
+      (function (i) {
+        var f = document.createElement(&#x27;div&#x27;);
+        f.className = &#x27;flyfruit&#x27;;
+        f.textContent = FRUIT_EMOJI[Math.floor(Math.random()*FRUIT_EMOJI.length)];
+        f.style.fontSize = (28 + Math.random()*30) + &#x27;px&#x27;;
+        var startX = BOARD_W/2 + (Math.random()*120-60);
+        var startY = BOARD_H/2 + (Math.random()*80-40);
+        f.style.left = startX + &#x27;px&#x27;;
+        f.style.top = startY + &#x27;px&#x27;;
+        board.appendChild(f);
+        var angle = Math.random()*Math.PI*2;
+        var speed = 5 + Math.random()*9;
+        var vx = Math.cos(angle)*speed;
+        var vy = Math.sin(angle)*speed - 6;
+        var x = 0, y = 0, rot = 0, vr = (Math.random()*20-10);
+        var t = 0;
+        var iv = setInterval(function () {
+          t++;
+          vy += 0.5; // gravity
+          x += vx; y += vy; rot += vr;
+          f.style.transform = &#x27;translate(&#x27;+x+&#x27;px,&#x27;+y+&#x27;px) rotate(&#x27;+rot+&#x27;deg)&#x27;;
+          if (t &gt; 70) { clearInterval(iv); if (f.parentNode) f.parentNode.removeChild(f); }
+        }, 16);
+      })(i);
+    }
+  }
+
+  function endGame() {
+    over = true;
+    running = false;
+    if (spawnTimer) { clearTimeout(spawnTimer); spawnTimer = null; }
+    activeFruits.forEach(function (r) {
+      if (r.timer) clearTimeout(r.timer);
+      if (r.clip.parentNode) r.clip.parentNode.removeChild(r.clip);
+      r.h.busy = false;
+    });
+    activeFruits = [];
+    mallet.style.display = &#x27;none&#x27;;
+    fruitExplosion();
+    // show GAME OVER after the explosion begins
+    setTimeout(function () {
+      finalScoreEl.textContent = score;
+      gameoverEl.style.display = &#x27;flex&#x27;;
+    }, 700);
+  }
+
+  function startGame() {
+    running = true; over = false;
+    score = 0; scoreEl.textContent = &#x27;0&#x27;;
+    lives = MAX_LIVES; renderLives();
+    overlay.style.display = &#x27;none&#x27;;
+    gameoverEl.style.display = &#x27;none&#x27;;
+    mallet.style.display = &#x27;block&#x27;;
+    clearActive();
+    spawnFruit();
+    scheduleSpawns();
+  }
+
+  function scheduleSpawns() {
+    if (spawnTimer) clearTimeout(spawnTimer);
+    var delay = 650 + Math.random() * 550;
+    spawnTimer = setTimeout(function () {
+      if (!running || over) return;
+      spawnFruit();
+      scheduleSpawns();
+    }, delay);
+  }
+
+  function clearActive() {
+    activeFruits.forEach(function (r) {
+      if (r.timer) clearTimeout(r.timer);
+      if (r.clip.parentNode) r.clip.parentNode.removeChild(r.clip);
+      r.h.busy = false;
+    });
+    activeFruits = [];
+    var flies = board.querySelectorAll(&#x27;.flyfruit&#x27;);
+    for (var i=0;i&lt;flies.length;i++) flies[i].parentNode.removeChild(flies[i]);
+  }
+
+  function stopGame() {
+    running = false;
+    if (spawnTimer) { clearTimeout(spawnTimer); spawnTimer = null; }
+    clearActive();
+    mallet.style.display = &#x27;none&#x27;;
+    if (!over) {
+      overlay.textContent = &#x27;Paused — press Start to play again!&#x27;;
+      overlay.style.display = &#x27;flex&#x27;;
+    }
+  }
+
+  renderLives();
+
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  // Suppress in-iframe scrollbars. The parent fits the iframe layout
+  // box to match the content size, so internal scroll is redundant —
+  // and if the LLM&#x27;s CSS sets body overflow: auto, the scrollbar shows
+  // briefly before the fit lands. Force hidden so it never appears.
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  // Iframe-internal JS error capture. window.onerror inside a sandboxed
+  // iframe can&#x27;t post to /api/js_error directly, so we relay to the
+  // parent via postMessage; parent&#x27;s error_logger.js forwards to the
+  // server. Catches LLM-emitted broken HTML (invalid hex, undefined
+  // variables, etc.) that would otherwise fail silently inside the
+  // iframe.
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      // Debounce: don&#x27;t fire more than ~10× per second. ResizeObserver
+      // fires repeatedly during layout/font load; we only need the latest.
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      // Clamp: reject obviously bogus dimensions. Any browser-game viewport
+      // is well under 4000×4000 logical px; readings beyond that are layout
+      // noise during load/visibility transitions.
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  // Parent posts wd_remeasure when it makes the iframe visible (the body&#x27;s
+  // ResizeObserver doesn&#x27;t fire on display:none→block of an outer ancestor
+  // because the iframe document didn&#x27;t actually resize). Wait a frame for
+  // layout to settle before measuring.
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

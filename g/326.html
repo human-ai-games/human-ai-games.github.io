@@ -1,0 +1,600 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sky Hopper</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>Sky Hopper</b> &middot; Game 326 &middot; Professional producer &middot; Basic game: Gravity jumper</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 50%, #a18cd1 100%); color: #222; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 12px; background: rgba(255,255,255,0.85); height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 6px; }
+  h1 { margin: 0; font-size: 24px; font-weight: 700; color: #d6336c; text-shadow: 1px 1px 0 #fff; }
+  .instructions { font-size: 16px; color: #555; max-width: 620px; margin: 0; line-height: 1.3; text-align: center; }
+  .hud { font-size: 18px; color: #444; margin: 0; font-weight: 600; display: flex; gap: 18px; }
+  .hud .lives { color: #e03131; }
+  .hud .lvl { color: #1971c2; }
+  .field {
+    position: relative; width: 620px; height: 430px; flex-shrink: 0; margin: 0;
+    border-radius: 8px; overflow: hidden;
+    background: linear-gradient(180deg, #4facfe 0%, #74c0fc 35%, #ffd6a5 75%, #ffe8cc 100%);
+  }
+  .field.boss { background: linear-gradient(180deg, #3d2b56 0%, #6b3fa0 40%, #b5179e 80%, #f72585 100%); }
+  .sun {
+    position: absolute; left: 470px; top: 26px; width: 74px; height: 74px;
+    border-radius: 50%; background: radial-gradient(circle, #fff6b0 0%, #ffd93d 60%, #ffb703 100%);
+    box-shadow: 0 0 32px 9px rgba(255,214,61,0.6);
+  }
+  .cloud { position: absolute; background: #fff; border-radius: 50px; opacity: 0.9; }
+  .cloud:before, .cloud:after { content: &#x27;&#x27;; position: absolute; background: #fff; border-radius: 50%; }
+  .cloud.c1 { width: 78px; height: 24px; top: 46px; left: 80px; }
+  .cloud.c1:before { width: 36px; height: 36px; top: -15px; left: 12px; }
+  .cloud.c1:after { width: 28px; height: 28px; top: -11px; left: 40px; }
+  .cloud.c2 { width: 58px; height: 18px; top: 100px; left: 300px; }
+  .cloud.c2:before { width: 26px; height: 26px; top: -11px; left: 10px; }
+  .cloud.c2:after { width: 20px; height: 20px; top: -8px; left: 30px; }
+  .hill { position: absolute; bottom: 30px; border-radius: 50% 50% 0 0; opacity: 0.85; }
+  .hill.h1 { left: -40px; width: 300px; height: 106px; background: #8ce99a; }
+  .hill.h2 { left: 260px; width: 360px; height: 136px; background: #69db7c; }
+  .field.boss .hill, .field.boss .sun, .field.boss .cloud { display: none; }
+  .ground {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 30px;
+    background: repeating-linear-gradient(90deg, #74b816 0 20px, #82c91e 20px 40px);
+  }
+  .field.boss .ground { background: repeating-linear-gradient(90deg, #5f3dc4 0 20px, #7048e8 20px 40px); }
+  .hero {
+    position: absolute; width: 34px; height: 34px;
+    background: radial-gradient(circle at 30% 30%, #ff8787, #e03131);
+    border-radius: 8px; box-shadow: 0 3px 6px rgba(0,0,0,0.25); z-index: 5;
+  }
+  .platform {
+    position: absolute; height: 16px; border-radius: 6px;
+    background: linear-gradient(180deg, #b08968, #7f5539);
+    box-shadow: 0 3px 5px rgba(0,0,0,0.25); border-top: 3px solid #85c26a;
+  }
+  .spike {
+    position: absolute; width: 0; height: 0;
+    border-left: 14px solid transparent; border-right: 14px solid transparent;
+    border-bottom: 26px solid #6741d9;
+    filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3));
+  }
+  .coin {
+    position: absolute; width: 22px; height: 22px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #fff3bf, #ffd43b 60%, #f59f00);
+    box-shadow: 0 0 8px 2px rgba(255,212,59,0.7);
+  }
+  .enemy {
+    position: absolute; width: 30px; height: 26px; border-radius: 8px 8px 6px 6px;
+    background: radial-gradient(circle at 35% 30%, #ffa8a8, #c92a2a);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3); z-index: 4;
+  }
+  .enemy:before, .enemy:after {
+    content: &#x27;&#x27;; position: absolute; top: 6px; width: 6px; height: 6px; border-radius: 50%;
+    background: #fff; box-shadow: inset 0 0 0 2px #000;
+  }
+  .enemy:before { left: 6px; } .enemy:after { right: 6px; }
+  .boss {
+    position: absolute; width: 90px; height: 74px; border-radius: 14px;
+    background: radial-gradient(circle at 40% 30%, #ff8fd0, #b5179e 60%, #7209b7);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4); z-index: 4;
+  }
+  .boss:before, .boss:after {
+    content: &#x27;&#x27;; position: absolute; top: 18px; width: 16px; height: 16px; border-radius: 50%;
+    background: #fff; box-shadow: inset 0 0 0 5px #d00;
+  }
+  .boss:before { left: 18px; } .boss:after { right: 18px; }
+  .bossbar-wrap { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 200px; height: 12px; background: rgba(0,0,0,0.4); border-radius: 6px; z-index: 8; display: none; }
+  .bossbar { height: 100%; width: 100%; background: linear-gradient(90deg, #ff6b6b, #f03e3e); border-radius: 6px; transition: width 0.2s; }
+  .bullet {
+    position: absolute; width: 18px; height: 18px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #ffe066, #f76707); z-index: 6;
+    box-shadow: 0 0 6px 2px rgba(247,103,7,0.7);
+  }
+  .overlay {
+    position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.5); color: #fff; font-size: 24px; font-weight: 700; text-align: center;
+    flex-direction: column; gap: 8px; z-index: 20;
+  }
+  .overlay small { font-size: 16px; font-weight: 500; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;Sky Hopper&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Run with &lt;strong&gt;← →&lt;/strong&gt; (or A/D) and jump with &lt;strong&gt;Space&lt;/strong&gt;/&lt;strong&gt;↑&lt;/strong&gt; (double-jump in air). Grab all coins to advance, stomp enemies from above, and beat the boss on Level 3 — use Start/Restart below.&lt;/p&gt;
+  &lt;div class=&quot;hud&quot;&gt;
+    &lt;span&gt;Coins: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/span&gt;
+    &lt;span class=&quot;lvl&quot;&gt;Level: &lt;span id=&quot;level&quot;&gt;1&lt;/span&gt;&lt;/span&gt;
+    &lt;span class=&quot;lives&quot;&gt;Lives: &lt;span id=&quot;lives&quot;&gt;3&lt;/span&gt;&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;
+    &lt;div class=&quot;sun&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;cloud c1&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;cloud c2&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;hill h1&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;hill h2&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;ground&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;bossbar-wrap&quot; id=&quot;bossbarWrap&quot;&gt;&lt;div class=&quot;bossbar&quot; id=&quot;bossbar&quot;&gt;&lt;/div&gt;&lt;/div&gt;
+    &lt;div class=&quot;hero&quot; id=&quot;hero&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;overlay&quot; id=&quot;overlay&quot;&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var FIELD_W = 620, FIELD_H = 430;
+  var GROUND_H = 30, HERO_SIZE = 34;
+  var GRAVITY = 0.7, JUMP_V = -13, MOVE_SPEED = 4.2;
+  var running = false, animId = null;
+  var field = document.getElementById(&#x27;field&#x27;);
+  var hero = document.getElementById(&#x27;hero&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var livesEl = document.getElementById(&#x27;lives&#x27;);
+  var levelEl = document.getElementById(&#x27;level&#x27;);
+  var overlay = document.getElementById(&#x27;overlay&#x27;);
+  var bossbarWrap = document.getElementById(&#x27;bossbarWrap&#x27;);
+  var bossbar = document.getElementById(&#x27;bossbar&#x27;);
+
+  var heroX, heroY, heroVX, heroVY, onGround, jumpsLeft;
+  var score, lives, invuln, level;
+  var keys = { left: false, right: false };
+
+  var platEls = [], spikeEls = [], coins = [], enemies = [], bullets = [];
+  var curPlatforms = [], curSpikes = [];
+  var boss = null, bossEl = null, bossbarState = 0, bossShootTimer = 0;
+
+  // Level definitions
+  var LEVELS = [
+    {
+      platforms: [
+        { x: 80, y: 340, w: 120 }, { x: 250, y: 270, w: 110 },
+        { x: 430, y: 200, w: 120 }, { x: 150, y: 160, w: 90 }, { x: 380, y: 330, w: 100 }
+      ],
+      spikes: [ { x: 200 }, { x: 340 } ],
+      coins: [ {x:130,y:305},{x:290,y:235},{x:470,y:165},{x:185,y:125},{x:415,y:295},{x:560,y:355},{x:40,y:355} ],
+      enemies: [ { x: 300, y: 235, min: 250, max: 340, spd: 1.4 }, { x: 100, y: 305, min: 80, max: 190, spd: 1.2 } ],
+      boss: false
+    },
+    {
+      platforms: [
+        { x: 60, y: 300, w: 90 }, { x: 200, y: 240, w: 90 }, { x: 340, y: 290, w: 90 },
+        { x: 470, y: 230, w: 100 }, { x: 260, y: 150, w: 110 }, { x: 100, y: 190, w: 80 }
+      ],
+      spikes: [ { x: 160 }, { x: 300 }, { x: 440 }, { x: 540 } ],
+      coins: [ {x:95,y:265},{x:235,y:205},{x:375,y:255},{x:505,y:195},{x:300,y:115},{x:130,y:155},{x:560,y:355},{x:30,y:355} ],
+      enemies: [ { x: 340, y: 355, min: 250, max: 430, spd: 1.8 }, { x: 210, y: 205, min: 200, max: 280, spd: 1.5 }, { x: 480, y: 195, min: 470, max: 560, spd: 1.6 } ],
+      boss: false
+    },
+    {
+      platforms: [
+        { x: 40, y: 320, w: 110 }, { x: 470, y: 320, w: 110 },
+        { x: 240, y: 250, w: 140 }
+      ],
+      spikes: [ { x: 300 } ],
+      coins: [ {x:90,y:285},{x:520,y:285},{x:305,y:215} ],
+      enemies: [],
+      boss: true
+    }
+  ];
+
+  function clearLevel() {
+    platEls.forEach(function (e){ e.remove(); }); platEls = [];
+    spikeEls.forEach(function (e){ e.remove(); }); spikeEls = [];
+    coins.forEach(function (c){ c.el.remove(); }); coins = [];
+    enemies.forEach(function (e){ e.el.remove(); }); enemies = [];
+    bullets.forEach(function (b){ b.el.remove(); }); bullets = [];
+    if (bossEl) { bossEl.remove(); bossEl = null; }
+    boss = null;
+    bossbarWrap.style.display = &#x27;none&#x27;;
+  }
+
+  function buildLevel(n) {
+    clearLevel();
+    var L = LEVELS[n - 1];
+    field.classList.toggle(&#x27;boss&#x27;, !!L.boss);
+    curPlatforms = L.platforms; curSpikes = L.spikes;
+    L.platforms.forEach(function (p) {
+      var el = document.createElement(&#x27;div&#x27;); el.className = &#x27;platform&#x27;;
+      el.style.left = p.x+&#x27;px&#x27;; el.style.top = p.y+&#x27;px&#x27;; el.style.width = p.w+&#x27;px&#x27;;
+      field.appendChild(el); platEls.push(el);
+    });
+    L.spikes.forEach(function (s) {
+      var el = document.createElement(&#x27;div&#x27;); el.className = &#x27;spike&#x27;;
+      el.style.left = s.x+&#x27;px&#x27;; el.style.bottom = GROUND_H+&#x27;px&#x27;;
+      field.appendChild(el); spikeEls.push(el);
+    });
+    L.coins.forEach(function (s) {
+      var el = document.createElement(&#x27;div&#x27;); el.className = &#x27;coin&#x27;;
+      el.style.left = s.x+&#x27;px&#x27;; el.style.top = s.y+&#x27;px&#x27;;
+      field.appendChild(el);
+      coins.push({ x:s.x, y:s.y, w:22, h:22, el:el, got:false });
+    });
+    L.enemies.forEach(function (e) {
+      var el = document.createElement(&#x27;div&#x27;); el.className = &#x27;enemy&#x27;;
+      field.appendChild(el);
+      enemies.push({ x:e.x, y:e.y, w:30, h:26, min:e.min, max:e.max, spd:e.spd, dir:1, el:el, dead:false });
+    });
+    if (L.boss) {
+      bossEl = document.createElement(&#x27;div&#x27;); bossEl.className = &#x27;boss&#x27;;
+      field.appendChild(bossEl);
+      boss = { x: FIELD_W/2 - 45, y: 90, w: 90, h: 74, vx: 2.2, vy: 2, hp: 3, hitCd: 0 };
+      bossbarState = 3;
+      bossbarWrap.style.display = &#x27;block&#x27;;
+      bossbar.style.width = &#x27;100%&#x27;;
+      bossShootTimer = 90;
+    }
+  }
+
+  function paintHero() {
+    hero.style.left = heroX + &#x27;px&#x27;;
+    hero.style.top = heroY + &#x27;px&#x27;;
+    hero.style.opacity = (invuln &gt; 0 &amp;&amp; Math.floor(invuln / 4) % 2 === 0) ? 0.4 : 1;
+  }
+  function resetHero() {
+    heroX = 40; heroY = FIELD_H - GROUND_H - HERO_SIZE;
+    heroVX = 0; heroVY = 0; onGround = true; jumpsLeft = 2; invuln = 0;
+  }
+  function jump() {
+    if (!running) return;
+    if (jumpsLeft &gt; 0) { heroVY = JUMP_V; jumpsLeft--; onGround = false; beep(520, 0.06); }
+  }
+  function rectsOverlap(ax, ay, aw, ah, bx, by, bw, bh) {
+    return ax &lt; bx + bw &amp;&amp; ax + aw &gt; bx &amp;&amp; ay &lt; by + bh &amp;&amp; ay + ah &gt; by;
+  }
+  function loseLife() {
+    lives--; livesEl.textContent = lives;
+    beep(140, 0.2);
+    if (lives &lt;= 0) { endGame(&#x27;Game Over&#x27;, &#x27;You collected &#x27; + score + &#x27; coins.&#x27;); }
+    else { resetHero(); invuln = 60; }
+  }
+
+  function nextLevel() {
+    if (level &gt;= LEVELS.length) { endGame(&#x27;You Win!&#x27;, &#x27;Champion! Final score: &#x27; + score + &#x27; coins.&#x27;); return; }
+    level++; levelEl.textContent = level;
+    buildLevel(level);
+    resetHero(); invuln = 40;
+    flashOverlay(&#x27;Level &#x27; + level + &#x27;!&#x27;);
+  }
+  function flashOverlay(msg) {
+    overlay.innerHTML = msg;
+    overlay.style.display = &#x27;flex&#x27;;
+    setTimeout(function () { if (running) overlay.style.display = &#x27;none&#x27;; }, 800);
+  }
+
+  function tick() {
+    if (!running) return;
+    heroVX = 0;
+    if (keys.left) heroVX = -MOVE_SPEED;
+    if (keys.right) heroVX = MOVE_SPEED;
+    heroX += heroVX;
+    if (heroX &lt; 0) heroX = 0;
+    if (heroX + HERO_SIZE &gt; FIELD_W) heroX = FIELD_W - HERO_SIZE;
+
+    heroVY += GRAVITY;
+    var prevBottom = heroY + HERO_SIZE;
+    heroY += heroVY;
+    onGround = false;
+    var floorY = FIELD_H - GROUND_H - HERO_SIZE;
+    if (heroY &gt;= floorY) { heroY = floorY; heroVY = 0; onGround = true; jumpsLeft = 2; }
+
+    if (heroVY &gt;= 0) {
+      curPlatforms.forEach(function (p) {
+        var newBottom = heroY + HERO_SIZE;
+        if (heroX + HERO_SIZE &gt; p.x + 4 &amp;&amp; heroX &lt; p.x + p.w - 4) {
+          if (prevBottom &lt;= p.y + 6 &amp;&amp; newBottom &gt;= p.y &amp;&amp; newBottom &lt;= p.y + 20) {
+            heroY = p.y - HERO_SIZE; heroVY = 0; onGround = true; jumpsLeft = 2;
+          }
+        }
+      });
+    }
+    if (invuln &gt; 0) invuln--;
+
+    // coins
+    coins.forEach(function (c) {
+      if (!c.got &amp;&amp; rectsOverlap(heroX, heroY, HERO_SIZE, HERO_SIZE, c.x, c.y, c.w, c.h)) {
+        c.got = true; c.el.style.display = &#x27;none&#x27;;
+        score++; scoreEl.textContent = score; beep(660, 0.08);
+      }
+    });
+
+    // enemies move + collide
+    enemies.forEach(function (e) {
+      if (e.dead) return;
+      e.x += e.spd * e.dir;
+      if (e.x &lt; e.min) { e.x = e.min; e.dir = 1; }
+      if (e.x &gt; e.max) { e.x = e.max; e.dir = -1; }
+      e.el.style.left = e.x + &#x27;px&#x27;; e.el.style.top = e.y + &#x27;px&#x27;;
+      if (rectsOverlap(heroX+3, heroY+3, HERO_SIZE-6, HERO_SIZE-6, e.x, e.y, e.w, e.h)) {
+        // stomp if falling and above
+        if (heroVY &gt; 0 &amp;&amp; (heroY + HERO_SIZE) &lt; e.y + 16) {
+          e.dead = true; e.el.style.display = &#x27;none&#x27;;
+          heroVY = JUMP_V * 0.7; score++; scoreEl.textContent = score; beep(800, 0.08);
+        } else if (invuln &lt;= 0) { loseLife(); }
+      }
+    });
+
+    // spikes
+    if (invuln &lt;= 0) {
+      for (var i = 0; i &lt; curSpikes.length; i++) {
+        var sx = curSpikes[i].x, sw = 28, sh = 26, sy = FIELD_H - GROUND_H - sh;
+        if (rectsOverlap(heroX+4, heroY+4, HERO_SIZE-8, HERO_SIZE-8, sx, sy, sw, sh)) { loseLife(); break; }
+      }
+    }
+
+    // boss
+    if (boss) {
+      boss.x += boss.vx; boss.y += boss.vy;
+      if (boss.x &lt; 0) { boss.x = 0; boss.vx = Math.abs(boss.vx); }
+      if (boss.x + boss.w &gt; FIELD_W) { boss.x = FIELD_W - boss.w; boss.vx = -Math.abs(boss.vx); }
+      if (boss.y &lt; 40) { boss.y = 40; boss.vy = Math.abs(boss.vy); }
+      if (boss.y &gt; 190) { boss.y = 190; boss.vy = -Math.abs(boss.vy); }
+      bossEl.style.left = boss.x + &#x27;px&#x27;; bossEl.style.top = boss.y + &#x27;px&#x27;;
+      if (boss.hitCd &gt; 0) boss.hitCd--;
+
+      // shoot
+      bossShootTimer--;
+      if (bossShootTimer &lt;= 0) {
+        bossShootTimer = 80;
+        var bx = boss.x + boss.w/2 - 9, by = boss.y + boss.h;
+        var el = document.createElement(&#x27;div&#x27;); el.className = &#x27;bullet&#x27;;
+        field.appendChild(el);
+        var dx = (heroX - bx); var dist = Math.max(1, Math.abs(dx));
+        bullets.push({ x:bx, y:by, vx: (dx/dist)*2.4, vy: 3.2, el:el });
+        beep(300, 0.08);
+      }
+
+      // collide with boss
+      if (rectsOverlap(heroX+3, heroY+3, HERO_SIZE-6, HERO_SIZE-6, boss.x, boss.y, boss.w, boss.h)) {
+        if (heroVY &gt; 0 &amp;&amp; (heroY + HERO_SIZE) &lt; boss.y + 28 &amp;&amp; boss.hitCd &lt;= 0) {
+          boss.hp--; boss.hitCd = 40; heroVY = JUMP_V; beep(900, 0.12);
+          bossbar.style.width = (boss.hp / 3 * 100) + &#x27;%&#x27;;
+          if (boss.hp &lt;= 0) { endGame(&#x27;Boss Defeated!&#x27;, &#x27;You win! Final score: &#x27; + score + &#x27; coins.&#x27;); return; }
+        } else if (invuln &lt;= 0 &amp;&amp; boss.hitCd &lt;= 0) { loseLife(); }
+      }
+    }
+
+    // bullets
+    for (var b = bullets.length - 1; b &gt;= 0; b--) {
+      var bu = bullets[b];
+      bu.x += bu.vx; bu.y += bu.vy;
+      bu.el.style.left = bu.x + &#x27;px&#x27;; bu.el.style.top = bu.y + &#x27;px&#x27;;
+      if (bu.y &gt; FIELD_H || bu.x &lt; -20 || bu.x &gt; FIELD_W + 20) { bu.el.remove(); bullets.splice(b, 1); continue; }
+      if (invuln &lt;= 0 &amp;&amp; rectsOverlap(heroX+4, heroY+4, HERO_SIZE-8, HERO_SIZE-8, bu.x, bu.y, 18, 18)) {
+        bu.el.remove(); bullets.splice(b, 1); loseLife();
+      }
+    }
+
+    // level clear (coins) — non-boss levels
+    if (!boss) {
+      var allGot = coins.every(function (c) { return c.got; });
+      if (allGot) { nextLevel(); return; }
+    }
+
+    paintHero();
+    if (running) animId = requestAnimationFrame(tick);
+  }
+
+  function startGame() {
+    if (running) return;
+    overlay.style.display = &#x27;none&#x27;;
+    score = 0; lives = 3; level = 1;
+    scoreEl.textContent = &#x27;0&#x27;; livesEl.textContent = &#x27;3&#x27;; levelEl.textContent = &#x27;1&#x27;;
+    buildLevel(1);
+    resetHero();
+    paintHero();
+    running = true;
+    animId = requestAnimationFrame(tick);
+  }
+  function stopGame() {
+    running = false;
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+  }
+  function endGame(title, sub) {
+    stopGame();
+    overlay.innerHTML = title + &#x27;&lt;small&gt;&#x27; + sub + &#x27;&lt;/small&gt;&lt;small&gt;Press Start to play again.&lt;/small&gt;&#x27;;
+    overlay.style.display = &#x27;flex&#x27;;
+  }
+
+  var actx = null;
+  function beep(freq, dur) {
+    try {
+      if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+      var o = actx.createOscillator(), g = actx.createGain();
+      o.frequency.value = freq; o.type = &#x27;square&#x27;; g.gain.value = 0.06;
+      o.connect(g); g.connect(actx.destination);
+      o.start(); o.stop(actx.currentTime + dur);
+    } catch (_) {}
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27; || e.key === &#x27;a&#x27; || e.key === &#x27;A&#x27;) { keys.left = true; e.preventDefault(); }
+    else if (e.key === &#x27;ArrowRight&#x27; || e.key === &#x27;d&#x27; || e.key === &#x27;D&#x27;) { keys.right = true; e.preventDefault(); }
+    else if (e.key === &#x27; &#x27; || e.code === &#x27;Space&#x27; || e.key === &#x27;ArrowUp&#x27; || e.key === &#x27;w&#x27; || e.key === &#x27;W&#x27;) { jump(); e.preventDefault(); }
+  });
+  window.addEventListener(&#x27;keyup&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27; || e.key === &#x27;a&#x27; || e.key === &#x27;A&#x27;) keys.left = false;
+    else if (e.key === &#x27;ArrowRight&#x27; || e.key === &#x27;d&#x27; || e.key === &#x27;D&#x27;) keys.right = false;
+  });
+  field.addEventListener(&#x27;click&#x27;, function () { jump(); });
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  buildLevel(1);
+  score = 0; lives = 3; level = 1;
+  resetHero();
+  paintHero();
+&lt;/script&gt;
+
+&lt;script&gt;
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🐶 Dog Trampoline</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>🐶 Dog Trampoline</b> &middot; Game 157 &middot; Amateur producer &middot; Basic game: Paddle and ball</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #222; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 18px; background: #eaf6ff; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 8px; }
+  h1 { margin: 0; font-size: 28px; font-weight: 600; }
+  .instructions { font-size: 16px; color: #555; max-width: 600px; margin: 0; line-height: 1.4; text-align: center; }
+  .scoreboard { display: flex; gap: 24px; align-items: center; font-size: 20px; color: #444; }
+  .combo { font-size: 18px; font-weight: 600; color: #e67e22; min-width: 120px; text-align: center; }
+  .field { position: relative; width: 620px; height: 420px; flex-shrink: 0; margin: 0; background: linear-gradient(#bfe8ff, #d7f2c9); border-radius: 8px; overflow: hidden; box-shadow: inset 0 -30px 0 rgba(120,190,90,0.35); }
+  .doghouse { position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%); font-size: 120px; line-height: 1; opacity: 0.35; user-select: none; pointer-events: none; }
+  .trampoline { position: absolute; bottom: 10px; z-index: 3; }
+  .tramp-mat { width: 120px; height: 12px; background: #333; border-radius: 6px; }
+  .tramp-legs { position: relative; width: 120px; height: 20px; }
+  .tramp-legs::before, .tramp-legs::after { content: &quot;&quot;; position: absolute; top: 0; width: 6px; height: 20px; background: #666; border-radius: 3px; }
+  .tramp-legs::before { left: 12px; transform: rotate(18deg); transform-origin: top; }
+  .tramp-legs::after { right: 12px; transform: rotate(-18deg); transform-origin: top; }
+  .dog { position: absolute; width: 44px; height: 44px; font-size: 38px; line-height: 44px; text-align: center; user-select: none; z-index: 2; }
+  .bird { position: absolute; width: 40px; height: 40px; font-size: 34px; line-height: 40px; text-align: center; user-select: none; z-index: 1; display: none; }
+  .flash { position: absolute; font-size: 26px; font-weight: 700; color: #e67e22; pointer-events: none; text-shadow: 0 1px 2px rgba(0,0,0,0.2); z-index: 4; }
+  @keyframes floatup { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-50px); } }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;🐶 Dog Trampoline&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Move the trampoline with the &lt;strong&gt;&amp;larr;&lt;/strong&gt; and &lt;strong&gt;&amp;rarr;&lt;/strong&gt; arrow keys to bounce the falling dog. Catch it 5 times in a row for a combo — and watch for birds gliding by, since the dog bounces off them too!&lt;/p&gt;
+  &lt;div class=&quot;scoreboard&quot;&gt;
+    &lt;div&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;combo&quot; id=&quot;combo&quot;&gt;Streak: 0&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;
+    &lt;div class=&quot;doghouse&quot;&gt;🏠&lt;/div&gt;
+    &lt;div class=&quot;bird&quot; id=&quot;bird&quot;&gt;🐦&lt;/div&gt;
+    &lt;div class=&quot;trampoline&quot; id=&quot;tramp&quot;&gt;
+      &lt;div class=&quot;tramp-mat&quot;&gt;&lt;/div&gt;
+      &lt;div class=&quot;tramp-legs&quot;&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;dog&quot; id=&quot;dog&quot;&gt;🐶&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var FIELD_W = 620, FIELD_H = 420;
+  var TRAMP_W = 120, TRAMP_H = 12, TRAMP_BOTTOM = 10, TRAMP_SPEED = 7;
+  var DOG_SIZE = 44;
+  var BIRD_SIZE = 40;
+  var BALL_SPEED = 4.2;
+  var running = false, animId = null;
+  var keysDown = {};
+  var trampX = (FIELD_W - TRAMP_W) / 2;
+  var dogX = FIELD_W / 2, dogY = 40;
+  var dogVX = BALL_SPEED, dogVY = BALL_SPEED;
+  var score = 0, streak = 0;
+  var squish = 0;
+
+  // bird state
+  var birdActive = false;
+  var birdX = 0, birdY = 0, birdVX = 0;
+  var birdSpawnTimer = 0;
+  var birdHitCooldown = 0;
+
+  var tramp = document.getElementById(&#x27;tramp&#x27;);
+  var dog = document.getElementById(&#x27;dog&#x27;);
+  var bird = document.getElementById(&#x27;bird&#x27;);
+  var field = document.getElementById(&#x27;field&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var comboEl = document.getElementById(&#x27;combo&#x27;);
+
+  /* ---------- AUDIO ---------- */
+  var audioCtx = null;
+  var musicTimer = null;
+  var musicStep = 0;
+  var musicPlaying = false;
+
+  function ensureAudio() {
+    if (!audioCtx) {
+      try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+      catch (_) { audioCtx = null; }
+    }
+    if (audioCtx &amp;&amp; audioCtx.state === &#x27;suspended&#x27;) audioCtx.resume();
+    return audioCtx;
+  }
+
+  function playTone(freq, start, dur, type, vol) {
+    if (!audioCtx) return;
+    var o = audioCtx.createOscillator();
+    var g = audioCtx.createGain();
+    o.type = type || &#x27;sine&#x27;;
+    o.frequency.setValueAtTime(freq, start);
+    g.gain.setValueAtTime(0, start);
+    g.gain.linearRampToValueAtTime(vol == null ? 0.2 : vol, start + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.001, start + dur);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(start); o.stop(start + dur + 0.02);
+  }
+
+  function bark() {
+    if (!ensureAudio()) return;
+    var t = audioCtx.currentTime;
+    var o = audioCtx.createOscillator();
+    var g = audioCtx.createGain();
+    o.type = &#x27;sawtooth&#x27;;
+    o.frequency.setValueAtTime(520, t);
+    o.frequency.exponentialRampToValueAtTime(180, t + 0.12);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(0.32, t + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(t); o.stop(t + 0.18);
+  }
+
+  function chirp() {
+    if (!ensureAudio()) return;
+    var t = audioCtx.currentTime;
+    // two quick rising whistles
+    playTone(1400, t, 0.09, &#x27;sine&#x27;, 0.22);
+    playTone(1900, t + 0.08, 0.10, &#x27;sine&#x27;, 0.22);
+    var o = audioCtx.createOscillator();
+    var g = audioCtx.createGain();
+    o.type = &#x27;sine&#x27;;
+    o.frequency.setValueAtTime(1600, t + 0.16);
+    o.frequency.linearRampToValueAtTime(2200, t + 0.24);
+    g.gain.setValueAtTime(0.0001, t + 0.16);
+    g.gain.linearRampToValueAtTime(0.2, t + 0.18);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(t + 0.16); o.stop(t + 0.3);
+  }
+
+  function whine() {
+    if (!ensureAudio()) return;
+    var t = audioCtx.currentTime;
+    var o = audioCtx.createOscillator();
+    var g = audioCtx.createGain();
+    o.type = &#x27;sine&#x27;;
+    o.frequency.setValueAtTime(700, t);
+    o.frequency.linearRampToValueAtTime(340, t + 0.5);
+    o.frequency.linearRampToValueAtTime(500, t + 0.75);
+    var lfo = audioCtx.createOscillator();
+    var lfoG = audioCtx.createGain();
+    lfo.frequency.setValueAtTime(11, t);
+    lfoG.gain.setValueAtTime(40, t);
+    lfo.connect(lfoG); lfoG.connect(o.frequency);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(0.25, t + 0.05);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.85);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(t); lfo.start(t);
+    o.stop(t + 0.9); lfo.stop(t + 0.9);
+  }
+
+  function gameOverJingle() {
+    if (!ensureAudio()) return;
+    var t = audioCtx.currentTime + 0.35;
+    var notes = [392, 349, 311, 262];
+    for (var i = 0; i &lt; notes.length; i++) {
+      playTone(notes[i], t + i * 0.22, 0.25, &#x27;triangle&#x27;, 0.22);
+    }
+  }
+
+  var melody = [523, 659, 784, 659, 587, 784, 880, 784,
+                523, 659, 784, 659, 698, 587, 523, 523];
+  function musicTick() {
+    if (!musicPlaying || !audioCtx) return;
+    var t = audioCtx.currentTime;
+    var note = melody[musicStep % melody.length];
+    playTone(note, t, 0.22, &#x27;square&#x27;, 0.09);
+    if (musicStep % 2 === 0) playTone(note / 2, t, 0.28, &#x27;triangle&#x27;, 0.06);
+    musicStep++;
+    musicTimer = setTimeout(musicTick, 260);
+  }
+  function startMusic() {
+    if (!ensureAudio()) return;
+    if (musicPlaying) return;
+    musicPlaying = true;
+    musicStep = 0;
+    musicTick();
+  }
+  function stopMusic() {
+    musicPlaying = false;
+    if (musicTimer) { clearTimeout(musicTimer); musicTimer = null; }
+  }
+
+  /* ---------- GAME ---------- */
+  function paint() {
+    tramp.style.left = trampX + &#x27;px&#x27;;
+    dog.style.left = dogX + &#x27;px&#x27;;
+    dog.style.top = dogY + &#x27;px&#x27;;
+    var mat = tramp.querySelector(&#x27;.tramp-mat&#x27;);
+    mat.style.transform = squish &gt; 0 ? &#x27;scaleY(&#x27; + (1 + squish) + &#x27;)&#x27; : &#x27;scaleY(1)&#x27;;
+    if (birdActive) {
+      bird.style.display = &#x27;block&#x27;;
+      bird.style.left = birdX + &#x27;px&#x27;;
+      bird.style.top = birdY + &#x27;px&#x27;;
+      bird.textContent = birdVX &lt; 0 ? &#x27;🐦&#x27; : &#x27;🐦&#x27;;
+      bird.style.transform = birdVX &lt; 0 ? &#x27;scaleX(-1)&#x27; : &#x27;scaleX(1)&#x27;;
+    } else {
+      bird.style.display = &#x27;none&#x27;;
+    }
+  }
+
+  function resetDog() {
+    dogX = Math.random() * (FIELD_W - DOG_SIZE);
+    dogY = 40;
+    dogVX = (Math.random() &lt; 0.5 ? -1 : 1) * BALL_SPEED;
+    dogVY = BALL_SPEED;
+  }
+
+  function spawnBird() {
+    birdActive = true;
+    var dir = Math.random() &lt; 0.5 ? 1 : -1;
+    birdVX = dir * (2.6 + Math.random() * 1.6);
+    birdX = dir &gt; 0 ? -BIRD_SIZE : FIELD_W;
+    birdY = 60 + Math.random() * 160;
+  }
+
+  function showFlash(text) {
+    var f = document.createElement(&#x27;div&#x27;);
+    f.className = &#x27;flash&#x27;;
+    f.textContent = text;
+    f.style.left = Math.min(FIELD_W - 140, Math.max(10, dogX - 20)) + &#x27;px&#x27;;
+    f.style.top = (FIELD_H - 120) + &#x27;px&#x27;;
+    f.style.animation = &#x27;floatup 0.9s ease-out forwards&#x27;;
+    field.appendChild(f);
+    setTimeout(function () { if (f.parentNode) f.parentNode.removeChild(f); }, 900);
+  }
+
+  function registerCatch(comboText) {
+    score += 1;
+    streak += 1;
+    if (streak &gt; 0 &amp;&amp; streak % 5 === 0) {
+      score *= 2;
+      showFlash(&#x27;COMBO x2!&#x27;);
+    } else {
+      showFlash(comboText || &#x27;+1&#x27;);
+    }
+    scoreEl.textContent = score;
+    comboEl.textContent = &#x27;Streak: &#x27; + streak;
+  }
+
+  function tick() {
+    if (!running) return;
+    if (keysDown[&#x27;ArrowLeft&#x27;]) trampX -= TRAMP_SPEED;
+    if (keysDown[&#x27;ArrowRight&#x27;]) trampX += TRAMP_SPEED;
+    trampX = Math.max(0, Math.min(FIELD_W - TRAMP_W, trampX));
+
+    dogX += dogVX;
+    dogY += dogVY;
+    if (dogX &lt;= 0) { dogX = 0; dogVX = -dogVX; }
+    if (dogX + DOG_SIZE &gt;= FIELD_W) { dogX = FIELD_W - DOG_SIZE; dogVX = -dogVX; }
+    if (dogY &lt;= 0) { dogY = 0; dogVY = -dogVY; }
+
+    // bird spawning
+    if (!birdActive) {
+      birdSpawnTimer--;
+      if (birdSpawnTimer &lt;= 0) {
+        spawnBird();
+        birdSpawnTimer = 240 + Math.floor(Math.random() * 300);
+      }
+    } else {
+      birdX += birdVX;
+      if ((birdVX &gt; 0 &amp;&amp; birdX &gt; FIELD_W) || (birdVX &lt; 0 &amp;&amp; birdX + BIRD_SIZE &lt; 0)) {
+        birdActive = false;
+      }
+    }
+
+    if (birdHitCooldown &gt; 0) birdHitCooldown--;
+
+    // dog vs bird collision (bounce off downward if dog moving up into it,
+    // otherwise reflect vertical velocity)
+    if (birdActive &amp;&amp; birdHitCooldown &lt;= 0) {
+      var overlapX = dogX + DOG_SIZE &gt;= birdX &amp;&amp; dogX &lt;= birdX + BIRD_SIZE;
+      var overlapY = dogY + DOG_SIZE &gt;= birdY &amp;&amp; dogY &lt;= birdY + BIRD_SIZE;
+      if (overlapX &amp;&amp; overlapY) {
+        // bounce the dog: flip vertical direction, nudge horizontally
+        if (dogVY &lt; 0) { dogVY = Math.abs(dogVY); dogY = birdY + BIRD_SIZE; }
+        else { dogVY = -Math.abs(dogVY); dogY = birdY - DOG_SIZE; }
+        dogVX += birdVX * 0.3;
+        chirp();
+        registerCatch(&#x27;CHIRP!&#x27;);
+        birdHitCooldown = 30;
+        // send the bird flying off
+        birdActive = false;
+      }
+    }
+
+    var trampTop = FIELD_H - TRAMP_BOTTOM - 20 - TRAMP_H;
+    if (dogVY &gt; 0 &amp;&amp;
+        dogY + DOG_SIZE &gt;= trampTop &amp;&amp;
+        dogY + DOG_SIZE &lt;= trampTop + TRAMP_H + 10 &amp;&amp;
+        dogX + DOG_SIZE &gt;= trampX &amp;&amp;
+        dogX &lt;= trampX + TRAMP_W) {
+      dogVY = -Math.abs(dogVY);
+      dogY = trampTop - DOG_SIZE;
+      squish = 0.6;
+      bark();
+      registerCatch(&#x27;+1&#x27;);
+    }
+
+    if (squish &gt; 0) { squish -= 0.08; if (squish &lt; 0) squish = 0; }
+
+    if (dogY &gt;= FIELD_H) {
+      streak = 0;
+      comboEl.textContent = &#x27;Streak: 0&#x27;;
+      whine();
+      gameOverJingle();
+      stopMusic();
+      setTimeout(function () { if (running) startMusic(); }, 1600);
+      resetDog();
+    }
+
+    paint();
+    animId = requestAnimationFrame(tick);
+  }
+
+  function startGame() {
+    if (running) return;
+    ensureAudio();
+    score = 0; streak = 0; squish = 0;
+    scoreEl.textContent = &#x27;0&#x27;;
+    comboEl.textContent = &#x27;Streak: 0&#x27;;
+    trampX = (FIELD_W - TRAMP_W) / 2;
+    for (var k in keysDown) keysDown[k] = false;
+    birdActive = false;
+    birdSpawnTimer = 150;
+    birdHitCooldown = 0;
+    resetDog();
+    paint();
+    running = true;
+    startMusic();
+    animId = requestAnimationFrame(tick);
+  }
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    stopMusic();
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27; || e.key === &#x27;ArrowRight&#x27;) {
+      keysDown[e.key] = true;
+      e.preventDefault();
+    }
+  });
+  window.addEventListener(&#x27;keyup&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27; || e.key === &#x27;ArrowRight&#x27;) keysDown[e.key] = false;
+  });
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  paint();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

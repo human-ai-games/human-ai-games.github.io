@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tickle the Toes</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>Tickle the Toes</b> &middot; Game 306 &middot; Professional producer &middot; Basic game: Whack-a-mole</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #f5f0e6; color: #3a2a1a; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 14px; height: 100%; box-sizing: border-box; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 700; color: #7a4a1a; }
+  .instructions { font-size: 16px; color: #6a5a44; max-width: 620px; margin: 0; line-height: 1.4; }
+  .score { font-size: 20px; color: #5a3a1a; margin: 0; font-weight: 600; }
+  .board {
+    position: relative; width: 620px; height: 440px; flex-shrink: 0; margin: 0;
+    background:
+      repeating-linear-gradient(90deg, #b5793e 0 78px, #a86c34 78px 82px),
+      linear-gradient(#b5793e, #a2652f);
+    border-radius: 14px; border: 6px solid #6e441f;
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.3), 0 10px 20px rgba(0,0,0,0.25);
+    overflow: hidden;
+  }
+  .hole {
+    position: absolute; width: 150px; height: 46px;
+    background: radial-gradient(ellipse at center, #201004 55%, #3a2312 100%);
+    border-radius: 50%; box-shadow: inset 0 5px 9px rgba(0,0,0,0.7);
+  }
+  .footwrap {
+    position: absolute; width: 200px; height: 200px; overflow: hidden; z-index: 3;
+  }
+  .foot {
+    position: absolute; width: 200px; height: 200px;
+    left: 0; bottom: -210px;
+    transition: bottom 0.18s cubic-bezier(.34,1.35,.6,1);
+    transform-origin: bottom center;
+    cursor: pointer;
+  }
+  .foot.up { bottom: 6px; }
+  .foot.tickled { animation: wiggle 0.16s ease-in-out infinite; }
+  @keyframes wiggle {
+    0%,100% { transform: rotate(-4deg); }
+    50% { transform: rotate(4deg); }
+  }
+  .giggle {
+    position: absolute; font-size: 24px; pointer-events: none;
+    animation: floatUp 0.7s ease-out forwards; z-index: 40; font-weight: 700; color: #fff;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+  }
+  @keyframes floatUp {
+    from { opacity: 1; transform: translateY(0) scale(1); }
+    to { opacity: 0; transform: translateY(-44px) scale(1.3); }
+  }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;Tickle the Toes&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;One foot pops out of the table at a time — click it repeatedly to tickle it and earn giggles. Be quick before it ducks back under!&lt;/p&gt;
+  &lt;div class=&quot;score&quot;&gt;Tickles: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+  &lt;div class=&quot;board&quot; id=&quot;board&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage({ type: &#x27;game_input&#x27;, kind: t, key: e.key || null }, &#x27;*&#x27;);
+      } catch (_) {}
+    }, true);
+  });
+
+  var board = document.getElementById(&#x27;board&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var score = 0;
+  var running = false;
+  var loopTimer = null;
+
+  var holePos = [
+    {x: 120, y: 130}, {x: 310, y: 130}, {x: 500, y: 130},
+    {x: 160, y: 310}, {x: 350, y: 310}, {x: 480, y: 310}
+  ];
+  var holes = [];
+  var currentFoot = null;
+
+  // Ultra-detailed side-profile foot, toes pointing left, heel right.
+  function footSVG() {
+    return &quot;&lt;svg width=&#x27;200&#x27; height=&#x27;200&#x27; viewBox=&#x27;0 0 200 200&#x27; xmlns=&#x27;http://www.w3.org/2000/svg&#x27;&gt;&quot;
+      + &quot;&lt;defs&gt;&quot;
+      + &quot;&lt;linearGradient id=&#x27;skin&#x27; x1=&#x27;0&#x27; y1=&#x27;0&#x27; x2=&#x27;0&#x27; y2=&#x27;1&#x27;&gt;&quot;
+      + &quot;&lt;stop offset=&#x27;0&#x27; stop-color=&#x27;#ffe0c8&#x27;/&gt;&quot;
+      + &quot;&lt;stop offset=&#x27;0.45&#x27; stop-color=&#x27;#f6c6a0&#x27;/&gt;&quot;
+      + &quot;&lt;stop offset=&#x27;1&#x27; stop-color=&#x27;#e0a97e&#x27;/&gt;&quot;
+      + &quot;&lt;/linearGradient&gt;&quot;
+      + &quot;&lt;radialGradient id=&#x27;heelSh&#x27; cx=&#x27;0.5&#x27; cy=&#x27;0.4&#x27; r=&#x27;0.7&#x27;&gt;&quot;
+      + &quot;&lt;stop offset=&#x27;0&#x27; stop-color=&#x27;#f6c6a0&#x27;/&gt;&quot;
+      + &quot;&lt;stop offset=&#x27;1&#x27; stop-color=&#x27;#d69a70&#x27;/&gt;&quot;
+      + &quot;&lt;/radialGradient&gt;&quot;
+      + &quot;&lt;linearGradient id=&#x27;leg&#x27; x1=&#x27;0&#x27; y1=&#x27;0&#x27; x2=&#x27;1&#x27; y2=&#x27;0&#x27;&gt;&quot;
+      + &quot;&lt;stop offset=&#x27;0&#x27; stop-color=&#x27;#e6ad82&#x27;/&gt;&quot;
+      + &quot;&lt;stop offset=&#x27;0.5&#x27; stop-color=&#x27;#f6c6a0&#x27;/&gt;&quot;
+      + &quot;&lt;stop offset=&#x27;1&#x27; stop-color=&#x27;#e0a97e&#x27;/&gt;&quot;
+      + &quot;&lt;/linearGradient&gt;&quot;
+      + &quot;&lt;radialGradient id=&#x27;nail&#x27; cx=&#x27;0.35&#x27; cy=&#x27;0.3&#x27; r=&#x27;0.8&#x27;&gt;&quot;
+      + &quot;&lt;stop offset=&#x27;0&#x27; stop-color=&#x27;#ff5a6e&#x27;/&gt;&quot;
+      + &quot;&lt;stop offset=&#x27;0.5&#x27; stop-color=&#x27;#d0122a&#x27;/&gt;&quot;
+      + &quot;&lt;stop offset=&#x27;1&#x27; stop-color=&#x27;#8e0018&#x27;/&gt;&quot;
+      + &quot;&lt;/radialGradient&gt;&quot;
+      + &quot;&lt;/defs&gt;&quot;
+      // ankle / lower leg
+      + &quot;&lt;path d=&#x27;M120 10 C112 40 116 70 128 92 C150 96 170 96 178 70 C176 40 172 20 168 8 Z&#x27; fill=&#x27;url(#leg)&#x27;/&gt;&quot;
+      // Achilles tendon shading
+      + &quot;&lt;path d=&#x27;M150 30 C150 55 152 78 158 92&#x27; stroke=&#x27;#d89a70&#x27; stroke-width=&#x27;4&#x27; fill=&#x27;none&#x27; opacity=&#x27;0.5&#x27;/&gt;&quot;
+      // main foot body (side view): heel on right, ball &amp; toes to the left, arched sole
+      + &quot;&lt;path d=&#x27;M170 92 &quot;
+      + &quot;C182 96 186 112 178 128 &quot;               // back of heel
+      + &quot;C170 146 150 152 120 152 &quot;              // heel base to sole
+      + &quot;C90 152 60 154 40 152 &quot;                 // sole under arch to ball
+      + &quot;C22 150 14 148 12 140 &quot;                 // ball of foot bottom
+      + &quot;C10 132 16 126 30 122 &quot;                 // up toward toes
+      + &quot;C24 120 20 116 24 110 &quot;                 // big toe region
+      + &quot;C30 104 44 104 58 108 &quot;                 // top of toes / instep start
+      + &quot;C80 112 100 108 122 100 &quot;               // instep curve
+      + &quot;C140 96 158 92 170 92 Z&#x27; &quot;              // up to ankle
+      + &quot;fill=&#x27;url(#skin)&#x27; stroke=&#x27;#c98a60&#x27; stroke-width=&#x27;1.2&#x27;/&gt;&quot;
+      // arch shadow under sole
+      + &quot;&lt;path d=&#x27;M60 150 C90 138 120 138 150 148&#x27; stroke=&#x27;#d69a70&#x27; stroke-width=&#x27;6&#x27; fill=&#x27;none&#x27; opacity=&#x27;0.4&#x27; stroke-linecap=&#x27;round&#x27;/&gt;&quot;
+      // heel highlight
+      + &quot;&lt;ellipse cx=&#x27;158&#x27; cy=&#x27;120&#x27; rx=&#x27;14&#x27; ry=&#x27;20&#x27; fill=&#x27;url(#heelSh)&#x27; opacity=&#x27;0.6&#x27;/&gt;&quot;
+      // ball of foot highlight
+      + &quot;&lt;ellipse cx=&#x27;40&#x27; cy=&#x27;140&#x27; rx=&#x27;16&#x27; ry=&#x27;9&#x27; fill=&#x27;#ffe6d2&#x27; opacity=&#x27;0.5&#x27;/&gt;&quot;
+      // instep top highlight
+      + &quot;&lt;path d=&#x27;M70 110 C95 106 118 102 140 98&#x27; stroke=&#x27;#fff0e2&#x27; stroke-width=&#x27;5&#x27; fill=&#x27;none&#x27; opacity=&#x27;0.5&#x27; stroke-linecap=&#x27;round&#x27;/&gt;&quot;
+      // TOES (side view, big toe frontmost on the left)
+      // big toe
+      + &quot;&lt;path d=&#x27;M30 122 C16 120 8 126 10 136 C12 144 24 146 34 142 C40 138 40 128 30 122 Z&#x27; fill=&#x27;url(#skin)&#x27; stroke=&#x27;#c98a60&#x27; stroke-width=&#x27;1&#x27;/&gt;&quot;
+      // big toenail
+      + &quot;&lt;ellipse cx=&#x27;14&#x27; cy=&#x27;129&#x27; rx=&#x27;6&#x27; ry=&#x27;8&#x27; fill=&#x27;url(#nail)&#x27; transform=&#x27;rotate(-18 14 129)&#x27;/&gt;&quot;
+      + &quot;&lt;ellipse cx=&#x27;12&#x27; cy=&#x27;126&#x27; rx=&#x27;2&#x27; ry=&#x27;3&#x27; fill=&#x27;#ff9caa&#x27; opacity=&#x27;0.8&#x27; transform=&#x27;rotate(-18 12 126)&#x27;/&gt;&quot;
+      // second toe tip peeking
+      + &quot;&lt;path d=&#x27;M28 118 C20 114 16 118 18 124 C22 128 30 126 32 120 Z&#x27; fill=&#x27;#f0b892&#x27; stroke=&#x27;#c98a60&#x27; stroke-width=&#x27;0.8&#x27;/&gt;&quot;
+      + &quot;&lt;ellipse cx=&#x27;20&#x27; cy=&#x27;118&#x27; rx=&#x27;3.5&#x27; ry=&#x27;5&#x27; fill=&#x27;url(#nail)&#x27; transform=&#x27;rotate(-20 20 118)&#x27;/&gt;&quot;
+      // subtle toe separation lines
+      + &quot;&lt;path d=&#x27;M34 132 C40 130 46 130 50 132&#x27; stroke=&#x27;#d09070&#x27; stroke-width=&#x27;1&#x27; fill=&#x27;none&#x27; opacity=&#x27;0.5&#x27;/&gt;&quot;
+      + &quot;&lt;path d=&#x27;M40 138 C46 136 52 136 56 138&#x27; stroke=&#x27;#d09070&#x27; stroke-width=&#x27;1&#x27; fill=&#x27;none&#x27; opacity=&#x27;0.4&#x27;/&gt;&quot;
+      + &quot;&lt;/svg&gt;&quot;;
+  }
+
+  function buildHoles() {
+    board.querySelectorAll(&#x27;.hole, .footwrap&#x27;).forEach(function(h){ h.remove(); });
+    holes = [];
+    holePos.forEach(function(p) {
+      var hole = document.createElement(&#x27;div&#x27;);
+      hole.className = &#x27;hole&#x27;;
+      hole.style.left = (p.x - 75) + &#x27;px&#x27;;
+      hole.style.top = (p.y - 23) + &#x27;px&#x27;;
+      board.appendChild(hole);
+
+      var wrap = document.createElement(&#x27;div&#x27;);
+      wrap.className = &#x27;footwrap&#x27;;
+      wrap.style.left = (p.x - 100) + &#x27;px&#x27;;
+      wrap.style.top = (p.y - 23 - 205) + &#x27;px&#x27;;
+
+      var foot = document.createElement(&#x27;div&#x27;);
+      foot.className = &#x27;foot&#x27;;
+      foot.innerHTML = footSVG();
+      wrap.appendChild(foot);
+      board.appendChild(wrap);
+
+      var h = { foot: foot, wrap: wrap, cx: p.x, cy: p.y, up: false };
+      foot.addEventListener(&#x27;click&#x27;, function() {
+        if (!h.up) return;
+        score += 1;
+        scoreEl.textContent = score;
+        h.foot.classList.add(&#x27;tickled&#x27;);
+        showGiggle(p.x, p.y - 40);
+        var now = Date.now();
+        if (now - soundCooldown &gt; 90) { giggleSound(); soundCooldown = now; }
+      });
+      holes.push(h);
+    });
+  }
+
+  function cycle() {
+    // hide current
+    if (currentFoot) {
+      currentFoot.up = false;
+      currentFoot.foot.classList.remove(&#x27;up&#x27;, &#x27;tickled&#x27;);
+    }
+    // pick a new one (not the same)
+    var choices = holes.filter(function(h){ return h !== currentFoot; });
+    var h = choices[Math.floor(Math.random() * choices.length)];
+    // small delay so it visibly ducks then a new one rises
+    setTimeout(function() {
+      if (!running) return;
+      currentFoot = h;
+      h.up = true;
+      h.foot.classList.add(&#x27;up&#x27;);
+    }, 220);
+  }
+
+  function showGiggle(x, y) {
+    var g = document.createElement(&#x27;div&#x27;);
+    g.className = &#x27;giggle&#x27;;
+    var texts = [&#x27;hee!&#x27;, &#x27;hehe!&#x27;, &#x27;😆&#x27;, &#x27;ahh!&#x27;, &#x27;teehee&#x27;];
+    g.textContent = texts[Math.floor(Math.random() * texts.length)];
+    g.style.left = x + &#x27;px&#x27;;
+    g.style.top = y + &#x27;px&#x27;;
+    board.appendChild(g);
+    setTimeout(function(){ if (g.parentNode) g.remove(); }, 700);
+  }
+
+  var audioCtx = null, soundCooldown = 0;
+  function giggleSound() {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      var t = audioCtx.currentTime;
+      for (var i = 0; i &lt; 2; i++) {
+        var o = audioCtx.createOscillator();
+        var g = audioCtx.createGain();
+        o.type = &#x27;sine&#x27;;
+        o.frequency.setValueAtTime(650 + Math.random()*350, t + i*0.06);
+        g.gain.setValueAtTime(0.07, t + i*0.06);
+        g.gain.exponentialRampToValueAtTime(0.001, t + i*0.06 + 0.06);
+        o.connect(g); g.connect(audioCtx.destination);
+        o.start(t + i*0.06); o.stop(t + i*0.06 + 0.07);
+      }
+    } catch(_) {}
+  }
+
+  function startGame() {
+    if (running) return;
+    running = true;
+    score = 0;
+    scoreEl.textContent = &#x27;0&#x27;;
+    buildHoles();
+    currentFoot = null;
+    // pop first foot immediately
+    var h = holes[Math.floor(Math.random() * holes.length)];
+    currentFoot = h;
+    h.up = true;
+    h.foot.classList.add(&#x27;up&#x27;);
+    loopTimer = setInterval(cycle, 1900);
+  }
+
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    if (loopTimer) { clearInterval(loopTimer); loopTimer = null; }
+    holes.forEach(function(h) {
+      h.up = false;
+      h.foot.classList.remove(&#x27;up&#x27;, &#x27;tickled&#x27;);
+    });
+    currentFoot = null;
+  }
+
+  buildHoles();
+
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  // Suppress in-iframe scrollbars. The parent fits the iframe layout
+  // box to match the content size, so internal scroll is redundant —
+  // and if the LLM&#x27;s CSS sets body overflow: auto, the scrollbar shows
+  // briefly before the fit lands. Force hidden so it never appears.
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  // Iframe-internal JS error capture. window.onerror inside a sandboxed
+  // iframe can&#x27;t post to /api/js_error directly, so we relay to the
+  // parent via postMessage; parent&#x27;s error_logger.js forwards to the
+  // server. Catches LLM-emitted broken HTML (invalid hex, undefined
+  // variables, etc.) that would otherwise fail silently inside the
+  // iframe.
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      // Debounce: don&#x27;t fire more than ~10× per second. ResizeObserver
+      // fires repeatedly during layout/font load; we only need the latest.
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      // Clamp: reject obviously bogus dimensions. Any browser-game viewport
+      // is well under 4000×4000 logical px; readings beyond that are layout
+      // noise during load/visibility transitions.
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  // Parent posts wd_remeasure when it makes the iframe visible (the body&#x27;s
+  // ResizeObserver doesn&#x27;t fire on display:none→block of an outer ancestor
+  // because the iframe document didn&#x27;t actually resize). Wait a frame for
+  // layout to settle before measuring.
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

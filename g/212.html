@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bazooka Squad</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>Bazooka Squad</b> &middot; Game 212 &middot; Professional producer &middot; Basic game: Space shooter</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #222; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 18px; background: white; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 10px; }
+  h1 { margin: 0; font-size: 28px; font-weight: 600; }
+  .instructions { font-size: 16px; color: #666; max-width: 600px; margin: 0; line-height: 1.4; text-align: center; }
+  .scoreboard { display: flex; gap: 24px; font-size: 22px; color: #555; margin: 0; }
+  .hits { color: #c0392b; }
+  .field { position: relative; width: 620px; height: 420px; flex-shrink: 0; margin: 0; background: linear-gradient(#eaf3fb, #ececec); border-radius: 8px; overflow: hidden; }
+  .ground { position: absolute; left: 0; right: 0; bottom: 0; height: 14px; background: #7d8a94; }
+  .ship { position: absolute; width: 34px; height: 34px; background: #3a6ea5; border-radius: 6px; }
+  .barrel { position: absolute; width: 10px; height: 18px; background: #2c3e50; border-radius: 2px; }
+  .target { position: absolute; width: 30px; height: 30px; background: #d35454; border-radius: 50%; box-shadow: inset -4px -4px 0 rgba(0,0,0,0.12); }
+  .rocket { position: absolute; width: 10px; height: 20px; background: #e67e22; border-radius: 3px; box-shadow: 0 0 6px #f39c12; }
+  .boom { position: absolute; border-radius: 50%; background: radial-gradient(circle, rgba(255,220,100,0.95), rgba(230,90,20,0.55) 60%, rgba(230,90,20,0) 75%); pointer-events: none; }
+  .msg { position: absolute; top: 10px; left: 0; right: 0; text-align: center; font-size: 20px; color: #444; pointer-events: none; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;Bazooka Squad&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Move with &lt;strong&gt;&amp;larr;&lt;/strong&gt; &lt;strong&gt;&amp;rarr;&lt;/strong&gt;, press &lt;strong&gt;&amp;uarr;&lt;/strong&gt; to jump, and press &lt;strong&gt;Space&lt;/strong&gt; to fire your bazooka. Each rocket explodes on impact, blowing up every ball in the blast — but any ball that touches you counts against you!&lt;/p&gt;
+  &lt;div class=&quot;scoreboard&quot;&gt;
+    &lt;div&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;hits&quot;&gt;Hits: &lt;span id=&quot;hits&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;
+    &lt;div class=&quot;msg&quot; id=&quot;msg&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;ground&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;ship&quot; id=&quot;ship&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;barrel&quot; id=&quot;barrel&quot;&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var FIELD_W = 620, FIELD_H = 420, GROUND_H = 14;
+  var SHIP_SIZE = 34, SHIP_SPEED = 6;
+  var GRAVITY = 0.8, JUMP_V = 15;
+  var TARGET_SIZE = 30, TARGET_SPEED = 3, TARGET_SPEED_MAX = 7;
+  var ROCKET_W = 10, ROCKET_H = 20, ROCKET_SPEED = 9;
+  var BLAST_RADIUS = 85, BLAST_TIME = 320;   // ms explosion visible
+  var SPAWN_INTERVAL = 750;  // ms  (more balls now that we can clear them)
+  var running = false, animId = null, spawnId = null;
+  var keysDown = {};
+  var shipX = (FIELD_W - SHIP_SIZE) / 2;
+  var shipY = 0, shipVY = 0, onGround = true;
+  var targets = [], rockets = [], booms = [];
+  var score = 0, hits = 0;
+  var lastShot = 0;
+  var field = document.getElementById(&#x27;field&#x27;);
+  var ship = document.getElementById(&#x27;ship&#x27;);
+  var barrel = document.getElementById(&#x27;barrel&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var hitsEl = document.getElementById(&#x27;hits&#x27;);
+  var msgEl = document.getElementById(&#x27;msg&#x27;);
+
+  function shipTop() { return FIELD_H - GROUND_H - SHIP_SIZE - shipY; }
+  function paintShip() {
+    ship.style.left = shipX + &#x27;px&#x27;;
+    ship.style.top = shipTop() + &#x27;px&#x27;;
+    barrel.style.left = (shipX + SHIP_SIZE / 2 - 5) + &#x27;px&#x27;;
+    barrel.style.top = (shipTop() - 14) + &#x27;px&#x27;;
+  }
+
+  function doJump() {
+    if (onGround) { shipVY = JUMP_V; onGround = false; }
+  }
+
+  function fireRocket() {
+    var now = Date.now();
+    if (now - lastShot &lt; 400) return;  // bazooka reload
+    lastShot = now;
+    var r = { x: shipX + SHIP_SIZE / 2 - ROCKET_W / 2,
+              y: shipTop() - ROCKET_H, el: null };
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;rocket&#x27;;
+    el.style.left = r.x + &#x27;px&#x27;;
+    el.style.top = r.y + &#x27;px&#x27;;
+    field.appendChild(el);
+    r.el = el;
+    rockets.push(r);
+  }
+
+  function explode(cx, cy) {
+    // Visual
+    var size = BLAST_RADIUS * 2;
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;boom&#x27;;
+    el.style.width = size + &#x27;px&#x27;;
+    el.style.height = size + &#x27;px&#x27;;
+    el.style.left = (cx - BLAST_RADIUS) + &#x27;px&#x27;;
+    el.style.top = (cy - BLAST_RADIUS) + &#x27;px&#x27;;
+    field.appendChild(el);
+    booms.push({ el: el, until: Date.now() + BLAST_TIME });
+
+    // Destroy all balls within radius
+    var killed = 0;
+    for (var i = targets.length - 1; i &gt;= 0; i--) {
+      var t = targets[i];
+      if (t.counted) continue;
+      var tx = t.x + TARGET_SIZE / 2, ty = t.y + TARGET_SIZE / 2;
+      var dx = tx - cx, dy = ty - cy;
+      if (dx * dx + dy * dy &lt;= BLAST_RADIUS * BLAST_RADIUS) {
+        t.counted = true;
+        field.removeChild(t.el);
+        targets.splice(i, 1);
+        killed++;
+      }
+    }
+    if (killed &gt; 0) {
+      // Reward multi-kills more: killed * (killed + 1)
+      score += killed * (killed + 1);
+      scoreEl.textContent = score;
+    }
+  }
+
+  function spawnTarget() {
+    var t = { x: Math.random() * (FIELD_W - TARGET_SIZE), y: -TARGET_SIZE,
+              speed: TARGET_SPEED + Math.random() * (TARGET_SPEED_MAX - TARGET_SPEED),
+              counted: false, el: null };
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;target&#x27;;
+    el.style.left = t.x + &#x27;px&#x27;;
+    el.style.top = t.y + &#x27;px&#x27;;
+    field.appendChild(el);
+    t.el = el;
+    targets.push(t);
+  }
+
+  function tick() {
+    if (!running) return;
+    if (keysDown[&#x27;ArrowLeft&#x27;]) shipX -= SHIP_SPEED;
+    if (keysDown[&#x27;ArrowRight&#x27;]) shipX += SHIP_SPEED;
+    shipX = Math.max(0, Math.min(FIELD_W - SHIP_SIZE, shipX));
+
+    shipY += shipVY;
+    shipVY -= GRAVITY;
+    if (shipY &lt;= 0) { shipY = 0; shipVY = 0; onGround = true; }
+    paintShip();
+
+    // Rockets up
+    for (var i = rockets.length - 1; i &gt;= 0; i--) {
+      var r = rockets[i];
+      r.y -= ROCKET_SPEED;
+      var exploded = false;
+      // Check hit vs any target
+      var rcx = r.x + ROCKET_W / 2, rcy = r.y + ROCKET_H / 2;
+      for (var ti = 0; ti &lt; targets.length; ti++) {
+        var tt = targets[ti];
+        if (tt.counted) continue;
+        if (r.x &lt; tt.x + TARGET_SIZE &amp;&amp; r.x + ROCKET_W &gt; tt.x &amp;&amp;
+            r.y &lt; tt.y + TARGET_SIZE &amp;&amp; r.y + ROCKET_H &gt; tt.y) {
+          explode(rcx, rcy);
+          exploded = true;
+          break;
+        }
+      }
+      if (exploded) {
+        field.removeChild(r.el); rockets.splice(i, 1); continue;
+      }
+      if (r.y + ROCKET_H &lt; 0) {
+        // Detonate at top too, for a chance at high balls
+        explode(rcx, 0);
+        field.removeChild(r.el); rockets.splice(i, 1); continue;
+      }
+      r.el.style.top = r.y + &#x27;px&#x27;;
+    }
+
+    var sTop = shipTop();
+    // Targets down
+    for (var j = targets.length - 1; j &gt;= 0; j--) {
+      var t = targets[j];
+      t.y += t.speed;
+      t.el.style.top = t.y + &#x27;px&#x27;;
+
+      if (!t.counted &amp;&amp;
+          shipX &lt; t.x + TARGET_SIZE &amp;&amp; shipX + SHIP_SIZE &gt; t.x &amp;&amp;
+          sTop &lt; t.y + TARGET_SIZE &amp;&amp; sTop + SHIP_SIZE &gt; t.y) {
+        t.counted = true;
+        hits++;
+        hitsEl.textContent = hits;
+        field.removeChild(t.el);
+        targets.splice(j, 1);
+        continue;
+      }
+      if (t.y &gt; FIELD_H) {
+        if (!t.counted) { score++; scoreEl.textContent = score; }
+        field.removeChild(t.el);
+        targets.splice(j, 1);
+        continue;
+      }
+    }
+
+    // Fade out explosions
+    var now = Date.now();
+    for (var bi = booms.length - 1; bi &gt;= 0; bi--) {
+      if (now &gt;= booms[bi].until) {
+        if (booms[bi].el.parentNode) booms[bi].el.parentNode.removeChild(booms[bi].el);
+        booms.splice(bi, 1);
+      }
+    }
+
+    animId = requestAnimationFrame(tick);
+  }
+
+  function clearAll() {
+    targets.forEach(function (t) { if (t.el.parentNode) t.el.parentNode.removeChild(t.el); });
+    rockets.forEach(function (r) { if (r.el.parentNode) r.el.parentNode.removeChild(r.el); });
+    booms.forEach(function (b) { if (b.el.parentNode) b.el.parentNode.removeChild(b.el); });
+    targets = []; rockets = []; booms = [];
+  }
+
+  function startGame() {
+    if (running) return;
+    clearAll();
+    score = 0; hits = 0;
+    scoreEl.textContent = &#x27;0&#x27;;
+    hitsEl.textContent = &#x27;0&#x27;;
+    msgEl.textContent = &#x27;&#x27;;
+    shipX = (FIELD_W - SHIP_SIZE) / 2;
+    shipY = 0; shipVY = 0; onGround = true;
+    for (var k in keysDown) keysDown[k] = false;
+    lastShot = 0;
+    paintShip();
+    running = true;
+    // Spawn a small cluster right away for immediate action
+    spawnTarget(); spawnTarget(); spawnTarget();
+    animId = requestAnimationFrame(tick);
+    spawnId = setInterval(function () {
+      // Sometimes drop a burst of balls so the bazooka shines
+      var n = Math.random() &lt; 0.4 ? 2 + Math.floor(Math.random() * 3) : 1;
+      for (var i = 0; i &lt; n; i++) spawnTarget();
+    }, SPAWN_INTERVAL);
+  }
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+    if (spawnId) { clearInterval(spawnId); spawnId = null; }
+    clearAll();
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27; || e.key === &#x27;ArrowRight&#x27;) {
+      keysDown[e.key] = true;
+      e.preventDefault();
+    } else if (e.key === &#x27;ArrowUp&#x27;) {
+      if (running) doJump();
+      e.preventDefault();
+    } else if (e.key === &#x27; &#x27; || e.code === &#x27;Space&#x27;) {
+      if (running) fireRocket();
+      e.preventDefault();
+    }
+  });
+  window.addEventListener(&#x27;keyup&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27; || e.key === &#x27;ArrowRight&#x27;) keysDown[e.key] = false;
+  });
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  paintShip();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  // Suppress in-iframe scrollbars. The parent fits the iframe layout
+  // box to match the content size, so internal scroll is redundant —
+  // and if the LLM&#x27;s CSS sets body overflow: auto, the scrollbar shows
+  // briefly before the fit lands. Force hidden so it never appears.
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  // Iframe-internal JS error capture. window.onerror inside a sandboxed
+  // iframe can&#x27;t post to /api/js_error directly, so we relay to the
+  // parent via postMessage; parent&#x27;s error_logger.js forwards to the
+  // server. Catches LLM-emitted broken HTML (invalid hex, undefined
+  // variables, etc.) that would otherwise fail silently inside the
+  // iframe.
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      // Debounce: don&#x27;t fire more than ~10× per second. ResizeObserver
+      // fires repeatedly during layout/font load; we only need the latest.
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      // Clamp: reject obviously bogus dimensions. Any browser-game viewport
+      // is well under 4000×4000 logical px; readings beyond that are layout
+      // noise during load/visibility transitions.
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  // Parent posts wd_remeasure when it makes the iframe visible (the body&#x27;s
+  // ResizeObserver doesn&#x27;t fire on display:none→block of an outer ancestor
+  // because the iframe document didn&#x27;t actually resize). Wait a frame for
+  // layout to settle before measuring.
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

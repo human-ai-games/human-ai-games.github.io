@@ -1,0 +1,739 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Golden Goose Tetris</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>Golden Goose Tetris</b> &middot; Game 164 &middot; Amateur producer &middot; Basic game: Falling blocks</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #1a1a2e; color: #eee; overflow: hidden; }
+  .game { max-width: 720px; margin: 0 auto; padding: 8px 14px; box-sizing: border-box; height: 100%; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+  h1 { margin: 0; font-size: 22px; font-weight: 700; color: #ffd166; }
+  .instructions { font-size: 16px; color: #bbb; max-width: 640px; margin: 0; line-height: 1.3; text-align: center; }
+  .main { display: flex; gap: 14px; align-items: flex-start; }
+  .field { position: relative; width: 240px; height: 384px; flex-shrink: 0; background: #12122a; border-radius: 8px; overflow: hidden; box-shadow: inset 0 0 0 2px #333366; }
+  .block { position: absolute; box-sizing: border-box; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+  .side { width: 150px; display: flex; flex-direction: column; gap: 8px; }
+  .panel { background: #23234a; border-radius: 8px; padding: 7px 10px; font-size: 14px; }
+  .panel b { color: #ffd166; }
+  .perkbtns { display: flex; flex-direction: column; gap: 4px; margin-top: 5px; }
+  .perkbtn { font-family: inherit; font-size: 13px; padding: 4px; border: none; border-radius: 5px; background: #3a3a6a; color: #eee; cursor: pointer; }
+  .perkbtn:enabled:hover { background: #50508a; }
+  .perkbtn:disabled { opacity: 0.4; cursor: default; }
+  .over { position: absolute; inset: 0; background: rgba(0,0,0,0.75); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 24px; color: #ff6b6b; font-weight: 700; text-align:center; white-space:pre; }
+  .goose { position: absolute; font-size: 90px; top: 130px; left: -120px; pointer-events: none; z-index: 5; filter: drop-shadow(0 0 12px gold); }
+  .banner { position: absolute; top: 40%; left: 0; right: 0; text-align: center; font-size: 20px; font-weight: 700; color: #ffd166; text-shadow: 0 0 8px #000; pointer-events: none; z-index: 6; }
+  .shootnote { position:absolute; bottom:2px; left:0; right:0; text-align:center; font-size:12px; color:#8fe; z-index:6; pointer-events:none; }
+  .hidden { display: none; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;Golden Goose Tetris&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Move &lt;strong&gt;&amp;larr;&amp;rarr;&lt;/strong&gt;, rotate &lt;strong&gt;&amp;uarr;&lt;/strong&gt;, drop &lt;strong&gt;&amp;darr;&lt;/strong&gt;; match 6+ same-color blocks to explode them, and clear a line with the 🥚 goose to wipe the board. Grab the 🔫 gun for a Galaga shooter round — dodge ships and blast blocks!&lt;/p&gt;
+  &lt;div class=&quot;main&quot;&gt;
+    &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;
+      &lt;div class=&quot;over hidden&quot; id=&quot;over&quot;&gt;GAME OVER&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;side&quot;&gt;
+      &lt;div class=&quot;panel&quot;&gt;Round: &lt;b id=&quot;round&quot;&gt;1&lt;/b&gt;&lt;/div&gt;
+      &lt;div class=&quot;panel&quot;&gt;Score: &lt;b id=&quot;score&quot;&gt;0&lt;/b&gt;&lt;br&gt;Target: &lt;b id=&quot;target&quot;&gt;100&lt;/b&gt;&lt;/div&gt;
+      &lt;div class=&quot;panel&quot;&gt;Next: &lt;b id=&quot;next&quot;&gt;—&lt;/b&gt;&lt;/div&gt;
+      &lt;div class=&quot;panel&quot;&gt;
+        Perk tokens: &lt;b id=&quot;tokens&quot;&gt;0&lt;/b&gt;
+        &lt;div class=&quot;perkbtns&quot; id=&quot;perkbtns&quot;&gt;&lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+[&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+  window.addEventListener(t, function(e) {
+    try {
+      window.parent.postMessage({ type: &#x27;game_input&#x27;, kind: t, key: e.key || null }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+});
+
+var CELL = 24, COLS = 10, ROWS = 16;
+var running = false, dropId = null, dropMs = 550;
+var grid = [], piece = null, nextType = null, score = 0, tokens = 0;
+var round = 1, target = 100, gooseBusy = false, mode = &#x27;tetris&#x27;;
+
+var field = document.getElementById(&#x27;field&#x27;);
+var scoreEl = document.getElementById(&#x27;score&#x27;);
+var nextEl = document.getElementById(&#x27;next&#x27;);
+var tokensEl = document.getElementById(&#x27;tokens&#x27;);
+var overEl = document.getElementById(&#x27;over&#x27;);
+var perkbtnsEl = document.getElementById(&#x27;perkbtns&#x27;);
+var roundEl = document.getElementById(&#x27;round&#x27;);
+var targetEl = document.getElementById(&#x27;target&#x27;);
+
+var SHAPES = {
+  I: { color:&#x27;#4fc3f7&#x27;, cells:[[0,1],[1,1],[2,1],[3,1]] },
+  O: { color:&#x27;#ffd166&#x27;, cells:[[1,0],[2,0],[1,1],[2,1]] },
+  T: { color:&#x27;#b388ff&#x27;, cells:[[1,0],[0,1],[1,1],[2,1]] },
+  S: { color:&#x27;#69f0ae&#x27;, cells:[[1,0],[2,0],[0,1],[1,1]] },
+  Z: { color:&#x27;#ff8a80&#x27;, cells:[[0,0],[1,0],[1,1],[2,1]] },
+  J: { color:&#x27;#82b1ff&#x27;, cells:[[0,0],[0,1],[1,1],[2,1]] },
+  L: { color:&#x27;#ffab40&#x27;, cells:[[2,0],[0,1],[1,1],[2,1]] }
+};
+var TYPES = [&#x27;I&#x27;,&#x27;O&#x27;,&#x27;T&#x27;,&#x27;S&#x27;,&#x27;Z&#x27;,&#x27;J&#x27;,&#x27;L&#x27;];
+
+function newGrid() {
+  grid = [];
+  for (var r=0;r&lt;ROWS;r++){ var row=[]; for(var c=0;c&lt;COLS;c++) row.push(null); grid.push(row); }
+}
+
+function rotateCells(cells) {
+  return cells.map(function(c){ return [3 - c[1], c[0]]; });
+}
+
+function makeSpecials(count) {
+  var arr = [];
+  var gooseChance = 0.02 + round*0.005;
+  var gunChance = 0.03;
+  for (var i=0;i&lt;count;i++){
+    var roll = Math.random();
+    if (roll &lt; gooseChance) arr.push(&#x27;goose&#x27;);
+    else if (roll &lt; gooseChance+gunChance) arr.push(&#x27;gun&#x27;);
+    else if (roll &lt; gooseChance+gunChance+0.06) arr.push(&#x27;bomb&#x27;);
+    else if (roll &lt; gooseChance+gunChance+0.11) arr.push(&#x27;arrow&#x27;);
+    else if (roll &lt; gooseChance+gunChance+0.17) arr.push(&#x27;gem&#x27;);
+    else arr.push(null);
+  }
+  return arr;
+}
+
+function makePiece(type) {
+  var s = SHAPES[type];
+  return { type:type, color:s.color, x:3, y:0, cells:s.cells.map(function(c){return [c[0],c[1]];}), specials: makeSpecials(4) };
+}
+
+function absCells(p) {
+  return p.cells.map(function(c){ return { x:p.x+c[0], y:p.y+c[1] }; });
+}
+
+function collides(p) {
+  var cs = absCells(p);
+  for (var i=0;i&lt;cs.length;i++){
+    var cx=cs[i].x, cy=cs[i].y;
+    if (cx&lt;0||cx&gt;=COLS||cy&gt;=ROWS) return true;
+    if (cy&gt;=0 &amp;&amp; grid[cy][cx]) return true;
+  }
+  return false;
+}
+
+function spawnPiece() {
+  var type = nextType || TYPES[Math.floor(Math.random()*TYPES.length)];
+  nextType = TYPES[Math.floor(Math.random()*TYPES.length)];
+  nextEl.textContent = type;
+  piece = makePiece(type);
+  if (collides(piece)) return false;
+  return true;
+}
+
+function lockPiece() {
+  var cs = absCells(piece);
+  for (var i=0;i&lt;cs.length;i++){
+    var c = cs[i];
+    if (c.y&gt;=0 &amp;&amp; c.y&lt;ROWS &amp;&amp; c.x&gt;=0 &amp;&amp; c.x&lt;COLS) {
+      grid[c.y][c.x] = { color: piece.color, special: piece.specials[i] };
+    }
+  }
+  triggerSpecials(cs);
+  piece = null;
+}
+
+function triggerSpecials(cs) {
+  var toClear = [];
+  for (var i=0;i&lt;cs.length;i++){
+    var c = cs[i];
+    if (c.y&lt;0||c.y&gt;=ROWS||c.x&lt;0||c.x&gt;=COLS) continue;
+    var cell = grid[c.y][c.x];
+    if (!cell) continue;
+    if (cell.special === &#x27;bomb&#x27;) {
+      for (var dr=-1;dr&lt;=1;dr++) for(var dc=-1;dc&lt;=1;dc++){
+        var rr=c.y+dr, cc=c.x+dc;
+        if (rr&gt;=0&amp;&amp;rr&lt;ROWS&amp;&amp;cc&gt;=0&amp;&amp;cc&lt;COLS) toClear.push([rr,cc]);
+      }
+      score += 5;
+    } else if (cell.special === &#x27;arrow&#x27;) {
+      for (var cc2=0;cc2&lt;COLS;cc2++) toClear.push([c.y,cc2]);
+      score += 8;
+    } else if (cell.special === &#x27;gem&#x27;) {
+      score += 15;
+      grid[c.y][c.x].special = null;
+      grid[c.y][c.x].color = &#x27;#66ffcc&#x27;;
+    }
+  }
+  for (var t=0;t&lt;toClear.length;t++){ grid[toClear[t][0]][toClear[t][1]] = null; }
+  if (toClear.length) applyGravity();
+  scoreEl.textContent = score;
+}
+
+function applyGravity() {
+  for (var c=0;c&lt;COLS;c++){
+    var stack=[];
+    for (var r=ROWS-1;r&gt;=0;r--){ if(grid[r][c]) stack.push(grid[r][c]); }
+    for (var r2=ROWS-1;r2&gt;=0;r2--){ grid[r2][c] = stack[ROWS-1-r2] || null; }
+  }
+}
+
+// find connected same-color groups of 6+, explode them, award specials
+function checkColorMatches() {
+  var seen = [];
+  for (var r=0;r&lt;ROWS;r++){ seen.push([]); for(var c=0;c&lt;COLS;c++) seen[r].push(false); }
+  var exploded = false, gunFound = false, gooseFound = false;
+  for (var r2=0;r2&lt;ROWS;r2++) for(var c2=0;c2&lt;COLS;c2++){
+    if (!grid[r2][c2] || seen[r2][c2]) continue;
+    var color = grid[r2][c2].color;
+    var stack=[[r2,c2]], group=[];
+    seen[r2][c2]=true;
+    while(stack.length){
+      var cur=stack.pop(); group.push(cur);
+      var dirs=[[1,0],[-1,0],[0,1],[0,-1]];
+      for (var d=0;d&lt;dirs.length;d++){
+        var nr=cur[0]+dirs[d][0], nc=cur[1]+dirs[d][1];
+        if (nr&gt;=0&amp;&amp;nr&lt;ROWS&amp;&amp;nc&gt;=0&amp;&amp;nc&lt;COLS&amp;&amp;!seen[nr][nc]&amp;&amp;grid[nr][nc]&amp;&amp;grid[nr][nc].color===color){
+          seen[nr][nc]=true; stack.push([nr,nc]);
+        }
+      }
+    }
+    if (group.length&gt;=6){
+      exploded=true;
+      for (var g=0;g&lt;group.length;g++){
+        var cell=grid[group[g][0]][group[g][1]];
+        if (cell.special===&#x27;gun&#x27;) gunFound=true;
+        if (cell.special===&#x27;goose&#x27;) gooseFound=true;
+        if (cell.special===&#x27;gem&#x27;) score+=15;
+        grid[group[g][0]][group[g][1]]=null;
+      }
+      score += group.length*4;
+    }
+  }
+  if (exploded){
+    scoreEl.textContent=score;
+    applyGravity();
+  }
+  return { exploded:exploded, gun:gunFound, goose:gooseFound };
+}
+
+function clearFullRows() {
+  var cleared=0, gooseTriggered=false;
+  for (var r=ROWS-1;r&gt;=0;r--){
+    var full=true;
+    for (var c=0;c&lt;COLS;c++) if(!grid[r][c]){full=false;break;}
+    if (full){
+      for (var gc=0;gc&lt;COLS;gc++){ if(grid[r][gc] &amp;&amp; grid[r][gc].special===&#x27;goose&#x27;) gooseTriggered=true; }
+      grid.splice(r,1);
+      var empty=[]; for(var c2=0;c2&lt;COLS;c2++) empty.push(null);
+      grid.unshift(empty);
+      cleared++; r++;
+    }
+  }
+  if (cleared&gt;0){
+    score += cleared*cleared*10;
+    scoreEl.textContent = score;
+    tokens += cleared;
+    tokensEl.textContent = tokens;
+    updatePerkBtns();
+  }
+  // color-match explosions
+  var m = checkColorMatches();
+  if (m.gun){ paint(); startShooter(); return; }
+  if (gooseTriggered || m.goose){ unleashGoose(); return; }
+  checkRound();
+}
+
+function unleashGoose() {
+  gooseBusy = true;
+  if (dropId){ clearInterval(dropId); dropId=null; }
+  var g = document.createElement(&#x27;div&#x27;);
+  g.className=&#x27;goose&#x27;; g.textContent=&#x27;🦢&#x27;;
+  field.appendChild(g);
+  var banner=document.createElement(&#x27;div&#x27;);
+  banner.className=&#x27;banner&#x27;; banner.textContent=&#x27;GOLDEN GOOSE!&#x27;;
+  field.appendChild(banner);
+  var x=-120, wiped=false;
+  var anim=setInterval(function(){
+    x+=14; g.style.left=x+&#x27;px&#x27;;
+    if (!wiped &amp;&amp; x&gt;60){
+      wiped=true;
+      var count=0;
+      for (var r=0;r&lt;ROWS;r++) for(var c=0;c&lt;COLS;c++){ if(grid[r][c]) count++; grid[r][c]=null; }
+      score += count*3; scoreEl.textContent=score;
+      paint(); field.appendChild(g); field.appendChild(banner);
+    }
+    if (x&gt;280){
+      clearInterval(anim); g.remove(); banner.remove(); gooseBusy=false;
+      if (running &amp;&amp; mode===&#x27;tetris&#x27;){ if (dropId) clearInterval(dropId); dropId=setInterval(stepDown, dropMs); }
+      checkRound();
+    }
+  }, 30);
+}
+
+function checkRound() {
+  if (score &gt;= target){
+    round++; roundEl.textContent = round;
+    target = 100 + (round-1)*150; targetEl.textContent = target;
+    dropMs = Math.max(160, 550 - (round-1)*55);
+    if (running &amp;&amp; mode===&#x27;tetris&#x27; &amp;&amp; dropId){ clearInterval(dropId); dropId=setInterval(stepDown, dropMs); }
+    var banner=document.createElement(&#x27;div&#x27;);
+    banner.className=&#x27;banner&#x27;; banner.textContent=&#x27;ROUND &#x27;+round+&#x27;!&#x27;;
+    field.appendChild(banner);
+    setTimeout(function(){ banner.remove(); }, 1200);
+  }
+}
+
+function paint() {
+  var kids = field.querySelectorAll(&#x27;.block&#x27;);
+  for (var i=0;i&lt;kids.length;i++) kids[i].remove();
+  for (var r=0;r&lt;ROWS;r++) for(var c=0;c&lt;COLS;c++){
+    if (grid[r][c]) drawBlock(c,r,grid[r][c].color,grid[r][c].special);
+  }
+  if (piece){
+    var cs = absCells(piece);
+    for (var i2=0;i2&lt;cs.length;i2++){
+      if (cs[i2].y&gt;=0) drawBlock(cs[i2].x,cs[i2].y,piece.color,piece.specials[i2]);
+    }
+  }
+}
+
+function drawBlock(cx,cy,color,special) {
+  var el=document.createElement(&#x27;div&#x27;);
+  el.className=&#x27;block&#x27;;
+  el.style.left=(cx*CELL)+&#x27;px&#x27;; el.style.top=(cy*CELL)+&#x27;px&#x27;;
+  el.style.width=CELL+&#x27;px&#x27;; el.style.height=CELL+&#x27;px&#x27;;
+  el.style.background=color;
+  el.style.boxShadow=&#x27;inset 0 0 0 2px rgba(0,0,0,0.15)&#x27;;
+  if (special===&#x27;bomb&#x27;) el.textContent=&#x27;💣&#x27;;
+  else if (special===&#x27;arrow&#x27;) el.textContent=&#x27;➤&#x27;;
+  else if (special===&#x27;gem&#x27;) el.textContent=&#x27;💎&#x27;;
+  else if (special===&#x27;gun&#x27;) el.textContent=&#x27;🔫&#x27;;
+  else if (special===&#x27;goose&#x27;){ el.textContent=&#x27;🥚&#x27;; el.style.background=&#x27;#ffe066&#x27;; el.style.boxShadow=&#x27;0 0 6px 2px gold&#x27;; }
+  field.appendChild(el);
+}
+
+function stepDown() {
+  if (!piece || gooseBusy || mode!==&#x27;tetris&#x27;) return;
+  var next={x:piece.x,y:piece.y+1,cells:piece.cells,color:piece.color,type:piece.type,specials:piece.specials};
+  if (collides(next)){
+    lockPiece();
+    clearFullRows();
+    if (gooseBusy || mode!==&#x27;tetris&#x27;){ paint(); return; }
+    if (!spawnPiece()){ endGame(); paint(); return; }
+  } else piece=next;
+  paint();
+}
+
+function move(dx) {
+  if (!running||!piece||gooseBusy||mode!==&#x27;tetris&#x27;) return;
+  var next={x:piece.x+dx,y:piece.y,cells:piece.cells,color:piece.color,type:piece.type,specials:piece.specials};
+  if (!collides(next)){ piece=next; paint(); }
+}
+
+function rotate() {
+  if (!running||!piece||piece.type===&#x27;O&#x27;||gooseBusy||mode!==&#x27;tetris&#x27;) return;
+  var rc = rotateCells(piece.cells);
+  var test={x:piece.x,y:piece.y,cells:rc,color:piece.color,type:piece.type,specials:piece.specials};
+  var kicks=[0,-1,1,-2,2];
+  for (var k=0;k&lt;kicks.length;k++){
+    test.x=piece.x+kicks[k];
+    if (!collides(test)){ piece.cells=rc; piece.x=test.x; paint(); return; }
+  }
+}
+
+/* ===== SHOOTER MODE (Galaga-style) ===== */
+var shootId=null, ship=null, bullets=[], enemies=[], eBullets=[], shootTimer=0, moveDir=0;
+var FW=240, FH=384;
+
+function startShooter() {
+  mode=&#x27;shooter&#x27;;
+  if (dropId){ clearInterval(dropId); dropId=null; }
+  piece=null;
+  var banner=document.createElement(&#x27;div&#x27;);
+  banner.className=&#x27;banner&#x27;; banner.textContent=&#x27;🔫 SHOOTER!&#x27;;
+  field.appendChild(banner);
+  setTimeout(function(){ banner.remove(); }, 1000);
+  var note=document.createElement(&#x27;div&#x27;);
+  note.className=&#x27;shootnote&#x27;; note.id=&#x27;shootnote&#x27;;
+  note.textContent=&#x27;←→ move   ↑ shoot&#x27;;
+  field.appendChild(note);
+  ship={x:FW/2, y:FH-24, w:22};
+  bullets=[]; eBullets=[]; enemies=[]; shootTimer=0; moveDir=0;
+  // spawn a few enemy ships
+  for (var i=0;i&lt;3;i++) spawnEnemy();
+  if (shootId) clearInterval(shootId);
+  shootId=setInterval(shooterStep, 30);
+}
+
+function spawnEnemy() {
+  enemies.push({ x: 20+Math.random()*(FW-40), y: 10+Math.random()*40, vx:(Math.random()&lt;0.5?-1:1)*(1+round*0.2), fire: 40+Math.random()*60 });
+}
+
+function shooterStep() {
+  ship.x += moveDir*4;
+  if (ship.x&lt;12) ship.x=12;
+  if (ship.x&gt;FW-12) ship.x=FW-12;
+
+  // bullets up
+  for (var i=bullets.length-1;i&gt;=0;i--){
+    bullets[i].y-=8;
+    if (bullets[i].y&lt;0){ bullets.splice(i,1); continue; }
+    // hit blocks
+    var bc=Math.floor(bullets[i].x/CELL), br=Math.floor(bullets[i].y/CELL);
+    if (br&gt;=0&amp;&amp;br&lt;ROWS&amp;&amp;bc&gt;=0&amp;&amp;bc&lt;COLS&amp;&amp;grid[br][bc]){
+      grid[br][bc]=null; score+=6; scoreEl.textContent=score;
+      bullets.splice(i,1); continue;
+    }
+    // hit enemy
+    for (var e=enemies.length-1;e&gt;=0;e--){
+      if (Math.abs(enemies[e].x-bullets[i].x)&lt;14 &amp;&amp; Math.abs(enemies[e].y-bullets[i].y)&lt;14){
+        enemies.splice(e,1); score+=20; scoreEl.textContent=score;
+        bullets.splice(i,1); break;
+      }
+    }
+  }
+
+  // enemies move &amp; fire
+  for (var e2=0;e2&lt;enemies.length;e2++){
+    var en=enemies[e2];
+    en.x+=en.vx;
+    if (en.x&lt;12||en.x&gt;FW-12) en.vx*=-1;
+    en.fire--;
+    if (en.fire&lt;=0){ eBullets.push({x:en.x,y:en.y+10}); en.fire=50+Math.random()*60; }
+  }
+
+  // enemy bullets down
+  for (var b=eBullets.length-1;b&gt;=0;b--){
+    eBullets[b].y+=5;
+    if (eBullets[b].y&gt;FH){ eBullets.splice(b,1); continue; }
+    if (Math.abs(eBullets[b].x-ship.x)&lt;12 &amp;&amp; Math.abs(eBullets[b].y-ship.y)&lt;12){
+      endShooterDeath(); return;
+    }
+  }
+
+  // occasionally respawn enemies
+  if (enemies.length&lt;2 &amp;&amp; Math.random()&lt;0.04) spawnEnemy();
+
+  paintShooter();
+
+  // win condition: cleared all blocks
+  var any=false;
+  for (var r=0;r&lt;ROWS;r++) for(var c=0;c&lt;COLS;c++) if(grid[r][c]) any=true;
+  if (!any){ endShooterWin(); }
+}
+
+function endShooterDeath() {
+  clearInterval(shootId); shootId=null;
+  endGame();
+}
+
+function endShooterWin() {
+  clearInterval(shootId); shootId=null;
+  var note=document.getElementById(&#x27;shootnote&#x27;); if(note) note.remove();
+  mode=&#x27;tetris&#x27;; gooseBusy=false;
+  score+=50; scoreEl.textContent=score;
+  var banner=document.createElement(&#x27;div&#x27;);
+  banner.className=&#x27;banner&#x27;; banner.textContent=&#x27;BOARD CLEARED! +50&#x27;;
+  field.appendChild(banner);
+  setTimeout(function(){ banner.remove(); }, 1200);
+  newGrid();
+  if (running){
+    checkRound();
+    if (!spawnPiece()){ endGame(); paint(); return; }
+    paint();
+    if (dropId) clearInterval(dropId);
+    dropId=setInterval(stepDown, dropMs);
+  }
+}
+
+function paintShooter() {
+  var kids = field.querySelectorAll(&#x27;.block,.sprite&#x27;);
+  for (var i=0;i&lt;kids.length;i++) kids[i].remove();
+  for (var r=0;r&lt;ROWS;r++) for(var c=0;c&lt;COLS;c++){
+    if (grid[r][c]) drawBlock(c,r,grid[r][c].color,grid[r][c].special);
+  }
+  drawSprite(ship.x, ship.y, &#x27;🚀&#x27;, 22);
+  for (var e=0;e&lt;enemies.length;e++) drawSprite(enemies[e].x, enemies[e].y, &#x27;👾&#x27;, 20);
+  for (var b=0;b&lt;bullets.length;b++) drawDot(bullets[b].x, bullets[b].y, &#x27;#8ff&#x27;);
+  for (var eb=0;eb&lt;eBullets.length;eb++) drawDot(eBullets[eb].x, eBullets[eb].y, &#x27;#f66&#x27;);
+}
+
+function drawSprite(x,y,ch,sz){
+  var el=document.createElement(&#x27;div&#x27;);
+  el.className=&#x27;sprite&#x27;;
+  el.style.position=&#x27;absolute&#x27;;
+  el.style.left=(x-sz/2)+&#x27;px&#x27;; el.style.top=(y-sz/2)+&#x27;px&#x27;;
+  el.style.fontSize=sz+&#x27;px&#x27;; el.style.lineHeight=sz+&#x27;px&#x27;;
+  el.style.zIndex=&#x27;4&#x27;;
+  el.textContent=ch;
+  field.appendChild(el);
+}
+
+function drawDot(x,y,col){
+  var el=document.createElement(&#x27;div&#x27;);
+  el.className=&#x27;sprite&#x27;;
+  el.style.position=&#x27;absolute&#x27;;
+  el.style.left=(x-2)+&#x27;px&#x27;; el.style.top=(y-6)+&#x27;px&#x27;;
+  el.style.width=&#x27;4px&#x27;; el.style.height=&#x27;12px&#x27;;
+  el.style.background=col; el.style.borderRadius=&#x27;2px&#x27;; el.style.zIndex=&#x27;4&#x27;;
+  field.appendChild(el);
+}
+
+function choosePiece(type) {
+  if (!running || tokens&lt;=0 || mode!==&#x27;tetris&#x27;) return;
+  tokens--; tokensEl.textContent=tokens;
+  nextType=type; nextEl.textContent=type;
+  updatePerkBtns();
+}
+
+function updatePerkBtns() {
+  var btns = perkbtnsEl.querySelectorAll(&#x27;.perkbtn&#x27;);
+  btns.forEach(function(b){ b.disabled = tokens&lt;=0; });
+}
+
+function buildPerkBtns() {
+  perkbtnsEl.innerHTML=&#x27;&#x27;;
+  TYPES.forEach(function(t){
+    var b=document.createElement(&#x27;button&#x27;);
+    b.className=&#x27;perkbtn&#x27;; b.textContent=&#x27;Choose &#x27;+t; b.disabled=true;
+    b.onclick=function(){ choosePiece(t); };
+    perkbtnsEl.appendChild(b);
+  });
+}
+
+function endGame() {
+  running=false;
+  if (dropId){ clearInterval(dropId); dropId=null; }
+  if (shootId){ clearInterval(shootId); shootId=null; }
+  var note=document.getElementById(&#x27;shootnote&#x27;); if(note) note.remove();
+  overEl.textContent=&#x27;GAME OVER\nRound &#x27;+round;
+  overEl.classList.remove(&#x27;hidden&#x27;);
+}
+
+function startGame() {
+  score=0; tokens=0; round=1; target=100; dropMs=550; gooseBusy=false; mode=&#x27;tetris&#x27;;
+  scoreEl.textContent=&#x27;0&#x27;; tokensEl.textContent=&#x27;0&#x27;;
+  roundEl.textContent=&#x27;1&#x27;; targetEl.textContent=&#x27;100&#x27;;
+  overEl.classList.add(&#x27;hidden&#x27;);
+  var gs=field.querySelectorAll(&#x27;.goose,.banner,.sprite,.shootnote&#x27;); gs.forEach(function(g){g.remove();});
+  if (shootId){ clearInterval(shootId); shootId=null; }
+  nextType=null;
+  newGrid();
+  updatePerkBtns();
+  if (!spawnPiece()) return;
+  paint();
+  running=true;
+  if (dropId) clearInterval(dropId);
+  dropId=setInterval(stepDown, dropMs);
+}
+
+function stopGame() {
+  running=false;
+  if (dropId){ clearInterval(dropId); dropId=null; }
+  if (shootId){ clearInterval(shootId); shootId=null; }
+}
+
+window.addEventListener(&#x27;keydown&#x27;, function(e){
+  if (mode===&#x27;shooter&#x27; &amp;&amp; running){
+    if (e.key===&#x27;ArrowLeft&#x27;){ moveDir=-1; e.preventDefault(); }
+    else if (e.key===&#x27;ArrowRight&#x27;){ moveDir=1; e.preventDefault(); }
+    else if (e.key===&#x27;ArrowUp&#x27;){ if(bullets.length&lt;5) bullets.push({x:ship.x,y:ship.y-14}); e.preventDefault(); }
+    return;
+  }
+  if (e.key===&#x27;ArrowLeft&#x27;){ move(-1); e.preventDefault(); }
+  else if (e.key===&#x27;ArrowRight&#x27;){ move(1); e.preventDefault(); }
+  else if (e.key===&#x27;ArrowDown&#x27;){ if(running) stepDown(); e.preventDefault(); }
+  else if (e.key===&#x27;ArrowUp&#x27;){ rotate(); e.preventDefault(); }
+});
+window.addEventListener(&#x27;keyup&#x27;, function(e){
+  if (mode===&#x27;shooter&#x27;){
+    if (e.key===&#x27;ArrowLeft&#x27; &amp;&amp; moveDir===-1) moveDir=0;
+    else if (e.key===&#x27;ArrowRight&#x27; &amp;&amp; moveDir===1) moveDir=0;
+  }
+});
+
+window.addEventListener(&#x27;message&#x27;, function(e){
+  if (!e.data || typeof e.data!==&#x27;object&#x27;) return;
+  if (e.data.type===&#x27;wd_start&#x27;) startGame();
+  else if (e.data.type===&#x27;wd_stop&#x27;) stopGame();
+});
+
+buildPerkBtns();
+newGrid();
+piece = makePiece(&#x27;T&#x27;);
+piece.x=3; piece.y=0;
+paint();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

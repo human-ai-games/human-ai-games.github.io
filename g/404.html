@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Block builder</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>Block builder</b> &middot; Game 404 &middot; Amateur producer &middot; Basic game: Falling blocks</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #222; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 18px; background: white; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 10px; }
+  h1 { margin: 0; font-size: 28px; font-weight: 600; }
+  .instructions { font-size: 16px; color: #666; max-width: 600px; margin: 0; line-height: 1.4; text-align: center; }
+  .score { font-size: 22px; color: #555; margin: 0; }
+  .field { position: relative; width: 288px; height: 384px; flex-shrink: 0; margin: 0; background: linear-gradient(#dff1ff, #eef8ff); border-radius: 8px; overflow: hidden; border: 1px solid #cfe4f2; }
+  .ground { position: absolute; left: 0; right: 0; bottom: 0; height: 24px; background: #7ec36b; border-top: 2px solid #5fa54f; }
+  .block { position: absolute; box-sizing: border-box; border: 1px solid rgba(255,255,255,0.35); border-radius: 3px; }
+  .landing { position: absolute; box-sizing: border-box; border: 2px dashed #4a8fd0; border-radius: 3px; background: rgba(74,143,208,0.12); }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;Block builder&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Move the block &lt;strong&gt;&amp;larr;&lt;/strong&gt; / &lt;strong&gt;&amp;rarr;&lt;/strong&gt; and watch the dashed guide show where it will land, then press &lt;strong&gt;Space&lt;/strong&gt; to drop it. Stack blocks snugly to score points, and use the &lt;strong&gt;Start&lt;/strong&gt;/&lt;strong&gt;Restart&lt;/strong&gt; button below.&lt;/p&gt;
+  &lt;div class=&quot;score&quot;&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;&lt;div class=&quot;ground&quot;&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var CELL = 24;
+  var COLS = 12, ROWS = 16;
+  var running = false;
+  var grid = [];
+  var piece = null;      // the floating block at the top (only x matters for aim)
+  var score = 0;
+  var field = document.getElementById(&#x27;field&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+
+  var SHAPES = {
+    I: { color: &#x27;#31c4d6&#x27;, cells: [[0,0],[1,0],[2,0],[3,0]] },
+    O: { color: &#x27;#f2c94c&#x27;, cells: [[0,0],[1,0],[0,1],[1,1]] },
+    T: { color: &#x27;#b06de0&#x27;, cells: [[0,0],[1,0],[2,0],[1,1]] },
+    S: { color: &#x27;#5fce6b&#x27;, cells: [[1,0],[2,0],[0,1],[1,1]] },
+    Z: { color: &#x27;#e05b5b&#x27;, cells: [[0,0],[1,0],[1,1],[2,1]] },
+    L: { color: &#x27;#f29a4c&#x27;, cells: [[0,0],[0,1],[1,1],[2,1]] },
+    J: { color: &#x27;#5b78e0&#x27;, cells: [[2,0],[0,1],[1,1],[2,1]] }
+  };
+  var KEYS = Object.keys(SHAPES);
+
+  function newGrid() {
+    grid = [];
+    for (var r = 0; r &lt; ROWS; r++) {
+      var row = [];
+      for (var c = 0; c &lt; COLS; c++) row.push(null);
+      grid.push(row);
+    }
+  }
+
+  function cellsAt(p, x, y) {
+    var out = [];
+    for (var i = 0; i &lt; p.cells.length; i++) {
+      out.push({ x: x + p.cells[i][0], y: y + p.cells[i][1] });
+    }
+    return out;
+  }
+
+  function fits(p, x, y) {
+    var cells = cellsAt(p, x, y);
+    for (var i = 0; i &lt; cells.length; i++) {
+      var cx = cells[i].x, cy = cells[i].y;
+      if (cx &lt; 0 || cx &gt;= COLS || cy &lt; 0 || cy &gt;= ROWS) return false;
+      if (grid[cy][cx]) return false;
+    }
+    return true;
+  }
+
+  function pieceWidth(p) {
+    var maxX = 0;
+    p.cells.forEach(function (c) { if (c[0] &gt; maxX) maxX = c[0]; });
+    return maxX + 1;
+  }
+
+  // Find the lowest y where the piece can rest at its current x.
+  function landingY(p) {
+    if (!fits(p, p.x, 0)) return null;
+    var y = 0;
+    while (fits(p, p.x, y + 1)) y++;
+    return y;
+  }
+
+  function spawnPiece() {
+    var key = KEYS[Math.floor(Math.random() * KEYS.length)];
+    var shape = SHAPES[key];
+    var cells = shape.cells.map(function (c) { return [c[0], c[1]]; });
+    var p = { x: 0, color: shape.color, cells: cells };
+    p.x = Math.floor((COLS - pieceWidth(p)) / 2);
+    // If center is blocked, slide to any spot that has room.
+    if (landingY(p) === null) {
+      for (var x = 0; x &lt;= COLS - pieceWidth(p); x++) {
+        p.x = x;
+        if (landingY(p) !== null) { piece = p; return true; }
+      }
+      return false;
+    }
+    piece = p;
+    return true;
+  }
+
+  function placementScore(cells) {
+    var own = {};
+    cells.forEach(function (c) { own[c.x + &#x27;,&#x27; + c.y] = true; });
+    var pts = 0;
+    var dirs = [[1,0],[-1,0],[0,1],[0,-1]];
+    for (var i = 0; i &lt; cells.length; i++) {
+      var cx = cells[i].x, cy = cells[i].y;
+      for (var d = 0; d &lt; dirs.length; d++) {
+        var nx = cx + dirs[d][0], ny = cy + dirs[d][1];
+        if (own[nx + &#x27;,&#x27; + ny]) continue;
+        if (ny &gt;= ROWS) { pts += 1; continue; }
+        if (nx &lt; 0 || nx &gt;= COLS || ny &lt; 0) continue;
+        if (grid[ny][nx]) pts += 1;
+      }
+    }
+    return pts;
+  }
+
+  function drop() {
+    if (!running || !piece) return;
+    var y = landingY(piece);
+    if (y === null) { endGame(); paint(); return; }
+    var cells = cellsAt(piece, piece.x, y);
+    for (var i = 0; i &lt; cells.length; i++) {
+      grid[cells[i].y][cells[i].x] = piece.color;
+    }
+    var gained = placementScore(cells);
+    if (gained &gt; 0) { score += gained; scoreEl.textContent = score; }
+    if (!spawnPiece()) { endGame(); paint(); return; }
+    paint();
+  }
+
+  function moveX(dx) {
+    if (!running || !piece) return;
+    var nx = piece.x + dx;
+    if (nx &lt; 0 || nx + pieceWidth(piece) &gt; COLS) return;
+    var test = { x: nx, color: piece.color, cells: piece.cells };
+    if (landingY(test) === null) return; // no room in that column
+    piece.x = nx;
+    paint();
+  }
+
+  function paint() {
+    var old = field.querySelectorAll(&#x27;.block, .landing&#x27;);
+    for (var i = 0; i &lt; old.length; i++) old[i].remove();
+    for (var r = 0; r &lt; ROWS; r++) {
+      for (var c = 0; c &lt; COLS; c++) {
+        if (grid[r][c]) drawBlock(c, r, grid[r][c]);
+      }
+    }
+    if (piece) {
+      // The floating piece near the top.
+      var top = cellsAt(piece, piece.x, 0);
+      for (var j = 0; j &lt; top.length; j++) drawBlock(top[j].x, top[j].y, piece.color);
+      // The dashed landing guide.
+      var ly = landingY(piece);
+      if (ly !== null &amp;&amp; ly &gt; 0) {
+        var land = cellsAt(piece, piece.x, ly);
+        for (var k = 0; k &lt; land.length; k++) drawLanding(land[k].x, land[k].y);
+      }
+    }
+  }
+
+  function drawBlock(cx, cy, color) {
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;block&#x27;;
+    el.style.left = (cx * CELL) + &#x27;px&#x27;;
+    el.style.top = (cy * CELL) + &#x27;px&#x27;;
+    el.style.width = CELL + &#x27;px&#x27;;
+    el.style.height = CELL + &#x27;px&#x27;;
+    el.style.background = color;
+    field.appendChild(el);
+  }
+
+  function drawLanding(cx, cy) {
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;landing&#x27;;
+    el.style.left = (cx * CELL) + &#x27;px&#x27;;
+    el.style.top = (cy * CELL) + &#x27;px&#x27;;
+    el.style.width = CELL + &#x27;px&#x27;;
+    el.style.height = CELL + &#x27;px&#x27;;
+    field.appendChild(el);
+  }
+
+  function endGame() { running = false; }
+
+  function startGame() {
+    if (running) return;
+    score = 0;
+    scoreEl.textContent = &#x27;0&#x27;;
+    newGrid();
+    if (!spawnPiece()) return;
+    running = true;
+    paint();
+  }
+  function stopGame() {
+    if (!running) return;
+    running = false;
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27;) { moveX(-1); e.preventDefault(); }
+    else if (e.key === &#x27;ArrowRight&#x27;) { moveX(1); e.preventDefault(); }
+    else if (e.key === &#x27; &#x27; || e.key === &#x27;Spacebar&#x27; || e.key === &#x27;ArrowDown&#x27;) { drop(); e.preventDefault(); }
+  });
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  // Initial preview so the participant sees a block before pressing Start.
+  newGrid();
+  spawnPiece();
+  paint();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

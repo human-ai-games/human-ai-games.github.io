@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🐹 Whack-a-Mole!</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>🐹 Whack-a-Mole!</b> &middot; Game 369 &middot; Amateur producer &middot; Basic game: Whack-a-mole</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: linear-gradient(#a8e063, #56ab2f); color: #222; overflow: hidden; cursor: none; }
+  .game { max-width: 720px; margin: 0 auto; padding: 12px; height: 100%; box-sizing: border-box; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 700; color: #4a2c0a; text-shadow: 1px 1px 0 #fff3; }
+  .instructions { font-size: 16px; color: #33500f; max-width: 620px; margin: 0; line-height: 1.35; font-weight: 500; }
+  .score { font-size: 20px; color: #4a2c0a; margin: 0; font-weight: 700; }
+  .board { position: relative; width: 620px; height: 400px; flex-shrink: 0; margin: 0; background: radial-gradient(circle at 50% 30%, #7bc043, #3d7a1a); border-radius: 12px; box-shadow: inset 0 0 40px #0004; overflow: hidden; }
+  .board.golden { box-shadow: inset 0 0 60px #ffcf3388, 0 0 20px #ffcf33; }
+  .hole { position: absolute; width: 88px; height: 46px; background: radial-gradient(ellipse at center, #4a2c0a 40%, #2e1a05 100%); border-radius: 50%; box-shadow: inset 0 6px 10px #000a; overflow: hidden; }
+  .mole { position: absolute; left: 12px; bottom: 0; width: 64px; height: 64px; transform: translateY(70px); transition: transform 0.14s cubic-bezier(.34,1.56,.64,1); cursor: none; }
+  .mole.up { transform: translateY(6px); }
+  .mole.wiggle { animation: wiggle 0.5s ease-in-out infinite; }
+  @keyframes wiggle { 0%,100%{transform: translateY(6px) rotate(-4deg);} 50%{transform: translateY(6px) rotate(4deg);} }
+  .mole.bonked { transform: translateY(70px) scale(0.7); }
+  .mole.golden { animation: shine 0.6s ease-in-out infinite; }
+  @keyframes shine { 0%,100%{filter: drop-shadow(0 0 3px #ffcf33);} 50%{filter: drop-shadow(0 0 10px #fff);} }
+  .pts { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-weight: 800; font-size: 20px; color: #fff; text-shadow: 0 0 4px #000; }
+  .pop { position: absolute; font-weight: 800; font-size: 26px; color: #ffdd33; text-shadow: 0 0 6px #000; pointer-events: none; animation: floatUp 0.7s ease-out forwards; }
+  @keyframes floatUp { from{transform: translateY(0); opacity:1;} to{transform: translateY(-40px); opacity:0;} }
+  .banner { position: absolute; top: 40%; left: 50%; transform: translate(-50%,-50%); font-size: 34px; font-weight: 900; color: #ffcf33; text-shadow: 0 0 10px #000, 0 0 4px #fff; pointer-events: none; animation: bannerPulse 0.5s ease-out; z-index: 40; }
+  @keyframes bannerPulse { from{transform: translate(-50%,-50%) scale(0.3); opacity:0;} to{transform: translate(-50%,-50%) scale(1); opacity:1;} }
+  #hammer { position: absolute; width: 54px; height: 54px; pointer-events: none; z-index: 50; transform: translate(-14px,-6px) rotate(0deg); transition: transform 0.08s ease-out; }
+  #hammer.whack { transform: translate(-14px,-6px) rotate(-55deg); }
+  .sndbtn { font-size: 15px; padding: 3px 10px; border-radius: 8px; border: 1px solid #4a2c0a55; background: #ffffffaa; color: #4a2c0a; cursor: pointer; font-weight: 600; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;🐹 Whack-a-Mole!&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Bonk brown moles for points (value ticks 3→2→1), grab rare golden moles for +10, but never hit the angry red bomb-moles or you lose 5 points. Watch for surprise Golden Rounds where everyone&#x27;s worth double!&lt;/p&gt;
+  &lt;div class=&quot;score&quot;&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt; &amp;nbsp;|&amp;nbsp; Misses: &lt;span id=&quot;miss&quot;&gt;0&lt;/span&gt; &amp;nbsp;|&amp;nbsp; &lt;button id=&quot;sndbtn&quot; class=&quot;sndbtn&quot;&gt;🔊 Sound: On&lt;/button&gt;&lt;/div&gt;
+  &lt;div class=&quot;board&quot; id=&quot;board&quot;&gt;
+    &lt;div id=&quot;hammer&quot;&gt;🔨&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage({ type: &#x27;game_input&#x27;, kind: t, key: e.key || null }, &#x27;*&#x27;);
+      } catch (_) {}
+    }, true);
+  });
+
+  var BOARD_W = 620, BOARD_H = 400;
+  var SPAWN_MS = 850, MOLE_LIFE_MS = 1650;
+  var score = 0, misses = 0;
+  var intervalId = null, moleTimeouts = [];
+  var running = false;
+  var goldenRound = false, goldenRoundTimeout = null, nextGoldenTimeout = null;
+  var board = document.getElementById(&#x27;board&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var missEl = document.getElementById(&#x27;miss&#x27;);
+  var hammer = document.getElementById(&#x27;hammer&#x27;);
+  var sndBtn = document.getElementById(&#x27;sndbtn&#x27;);
+
+  // ---- Sound engine ----
+  var actx = null, masterGain = null, soundOn = true;
+  function ac() {
+    if (!actx) {
+      try {
+        actx = new (window.AudioContext||window.webkitAudioContext)();
+        masterGain = actx.createGain();
+        masterGain.gain.value = 0.9;
+        masterGain.connect(actx.destination);
+      } catch(_){}
+    }
+    return actx;
+  }
+  function now() { return actx ? actx.currentTime : 0; }
+
+  // generic voice with optional pitch glide and filter
+  function voice(opts) {
+    var c = ac(); if (!c || !soundOn) return;
+    var t = c.currentTime + (opts.at || 0);
+    var o = c.createOscillator();
+    var g = c.createGain();
+    o.type = opts.type || &#x27;sine&#x27;;
+    o.frequency.setValueAtTime(opts.f0, t);
+    if (opts.f1 != null) o.frequency.exponentialRampToValueAtTime(Math.max(1, opts.f1), t + opts.dur);
+    var node = o;
+    if (opts.filter) {
+      var flt = c.createBiquadFilter();
+      flt.type = opts.filter;
+      flt.frequency.value = opts.cutoff || 1200;
+      o.connect(flt); node = flt;
+    }
+    var vol = opts.vol != null ? opts.vol : 0.15;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + 0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + opts.dur);
+    node.connect(g); g.connect(masterGain);
+    o.start(t); o.stop(t + opts.dur + 0.02);
+  }
+
+  // short noise burst (for whacks / explosions)
+  function noise(opts) {
+    var c = ac(); if (!c || !soundOn) return;
+    var t = c.currentTime + (opts.at || 0);
+    var len = Math.floor(c.sampleRate * opts.dur);
+    var buf = c.createBuffer(1, len, c.sampleRate);
+    var data = buf.getChannelData(0);
+    for (var i = 0; i &lt; len; i++) data[i] = (Math.random()*2-1);
+    var src = c.createBufferSource(); src.buffer = buf;
+    var flt = c.createBiquadFilter();
+    flt.type = opts.filter || &#x27;lowpass&#x27;;
+    flt.frequency.setValueAtTime(opts.cutoff0 || 2000, t);
+    if (opts.cutoff1 != null) flt.frequency.exponentialRampToValueAtTime(Math.max(20, opts.cutoff1), t + opts.dur);
+    var g = c.createGain();
+    var vol = opts.vol != null ? opts.vol : 0.2;
+    g.gain.setValueAtTime(vol, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + opts.dur);
+    src.connect(flt); flt.connect(g); g.connect(masterGain);
+    src.start(t); src.stop(t + opts.dur + 0.02);
+  }
+
+  // ---- Specific effects ----
+  function popSound() { // springy boing when a mole appears
+    voice({ f0: 300, f1: 720, dur: 0.14, type: &#x27;triangle&#x27;, vol: 0.16 });
+    voice({ f0: 720, f1: 420, dur: 0.12, type: &#x27;sine&#x27;, vol: 0.1, at: 0.1 });
+  }
+  function whackSound() { // cartoon boop + thud
+    voice({ f0: 520, f1: 160, dur: 0.1, type: &#x27;square&#x27;, vol: 0.2 });
+    noise({ dur: 0.12, cutoff0: 1800, cutoff1: 200, vol: 0.25 });
+    voice({ f0: 110, f1: 60, dur: 0.16, type: &#x27;sine&#x27;, vol: 0.18, at: 0.02 });
+  }
+  function laughSound() { // jeering &quot;nyah nyah&quot;
+    [0,1,2,3].forEach(function(i){
+      var f = [500,420,500,360][i];
+      voice({ f0: f, f1: f*0.85, dur: 0.13, type: &#x27;sawtooth&#x27;, vol: 0.12, at: i*0.14, filter:&#x27;lowpass&#x27;, cutoff: 1400 });
+    });
+  }
+  function goldenSpawnSound() { // shimmering arpeggio up
+    [660, 880, 1100, 1320, 1760].forEach(function(f, i){
+      voice({ f0: f, dur: 0.16, type: &#x27;sine&#x27;, vol: 0.12, at: i*0.06 });
+    });
+  }
+  function goldenHitSound() { // sparkle chime cascade
+    [1320, 1560, 1760, 2093, 2637].forEach(function(f, i){
+      voice({ f0: f, f1: f*1.02, dur: 0.25, type: &#x27;sine&#x27;, vol: 0.13, at: i*0.05 });
+    });
+  }
+  function bombSound() { // big explosion
+    noise({ dur: 0.45, cutoff0: 900, cutoff1: 60, vol: 0.4 });
+    voice({ f0: 160, f1: 40, dur: 0.4, type: &#x27;sawtooth&#x27;, vol: 0.3 });
+    voice({ f0: 80, f1: 30, dur: 0.5, type: &#x27;square&#x27;, vol: 0.25, at: 0.04 });
+  }
+  function fanfare() { // golden round trumpet flourish
+    var seq = [523,659,784,1047,784,1047];
+    seq.forEach(function(f,i){ voice({ f0: f, dur: 0.22, type: &#x27;triangle&#x27;, vol: 0.17, at: i*0.12, filter:&#x27;lowpass&#x27;, cutoff: 3000 }); });
+    // shimmer on top
+    [1568,2093].forEach(function(f,i){ voice({ f0: f, dur: 0.6, type:&#x27;sine&#x27;, vol:0.08, at: 0.5 + i*0.08 }); });
+  }
+  function tick(hi) { voice({ f0: hi?560:440, dur: 0.06, type:&#x27;sine&#x27;, vol: 0.08 }); }
+
+  // ---- Background music: bouncy loop ----
+  var musicTimer = null, beatStep = 0;
+  var bassPattern = [130.81, 0, 196.00, 0, 174.61, 0, 146.83, 0]; // C G F D
+  var arpPattern  = [523.25, 659.25, 783.99, 659.25, 587.33, 698.46, 880.00, 698.46];
+  function musicBeat() {
+    if (!soundOn || !running) return;
+    var step = beatStep % 8;
+    // kick / bass
+    if (bassPattern[step]) {
+      voice({ f0: bassPattern[step], dur: 0.18, type:&#x27;triangle&#x27;, vol: 0.10, filter:&#x27;lowpass&#x27;, cutoff: 500 });
+    }
+    // hi-hat-ish tick every step
+    noise({ dur: 0.03, cutoff0: 8000, cutoff1: 6000, filter:&#x27;highpass&#x27;, vol: 0.03 });
+    // arp during golden round for extra flavor
+    if (goldenRound) {
+      voice({ f0: arpPattern[step]*2, dur: 0.1, type:&#x27;sine&#x27;, vol: 0.05 });
+    } else if (step % 2 === 0) {
+      voice({ f0: arpPattern[step], dur: 0.12, type:&#x27;sine&#x27;, vol: 0.045 });
+    }
+    beatStep++;
+  }
+  function startMusic() {
+    if (musicTimer) clearInterval(musicTimer);
+    beatStep = 0;
+    musicTimer = setInterval(musicBeat, 210);
+  }
+  function stopMusic() {
+    if (musicTimer) { clearInterval(musicTimer); musicTimer = null; }
+  }
+
+  sndBtn.addEventListener(&#x27;click&#x27;, function(e){
+    e.stopPropagation();
+    soundOn = !soundOn;
+    sndBtn.textContent = soundOn ? &#x27;🔊 Sound: On&#x27; : &#x27;🔇 Sound: Off&#x27;;
+    if (soundOn &amp;&amp; running) { ac(); if(actx&amp;&amp;actx.state===&#x27;suspended&#x27;)actx.resume(); startMusic(); }
+    else stopMusic();
+  });
+
+  // ---- Hammer follows cursor ----
+  board.addEventListener(&#x27;mousemove&#x27;, function(e) {
+    var r = board.getBoundingClientRect();
+    hammer.style.left = (e.clientX - r.left) + &#x27;px&#x27;;
+    hammer.style.top = (e.clientY - r.top) + &#x27;px&#x27;;
+  });
+  board.addEventListener(&#x27;mousedown&#x27;, function() {
+    hammer.classList.add(&#x27;whack&#x27;);
+    setTimeout(function(){ hammer.classList.remove(&#x27;whack&#x27;); }, 120);
+  });
+
+  var moleSVG = &#x27;&lt;svg viewBox=&quot;0 0 64 64&quot; width=&quot;64&quot; height=&quot;64&quot;&gt;&#x27; +
+    &#x27;&lt;ellipse cx=&quot;32&quot; cy=&quot;40&quot; rx=&quot;24&quot; ry=&quot;22&quot; fill=&quot;#8a6240&quot;/&gt;&#x27; +
+    &#x27;&lt;ellipse cx=&quot;32&quot; cy=&quot;46&quot; rx=&quot;15&quot; ry=&quot;12&quot; fill=&quot;#c9a06a&quot;/&gt;&#x27; +
+    &#x27;&lt;circle cx=&quot;23&quot; cy=&quot;30&quot; r=&quot;6&quot; fill=&quot;#fff&quot;/&gt;&lt;circle cx=&quot;23&quot; cy=&quot;31&quot; r=&quot;3&quot; fill=&quot;#2a1a08&quot;/&gt;&#x27; +
+    &#x27;&lt;circle cx=&quot;41&quot; cy=&quot;30&quot; r=&quot;6&quot; fill=&quot;#fff&quot;/&gt;&lt;circle cx=&quot;41&quot; cy=&quot;31&quot; r=&quot;3&quot; fill=&quot;#2a1a08&quot;/&gt;&#x27; +
+    &#x27;&lt;ellipse cx=&quot;32&quot; cy=&quot;40&quot; rx=&quot;5&quot; ry=&quot;4&quot; fill=&quot;#e88&quot;/&gt;&#x27; +
+    &#x27;&lt;path d=&quot;M32 44 v5&quot; stroke=&quot;#fff&quot; stroke-width=&quot;2&quot;/&gt;&#x27; +
+    &#x27;&lt;path d=&quot;M27 49 h10&quot; stroke=&quot;#fff&quot; stroke-width=&quot;2&quot;/&gt;&lt;/svg&gt;&#x27;;
+
+  var goldSVG = &#x27;&lt;svg viewBox=&quot;0 0 64 64&quot; width=&quot;64&quot; height=&quot;64&quot;&gt;&#x27; +
+    &#x27;&lt;ellipse cx=&quot;32&quot; cy=&quot;40&quot; rx=&quot;24&quot; ry=&quot;22&quot; fill=&quot;#f5c518&quot;/&gt;&#x27; +
+    &#x27;&lt;ellipse cx=&quot;32&quot; cy=&quot;46&quot; rx=&quot;15&quot; ry=&quot;12&quot; fill=&quot;#fff2a8&quot;/&gt;&#x27; +
+    &#x27;&lt;circle cx=&quot;23&quot; cy=&quot;30&quot; r=&quot;6&quot; fill=&quot;#fff&quot;/&gt;&lt;circle cx=&quot;23&quot; cy=&quot;31&quot; r=&quot;3&quot; fill=&quot;#5a3a00&quot;/&gt;&#x27; +
+    &#x27;&lt;circle cx=&quot;41&quot; cy=&quot;30&quot; r=&quot;6&quot; fill=&quot;#fff&quot;/&gt;&lt;circle cx=&quot;41&quot; cy=&quot;31&quot; r=&quot;3&quot; fill=&quot;#5a3a00&quot;/&gt;&#x27; +
+    &#x27;&lt;ellipse cx=&quot;32&quot; cy=&quot;40&quot; rx=&quot;5&quot; ry=&quot;4&quot; fill=&quot;#e88&quot;/&gt;&#x27; +
+    &#x27;&lt;path d=&quot;M14 12 l3 6 6 1 -4 5 1 6 -6 -3 -6 3 1 -6 -4 -5 6 -1 z&quot; fill=&quot;#fff8&quot; transform=&quot;scale(0.5) translate(20 -6)&quot;/&gt;&#x27; +
+    &#x27;&lt;/svg&gt;&#x27;;
+
+  var bombSVG = &#x27;&lt;svg viewBox=&quot;0 0 64 64&quot; width=&quot;64&quot; height=&quot;64&quot;&gt;&#x27; +
+    &#x27;&lt;ellipse cx=&quot;32&quot; cy=&quot;40&quot; rx=&quot;24&quot; ry=&quot;22&quot; fill=&quot;#c0392b&quot;/&gt;&#x27; +
+    &#x27;&lt;ellipse cx=&quot;32&quot; cy=&quot;46&quot; rx=&quot;15&quot; ry=&quot;12&quot; fill=&quot;#e57368&quot;/&gt;&#x27; +
+    &#x27;&lt;path d=&quot;M15 26 l7 6 M49 26 l-7 6&quot; stroke=&quot;#3a0a05&quot; stroke-width=&quot;3&quot;/&gt;&#x27; +
+    &#x27;&lt;circle cx=&quot;23&quot; cy=&quot;32&quot; r=&quot;4&quot; fill=&quot;#3a0a05&quot;/&gt;&#x27; +
+    &#x27;&lt;circle cx=&quot;41&quot; cy=&quot;32&quot; r=&quot;4&quot; fill=&quot;#3a0a05&quot;/&gt;&#x27; +
+    &#x27;&lt;path d=&quot;M24 50 q8 -6 16 0&quot; stroke=&quot;#3a0a05&quot; stroke-width=&quot;3&quot; fill=&quot;none&quot;/&gt;&#x27; +
+    &#x27;&lt;/svg&gt;&#x27;;
+
+  function clearAllMoles() {
+    for (var i = 0; i &lt; moleTimeouts.length; i++) clearTimeout(moleTimeouts[i]);
+    moleTimeouts = [];
+    var holes = board.querySelectorAll(&#x27;.hole, .pop, .banner&#x27;);
+    holes.forEach(function(h){ h.remove(); });
+  }
+
+  function floatText(x, y, txt, color) {
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;pop&#x27;;
+    el.textContent = txt;
+    el.style.left = x + &#x27;px&#x27;;
+    el.style.top = y + &#x27;px&#x27;;
+    if (color) el.style.color = color;
+    board.appendChild(el);
+    setTimeout(function(){ el.remove(); }, 700);
+  }
+
+  function banner(txt) {
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;banner&#x27;;
+    el.textContent = txt;
+    board.appendChild(el);
+    setTimeout(function(){ el.remove(); }, 1400);
+  }
+
+  function spawnMole() {
+    if (!running) return;
+    var r = Math.random();
+    var type = &#x27;normal&#x27;;
+    if (goldenRound) {
+      type = r &lt; 0.15 ? &#x27;bomb&#x27; : (r &lt; 0.55 ? &#x27;golden&#x27; : &#x27;normal&#x27;);
+    } else {
+      if (r &lt; 0.07) type = &#x27;golden&#x27;;
+      else if (r &lt; 0.22) type = &#x27;bomb&#x27;;
+    }
+
+    var hole = document.createElement(&#x27;div&#x27;);
+    hole.className = &#x27;hole&#x27;;
+    var hx = Math.random() * (BOARD_W - 88);
+    var hy = Math.random() * (BOARD_H - 46);
+    hole.style.left = hx + &#x27;px&#x27;;
+    hole.style.top = hy + &#x27;px&#x27;;
+
+    var mole = document.createElement(&#x27;div&#x27;);
+    mole.className = &#x27;mole&#x27;;
+
+    var ptsEl = document.createElement(&#x27;div&#x27;);
+    ptsEl.className = &#x27;pts&#x27;;
+
+    var value, life = MOLE_LIFE_MS;
+    if (type === &#x27;golden&#x27;) {
+      mole.innerHTML = goldSVG;
+      mole.classList.add(&#x27;golden&#x27;);
+      value = 10;
+      ptsEl.textContent = &#x27;★&#x27;;
+      life = 1300;
+      goldenSpawnSound();
+    } else if (type === &#x27;bomb&#x27;) {
+      mole.innerHTML = bombSVG;
+      value = -5;
+      ptsEl.textContent = &#x27;💣&#x27;;
+    } else {
+      mole.innerHTML = moleSVG;
+      value = 3;
+      ptsEl.textContent = &#x27;3&#x27;;
+      popSound();
+    }
+    if (goldenRound &amp;&amp; type === &#x27;golden&#x27;) value = 20;
+    if (goldenRound &amp;&amp; type === &#x27;normal&#x27;) value = 6;
+
+    mole.appendChild(ptsEl);
+    hole.appendChild(mole);
+    board.appendChild(hole);
+
+    requestAnimationFrame(function(){ mole.classList.add(&#x27;up&#x27;); });
+
+    var alive = true;
+
+    if (type === &#x27;normal&#x27;) {
+      var t1 = setTimeout(function(){ if(alive){ value = goldenRound?4:2; ptsEl.textContent = value; tick(false);} }, life * 0.4);
+      var t2 = setTimeout(function(){ if(alive){ value = goldenRound?2:1; ptsEl.textContent = value; mole.classList.add(&#x27;wiggle&#x27;); tick(false);} }, life * 0.75);
+      moleTimeouts.push(t1, t2);
+    }
+
+    function whack() {
+      if (!alive) return;
+      alive = false;
+      if (type === &#x27;bomb&#x27;) {
+        score += value;
+        bombSound();
+        floatText(hx + 30, hy - 6, value, &#x27;#ff3333&#x27;);
+      } else if (type === &#x27;golden&#x27;) {
+        score += value;
+        goldenHitSound();
+        floatText(hx + 30, hy - 6, &#x27;+&#x27; + value, &#x27;#fff&#x27;);
+      } else {
+        score += value;
+        whackSound();
+        floatText(hx + 30, hy - 6, &#x27;+&#x27; + value, &#x27;#ffdd33&#x27;);
+      }
+      scoreEl.textContent = score;
+      mole.classList.remove(&#x27;wiggle&#x27;);
+      mole.classList.add(&#x27;bonked&#x27;);
+      hammer.classList.add(&#x27;whack&#x27;);
+      setTimeout(function(){ hammer.classList.remove(&#x27;whack&#x27;); }, 120);
+      setTimeout(function(){ if (hole.parentNode) hole.remove(); }, 200);
+    }
+    mole.addEventListener(&#x27;mousedown&#x27;, function(e){ e.stopPropagation(); whack(); });
+
+    var lifeTO = setTimeout(function(){
+      if (!alive) return;
+      alive = false;
+      if (type !== &#x27;bomb&#x27;) {
+        misses += 1;
+        missEl.textContent = misses;
+        laughSound();
+        floatText(hx + 30, hy - 6, &#x27;haha!&#x27;, &#x27;#ff5555&#x27;);
+      }
+      mole.classList.remove(&#x27;up&#x27;, &#x27;wiggle&#x27;);
+      setTimeout(function(){ if (hole.parentNode) hole.remove(); }, 200);
+    }, life);
+    moleTimeouts.push(lifeTO);
+  }
+
+  function scheduleGoldenRound() {
+    if (!running) return;
+    var delay = 8000 + Math.random() * 6000;
+    nextGoldenTimeout = setTimeout(function(){
+      if (!running) return;
+      startGoldenRound();
+    }, delay);
+  }
+
+  function startGoldenRound() {
+    goldenRound = true;
+    board.classList.add(&#x27;golden&#x27;);
+    banner(&#x27;✨ GOLDEN ROUND! ✨&#x27;);
+    fanfare();
+    goldenRoundTimeout = setTimeout(function(){
+      goldenRound = false;
+      board.classList.remove(&#x27;golden&#x27;);
+      var delay = 15000 + Math.random() * 10000;
+      nextGoldenTimeout = setTimeout(function(){ if (running) startGoldenRound(); }, delay);
+    }, 6000);
+  }
+
+  function startGame() {
+    if (running) return;
+    running = true;
+    score = 0; misses = 0;
+    goldenRound = false;
+    board.classList.remove(&#x27;golden&#x27;);
+    scoreEl.textContent = &#x27;0&#x27;; missEl.textContent = &#x27;0&#x27;;
+    if (intervalId) clearInterval(intervalId);
+    clearAllMoles();
+    if (actx &amp;&amp; actx.state === &#x27;suspended&#x27;) actx.resume();
+    if (soundOn) startMusic();
+    spawnMole();
+    intervalId = setInterval(spawnMole, SPAWN_MS);
+    scheduleGoldenRound();
+  }
+
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    goldenRound = false;
+    board.classList.remove(&#x27;golden&#x27;);
+    if (intervalId) { clearInterval(intervalId); intervalId = null; }
+    if (goldenRoundTimeout) { clearTimeout(goldenRoundTimeout); goldenRoundTimeout = null; }
+    if (nextGoldenTimeout) { clearTimeout(nextGoldenTimeout); nextGoldenTimeout = null; }
+    stopMusic();
+    clearAllMoles();
+  }
+
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) { ac(); startGame(); }
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

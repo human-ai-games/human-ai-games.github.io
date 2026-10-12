@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Snake</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>Snake</b> &middot; Game 025 &middot; Amateur producer &middot; Basic game: Snake</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #222; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 14px; background: white; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 7px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 600; }
+  .instructions { font-size: 16px; color: #666; max-width: 620px; margin: 0; line-height: 1.35; text-align: center; }
+  .status { display: flex; gap: 18px; align-items: center; }
+  .score { font-size: 22px; color: #555; margin: 0; }
+  .speed { font-size: 16px; font-weight: 600; padding: 2px 10px; border-radius: 12px; background: #e5e5e5; color: #555; }
+  .speed.boost { background: #d9f0dc; color: #1c7a2e; }
+  .speed.slow { background: #f6e0d6; color: #b45309; }
+  .legend { font-size: 14px; color: #777; margin: 0; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; justify-content: center; }
+  .legend .dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; vertical-align: middle; margin-right: 4px; }
+  .legend .sq { display: inline-block; width: 14px; height: 14px; border-radius: 3px; vertical-align: middle; margin-right: 4px; }
+  .field { position: relative; width: 600px; height: 400px; flex-shrink: 0; margin: 0; background: #ececec; border-radius: 8px; overflow: hidden; }
+  .cell { position: absolute; box-sizing: border-box; }
+  .snake { background: #666; border-radius: 2px; }
+  .head { background: #333; border-radius: 3px; box-shadow: 0 0 4px 1px rgba(0,0,0,0.3); }
+  .food { background: #444; border-radius: 50%; }
+  .bonus2 { background: #2f7fe0; border-radius: 50%; box-shadow: 0 0 8px 2px rgba(47,127,224,0.8); animation: pulse 0.9s ease-in-out infinite; }
+  .bonus3 { background: #f0b000; border-radius: 50%; box-shadow: 0 0 10px 3px rgba(240,176,0,0.9); animation: pulse 0.7s ease-in-out infinite; }
+  .patrol { background: #d63030; border-radius: 4px; box-shadow: 0 0 6px 1px rgba(214,48,48,0.7); }
+  .belt { background: rgba(60,150,220,0.28); }
+  .belt-arrow { color: rgba(30,90,160,0.85); font-weight: bold; font-size: 14px; text-align: center; line-height: 20px; }
+  @keyframes pulse { 0%,100% { transform: scale(0.8); } 50% { transform: scale(1.05); } }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;Snake&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Steer with arrow keys and eat dots and glowing orbs to grow, avoiding red patrols (they only hurt your head). Tap Shift to boost for 5 seconds — but you&#x27;ll crawl at half speed for 3 seconds afterward.&lt;/p&gt;
+  &lt;div class=&quot;status&quot;&gt;
+    &lt;div class=&quot;score&quot;&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;speed&quot; id=&quot;speed&quot;&gt;Normal&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;legend&quot;&gt;
+    &lt;span&gt;&lt;span class=&quot;dot&quot; style=&quot;background:#444&quot;&gt;&lt;/span&gt;Food +1&lt;/span&gt;
+    &lt;span&gt;&lt;span class=&quot;dot&quot; style=&quot;background:#2f7fe0&quot;&gt;&lt;/span&gt;Blue +2&lt;/span&gt;
+    &lt;span&gt;&lt;span class=&quot;dot&quot; style=&quot;background:#f0b000&quot;&gt;&lt;/span&gt;Gold +3&lt;/span&gt;
+    &lt;span&gt;&lt;span class=&quot;sq&quot; style=&quot;background:#d63030&quot;&gt;&lt;/span&gt;Patrol&lt;/span&gt;
+    &lt;span&gt;&lt;span class=&quot;sq&quot; style=&quot;background:rgba(60,150,220,0.5)&quot;&gt;&lt;/span&gt;Belt&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;field&quot; id=&quot;field&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var CELL = 20;
+  var COLS = 30, ROWS = 20;
+  var FIELD_W = COLS * CELL, FIELD_H = ROWS * CELL;
+  var BASE_MS = 150;
+  var running = false, tickId = null, gameOver = false;
+  var snake = [];
+  var dir = { x: 1, y: 0 };
+  var pendingDir = { x: 1, y: 0 };
+  var food = { x: 10, y: 10 };
+  var bonuses = [];
+  var patrols = [];
+  var belts = [];
+  var ticksSinceBonus = 0;
+  var tickCount = 0;
+  var score = 0;
+
+  // Speed state machine: &#x27;normal&#x27; | &#x27;boost&#x27; | &#x27;slow&#x27;
+  var speedMode = &#x27;normal&#x27;;
+  var modeUntil = 0;      // timestamp when current mode ends
+  var boostCooldownReady = true;
+  var field = document.getElementById(&#x27;field&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var speedEl = document.getElementById(&#x27;speed&#x27;);
+
+  var BOOST_MS = 5000, SLOW_MS = 3000;
+
+  function currentInterval() {
+    if (speedMode === &#x27;boost&#x27;) return BASE_MS / 2;   // twice as fast
+    if (speedMode === &#x27;slow&#x27;) return BASE_MS * 2;     // half speed
+    return BASE_MS;
+  }
+
+  function restartTimer() {
+    if (tickId) clearInterval(tickId);
+    tickId = setInterval(tick, currentInterval());
+  }
+
+  function setSpeedLabel() {
+    speedEl.classList.remove(&#x27;boost&#x27;, &#x27;slow&#x27;);
+    if (speedMode === &#x27;boost&#x27;) { speedEl.textContent = &#x27;BOOST!&#x27;; speedEl.classList.add(&#x27;boost&#x27;); }
+    else if (speedMode === &#x27;slow&#x27;) { speedEl.textContent = &#x27;Slow...&#x27;; speedEl.classList.add(&#x27;slow&#x27;); }
+    else { speedEl.textContent = &#x27;Normal&#x27;; }
+  }
+
+  function updateSpeedMode() {
+    if (speedMode === &#x27;boost&#x27; &amp;&amp; Date.now() &gt;= modeUntil) {
+      speedMode = &#x27;slow&#x27;;
+      modeUntil = Date.now() + SLOW_MS;
+      setSpeedLabel();
+      restartTimer();
+    } else if (speedMode === &#x27;slow&#x27; &amp;&amp; Date.now() &gt;= modeUntil) {
+      speedMode = &#x27;normal&#x27;;
+      boostCooldownReady = true;
+      setSpeedLabel();
+      restartTimer();
+    }
+  }
+
+  function triggerBoost() {
+    if (!running) return;
+    if (speedMode !== &#x27;normal&#x27; || !boostCooldownReady) return;
+    speedMode = &#x27;boost&#x27;;
+    boostCooldownReady = false;
+    modeUntil = Date.now() + BOOST_MS;
+    setSpeedLabel();
+    restartTimer();
+  }
+
+  function clearField() { field.innerHTML = &#x27;&#x27;; }
+
+  function drawCell(cls, x, y, text) {
+    var el = document.createElement(&#x27;div&#x27;);
+    el.className = &#x27;cell &#x27; + cls;
+    el.style.left = (x * CELL) + &#x27;px&#x27;;
+    el.style.top = (y * CELL) + &#x27;px&#x27;;
+    el.style.width = CELL + &#x27;px&#x27;;
+    el.style.height = CELL + &#x27;px&#x27;;
+    if (text) el.textContent = text;
+    field.appendChild(el);
+  }
+
+  function beltArrow(dx, dy) {
+    if (dx === 1) return &#x27;\u2192&#x27;;
+    if (dx === -1) return &#x27;\u2190&#x27;;
+    if (dy === 1) return &#x27;\u2193&#x27;;
+    if (dy === -1) return &#x27;\u2191&#x27;;
+    return &#x27;&#x27;;
+  }
+
+  function paint() {
+    clearField();
+    for (var k = 0; k &lt; belts.length; k++) {
+      var el = document.createElement(&#x27;div&#x27;);
+      el.className = &#x27;cell belt belt-arrow&#x27;;
+      el.style.left = (belts[k].x * CELL) + &#x27;px&#x27;;
+      el.style.top = (belts[k].y * CELL) + &#x27;px&#x27;;
+      el.style.width = CELL + &#x27;px&#x27;;
+      el.style.height = CELL + &#x27;px&#x27;;
+      el.textContent = beltArrow(belts[k].dx, belts[k].dy);
+      field.appendChild(el);
+    }
+    drawCell(&#x27;food&#x27;, food.x, food.y);
+    for (var b = 0; b &lt; bonuses.length; b++) {
+      drawCell(bonuses[b].grow === 3 ? &#x27;bonus3&#x27; : &#x27;bonus2&#x27;, bonuses[b].x, bonuses[b].y);
+    }
+    for (var i = snake.length - 1; i &gt;= 0; i--) {
+      drawCell(i === 0 ? &#x27;head&#x27; : &#x27;snake&#x27;, snake[i].x, snake[i].y);
+    }
+    for (var p = 0; p &lt; patrols.length; p++) drawCell(&#x27;patrol&#x27;, patrols[p].x, patrols[p].y);
+  }
+
+  function beltAt(x, y) {
+    for (var k = 0; k &lt; belts.length; k++) if (belts[k].x === x &amp;&amp; belts[k].y === y) return belts[k];
+    return null;
+  }
+
+  function cellOccupied(x, y) {
+    for (var i = 0; i &lt; snake.length; i++) if (snake[i].x === x &amp;&amp; snake[i].y === y) return true;
+    if (food.x === x &amp;&amp; food.y === y) return true;
+    for (var b = 0; b &lt; bonuses.length; b++) if (bonuses[b].x === x &amp;&amp; bonuses[b].y === y) return true;
+    for (var p = 0; p &lt; patrols.length; p++) if (patrols[p].x === x &amp;&amp; patrols[p].y === y) return true;
+    if (beltAt(x, y)) return true;
+    return false;
+  }
+
+  function freeCell() {
+    for (var tries = 0; tries &lt; 300; tries++) {
+      var x = Math.floor(Math.random() * COLS);
+      var y = Math.floor(Math.random() * ROWS);
+      if (!cellOccupied(x, y)) return { x: x, y: y };
+    }
+    return null;
+  }
+
+  function placeFood() {
+    var c = freeCell();
+    if (c) food = c;
+  }
+
+  function maybeSpawnBonus() {
+    ticksSinceBonus++;
+    if (ticksSinceBonus &gt; 45 &amp;&amp; bonuses.length &lt; 2 &amp;&amp; Math.random() &lt; 0.35) {
+      var c = freeCell();
+      if (c) {
+        var grow = Math.random() &lt; 0.35 ? 3 : 2;
+        bonuses.push({ x: c.x, y: c.y, grow: grow, ttl: 55 });
+        ticksSinceBonus = 0;
+      }
+    }
+    for (var b = bonuses.length - 1; b &gt;= 0; b--) {
+      bonuses[b].ttl--;
+      if (bonuses[b].ttl &lt;= 0) bonuses.splice(b, 1);
+    }
+  }
+
+  function initSnake() {
+    snake = [ { x: 5, y: 10 }, { x: 4, y: 10 }, { x: 3, y: 10 } ];
+    dir = { x: 1, y: 0 };
+    pendingDir = { x: 1, y: 0 };
+  }
+
+  function initHazards() {
+    patrols = [];
+    belts = [];
+    patrols.push({ x: 22, y: 5, dx: 1, dy: 0 });
+    patrols.push({ x: 15, y: 15, dx: 0, dy: 1 });
+    var y1 = 7;
+    for (var x = 10; x &lt;= 14; x++) belts.push({ x: x, y: y1, dx: 1, dy: 0 });
+    var y2 = 13;
+    for (var x2 = 18; x2 &lt;= 22; x2++) belts.push({ x: x2, y: y2, dx: -1, dy: 0 });
+    var vx = 26;
+    for (var y = 9; y &lt;= 12; y++) belts.push({ x: vx, y: y, dx: 0, dy: 1 });
+  }
+
+  function movePatrols() {
+    for (var p = 0; p &lt; patrols.length; p++) {
+      var pt = patrols[p];
+      if (tickCount % 8 === 0) {
+        var head = snake[0];
+        if (Math.abs(head.x - pt.x) &gt; Math.abs(head.y - pt.y)) {
+          pt.dx = head.x &gt; pt.x ? 1 : (head.x &lt; pt.x ? -1 : pt.dx);
+          pt.dy = 0;
+        } else {
+          pt.dy = head.y &gt; pt.y ? 1 : (head.y &lt; pt.y ? -1 : pt.dy);
+          pt.dx = 0;
+        }
+      }
+      var nx = pt.x + pt.dx, ny = pt.y + pt.dy;
+      if (nx &lt; 0 || nx &gt;= COLS) { pt.dx = -pt.dx; nx = pt.x + pt.dx; }
+      if (ny &lt; 0 || ny &gt;= ROWS) { pt.dy = -pt.dy; ny = pt.y + pt.dy; }
+      pt.x = Math.max(0, Math.min(COLS - 1, nx));
+      pt.y = Math.max(0, Math.min(ROWS - 1, ny));
+    }
+  }
+
+  // Only the HEAD is vulnerable to patrols now.
+  function patrolHitsHead() {
+    var head = snake[0];
+    for (var p = 0; p &lt; patrols.length; p++) {
+      if (patrols[p].x === head.x &amp;&amp; patrols[p].y === head.y) return true;
+    }
+    return false;
+  }
+
+  function grow(extra) {
+    var tail = snake[snake.length - 1];
+    for (var i = 0; i &lt; extra; i++) snake.push({ x: tail.x, y: tail.y });
+  }
+
+  function tick() {
+    if (!running) return;
+    tickCount++;
+    updateSpeedMode();
+    if (!(pendingDir.x === -dir.x &amp;&amp; pendingDir.y === -dir.y)) dir = pendingDir;
+    var head = snake[0];
+    var nx = head.x + dir.x, ny = head.y + dir.y;
+
+    var standing = beltAt(head.x, head.y);
+    if (standing) { nx += standing.dx; ny += standing.dy; }
+
+    if (nx &lt; 0 || nx &gt;= COLS || ny &lt; 0 || ny &gt;= ROWS) { endGame(); return; }
+
+    var ateFood = (nx === food.x &amp;&amp; ny === food.y);
+    var ateBonusIdx = -1;
+    for (var b = 0; b &lt; bonuses.length; b++) {
+      if (bonuses[b].x === nx &amp;&amp; bonuses[b].y === ny) { ateBonusIdx = b; break; }
+    }
+    var growing = ateFood || ateBonusIdx &gt;= 0;
+    var body = growing ? snake : snake.slice(0, snake.length - 1);
+    for (var i = 0; i &lt; body.length; i++) {
+      if (body[i].x === nx &amp;&amp; body[i].y === ny) { endGame(); return; }
+    }
+
+    snake.unshift({ x: nx, y: ny });
+
+    if (ateFood) {
+      score += 1;
+      scoreEl.textContent = score;
+      placeFood();
+    } else if (ateBonusIdx &gt;= 0) {
+      var bonus = bonuses[ateBonusIdx];
+      score += bonus.grow;
+      scoreEl.textContent = score;
+      grow(bonus.grow - 1);
+      bonuses.splice(ateBonusIdx, 1);
+    } else {
+      snake.pop();
+    }
+
+    movePatrols();
+    // Patrols only kill on head contact (tail can pass through them).
+    if (patrolHitsHead()) { endGame(); return; }
+
+    maybeSpawnBonus();
+    paint();
+  }
+
+  function endGame() {
+    running = false;
+    gameOver = true;
+    if (tickId) { clearInterval(tickId); tickId = null; }
+  }
+
+  function startGame() {
+    if (running) return;
+    score = 0;
+    scoreEl.textContent = &#x27;0&#x27;;
+    gameOver = false;
+    bonuses = [];
+    ticksSinceBonus = 0;
+    tickCount = 0;
+    speedMode = &#x27;normal&#x27;;
+    boostCooldownReady = true;
+    modeUntil = 0;
+    setSpeedLabel();
+    initSnake();
+    initHazards();
+    placeFood();
+    paint();
+    running = true;
+    restartTimer();
+  }
+  function stopGame() {
+    if (!running) return;
+    running = false;
+    if (tickId) { clearInterval(tickId); tickId = null; }
+  }
+
+  window.addEventListener(&#x27;keydown&#x27;, function (e) {
+    if (e.key === &#x27;ArrowLeft&#x27;) { pendingDir = { x: -1, y: 0 }; e.preventDefault(); }
+    else if (e.key === &#x27;ArrowRight&#x27;) { pendingDir = { x: 1, y: 0 }; e.preventDefault(); }
+    else if (e.key === &#x27;ArrowUp&#x27;) { pendingDir = { x: 0, y: -1 }; e.preventDefault(); }
+    else if (e.key === &#x27;ArrowDown&#x27;) { pendingDir = { x: 0, y: 1 }; e.preventDefault(); }
+    else if (e.key === &#x27;Shift&#x27;) { triggerBoost(); e.preventDefault(); }
+  });
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  initSnake();
+  initHazards();
+  setSpeedLabel();
+  paint();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

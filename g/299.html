@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SABER RUNNER</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>SABER RUNNER</b> &middot; Game 299 &middot; Amateur producer &middot; Basic game: Snake</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: &#x27;Trebuchet MS&#x27;, system-ui, sans-serif; margin: 0; padding: 0; background: #000; color: #ffe81f; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 12px; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 5px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: 3px; color: #ffe81f; text-shadow: 0 0 12px rgba(255,232,31,0.6); }
+  .instructions { font-size: 16px; color: #cfe6ff; max-width: 630px; margin: 0; line-height: 1.35; text-align: center; }
+  .hud { display: flex; gap: 16px; align-items: center; font-size: 18px; color: #ffe81f; text-shadow: 0 0 8px rgba(255,232,31,0.5); flex-wrap: wrap; justify-content: center; }
+  .hud b { color: #9fd0ff; font-weight: 600; }
+  #time.low { color: #ff5555; text-shadow: 0 0 10px #ff0000; }
+  #field { display: block; background: #05060f; border: 2px solid #1a2a4a; border-radius: 8px; box-shadow: 0 0 30px rgba(60,120,255,0.25) inset; cursor: crosshair; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;SABER RUNNER&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Move your mouse to guide your lightsaber and grab every Death Star before the timer runs out. Dodge the roaming Vader blockers — touching one costs you precious time. Use the &lt;strong&gt;Start&lt;/strong&gt;/&lt;strong&gt;Restart&lt;/strong&gt; button below.&lt;/p&gt;
+  &lt;div class=&quot;hud&quot;&gt;
+    &lt;span&gt;Score: &lt;span id=&quot;score&quot;&gt;0&lt;/span&gt;&lt;/span&gt;
+    &lt;span&gt;Left: &lt;b id=&quot;remaining&quot;&gt;0&lt;/b&gt;&lt;/span&gt;
+    &lt;span&gt;Time: &lt;span id=&quot;time&quot;&gt;30&lt;/span&gt;s&lt;/span&gt;
+    &lt;span&gt;Wave: &lt;b id=&quot;wave&quot;&gt;1&lt;/b&gt;&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;canvas id=&quot;field&quot; width=&quot;600&quot; height=&quot;410&quot;&gt;&lt;/canvas&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+
+  var canvas = document.getElementById(&#x27;field&#x27;);
+  var ctx = canvas.getContext(&#x27;2d&#x27;);
+  var W = canvas.width, H = canvas.height;
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var remainEl = document.getElementById(&#x27;remaining&#x27;);
+  var timeEl = document.getElementById(&#x27;time&#x27;);
+  var waveEl = document.getElementById(&#x27;wave&#x27;);
+
+  var running = false, gameOver = false, won = false;
+  var rafId = null;
+  var score = 0, wave = 1;
+  var timeLeft = 30;         // seconds
+  var lastTick = 0;
+
+  var SEG_LEN = 11, HEAD_R = 11, SPEED = 5.8;
+  var body = [];
+  var target = {x: W/2, y: H/2};
+
+  var foods = [], FOOD_R = 15;
+  var blockers = [], BLOCK_R = 16;
+  var stars = [], ties = [], particles = [];
+
+  var audioCtx = null;
+  function tone(freq, dur, type, vol) {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = type || &#x27;sawtooth&#x27;;
+      o.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      o.frequency.exponentialRampToValueAtTime(freq*0.4, audioCtx.currentTime + dur);
+      g.gain.setValueAtTime(vol||0.16, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(); o.stop(audioCtx.currentTime + dur);
+    } catch(_) {}
+  }
+
+  function makeStars(){ stars=[]; for(var i=0;i&lt;95;i++) stars.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.4+0.3,s:Math.random()*0.5+0.2}); }
+  function makeTies(){ ties=[]; for(var i=0;i&lt;2;i++) ties.push({x:Math.random()*W,y:Math.random()*H*0.7+15,s:Math.random()*0.6+0.4}); }
+
+  function randPos(margin){ return {x:margin+Math.random()*(W-2*margin), y:margin+Math.random()*(H-2*margin)}; }
+
+  function makeWave(){
+    var n = 4 + wave;             // more balls each wave
+    foods=[];
+    for(var i=0;i&lt;n;i++){ var p=randPos(35); foods.push({x:p.x,y:p.y,phase:Math.random()*6}); }
+    var bn = Math.min(1+wave, 5);  // more villains each wave
+    blockers=[];
+    for(var b=0;b&lt;bn;b++){
+      var bp=randPos(60);
+      blockers.push({x:bp.x,y:bp.y,vx:0,vy:0,spd:1.1+wave*0.25+Math.random()*0.4});
+    }
+    timeLeft = 26 + n*2;         // more time for more balls
+    updateHud();
+  }
+
+  function updateHud(){
+    scoreEl.textContent=score;
+    remainEl.textContent=foods.length;
+    timeEl.textContent=Math.ceil(timeLeft);
+    waveEl.textContent=wave;
+    timeEl.parentElement.classList.toggle(&#x27;low&#x27;, timeLeft&lt;=6);
+  }
+
+  function initSnake(){
+    body=[];
+    for(var i=0;i&lt;12;i++) body.push({x:W/2 - i*SEG_LEN, y:H/2});
+    target={x:W/2,y:H/2};
+  }
+
+  function burst(x,y,color){
+    for(var i=0;i&lt;12;i++){
+      var a=Math.random()*6.28, sp=Math.random()*3+1;
+      particles.push({x:x,y:y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:1,color:color});
+    }
+  }
+
+  function update(dt){
+    // timer
+    timeLeft -= dt;
+    if(timeLeft&lt;=0){ timeLeft=0; endGame(false); return; }
+
+    var head=body[0];
+    var dx=target.x-head.x, dy=target.y-head.y;
+    var d=Math.sqrt(dx*dx+dy*dy)||1;
+    var mv=Math.min(SPEED, d);
+    head.x+=dx/d*mv; head.y+=dy/d*mv;
+    head.x=Math.max(HEAD_R,Math.min(W-HEAD_R,head.x));
+    head.y=Math.max(HEAD_R,Math.min(H-HEAD_R,head.y));
+
+    for(var i=1;i&lt;body.length;i++){
+      var px=body[i-1], cur=body[i];
+      var ax=px.x-cur.x, ay=px.y-cur.y;
+      var ad=Math.sqrt(ax*ax+ay*ay)||1;
+      var diff=ad-SEG_LEN;
+      cur.x+=ax/ad*diff; cur.y+=ay/ad*diff;
+    }
+
+    // eat foods
+    for(var f=foods.length-1;f&gt;=0;f--){
+      var fo=foods[f];
+      var ex=fo.x-head.x, ey=fo.y-head.y;
+      if(Math.sqrt(ex*ex+ey*ey)&lt;HEAD_R+FOOD_R){
+        score++; foods.splice(f,1);
+        burst(fo.x,fo.y,&#x27;220,230,240&#x27;);
+        tone(880,0.12,&#x27;square&#x27;); setTimeout(function(){tone(1320,0.1,&#x27;square&#x27;);},50);
+        var tail=body[body.length-1];
+        for(var g=0;g&lt;3;g++) body.push({x:tail.x,y:tail.y});
+        updateHud();
+        if(foods.length===0){ winWave(); return; }
+      }
+    }
+
+    // villain blockers chase head
+    for(var b=0;b&lt;blockers.length;b++){
+      var bl=blockers[b];
+      var bdx=head.x-bl.x, bdy=head.y-bl.y;
+      var bd=Math.sqrt(bdx*bdx+bdy*bdy)||1;
+      bl.vx = bl.vx*0.9 + (bdx/bd)*bl.spd*0.3;
+      bl.vy = bl.vy*0.9 + (bdy/bd)*bl.spd*0.3;
+      bl.x+=bl.vx; bl.y+=bl.vy;
+      bl.x=Math.max(BLOCK_R,Math.min(W-BLOCK_R,bl.x));
+      bl.y=Math.max(BLOCK_R,Math.min(H-BLOCK_R,bl.y));
+      if(bd &lt; HEAD_R+BLOCK_R &amp;&amp; bl.cool!==true){
+        // penalty: lose time, knock blocker back
+        timeLeft = Math.max(0, timeLeft-3);
+        bl.cool=true; setTimeout(function(x){return function(){x.cool=false;};}(bl),800);
+        bl.vx=-bdx/bd*8; bl.vy=-bdy/bd*8;
+        burst(head.x,head.y,&#x27;255,60,60&#x27;);
+        tone(120,0.4,&#x27;sawtooth&#x27;,0.2);
+        updateHud();
+        if(timeLeft&lt;=0){ endGame(false); return; }
+      }
+    }
+
+    // self collision
+    for(var i=14;i&lt;body.length;i++){
+      var sdx=body[i].x-head.x, sdy=body[i].y-head.y;
+      if(Math.sqrt(sdx*sdx+sdy*sdy)&lt;HEAD_R*0.8){ endGame(false); return; }
+    }
+
+    // particles
+    for(var p=particles.length-1;p&gt;=0;p--){
+      var pt=particles[p]; pt.x+=pt.vx; pt.y+=pt.vy; pt.vx*=0.94; pt.vy*=0.94; pt.life-=0.04;
+      if(pt.life&lt;=0) particles.splice(p,1);
+    }
+
+    // decor
+    for(var s=0;s&lt;stars.length;s++){ stars[s].x-=stars[s].s; if(stars[s].x&lt;0){stars[s].x=W;stars[s].y=Math.random()*H;} }
+    for(var t=0;t&lt;ties.length;t++){ ties[t].x-=ties[t].s*1.4; if(ties[t].x&lt;-40){ties[t].x=W+20;ties[t].y=Math.random()*H*0.7+15;} }
+
+    updateHud();
+  }
+
+  function winWave(){
+    won=true;
+    var bonus = Math.ceil(timeLeft)*2;
+    score += bonus;
+    tone(660,0.15,&#x27;square&#x27;); setTimeout(function(){tone(990,0.15,&#x27;square&#x27;);},120); setTimeout(function(){tone(1320,0.25,&#x27;square&#x27;);},240);
+    setTimeout(function(){
+      if(!running) return;
+      won=false; wave++; makeWave();
+    }, 1400);
+  }
+
+  function drawTie(x,y,sc){
+    ctx.save(); ctx.translate(x,y); ctx.scale(sc,sc);
+    ctx.fillStyle=&#x27;#2a3340&#x27;; ctx.strokeStyle=&#x27;#9fb2c8&#x27;; ctx.lineWidth=2;
+    ctx.fillRect(-16,-12,5,24); ctx.fillRect(11,-12,5,24);
+    ctx.beginPath(); ctx.moveTo(-13,-12); ctx.lineTo(-13,12); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(13,-12); ctx.lineTo(13,12); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-11,0); ctx.lineTo(11,0); ctx.stroke();
+    ctx.fillStyle=&#x27;#3a4656&#x27;; ctx.beginPath(); ctx.arc(0,0,6,0,7); ctx.fill();
+    ctx.strokeStyle=&#x27;#c0d0e0&#x27;; ctx.beginPath(); ctx.arc(0,0,6,0,7); ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawVader(bl){
+    var x=bl.x, y=bl.y, r=BLOCK_R;
+    ctx.save(); ctx.translate(x,y);
+    // menacing red aura
+    var au=ctx.createRadialGradient(0,0,r*0.4,0,0,r*1.7);
+    au.addColorStop(0,&#x27;rgba(255,40,40,0.35)&#x27;); au.addColorStop(1,&#x27;rgba(255,40,40,0)&#x27;);
+    ctx.fillStyle=au; ctx.beginPath(); ctx.arc(0,0,r*1.7,0,7); ctx.fill();
+    // helmet dome
+    ctx.fillStyle=&#x27;#181818&#x27;;
+    ctx.beginPath(); ctx.arc(0,-2,r,Math.PI,0); ctx.fill();
+    // face mask
+    ctx.beginPath(); ctx.moveTo(-r,-2); ctx.lineTo(-r*0.7,r); ctx.lineTo(r*0.7,r); ctx.lineTo(r,-2); ctx.closePath(); ctx.fill();
+    // triangular chin
+    ctx.fillStyle=&#x27;#0d0d0d&#x27;;
+    ctx.beginPath(); ctx.moveTo(-r*0.35,r*0.5); ctx.lineTo(0,r*1.15); ctx.lineTo(r*0.35,r*0.5); ctx.closePath(); ctx.fill();
+    // glowing red eyes
+    ctx.fillStyle=&#x27;#ff3030&#x27;; ctx.shadowColor=&#x27;#ff0000&#x27;; ctx.shadowBlur=8;
+    ctx.beginPath(); ctx.moveTo(-r*0.6,-r*0.1); ctx.lineTo(-r*0.15,0); ctx.lineTo(-r*0.5,r*0.25); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(r*0.6,-r*0.1); ctx.lineTo(r*0.15,0); ctx.lineTo(r*0.5,r*0.25); ctx.closePath(); ctx.fill();
+    ctx.shadowBlur=0;
+    // mouth grille
+    ctx.strokeStyle=&#x27;#444&#x27;; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(-r*0.25,r*0.55); ctx.lineTo(r*0.25,r*0.55); ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawDeathStar(fo){
+    var pulse=1+0.1*Math.sin(Date.now()/200+fo.phase);
+    var fr=FOOD_R*pulse;
+    ctx.save();
+    var grad=ctx.createRadialGradient(fo.x-fr*0.3,fo.y-fr*0.3,fr*0.2,fo.x,fo.y,fr);
+    grad.addColorStop(0,&#x27;#eef2f6&#x27;); grad.addColorStop(0.7,&#x27;#a7b2bd&#x27;); grad.addColorStop(1,&#x27;#6b7681&#x27;);
+    ctx.fillStyle=grad; ctx.beginPath(); ctx.arc(fo.x,fo.y,fr,0,7); ctx.fill();
+    // trench line
+    ctx.strokeStyle=&#x27;#4a5560&#x27;; ctx.lineWidth=1.4;
+    ctx.beginPath(); ctx.moveTo(fo.x-fr,fo.y-fr*0.12); ctx.lineTo(fo.x+fr,fo.y-fr*0.12); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(fo.x-fr*0.9,fo.y+fr*0.35); ctx.lineTo(fo.x+fr*0.9,fo.y+fr*0.35); ctx.stroke();
+    // superlaser dish (red)
+    ctx.fillStyle=&#x27;#3a4550&#x27;; ctx.beginPath(); ctx.arc(fo.x-fr*0.35,fo.y-fr*0.4,fr*0.26,0,7); ctx.fill();
+    ctx.fillStyle=&#x27;#ff4030&#x27;; ctx.shadowColor=&#x27;#ff2020&#x27;; ctx.shadowBlur=6;
+    ctx.beginPath(); ctx.arc(fo.x-fr*0.35,fo.y-fr*0.4,fr*0.11,0,7); ctx.fill();
+    ctx.shadowBlur=0;
+    ctx.restore();
+  }
+
+  function draw(){
+    ctx.fillStyle=&#x27;#05060f&#x27;; ctx.fillRect(0,0,W,H);
+    // twin suns
+    var g1=ctx.createRadialGradient(70,55,4,70,55,52);
+    g1.addColorStop(0,&#x27;rgba(255,220,120,0.85)&#x27;); g1.addColorStop(1,&#x27;rgba(255,220,120,0)&#x27;);
+    ctx.fillStyle=g1; ctx.beginPath(); ctx.arc(70,55,52,0,7); ctx.fill();
+    var g2=ctx.createRadialGradient(118,85,3,118,85,30);
+    g2.addColorStop(0,&#x27;rgba(255,150,80,0.75)&#x27;); g2.addColorStop(1,&#x27;rgba(255,150,80,0)&#x27;);
+    ctx.fillStyle=g2; ctx.beginPath(); ctx.arc(118,85,30,0,7); ctx.fill();
+
+    ctx.fillStyle=&#x27;#ffffff&#x27;;
+    for(var i=0;i&lt;stars.length;i++){ ctx.globalAlpha=0.7; ctx.beginPath(); ctx.arc(stars[i].x,stars[i].y,stars[i].r,0,7); ctx.fill(); }
+    ctx.globalAlpha=1;
+
+    for(var t=0;t&lt;ties.length;t++) drawTie(ties[t].x,ties[t].y,ties[t].s);
+    for(var f=0;f&lt;foods.length;f++) drawDeathStar(foods[f]);
+    for(var b=0;b&lt;blockers.length;b++) drawVader(blockers[b]);
+
+    // particles
+    for(var p=0;p&lt;particles.length;p++){
+      var pt=particles[p];
+      ctx.globalAlpha=Math.max(0,pt.life);
+      ctx.fillStyle=&#x27;rgba(&#x27;+pt.color+&#x27;,1)&#x27;;
+      ctx.beginPath(); ctx.arc(pt.x,pt.y,3*pt.life+0.5,0,7); ctx.fill();
+    }
+    ctx.globalAlpha=1;
+
+    // saber blade - tapered glowing body with bright tip
+    for(var i=body.length-1;i&gt;=0;i--){
+      var seg=body[i];
+      var rad = i===0? HEAD_R+1 : Math.max(3, HEAD_R*0.85*(1-i/(body.length*1.3)));
+      ctx.save();
+      ctx.shadowColor=&#x27;#39ff5c&#x27;; ctx.shadowBlur=i===0?22:11;
+      if(i===0){ ctx.fillStyle=&#x27;#ffffff&#x27;; }
+      else { ctx.fillStyle=&#x27;#39ff5c&#x27;; }
+      ctx.beginPath(); ctx.arc(seg.x,seg.y,rad,0,7); ctx.fill();
+      ctx.restore();
+    }
+    // saber hilt at tail
+    if(body.length&gt;1){
+      var tl=body[body.length-1], pr=body[body.length-2];
+      var ang=Math.atan2(tl.y-pr.y,tl.x-pr.x);
+      ctx.save(); ctx.translate(tl.x,tl.y); ctx.rotate(ang);
+      ctx.fillStyle=&#x27;#888&#x27;; ctx.fillRect(0,-3,10,6);
+      ctx.fillStyle=&#x27;#444&#x27;; ctx.fillRect(3,-3,2,6);
+      ctx.restore();
+    }
+
+    if(won){
+      ctx.fillStyle=&#x27;rgba(0,0,0,0.55)&#x27;; ctx.fillRect(0,0,W,H);
+      ctx.fillStyle=&#x27;#39ff5c&#x27;; ctx.font=&#x27;bold 30px Trebuchet MS&#x27;; ctx.textAlign=&#x27;center&#x27;;
+      ctx.shadowColor=&#x27;#39ff5c&#x27;; ctx.shadowBlur=18;
+      ctx.fillText(&#x27;WAVE &#x27;+wave+&#x27; CLEARED!&#x27;, W/2, H/2-4);
+      ctx.shadowBlur=0; ctx.fillStyle=&#x27;#ffe81f&#x27;; ctx.font=&#x27;18px Trebuchet MS&#x27;;
+      ctx.fillText(&#x27;Time bonus added — next wave incoming...&#x27;, W/2, H/2+28);
+    }
+    if(gameOver){
+      ctx.fillStyle=&#x27;rgba(0,0,0,0.62)&#x27;; ctx.fillRect(0,0,W,H);
+      ctx.fillStyle=&#x27;#ff4444&#x27;; ctx.font=&#x27;bold 30px Trebuchet MS&#x27;; ctx.textAlign=&#x27;center&#x27;;
+      ctx.shadowColor=&#x27;#ff0000&#x27;; ctx.shadowBlur=20;
+      ctx.fillText(timeLeft&lt;=0?&#x27;OUT OF TIME&#x27;:&#x27;THE FORCE HAS LEFT YOU&#x27;, W/2, H/2-4);
+      ctx.shadowBlur=0; ctx.fillStyle=&#x27;#ffe81f&#x27;; ctx.font=&#x27;18px Trebuchet MS&#x27;;
+      ctx.fillText(&#x27;Score: &#x27;+score+&#x27; — press Restart below&#x27;, W/2, H/2+28);
+    }
+  }
+
+  function loop(time){
+    if(!running) return;
+    if(!lastTick) lastTick=time;
+    var dt=(time-lastTick)/1000; lastTick=time;
+    if(dt&gt;0.1) dt=0.1;
+    if(!won) update(dt); else { for(var p=particles.length-1;p&gt;=0;p--){var pt=particles[p];pt.x+=pt.vx;pt.y+=pt.vy;pt.life-=0.04;if(pt.life&lt;=0)particles.splice(p,1);} }
+    if(!running) return;
+    draw();
+    rafId=requestAnimationFrame(loop);
+  }
+
+  function endGame(w){
+    running=false; gameOver=true;
+    tone(160,0.5,&#x27;sawtooth&#x27;,0.2);
+    if(rafId){ cancelAnimationFrame(rafId); rafId=null; }
+    draw();
+  }
+
+  function startGame(){
+    score=0; wave=1; gameOver=false; won=false; particles=[];
+    initSnake(); makeStars(); makeTies(); makeWave();
+    lastTick=0; running=true;
+    if(rafId) cancelAnimationFrame(rafId);
+    rafId=requestAnimationFrame(loop);
+  }
+  function stopGame(){
+    running=false;
+    if(rafId){ cancelAnimationFrame(rafId); rafId=null; }
+  }
+
+  canvas.addEventListener(&#x27;mousemove&#x27;, function(e){
+    var r=canvas.getBoundingClientRect();
+    target.x=(e.clientX-r.left)*(W/r.width);
+    target.y=(e.clientY-r.top)*(H/r.height);
+  });
+
+  window.addEventListener(&#x27;message&#x27;, function(e){
+    if(!e.data||typeof e.data!==&#x27;object&#x27;) return;
+    if(e.data.type===&#x27;wd_start&#x27;) startGame();
+    else if(e.data.type===&#x27;wd_stop&#x27;) stopGame();
+  });
+
+  // initial visible state
+  makeStars(); makeTies(); initSnake(); makeWave(); draw();
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject — server-side fallback when the LLM
+ * dropped the snippet that GAME_DESIGNER_SYSTEM_PROMPT requires verbatim.
+ * Reports engagement events to the parent so customer-phase telemetry
+ * remains intact. Also reports content size on request so the parent can
+ * scale the iframe to exactly fit its wrap. Idempotent: if a previous
+ * heartbeat already ran (e.g. an old-style stored copy plus this newer
+ * one injected on top), the second copy short-circuits. */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  // Suppress in-iframe scrollbars. The parent fits the iframe layout
+  // box to match the content size, so internal scroll is redundant —
+  // and if the LLM&#x27;s CSS sets body overflow: auto, the scrollbar shows
+  // briefly before the fit lands. Force hidden so it never appears.
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  // Iframe-internal JS error capture. window.onerror inside a sandboxed
+  // iframe can&#x27;t post to /api/js_error directly, so we relay to the
+  // parent via postMessage; parent&#x27;s error_logger.js forwards to the
+  // server. Catches LLM-emitted broken HTML (invalid hex, undefined
+  // variables, etc.) that would otherwise fail silently inside the
+  // iframe.
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      // Debounce: don&#x27;t fire more than ~10× per second. ResizeObserver
+      // fires repeatedly during layout/font load; we only need the latest.
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      // Clamp: reject obviously bogus dimensions. Any browser-game viewport
+      // is well under 4000×4000 logical px; readings beyond that are layout
+      // noise during load/visibility transitions.
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  // Parent posts wd_remeasure when it makes the iframe visible (the body&#x27;s
+  // ResizeObserver doesn&#x27;t fire on display:none→block of an outer ancestor
+  // because the iframe document didn&#x27;t actually resize). Wait a frame for
+  // layout to settle before measuring.
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>

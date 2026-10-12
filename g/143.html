@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Whack-a-mole</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f5; color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; min-height: 100vh; box-sizing: border-box; }
+  .header { font-size: 13px; color: #666; margin-bottom: 14px; text-align: center; }
+  .header a { color: #1f6feb; }
+  iframe { width: 720px; max-width: 100%; height: 640px; max-height: 80vh;
+    border: 1px solid #ccc; border-radius: 6px; background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  .controls button { padding: 9px 22px; background: #1f6feb; color: white; border: none;
+    border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; }
+  .controls button:hover:not(:disabled) { background: #195fcb; }
+  .controls button:disabled { background: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="../index.html">&larr; All games</a> &middot; <b>Whack-a-mole</b> &middot; Game 143 &middot; Professional producer &middot; Basic game: Whack-a-mole</div>
+  <iframe id="game" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;
+  html, body { height: 100%; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #222; overflow-y: auto; }
+  .game { max-width: 720px; margin: 0 auto; padding: 16px; background: white; height: 100%; box-sizing: border-box; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 8px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 600; }
+  .instructions { font-size: 16px; color: #666; max-width: 620px; margin: 0; line-height: 1.4; }
+  .hud { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; justify-content: center; font-size: 18px; color: #555; }
+  .hud strong { color: #222; }
+  .timebar { width: 620px; height: 10px; background: #e0e0e0; border-radius: 6px; overflow: hidden; }
+  .timefill { height: 100%; width: 100%; background: #3ba55c; transition: width 0.1s linear; }
+  .board { position: relative; width: 620px; height: 400px; flex-shrink: 0; margin: 0; background: #ececec; border-radius: 8px; overflow: hidden; }
+  .mole { position: absolute; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #7a5230, #4a2f16); cursor: pointer; box-shadow: inset 0 -4px 6px rgba(0,0,0,0.3); }
+  .mole.mover { background: radial-gradient(circle at 35% 30%, #4a7ac0, #1f3f70); }
+  .mole.shrinker { background: radial-gradient(circle at 35% 30%, #c05a5a, #701f2f); }
+  .mole.bonus { background: none; box-shadow: none; display: flex; align-items: center; justify-content: center; font-size: 44px; line-height: 1; filter: drop-shadow(0 0 6px gold); }
+  .mole.spike { background: none; box-shadow: none; display: flex; align-items: center; justify-content: center; font-size: 44px; line-height: 1; }
+  .popup { position: absolute; font-weight: 700; font-size: 20px; color: #2a8f4a; pointer-events: none; animation: rise 0.5s ease-out forwards; }
+  .popup.gold { color: #d9a300; font-size: 26px; }
+  .popup.bad { color: #c0392b; font-size: 24px; }
+  @keyframes rise { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-30px); opacity: 0; } }
+  .banner { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(255,255,255,0.85); font-size: 24px; color: #333; gap: 6px; }
+  .banner .big { font-size: 34px; font-weight: 700; }
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;game&quot;&gt;
+  &lt;h1&gt;Whack-a-mole&lt;/h1&gt;
+  &lt;p class=&quot;instructions&quot;&gt;Click moles for 5 points and golden ⭐ stars for 25 — but avoid the red spiked 💥 bombs, which cost you 10 points. Some targets drift or shrink fast, and each 25-second round gets smaller and quicker.&lt;/p&gt;
+  &lt;div class=&quot;hud&quot;&gt;
+    &lt;span&gt;Round: &lt;strong id=&quot;round&quot;&gt;1&lt;/strong&gt;&lt;/span&gt;
+    &lt;span&gt;Round Score: &lt;strong id=&quot;score&quot;&gt;0&lt;/strong&gt;&lt;/span&gt;
+    &lt;span&gt;Total: &lt;strong id=&quot;total&quot;&gt;0&lt;/strong&gt;&lt;/span&gt;
+    &lt;span&gt;Time: &lt;strong id=&quot;time&quot;&gt;25&lt;/strong&gt;s&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;timebar&quot;&gt;&lt;div class=&quot;timefill&quot; id=&quot;timefill&quot;&gt;&lt;/div&gt;&lt;/div&gt;
+  &lt;div class=&quot;board&quot; id=&quot;board&quot;&gt;
+    &lt;div class=&quot;banner&quot; id=&quot;banner&quot;&gt;&lt;div class=&quot;big&quot;&gt;Ready?&lt;/div&gt;&lt;div&gt;Press Start below to begin.&lt;/div&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  var BOARD_W = 620, BOARD_H = 400;
+  var ROUND_MS = 25000;
+  var HIT_POINTS = 5, BONUS_POINTS = 25, SPIKE_PENALTY = 10;
+  var round = 1, score = 0, total = 0;
+  var spawnInterval = null, roundTimeout = null, tickInterval = null, animFrame = null;
+  var moleTimeouts = [];
+  var movers = []; // active moving/shrinking moles for animation loop
+  var actives = []; // all active shapes (for overlap checks)
+  var running = false;
+  var roundEndTime = 0;
+
+  var board = document.getElementById(&#x27;board&#x27;);
+  var scoreEl = document.getElementById(&#x27;score&#x27;);
+  var totalEl = document.getElementById(&#x27;total&#x27;);
+  var roundEl = document.getElementById(&#x27;round&#x27;);
+  var timeEl = document.getElementById(&#x27;time&#x27;);
+  var timefill = document.getElementById(&#x27;timefill&#x27;);
+  var banner = document.getElementById(&#x27;banner&#x27;);
+
+  function roundParams(r) {
+    var size = Math.max(28, 68 - (r - 1) * 6);
+    var life = Math.max(450, 1200 - (r - 1) * 120);
+    var spawn = Math.max(400, 900 - (r - 1) * 60);
+    return { size: size, life: life, spawn: spawn };
+  }
+
+  function clearAllMoles() {
+    for (var i = 0; i &lt; moleTimeouts.length; i++) clearTimeout(moleTimeouts[i]);
+    moleTimeouts = [];
+    movers = [];
+    actives = [];
+    var moles = board.querySelectorAll(&#x27;.mole&#x27;);
+    for (var j = 0; j &lt; moles.length; j++) board.removeChild(moles[j]);
+  }
+
+  function showPopup(x, y, text, cls) {
+    var p = document.createElement(&#x27;div&#x27;);
+    p.className = &#x27;popup&#x27; + (cls ? &#x27; &#x27; + cls : &#x27;&#x27;);
+    p.textContent = text;
+    p.style.left = x + &#x27;px&#x27;;
+    p.style.top = y + &#x27;px&#x27;;
+    board.appendChild(p);
+    setTimeout(function () { if (p.parentNode === board) board.removeChild(p); }, 500);
+  }
+
+  // Find a non-overlapping position for a shape of given size. Returns null if none found.
+  function findFreeSpot(size) {
+    for (var attempt = 0; attempt &lt; 30; attempt++) {
+      var x = Math.random() * (BOARD_W - size);
+      var y = Math.random() * (BOARD_H - size);
+      var ok = true;
+      for (var i = 0; i &lt; actives.length; i++) {
+        var a = actives[i];
+        // Rectangle overlap test with a small gap.
+        if (x &lt; a.x + a.size + 4 &amp;&amp; x + size + 4 &gt; a.x &amp;&amp;
+            y &lt; a.y + a.size + 4 &amp;&amp; y + size + 4 &gt; a.y) {
+          ok = false; break;
+        }
+      }
+      if (ok) return { x: x, y: y };
+    }
+    return null;
+  }
+
+  function removeActive(state) {
+    var idx = actives.indexOf(state);
+    if (idx &gt;= 0) actives.splice(idx, 1);
+    var midx = movers.indexOf(state);
+    if (midx &gt;= 0) movers.splice(midx, 1);
+  }
+
+  function spawnMole() {
+    var p = roundParams(round);
+    var roll = Math.random();
+    var type;
+    if (roll &lt; 0.15) type = &#x27;spike&#x27;;
+    else if (roll &lt; 0.24) type = &#x27;bonus&#x27;;
+    else if (roll &lt; 0.50) type = &#x27;mover&#x27;;
+    else if (roll &lt; 0.72) type = &#x27;shrinker&#x27;;
+    else type = &#x27;normal&#x27;;
+
+    var size = p.size;
+    if (type === &#x27;bonus&#x27; || type === &#x27;spike&#x27;) size = Math.max(40, p.size);
+
+    var spot = findFreeSpot(size);
+    if (!spot) return; // board too crowded this tick; skip
+
+    var mole = document.createElement(&#x27;div&#x27;);
+    mole.className = &#x27;mole&#x27; + (type !== &#x27;normal&#x27; ? &#x27; &#x27; + type : &#x27;&#x27;);
+    mole.style.width = size + &#x27;px&#x27;;
+    mole.style.height = size + &#x27;px&#x27;;
+    mole.style.left = spot.x + &#x27;px&#x27;;
+    mole.style.top = spot.y + &#x27;px&#x27;;
+    if (type === &#x27;bonus&#x27;) mole.textContent = &#x27;⭐&#x27;;
+    if (type === &#x27;spike&#x27;) mole.textContent = &#x27;💥&#x27;;
+
+    var state = { el: mole, x: spot.x, y: spot.y, size: size, type: type };
+    if (type === &#x27;mover&#x27;) {
+      var speed = 1.5 + round * 0.3;
+      var ang = Math.random() * Math.PI * 2;
+      state.vx = Math.cos(ang) * speed;
+      state.vy = Math.sin(ang) * speed;
+    }
+    if (type === &#x27;shrinker&#x27;) {
+      state.startSize = size;
+      state.shrinkStart = Date.now();
+      state.shrinkDur = Math.max(500, p.life);
+    }
+
+    var hit = false;
+    mole.addEventListener(&#x27;click&#x27;, function () {
+      if (hit) return;
+      hit = true;
+      var pts;
+      if (type === &#x27;spike&#x27;) pts = -SPIKE_PENALTY;
+      else if (type === &#x27;bonus&#x27;) pts = BONUS_POINTS;
+      else pts = HIT_POINTS;
+      score += pts; total += pts;
+      scoreEl.textContent = score;
+      totalEl.textContent = total;
+      if (pts &lt; 0) showPopup(state.x, state.y, pts, &#x27;bad&#x27;);
+      else showPopup(state.x, state.y, &#x27;+&#x27; + pts, type === &#x27;bonus&#x27; ? &#x27;gold&#x27; : &#x27;&#x27;);
+      removeActive(state);
+      if (type === &#x27;normal&#x27; || type === &#x27;mover&#x27; || type === &#x27;shrinker&#x27;) mole.style.background = &#x27;#3ba55c&#x27;;
+      mole.style.pointerEvents = &#x27;none&#x27;;
+      setTimeout(function () {
+        if (mole.parentNode === board) board.removeChild(mole);
+      }, 100);
+    });
+
+    board.appendChild(mole);
+    actives.push(state);
+    if (type === &#x27;mover&#x27; || type === &#x27;shrinker&#x27;) movers.push(state);
+
+    var life = (type === &#x27;bonus&#x27; || type === &#x27;spike&#x27;) ? Math.max(700, p.life * 0.9) : p.life;
+    moleTimeouts.push(setTimeout(function () {
+      removeActive(state);
+      if (mole.parentNode === board) board.removeChild(mole);
+    }, life));
+  }
+
+  function animate() {
+    for (var i = movers.length - 1; i &gt;= 0; i--) {
+      var s = movers[i];
+      if (s.type === &#x27;mover&#x27;) {
+        s.x += s.vx; s.y += s.vy;
+        if (s.x &lt;= 0) { s.x = 0; s.vx = -s.vx; }
+        if (s.x &gt;= BOARD_W - s.size) { s.x = BOARD_W - s.size; s.vx = -s.vx; }
+        if (s.y &lt;= 0) { s.y = 0; s.vy = -s.vy; }
+        if (s.y &gt;= BOARD_H - s.size) { s.y = BOARD_H - s.size; s.vy = -s.vy; }
+        s.el.style.left = s.x + &#x27;px&#x27;;
+        s.el.style.top = s.y + &#x27;px&#x27;;
+      } else if (s.type === &#x27;shrinker&#x27;) {
+        var t = (Date.now() - s.shrinkStart) / s.shrinkDur;
+        if (t &gt;= 1) {
+          removeActive(s);
+          if (s.el.parentNode === board) board.removeChild(s.el);
+          continue;
+        }
+        var cur = s.startSize * (1 - t);
+        s.size = cur;
+        s.el.style.width = cur + &#x27;px&#x27;;
+        s.el.style.height = cur + &#x27;px&#x27;;
+      }
+    }
+    if (running) animFrame = requestAnimationFrame(animate);
+  }
+
+  function startRound() {
+    clearAllMoles();
+    banner.style.display = &#x27;none&#x27;;
+    score = 0;
+    scoreEl.textContent = &#x27;0&#x27;;
+    roundEl.textContent = round;
+    var p = roundParams(round);
+    roundEndTime = Date.now() + ROUND_MS;
+    spawnMole();
+    if (spawnInterval) clearInterval(spawnInterval);
+    spawnInterval = setInterval(spawnMole, p.spawn);
+    if (tickInterval) clearInterval(tickInterval);
+    tickInterval = setInterval(tick, 100);
+    if (roundTimeout) clearTimeout(roundTimeout);
+    roundTimeout = setTimeout(endRound, ROUND_MS);
+    if (animFrame) cancelAnimationFrame(animFrame);
+    animFrame = requestAnimationFrame(animate);
+  }
+
+  function tick() {
+    var remaining = Math.max(0, roundEndTime - Date.now());
+    timeEl.textContent = Math.ceil(remaining / 1000);
+    timefill.style.width = (remaining / ROUND_MS * 100) + &#x27;%&#x27;;
+  }
+
+  function endRound() {
+    if (spawnInterval) { clearInterval(spawnInterval); spawnInterval = null; }
+    if (tickInterval) { clearInterval(tickInterval); tickInterval = null; }
+    if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
+    clearAllMoles();
+    timeEl.textContent = &#x27;0&#x27;;
+    timefill.style.width = &#x27;0%&#x27;;
+    var finishedRound = round;
+    round += 1;
+    banner.innerHTML = &#x27;&lt;div class=&quot;big&quot;&gt;Round &#x27; + finishedRound + &#x27; done!&lt;/div&gt;&#x27; +
+      &#x27;&lt;div&gt;Round score: &#x27; + score + &#x27; &amp;nbsp;•&amp;nbsp; Total: &#x27; + total + &#x27;&lt;/div&gt;&#x27; +
+      &#x27;&lt;div&gt;Next round starting…&lt;/div&gt;&#x27;;
+    banner.style.display = &#x27;flex&#x27;;
+    roundTimeout = setTimeout(function () {
+      if (running) startRound();
+    }, 2200);
+  }
+
+  function startGame() {
+    running = true;
+    round = 1; score = 0; total = 0;
+    scoreEl.textContent = &#x27;0&#x27;;
+    totalEl.textContent = &#x27;0&#x27;;
+    roundEl.textContent = &#x27;1&#x27;;
+    timeEl.textContent = &#x27;25&#x27;;
+    timefill.style.width = &#x27;100%&#x27;;
+    startRound();
+  }
+
+  function stopGame() {
+    running = false;
+    if (spawnInterval) { clearInterval(spawnInterval); spawnInterval = null; }
+    if (tickInterval) { clearInterval(tickInterval); tickInterval = null; }
+    if (roundTimeout) { clearTimeout(roundTimeout); roundTimeout = null; }
+    if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
+    clearAllMoles();
+    banner.innerHTML = &#x27;&lt;div class=&quot;big&quot;&gt;Paused&lt;/div&gt;&lt;div&gt;Press Start below to play again.&lt;/div&gt;&#x27;;
+    banner.style.display = &#x27;flex&#x27;;
+  }
+
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e.data || typeof e.data !== &#x27;object&#x27;) return;
+    if (e.data.type === &#x27;wd_start&#x27;) startGame();
+    else if (e.data.type === &#x27;wd_stop&#x27;) stopGame();
+  });
+
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function(t) {
+    window.addEventListener(t, function(e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+&lt;/script&gt;
+
+&lt;script&gt;
+/* game_input_heartbeat_server_inject */
+(function () {
+  if (window.__v5_heartbeat_v2) return;
+  window.__v5_heartbeat_v2 = true;
+  function _suppressIframeScroll() {
+    try {
+      document.documentElement.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      if (document.body) {
+        document.body.style.setProperty(&#x27;overflow&#x27;, &#x27;hidden&#x27;, &#x27;important&#x27;);
+      }
+    } catch (_) {}
+  }
+  if (document.body) _suppressIframeScroll();
+  else document.addEventListener(&#x27;DOMContentLoaded&#x27;, _suppressIframeScroll);
+  [&#x27;keydown&#x27;, &#x27;mousedown&#x27;, &#x27;touchstart&#x27;].forEach(function (t) {
+    window.addEventListener(t, function (e) {
+      try {
+        window.parent.postMessage(
+          { type: &#x27;game_input&#x27;, kind: t, key: e.key || null },
+          &#x27;*&#x27;
+        );
+      } catch (_) {}
+    }, true);
+  });
+  window.addEventListener(&#x27;error&#x27;, function (ev) {
+    try {
+      var err = ev.error || {};
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: err.message || ev.message || &#x27;(no message)&#x27;,
+        stack: err.stack || null,
+        source: ev.filename || null,
+        line_no: typeof ev.lineno === &#x27;number&#x27; ? ev.lineno : null,
+        column_no: typeof ev.colno === &#x27;number&#x27; ? ev.colno : null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  }, true);
+  window.addEventListener(&#x27;unhandledrejection&#x27;, function (ev) {
+    try {
+      var r = ev &amp;&amp; ev.reason;
+      window.parent.postMessage({
+        kind: &#x27;iframe_error&#x27;,
+        message: (r &amp;&amp; (r.message || String(r))) || &#x27;(unknown rejection)&#x27;,
+        stack: (r &amp;&amp; r.stack) || null,
+        source: &#x27;unhandledrejection&#x27;,
+        line_no: null, column_no: null,
+      }, &#x27;*&#x27;);
+    } catch (_) {}
+  });
+  var lastReportT = 0;
+  function reportSize() {
+    try {
+      var now = Date.now();
+      if (now - lastReportT &lt; 100) return;
+      lastReportT = now;
+      var d = document.documentElement;
+      var b = document.body || d;
+      var w = Math.max(b.scrollWidth || 0, d.scrollWidth || 0);
+      var h = Math.max(b.scrollHeight || 0, d.scrollHeight || 0);
+      if (w &lt;= 0 || h &lt;= 0 || w &gt; 4000 || h &gt; 4000) return;
+      window.parent.postMessage(
+        { type: &#x27;game_size&#x27;, w: w, h: h }, &#x27;*&#x27;
+      );
+    } catch (_) {}
+  }
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (e &amp;&amp; e.data &amp;&amp; e.data.type === &#x27;wd_remeasure&#x27;) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(reportSize);
+      });
+    }
+  });
+  function init() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(reportSize);
+    });
+    try {
+      if (typeof ResizeObserver !== &#x27;undefined&#x27;) {
+        var ro = new ResizeObserver(reportSize);
+        if (document.body) ro.observe(document.body);
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === &#x27;complete&#x27;) {
+    init();
+  } else {
+    window.addEventListener(&#x27;load&#x27;, init);
+  }
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <div class="controls">
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById('game');
+  var startBtn = document.getElementById('start');
+  var stopBtn = document.getElementById('stop');
+  var running = false;
+  function post(type) { try { iframe.contentWindow.postMessage({ type: type }, '*'); } catch (e) {} }
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    post('wd_start'); running = true; startBtn.disabled = true; stopBtn.disabled = false;
+    try { iframe.focus(); iframe.contentWindow.focus(); } catch (e) {}
+  });
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    post('wd_stop'); running = false; startBtn.disabled = false; stopBtn.disabled = true;
+  });
+  var lastW = 0, lastH = 0;
+  function applyFit() {
+    if (!lastW || !lastH) return;
+    var maxW = Math.min(window.innerWidth - 32, 900);
+    var headerH = (document.querySelector('.header') || {}).clientHeight || 0;
+    var ctrlsH = (document.querySelector('.controls') || {}).clientHeight || 0;
+    var maxH = Math.max(300, window.innerHeight - headerH - ctrlsH - 80);
+    var scale = Math.min(maxW / lastW, maxH / lastH, 1);
+    if (!isFinite(scale) || scale <= 0) return;
+    iframe.style.width = lastW + 'px'; iframe.style.height = lastH + 'px';
+    iframe.style.maxWidth = 'none'; iframe.style.maxHeight = 'none';
+    iframe.style.transform = 'scale(' + scale + ')'; iframe.style.transformOrigin = 'top left';
+    iframe.style.marginRight = (lastW * scale - lastW) + 'px';
+    iframe.style.marginBottom = (lastH * scale - lastH) + 'px';
+  }
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || e.data.type !== 'game_size') return;
+    if (iframe.contentWindow !== e.source) return;
+    var w = e.data.w, h = e.data.h;
+    if (!w || !h || w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
+    lastW = w; lastH = h; applyFit();
+  });
+  window.addEventListener('resize', applyFit);
+  function kick() { try { iframe.contentWindow.postMessage({ type: 'wd_remeasure' }, '*'); } catch (_) {} }
+  iframe.addEventListener('load', kick);
+  var tries = 0;
+  var poll = setInterval(function () { kick(); tries++; if (lastW > 0 || tries > 15) clearInterval(poll); }, 100);
+})();
+</script>
+</body>
+</html>
